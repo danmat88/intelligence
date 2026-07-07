@@ -44,9 +44,14 @@ export function createGeminiClient(config: GeminiConfig): AIClient {
       }
 
       const t0 = Date.now()
-      const res = await fetch(`${base}/models/${config.model}:generateContent?key=${config.apiKey}`, {
+      // Key goes in the x-goog-api-key header (not the URL) — works for both the
+      // legacy AIza... keys and the newer AQ... keys, and keeps it out of logs.
+      const res = await fetch(`${base}/models/${config.model}:generateContent`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': config.apiKey,
+        },
         body: JSON.stringify(body),
       })
       const ms = Date.now() - t0
