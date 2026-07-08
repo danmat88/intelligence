@@ -20,8 +20,10 @@ initializeApp()
 // Set once with: firebase functions:secrets:set GEMINI_API_KEY
 const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY')
 
-// The model is pinned server-side: a stolen client can't run pricier models.
-const MODEL = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash'
+// Models are whitelisted server-side: the app can pick between these two,
+// and a stolen client still can't run anything pricier.
+const DEFAULT_MODEL = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash'
+const ALLOWED_MODELS = new Set([DEFAULT_MODEL, 'gemini-2.5-flash', 'gemini-2.5-pro'])
 const GOOGLE_BASE = 'https://generativelanguage.googleapis.com/v1beta'
 
 // Per-user fixed-window rate limit. The window doc lives at the Firestore
@@ -101,9 +103,12 @@ export const gemini = onRequest(
       },
     }
 
+    const requested = /\/models\/([^:]+):/.exec(req.path)?.[1]
+    const model = requested && ALLOWED_MODELS.has(requested) ? requested : DEFAULT_MODEL
+
     const streaming = req.path.includes(':streamGenerateContent')
     const upstream = await fetch(
-      `${GOOGLE_BASE}/models/${MODEL}:${streaming ? 'streamGenerateContent?alt=sse' : 'generateContent'}`,
+      `${GOOGLE_BASE}/models/${model}:${streaming ? 'streamGenerateContent?alt=sse' : 'generateContent'}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY.value() },

@@ -47,7 +47,9 @@ function Message({ message }: { message: Msg }) {
   return (
     <Entrance>
       <Pressable onLongPress={copy} style={styles.botRow}>
-        <AvatarMark active={!!message.streaming} />
+        <BrandGradient style={styles.avatar}>
+          <Ionicons name="sparkles" size={15} color={c.onAccent} />
+        </BrandGradient>
         <View style={styles.botBody}>
           {message.pending && !message.text ? (
             <ThinkingOrb />
@@ -80,34 +82,7 @@ function Entrance({ children }: { children: ReactNode }) {
   return <Animated.View style={{ opacity, transform: [{ translateY: rise }] }}>{children}</Animated.View>
 }
 
-/** The assistant mark; it breathes while the reply is streaming. */
-function AvatarMark({ active }: { active: boolean }) {
-  const { theme } = useTheme()
-  const scale = useRef(new Animated.Value(1)).current
-  useEffect(() => {
-    if (!active) {
-      scale.setValue(1)
-      return
-    }
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(scale, { toValue: 1.14, duration: 620, useNativeDriver: true }),
-        Animated.timing(scale, { toValue: 1, duration: 620, useNativeDriver: true }),
-      ]),
-    )
-    loop.start()
-    return () => loop.stop()
-  }, [active, scale])
-  return (
-    <Animated.View style={{ transform: [{ scale }] }}>
-      <BrandGradient style={styles.avatar}>
-        <Ionicons name="sparkles" size={15} color={theme.colors.onAccent} />
-      </BrandGradient>
-    </Animated.View>
-  )
-}
-
-/** Pre-first-token state: a slowly revolving, pulsing gradient orb. */
+/** Pre-first-token state: a pulsing gradient orb - the app's one "spinner". */
 function ThinkingOrb() {
   const pulse = useRef(new Animated.Value(0)).current
   const spin = useRef(new Animated.Value(0)).current

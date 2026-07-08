@@ -57,32 +57,17 @@ const SYSTEM =
   'You are Intelligence, a helpful, warm, and concise AI assistant. Answer clearly. ' +
   'Use short paragraphs and lists where useful.'
 
-/** Response styles the user can switch between - a real product control. */
-export type Persona = 'balanced' | 'creative' | 'precise'
+/** Real model selection, like ChatGPT's header picker. Whitelisted server-side. */
+export type ModelChoice = 'flash' | 'pro'
 
-export const PERSONAS: Record<Persona, { label: string; blurb: string; system: string; temperature: number }> = {
-  balanced: {
-    label: 'Balanced',
-    blurb: 'Warm, clear, versatile',
-    system: '',
-    temperature: 0.7,
-  },
-  creative: {
-    label: 'Creative',
-    blurb: 'Vivid, bold, imaginative',
-    system: ' Lean imaginative: vivid language, bold ideas, surprising angles.',
-    temperature: 1.0,
-  },
-  precise: {
-    label: 'Precise',
-    blurb: 'Rigorous, terse, factual',
-    system: ' Be rigorous and terse: facts first, no filler, show reasoning briefly.',
-    temperature: 0.3,
-  },
+export const MODELS: Record<ModelChoice, { label: string; blurb: string; id: string }> = {
+  flash: { label: 'Gemini Flash', blurb: 'Fast and sharp — everyday answers', id: 'gemini-2.5-flash' },
+  pro: { label: 'Gemini Pro', blurb: 'Deepest reasoning — hard problems', id: 'gemini-2.5-pro' },
 }
 
 /** currentId value for the not-yet-persisted "New chat". */
-const NEW = 'new'
+export const NEW_CHAT = 'new'
+const NEW = NEW_CHAT
 
 /** Messages are loaded newest-first in pages of this size. */
 const PAGE = 80
@@ -103,8 +88,8 @@ type ChatContextValue = {
   regenerate: () => void
   /** Fetch the next (older) page of the open conversation, if any. */
   loadOlder: () => void
-  persona: Persona
-  setPersona: (p: Persona) => void
+  model: ModelChoice
+  setModel: (m: ModelChoice) => void
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null)
@@ -122,7 +107,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   // reply's Firestore doc id, so the merge in `value` hides it exactly when
   // the persisted message arrives — no timers, no content heuristics.
   const [draft, setDraft] = useState<Message | null>(null)
-  const [persona, setPersona] = useState<Persona>('balanced')
+  const [model, setModel] = useState<ModelChoice>('flash')
   const draftConv = useRef<string | null>(null)
   const inFlight = useRef<AbortController | null>(null)
 
@@ -250,7 +235,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [convCol, msgCol, currentId, messages, sending, uid, persona],
+    [convCol, msgCol, currentId, messages, sending, uid, model],
   )
 
   /**
@@ -265,7 +250,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       draftConv.current = cid
       setDraft({ id: replyRef.id, role: 'assistant', text: '', pending: true, streaming: true })
 
-      const style = PERSONAS[persona]
       const controller = new AbortController()
       inFlight.current = controller
       try {
@@ -273,8 +257,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           turns,
           (delta) => setDraft((d) => (d ? { ...d, text: d.text + delta, pending: false } : d)),
           {
-            system: SYSTEM + style.system,
-            temperature: style.temperature,
+            system: SYSTEM,
+            model: MODELS[model].id,
             maxTokens: 2048,
             signal: controller.signal,
           },
@@ -293,7 +277,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         inFlight.current = null
       }
     },
-    [convCol, msgCol, persona],
+    [convCol, msgCol, model],
   )
 
   /** Replace the last assistant reply with a freshly generated one. */
@@ -342,10 +326,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       stop,
       regenerate,
       loadOlder,
-      persona,
-      setPersona,
+      model,
+      setModel,
     }
-  }, [metas, messages, draft, currentId, sending, newChat, selectChat, deleteChat, send, stop, regenerate, loadOlder, persona])
+  }, [metas, messages, draft, currentId, sending, newChat, selectChat, deleteChat, send, stop, regenerate, loadOlder, model])
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>
 }

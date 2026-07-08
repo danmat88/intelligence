@@ -35,7 +35,14 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
   }
 
   return (
-    <Modal visible={open} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal
+      visible={open}
+      transparent
+      animationType="slide"
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={onClose}
+    >
       {/* backdrop */}
       <Pressable style={styles.backdrop} onPress={onClose} />
 

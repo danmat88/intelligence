@@ -83,7 +83,7 @@ export function createGeminiClient(config: GeminiConfig): AIClient {
     // Credentials go in headers (not the URL) so they stay out of logs.
     const headers = await authHeaders()
     const t0 = Date.now()
-    const res = await fetch(`${base}/models/${config.model}:generateContent`, {
+    const res = await fetch(`${base}/models/${opts.model ?? config.model}:generateContent`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...headers },
       body: JSON.stringify(buildBody(contents, opts)),
@@ -117,7 +117,7 @@ export function createGeminiClient(config: GeminiConfig): AIClient {
       const headers = await authHeaders()
       return new Promise<AIResult>((resolve, reject) => {
         const xhr = new XMLHttpRequest()
-        xhr.open('POST', `${base}/models/${config.model}:streamGenerateContent?alt=sse`)
+        xhr.open('POST', `${base}/models/${opts.model ?? config.model}:streamGenerateContent?alt=sse`)
         xhr.setRequestHeader('Content-Type', 'application/json')
         for (const [k, v] of Object.entries(headers)) xhr.setRequestHeader(k, v)
 

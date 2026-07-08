@@ -1,14 +1,15 @@
-import { useEffect, useRef, useState } from 'react'
-import { Animated, Easing, Pressable, StyleSheet, TextInput, View } from 'react-native'
+import { useState } from 'react'
+import { Pressable, StyleSheet, TextInput, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../../theme/ThemeProvider'
 import BrandGradient from '../ui/BrandGradient'
 
 /**
- * Bottom input bar wrapped in a slowly revolving gradient rim - the app's
- * heartbeat. Growing text field + circular gradient send button that turns
- * into a stop button while a reply is streaming.
+ * Bottom input bar with a static gradient rim. Growing text field (capped so
+ * it can never crowd the screen) + gradient send button that turns into a
+ * stop button while a reply is streaming. No autofocus, no idle motion -
+ * the keyboard and the rim do nothing until the user acts.
  */
 export default function Composer({
   onSend,
@@ -23,20 +24,6 @@ export default function Composer({
   const c = theme.colors
   const [text, setText] = useState('')
 
-  // the rim: two rounded gradient borders crossfading - reads as light slowly
-  // traveling around the input, with zero clipping tricks (Android-safe)
-  const breathe = useRef(new Animated.Value(0)).current
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(breathe, { toValue: 1, duration: 2600, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-        Animated.timing(breathe, { toValue: 0, duration: 2600, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-      ]),
-    )
-    loop.start()
-    return () => loop.stop()
-  }, [breathe])
-
   const canSend = text.trim().length > 0 && !sending
   const submit = () => {
     if (!canSend) return
@@ -49,27 +36,14 @@ export default function Composer({
   return (
     <View style={[styles.rim, { borderRadius: theme.radius.xl }]}>
       <LinearGradient
-        colors={[brand[0] + '8C', brand[1] + '30', brand[2] + '8C']}
+        colors={[brand[0] + '80', brand[1] + '2E', brand[2] + '80']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[StyleSheet.absoluteFill, { borderRadius: theme.radius.xl }]}
         pointerEvents="none"
       />
-      <Animated.View
-        pointerEvents="none"
-        style={[StyleSheet.absoluteFill, { borderRadius: theme.radius.xl, opacity: breathe }]}
-      >
-        <LinearGradient
-          colors={[brand[2] + '8C', brand[0] + '30', brand[1] + '8C']}
-          start={{ x: 1, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          style={[StyleSheet.absoluteFill, { borderRadius: theme.radius.xl }]}
-        />
-      </Animated.View>
-
       <View style={[styles.wrap, { backgroundColor: c.surface, borderRadius: theme.radius.xl - 2 }]}>
         <TextInput
-          autoFocus
           style={[styles.input, { color: c.text, fontFamily: theme.font.regular }]}
           placeholder="Message Intelligence..."
           placeholderTextColor={c.textFaint}
@@ -113,7 +87,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     gap: 8,
   },
-  input: { flex: 1, fontSize: 16, lineHeight: 22, maxHeight: 140, paddingVertical: 8 },
+  input: { flex: 1, fontSize: 16, lineHeight: 22, maxHeight: 110, paddingVertical: 8 },
   sendWrap: { justifyContent: 'flex-end' },
   send: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
   stopSquare: { width: 13, height: 13, borderRadius: 3 },

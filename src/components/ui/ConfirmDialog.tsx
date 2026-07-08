@@ -26,7 +26,14 @@ export default function ConfirmDialog({
   const c = theme.colors
 
   return (
-    <Modal visible={open} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal
+      visible={open}
+      transparent
+      animationType="fade"
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={onClose}
+    >
       <View style={styles.center}>
         <Pressable style={[StyleSheet.absoluteFill, styles.backdrop]} onPress={onClose} />
         <View style={[styles.card, { backgroundColor: c.bgElevated, borderColor: c.border, borderRadius: theme.radius.lg }]}>

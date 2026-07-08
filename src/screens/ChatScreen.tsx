@@ -5,7 +5,7 @@ import { StatusBar } from 'expo-status-bar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
-import { useChat } from '../chat/store'
+import { NEW_CHAT, useChat } from '../chat/store'
 import ScreenBackground from '../components/ui/ScreenBackground'
 import Txt from '../components/ui/Txt'
 import Message from '../components/chat/Message'
@@ -13,7 +13,7 @@ import Composer from '../components/chat/Composer'
 import UpdateBanner from '../components/ui/UpdateBanner'
 import EmptyState from '../components/chat/EmptyState'
 import ConversationsDrawer from '../components/chat/ConversationsDrawer'
-import PersonaSheet from '../components/chat/PersonaSheet'
+import ModelSheet from '../components/chat/ModelSheet'
 import ReplyActions from '../components/chat/ReplyActions'
 import SettingsModal from './SettingsModal'
 
@@ -33,10 +33,10 @@ export default function ChatScreen() {
   const { theme, mode, toggle } = useTheme()
   const c = theme.colors
   const insets = useSafeAreaInsets()
-  const { current, sending, send, stop, regenerate, newChat, loadOlder, persona } = useChat()
+  const { current, sending, send, stop, regenerate, newChat, loadOlder } = useChat()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const [personaOpen, setPersonaOpen] = useState(false)
+  const [modelOpen, setModelOpen] = useState(false)
   const [showJump, setShowJump] = useState(false)
 
   const last = current.messages[current.messages.length - 1]
@@ -44,7 +44,10 @@ export default function ChatScreen() {
     !sending && last?.role === 'assistant' && !last.pending && !last.error && !last.streaming && !!last.text
   const listRef = useRef<FlatList<(typeof current.messages)[number]>>(null)
 
-  const empty = current.messages.length === 0
+  // Home shows ONLY for a genuinely new chat - an existing conversation whose
+  // messages are still streaming in from the cache renders as a (momentarily
+  // blank) thread instead of flashing the Home screen
+  const empty = current.id === NEW_CHAT
 
   // inverted FlatList wants newest-first data; it then pins the newest message
   // to the bottom natively (no manual scroll-to-end on new content needed)
@@ -61,6 +64,9 @@ export default function ChatScreen() {
     return () => sub.remove()
   }, [scrollToNewest])
 
+  // stale scroll UI must not leak across conversations
+  useEffect(() => setShowJump(false), [current.id])
+
   return (
     <ScreenBackground>
       <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
@@ -68,7 +74,7 @@ export default function ChatScreen() {
       {/* transparent header - buttons float over the app, no bar */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <HeaderButton icon="menu" color={c.text} onPress={() => setDrawerOpen(true)} />
-        <Pressable onPress={() => setPersonaOpen(true)} style={styles.titleWrap} hitSlop={6}>
+        <Pressable onPress={() => setModelOpen(true)} style={styles.titleWrap} hitSlop={6}>
           <Txt
             numberOfLines={1}
             size={16}
@@ -147,7 +153,7 @@ export default function ChatScreen() {
         onOpenSettings={() => setSettingsOpen(true)}
       />
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
-      <PersonaSheet open={personaOpen} onClose={() => setPersonaOpen(false)} />
+      <ModelSheet open={modelOpen} onClose={() => setModelOpen(false)} />
     </ScreenBackground>
   )
 }
