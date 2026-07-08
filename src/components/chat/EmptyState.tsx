@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react'
-import { Animated, Pressable, ScrollView, StyleSheet, View } from 'react-native'
+import { Animated, Keyboard, Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { Ionicons, Feather } from '@expo/vector-icons'
 import { useTheme } from '../../theme/ThemeProvider'
 import { useAuth } from '../../auth/AuthProvider'
@@ -60,6 +60,7 @@ export default function EmptyState({ onPick }: { onPick: (t: string) => void }) 
       contentContainerStyle={styles.wrap}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
     >
       <Rise delay={0}>
         <View style={styles.orbBox}>
@@ -119,7 +120,10 @@ export default function EmptyState({ onPick }: { onPick: (t: string) => void }) 
             {recent.map((conv) => (
               <Pressable
                 key={conv.id}
-                onPress={() => selectChat(conv.id)}
+                onPress={() => {
+                  Keyboard.dismiss() // navigating away from writing
+                  selectChat(conv.id)
+                }}
                 style={({ pressed }) => [
                   styles.recentPill,
                   {

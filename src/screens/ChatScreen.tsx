@@ -30,7 +30,7 @@ import SettingsModal from './SettingsModal'
  * offset the avoiding view by -insets.bottom to not double-count it.
  */
 export default function ChatScreen() {
-  const { theme, mode, toggle } = useTheme()
+  const { theme, mode } = useTheme()
   const c = theme.colors
   const insets = useSafeAreaInsets()
   const { current, sending, send, stop, regenerate, newChat, loadOlder } = useChat()
@@ -71,10 +71,24 @@ export default function ChatScreen() {
     <ScreenBackground>
       <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
 
-      {/* transparent header - buttons float over the app, no bar */}
+      {/* keyboard doctrine: any move of attention away from writing closes it */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <HeaderButton icon="menu" color={c.text} onPress={() => setDrawerOpen(true)} />
-        <Pressable onPress={() => setModelOpen(true)} style={styles.titleWrap} hitSlop={6}>
+        <HeaderButton
+          icon="menu"
+          color={c.text}
+          onPress={() => {
+            Keyboard.dismiss()
+            setDrawerOpen(true)
+          }}
+        />
+        <Pressable
+          onPress={() => {
+            Keyboard.dismiss()
+            setModelOpen(true)
+          }}
+          style={styles.titleWrap}
+          hitSlop={6}
+        >
           <Txt
             numberOfLines={1}
             size={16}
@@ -86,8 +100,14 @@ export default function ChatScreen() {
           <Feather name="chevron-down" size={14} color={c.textFaint} />
         </Pressable>
         <View style={styles.headerRight}>
-          <HeaderButton icon={mode === 'dark' ? 'sun' : 'moon'} color={c.text} onPress={toggle} />
-          <HeaderButton icon="edit" color={c.text} onPress={newChat} />
+          <HeaderButton
+            icon="edit"
+            color={c.text}
+            onPress={() => {
+              Keyboard.dismiss()
+              newChat()
+            }}
+          />
         </View>
       </View>
 
@@ -140,9 +160,12 @@ export default function ChatScreen() {
             </Pressable>
           )}
 
-          <View style={{ paddingHorizontal: 16, paddingTop: 6, paddingBottom: insets.bottom + 8 }}>
+          <View style={{ paddingHorizontal: 16, paddingTop: 6, paddingBottom: insets.bottom + 6 }}>
             <UpdateBanner />
             <Composer onSend={send} onStop={stop} sending={sending} />
+            <Txt size={10.5} color={c.textFaint} style={styles.disclaimer}>
+              Intelligence can make mistakes. Verify important info.
+            </Txt>
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -201,6 +224,7 @@ const styles = StyleSheet.create({
   // inverted list flips vertical padding: paddingTop renders at the visual
   // bottom (24 above the composer) and paddingBottom at the visual top (12)
   thread: { paddingHorizontal: 16, paddingTop: 24, paddingBottom: 12, gap: 22 },
+  disclaimer: { textAlign: 'center', marginTop: 6 },
   jump: {
     position: 'absolute',
     alignSelf: 'center',
