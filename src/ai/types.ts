@@ -21,6 +21,16 @@ export type AIResult = {
   ms: number
 }
 
+export type ChatRole = 'user' | 'assistant'
+
+/** One turn in a conversation. Order matters — full history gives the model context. */
+export type ChatTurn = { role: ChatRole; text: string }
+
 export interface AIClient {
+  /** Single-shot prompt. */
   generate(prompt: string, opts?: GenerateOptions): Promise<AIResult>
+  /** Multi-turn conversation — send the whole history so replies stay in context. */
+  chat(turns: ChatTurn[], opts?: GenerateOptions): Promise<AIResult>
+  /** Streaming multi-turn chat — `onToken` fires with each new delta of text. */
+  stream(turns: ChatTurn[], onToken: (delta: string) => void, opts?: GenerateOptions): Promise<AIResult>
 }

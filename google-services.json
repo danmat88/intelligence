@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "781036746021",
+    "project_id": "gen-lang-client-0286445774",
+    "storage_bucket": "gen-lang-client-0286445774.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:781036746021:android:5ede573ee83376992256cc",
+        "android_client_info": {
+          "package_name": "com.danielmatei.intelligence"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "781036746021-7v4dtqmla5ql634akbs17obn5deuv2l2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.danielmatei.intelligence",
+            "certificate_hash": "e4f7b4c77f41b921da4704c3c4213b26c74bcaf8"
+          }
+        },
+        {
+          "client_id": "781036746021-g2p1lnmu4617b25042lgo6pc13a1tblu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAqJ9j1cgmlF7HIbPJZXCsFQocPRDcStvY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "781036746021-g2p1lnmu4617b25042lgo6pc13a1tblu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

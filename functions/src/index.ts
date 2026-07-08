@@ -1,0 +1,102 @@
+import { onRequest } from 'firebase-functions/v2/https'
+import { defineSecret } from 'firebase-functions/params'
+import { initializeApp } from 'firebase-admin/app'
+import { getAuth } from 'firebase-admin/auth'
+
+initializeApp()
+
+/**
+ * Authenticated proxy in front of the Gemini API.
+ *
+ * The app never talks to Google directly and never carries the API key: it
+ * sends requests here with the user's Firebase ID token, we verify the token,
+ * then forward the request to Gemini with the server-held key and stream the
+ * response straight back. The path mirrors Gemini's REST shape
+ * (/models/<model>:generateContent | :streamGenerateContent), so the client's
+ * Gemini code works unchanged with baseUrl pointed at this function.
+ */
+
+// Set once with: firebase functions:secrets:set GEMINI_API_KEY
+const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY')
+
+// The model is pinned server-side: a stolen client can't run pricier models.
+const MODEL = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash'
+const GOOGLE_BASE = 'https://generativelanguage.googleapis.com/v1beta'
+
+export const gemini = onRequest(
+  {
+    region: 'europe-west1',
+    secrets: [GEMINI_API_KEY],
+    timeoutSeconds: 300,
+    memory: '256MiB',
+    // hard ceiling on parallel instances = hard ceiling on abuse cost
+    maxInstances: 5,
+  },
+  async (req, res) => {
+    if (req.method !== 'POST') {
+      res.status(405).json({ error: 'Method not allowed' })
+      return
+    }
+
+    const bearer = /^Bearer (.+)$/.exec(req.headers.authorization ?? '')
+    if (!bearer) {
+      res.status(401).json({ error: 'Missing auth token' })
+      return
+    }
+    try {
+      await getAuth().verifyIdToken(bearer[1])
+    } catch {
+      res.status(401).json({ error: 'Invalid or expired auth token' })
+      return
+    }
+
+    if (Number(req.headers['content-length'] ?? 0) > 1_000_000) {
+      res.status(413).json({ error: 'Request too large' })
+      return
+    }
+
+    // Forward only the fields the app legitimately sends, and clamp the
+    // cost-bearing knobs server-side - a tampered client can't raise them.
+    const body = (req.body ?? {}) as {
+      contents?: unknown
+      systemInstruction?: unknown
+      generationConfig?: Record<string, unknown>
+    }
+    const gen = body.generationConfig ?? {}
+    const payload = {
+      contents: body.contents,
+      systemInstruction: body.systemInstruction,
+      generationConfig: {
+        ...gen,
+        maxOutputTokens: Math.min(Number(gen.maxOutputTokens) || 2048, 4096),
+      },
+    }
+
+    const streaming = req.path.includes(':streamGenerateContent')
+    const upstream = await fetch(
+      `${GOOGLE_BASE}/models/${MODEL}:${streaming ? 'streamGenerateContent?alt=sse' : 'generateContent'}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY.value() },
+        body: JSON.stringify(payload),
+      },
+    )
+
+    res.status(upstream.status)
+    res.set('Content-Type', upstream.headers.get('content-type') ?? 'application/json')
+    res.set('Cache-Control', 'no-cache')
+    res.set('X-Accel-Buffering', 'no') // belt-and-braces: never buffer the stream
+    if (!upstream.body) {
+      res.end()
+      return
+    }
+    // pipe Gemini's (possibly SSE) response through chunk by chunk
+    const reader = upstream.body.getReader()
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+      res.write(value)
+    }
+    res.end()
+  },
+)

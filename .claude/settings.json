@@ -1,4 +1,45 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(npx eas-cli@latest build:list --limit 5 --non-interactive)",
+      "WebSearch",
+      "WebFetch(domain:docs.expo.dev)",
+      "WebFetch(domain:kirillzyusko.github.io)",
+      "PowerShell(npx expo install react-native-keyboard-controller)",
+      "PowerShell(Remove-Item -Force \"src\\\\hooks\\\\useKeyboard.ts\"; if \\(-not \\(Get-ChildItem \"src\\\\hooks\"\\)\\) { Remove-Item -Force \"src\\\\hooks\" })",
+      "PowerShell(npx eas-cli build --platform android --profile preview --non-interactive --no-wait)",
+      "PowerShell(git check-ignore .env)",
+      "PowerShell(npx eas-cli build:view 62538b66-edaa-44f5-b4c1-2e9fafef4c2d)",
+      "PowerShell(npx eas-cli build:list --platform android --limit 3 --json --non-interactive)",
+      "PowerShell($dir = \"C:\\\\Users\\\\coste\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-coste-OneDrive-Desktop-intelligence\\\\e239acc0-7f26-4396-accb-4c6292d0ec6a\\\\scratchpad\"; \"=== NEW \\(tail\\) ===\"; Get-Content \"$dir\\\\build-new.txt\" -Tail 30; \"=== OLD \\(tail\\) ===\"; Get-Content \"$dir\\\\build-old.txt\" -Tail 40)",
+      "PowerShell($dir = \"C:\\\\Users\\\\coste\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-coste-OneDrive-Desktop-intelligence\\\\e239acc0-7f26-4396-accb-4c6292d0ec6a\\\\scratchpad\"; $b = [System.IO.File]::ReadAllBytes\\(\"$dir\\\\build-new.txt\"\\); \\($b[0..7] | ForEach-Object { $_.ToString\\('X2'\\) }\\) -join ' ')",
+      "PowerShell($dir = \"C:\\\\Users\\\\coste\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-coste-OneDrive-Desktop-intelligence\\\\e239acc0-7f26-4396-accb-4c6292d0ec6a\\\\scratchpad\"; \"=== NEW last lines ===\"; Get-Content \"$dir\\\\build-new-plain.txt\" -Tail 8 | ForEach-Object { try { \\($_ | ConvertFrom-Json\\).msg } catch { $_ } })",
+      "PowerShell(npx expo install @react-native-google-signin/google-signin @react-native-async-storage/async-storage)",
+      "PowerShell(npx eas-cli credentials -p android --non-interactive)",
+      "PowerShell(npx eas-cli credentials -p android)",
+      "PowerShell(npx expo install @react-native-firebase/app @react-native-firebase/auth @react-native-firebase/firestore)",
+      "PowerShell(npm --prefix functions install)",
+      "PowerShell(firebase login:list)",
+      "PowerShell(firebase functions:secrets:set GEMINI_API_KEY --data-file \"C:\\\\Users\\\\coste\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-coste-OneDrive-Desktop-intelligence\\\\e239acc0-7f26-4396-accb-4c6292d0ec6a\\\\scratchpad\\\\gemini-key.txt\" --project gen-lang-client-0286445774)",
+      "PowerShell(firebase deploy --only functions,firestore --non-interactive --project gen-lang-client-0286445774)",
+      "PowerShell(firebase deploy --only \"functions,firestore\" --non-interactive --project gen-lang-client-0286445774)",
+      "PowerShell(firebase functions:artifacts:setpolicy --location europe-west1 --force --project gen-lang-client-0286445774)",
+      "PowerShell(curl.exe -s -o - -w \"`nHTTP %{http_code}`n\" -X POST \"https://europe-west1-gen-lang-client-0286445774.cloudfunctions.net/gemini/models/gemini-2.5-flash:generateContent\" -H \"Content-Type: application/json\" -d \"{}\")",
+      "WebFetch(domain:rnfirebase.io)",
+      "Skill(code-review)",
+      "Skill(code-review:*)",
+      "Read(//c/Users/coste/.claude/**)",
+      "WebFetch(domain:react-native-google-signin.github.io)",
+      "PowerShell(firebase deploy --only functions --non-interactive --force --project gen-lang-client-0286445774)",
+      "PowerShell(curl.exe -s -o - -w \"`nHTTP %{http_code}`n\" -X POST \"https://europe-west1-gen-lang-client-0286445774.cloudfunctions.net/gemini/models/gemini-2.5-flash:streamGenerateContent?alt=sse\" -H \"Content-Type: application/json\" -d \"{}\")",
+      "PowerShell(adb version)",
+      "PowerShell(adb devices)",
+      "PowerShell(npx eas-cli build:cancel 0c607667-1a81-4e73-9132-a0e79ba184e5 --non-interactive)",
+      "PowerShell(npx expo install expo-updates)",
+      "PowerShell(npx eas-cli update:configure --non-interactive)",
+      "PowerShell(git remote add origin https://github.com/danmat88/intelligence.git)"
+    ]
+  },
   "enabledPlugins": {
     "expo@claude-plugins-official": true
   }
