@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef } from 'react'
-import { Animated, StyleSheet, View } from 'react-native'
+import { Animated, Platform, Pressable, StyleSheet, ToastAndroid, View } from 'react-native'
+import * as Clipboard from 'expo-clipboard'
 import { Ionicons } from '@expo/vector-icons'
 import { useTheme } from '../../theme/ThemeProvider'
 import Txt from '../ui/Txt'
@@ -16,9 +17,15 @@ function Message({ message }: { message: Msg }) {
   const { theme } = useTheme()
   const c = theme.colors
 
+  const copy = () => {
+    if (!message.text) return
+    Clipboard.setStringAsync(message.text)
+    if (Platform.OS === 'android') ToastAndroid.show('Copied', ToastAndroid.SHORT)
+  }
+
   if (message.role === 'user') {
     return (
-      <View style={styles.userRow}>
+      <Pressable onLongPress={copy} style={styles.userRow}>
         <View
           style={[
             styles.userBubble,
@@ -29,12 +36,12 @@ function Message({ message }: { message: Msg }) {
             {message.text}
           </Txt>
         </View>
-      </View>
+      </Pressable>
     )
   }
 
   return (
-    <View style={styles.botRow}>
+    <Pressable onLongPress={copy} style={styles.botRow}>
       <BrandGradient style={styles.avatar}>
         <Ionicons name="sparkles" size={15} color={c.onAccent} />
       </BrandGradient>
@@ -49,7 +56,7 @@ function Message({ message }: { message: Msg }) {
           <Markdown text={message.text} />
         )}
       </View>
-    </View>
+    </Pressable>
   )
 }
 

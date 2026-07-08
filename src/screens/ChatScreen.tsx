@@ -12,6 +12,7 @@ import Message from '../components/chat/Message'
 import Composer from '../components/chat/Composer'
 import EmptyState from '../components/chat/EmptyState'
 import ConversationsDrawer from '../components/chat/ConversationsDrawer'
+import SettingsModal from './SettingsModal'
 
 /**
  * The whole chat experience. Keyboard handling is delegated entirely to
@@ -31,6 +32,7 @@ export default function ChatScreen() {
   const insets = useSafeAreaInsets()
   const { current, sending, send, newChat, loadOlder } = useChat()
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const listRef = useRef<FlatList<(typeof current.messages)[number]>>(null)
 
   const empty = current.messages.length === 0
@@ -98,7 +100,12 @@ export default function ChatScreen() {
         </View>
       </KeyboardAvoidingView>
 
-      <ConversationsDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      <ConversationsDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        onOpenSettings={() => setSettingsOpen(true)}
+      />
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </ScreenBackground>
   )
 }

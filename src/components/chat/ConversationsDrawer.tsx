@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Animated, Dimensions, Image, Pressable, ScrollView, StyleSheet, View } from 'react-native'
+import { Alert, Animated, Dimensions, Image, Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../../theme/ThemeProvider'
@@ -10,12 +10,20 @@ import Txt from '../ui/Txt'
 const PANEL_W = Math.min(340, Dimensions.get('window').width * 0.84)
 
 /** Slide-in sidebar of conversations, like Claude's chat history. */
-export default function ConversationsDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+export default function ConversationsDrawer({
+  open,
+  onClose,
+  onOpenSettings,
+}: {
+  open: boolean
+  onClose: () => void
+  onOpenSettings: () => void
+}) {
   const { theme } = useTheme()
   const c = theme.colors
   const insets = useSafeAreaInsets()
   const { conversations, current, newChat, selectChat, deleteChat } = useChat()
-  const { user, signOut } = useAuth()
+  const { user } = useAuth()
 
   const p = useRef(new Animated.Value(0)).current
   useEffect(() => {
@@ -85,7 +93,15 @@ export default function ConversationsDrawer({ open, onClose }: { open: boolean; 
                 >
                   {conv.title || 'New chat'}
                 </Txt>
-                <Pressable hitSlop={10} onPress={() => deleteChat(conv.id)}>
+                <Pressable
+                  hitSlop={10}
+                  onPress={() =>
+                    Alert.alert('Delete chat?', `"${conv.title || 'New chat'}" will be gone forever.`, [
+                      { text: 'Cancel', style: 'cancel' },
+                      { text: 'Delete', style: 'destructive', onPress: () => deleteChat(conv.id) },
+                    ])
+                  }
+                >
                   <Feather name="trash-2" size={15} color={c.textFaint} />
                 </Pressable>
               </Pressable>
@@ -94,7 +110,10 @@ export default function ConversationsDrawer({ open, onClose }: { open: boolean; 
         </ScrollView>
 
         {user && (
-          <View style={[styles.account, { borderTopColor: c.border }]}>
+          <Pressable
+            onPress={() => { onClose(); onOpenSettings() }}
+            style={({ pressed }) => [styles.account, { borderTopColor: c.border, opacity: pressed ? 0.7 : 1 }]}
+          >
             {user.photo ? (
               <Image source={{ uri: user.photo }} style={styles.avatar} />
             ) : (
@@ -110,17 +129,8 @@ export default function ConversationsDrawer({ open, onClose }: { open: boolean; 
                 {user.email}
               </Txt>
             </View>
-            <Pressable
-              hitSlop={8}
-              onPress={signOut}
-              style={({ pressed }) => [
-                styles.signOut,
-                { backgroundColor: c.surfaceAlt, borderColor: c.border, opacity: pressed ? 0.7 : 1 },
-              ]}
-            >
-              <Feather name="log-out" size={16} color={c.textMuted} />
-            </Pressable>
-          </View>
+            <Feather name="settings" size={17} color={c.textFaint} />
+          </Pressable>
         )}
       </Animated.View>
     </View>
@@ -143,5 +153,4 @@ const styles = StyleSheet.create({
   },
   avatar: { width: 38, height: 38, borderRadius: 19 },
   avatarFallback: { alignItems: 'center', justifyContent: 'center' },
-  signOut: { width: 34, height: 34, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
 })

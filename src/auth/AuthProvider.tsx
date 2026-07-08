@@ -3,9 +3,11 @@ import {
   getAuth,
   GoogleAuthProvider,
   onAuthStateChanged,
+  reauthenticateWithCredential,
   signInWithCredential,
   signOut as firebaseSignOut,
 } from '@react-native-firebase/auth'
+import { collection, deleteDoc, doc, getDocs, getFirestore } from '@react-native-firebase/firestore'
 import {
   GoogleSignin,
   isErrorWithCode,
@@ -30,6 +32,8 @@ type AuthContextValue = {
   error: string | null
   signIn: () => Promise<void>
   signOut: () => Promise<void>
+  /** Permanently removes the account and every chat. Throws on failure. */
+  deleteAccount: () => Promise<void>
 }
 
 // The OAuth 2.0 *Web* client ID (from google-services.json / Firebase console).
@@ -106,7 +110,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await firebaseSignOut(getAuth())
     }
 
-    return { user, initializing, signingIn, error, signIn, signOut }
+    const deleteAccount = async () => {
+      const fbUser = getAuth().currentUser
+      if (!fbUser) return
+
+      // Firebase demands a recent login for destructive operations - get a
+      // fresh Google credential (silently when possible) and re-authenticate.
+      try {
+        await GoogleSignin.signInSilently()
+      } catch {
+        await GoogleSignin.hasPlayServices()
+        await GoogleSignin.signIn()
+      }
+      const { idToken, accessToken } = await GoogleSignin.getTokens()
+      await reauthenticateWithCredential(fbUser, GoogleAuthProvider.credential(idToken, accessToken))
+
+      // Play policy: deleting the account must delete the data. Wipe every
+      // conversation (messages first, then the conversation docs).
+      const db = getFirestore()
+      const convs = await getDocs(collection(db, 'users', fbUser.uid, 'conversations'))
+      for (const conv of convs.docs) {
+        const msgs = await getDocs(collection(conv.ref, 'messages'))
+        await Promise.all(msgs.docs.map((m) => deleteDoc(m.ref)))
+        await deleteDoc(conv.ref)
+      }
+      await deleteDoc(doc(db, 'users', fbUser.uid)).catch(() => {}) // in case a user doc ever exists
+
+      await fbUser.delete() // also signs out -> onAuthStateChanged clears `user`
+      try {
+        await GoogleSignin.signOut()
+      } catch {
+        // Google-side session cleanup is best-effort
+      }
+    }
+
+    return { user, initializing, signingIn, error, signIn, signOut, deleteAccount }
   }, [user, initializing, signingIn, error])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
