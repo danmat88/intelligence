@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Pressable, StyleSheet, TextInput, View } from 'react-native'
+import { useEffect, useRef, useState } from 'react'
+import { Animated, Pressable, StyleSheet, TextInput, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../../theme/ThemeProvider'
@@ -31,6 +31,17 @@ export default function Composer({
     setText('')
   }
 
+  // the action button pops softly whenever it changes role (idle/send/stop)
+  const mode = sending ? 'stop' : canSend ? 'send' : 'idle'
+  const prevMode = useRef(mode)
+  const pop = useRef(new Animated.Value(1)).current
+  useEffect(() => {
+    if (prevMode.current === mode) return
+    prevMode.current = mode
+    pop.setValue(0.72)
+    Animated.spring(pop, { toValue: 1, useNativeDriver: true, damping: 15, stiffness: 320 }).start()
+  }, [mode, pop])
+
   const brand = theme.gradient.brand
 
   return (
@@ -58,19 +69,21 @@ export default function Composer({
           style={styles.sendWrap}
           hitSlop={4}
         >
-          {sending ? (
-            <View style={[styles.send, { backgroundColor: c.surfaceAlt, borderWidth: 1, borderColor: c.border }]}>
-              <View style={[styles.stopSquare, { backgroundColor: c.text }]} />
-            </View>
-          ) : canSend ? (
-            <BrandGradient style={styles.send}>
-              <Feather name="arrow-up" size={20} color={c.onAccent} />
-            </BrandGradient>
-          ) : (
-            <View style={[styles.send, { backgroundColor: c.surfaceAlt }]}>
-              <Feather name="arrow-up" size={20} color={c.textFaint} />
-            </View>
-          )}
+          <Animated.View style={{ transform: [{ scale: pop }] }}>
+            {sending ? (
+              <View style={[styles.send, { backgroundColor: c.surfaceAlt, borderWidth: 1, borderColor: c.border }]}>
+                <View style={[styles.stopSquare, { backgroundColor: c.text }]} />
+              </View>
+            ) : canSend ? (
+              <BrandGradient style={styles.send}>
+                <Feather name="arrow-up" size={20} color={c.onAccent} />
+              </BrandGradient>
+            ) : (
+              <View style={[styles.send, { backgroundColor: c.surfaceAlt }]}>
+                <Feather name="arrow-up" size={20} color={c.textFaint} />
+              </View>
+            )}
+          </Animated.View>
         </Pressable>
       </View>
     </View>

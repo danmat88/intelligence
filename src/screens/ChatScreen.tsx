@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { FlatList, Keyboard, Platform, Pressable, StyleSheet, View } from 'react-native'
+import { Animated, FlatList, Keyboard, Platform, Pressable, StyleSheet, View } from 'react-native'
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 import { StatusBar } from 'expo-status-bar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -14,6 +14,7 @@ import UpdateBanner from '../components/ui/UpdateBanner'
 import EmptyState from '../components/chat/EmptyState'
 import ConversationsDrawer from '../components/chat/ConversationsDrawer'
 import ModelSheet from '../components/chat/ModelSheet'
+import { Appear, FadeSwitch } from '../components/ui/Transitions'
 import ReplyActions from '../components/chat/ReplyActions'
 import SettingsModal from './SettingsModal'
 
@@ -89,14 +90,11 @@ export default function ChatScreen() {
           style={styles.titleWrap}
           hitSlop={6}
         >
-          <Txt
-            numberOfLines={1}
-            size={16}
+          <HeaderTitle
+            text={empty ? 'Intelligence' : current.title}
             color={c.textMuted}
-            style={{ fontFamily: theme.font.displayMedium, maxWidth: '85%' }}
-          >
-            {empty ? 'Intelligence' : current.title}
-          </Txt>
+            fontFamily={theme.font.displayMedium}
+          />
           <Feather name="chevron-down" size={14} color={c.textFaint} />
         </Pressable>
         <View style={styles.headerRight}>
@@ -117,6 +115,7 @@ export default function ChatScreen() {
         keyboardVerticalOffset={-insets.bottom}
       >
         <View style={styles.column}>
+          <FadeSwitch dep={`${current.id}:${empty}`}>
           {empty ? (
             <EmptyState onPick={send} />
           ) : (
@@ -142,23 +141,19 @@ export default function ChatScreen() {
               }
             />
           )}
+          </FadeSwitch>
 
-          {showJump && !empty && (
+          <Appear visible={showJump && !empty} style={[styles.jumpWrap, { bottom: insets.bottom + 96 }]}>
             <Pressable
               onPress={scrollToNewest}
               style={({ pressed }) => [
                 styles.jump,
-                {
-                  backgroundColor: c.surface,
-                  borderColor: c.border,
-                  bottom: insets.bottom + 92,
-                  opacity: pressed ? 0.7 : 1,
-                },
+                { backgroundColor: c.surface, borderColor: c.border, opacity: pressed ? 0.7 : 1 },
               ]}
             >
               <Feather name="arrow-down" size={18} color={c.accent} />
             </Pressable>
-          )}
+          </Appear>
 
           <View style={{ paddingHorizontal: 16, paddingTop: 6, paddingBottom: insets.bottom + 6 }}>
             <UpdateBanner />
@@ -178,6 +173,36 @@ export default function ChatScreen() {
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <ModelSheet open={modelOpen} onClose={() => setModelOpen(false)} />
     </ScreenBackground>
+  )
+}
+
+/** Title that crossfades (out-up, in-from-below) whenever the text changes. */
+function HeaderTitle({ text, color, fontFamily }: { text: string; color: string; fontFamily: string }) {
+  const [shown, setShown] = useState(text)
+  const opacity = useRef(new Animated.Value(1)).current
+  const y = useRef(new Animated.Value(0)).current
+
+  useEffect(() => {
+    if (text === shown) return
+    Animated.parallel([
+      Animated.timing(opacity, { toValue: 0, duration: 90, useNativeDriver: true }),
+      Animated.timing(y, { toValue: -6, duration: 90, useNativeDriver: true }),
+    ]).start(() => {
+      setShown(text)
+      y.setValue(6)
+      Animated.parallel([
+        Animated.timing(opacity, { toValue: 1, duration: 150, useNativeDriver: true }),
+        Animated.timing(y, { toValue: 0, duration: 150, useNativeDriver: true }),
+      ]).start()
+    })
+  }, [text, shown, opacity, y])
+
+  return (
+    <Animated.View style={{ flexShrink: 1, opacity, transform: [{ translateY: y }] }}>
+      <Txt numberOfLines={1} size={16} color={color} style={{ fontFamily }}>
+        {shown}
+      </Txt>
+    </Animated.View>
   )
 }
 
@@ -225,9 +250,8 @@ const styles = StyleSheet.create({
   // bottom (24 above the composer) and paddingBottom at the visual top (12)
   thread: { paddingHorizontal: 16, paddingTop: 24, paddingBottom: 12, gap: 22 },
   disclaimer: { textAlign: 'center', marginTop: 6 },
+  jumpWrap: { position: 'absolute', alignSelf: 'center' },
   jump: {
-    position: 'absolute',
-    alignSelf: 'center',
     width: 40,
     height: 40,
     borderRadius: 20,

@@ -1,8 +1,9 @@
-import { Pressable, Share, StyleSheet, View } from 'react-native'
+import { Pressable, Share, StyleSheet } from 'react-native'
 import * as Clipboard from 'expo-clipboard'
 import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../../theme/ThemeProvider'
 import { useToast } from '../ui/Toast'
+import { RiseIn } from '../ui/Transitions'
 import Txt from '../ui/Txt'
 
 /** Ghost actions under the latest reply: copy, regenerate, share. */
@@ -18,11 +19,11 @@ export default function ReplyActions({ text, onRegenerate }: { text: string; onR
   const share = () => Share.share({ message: text }).catch(() => {})
 
   return (
-    <View style={styles.row}>
+    <RiseIn style={styles.row}>
       <Action icon="copy" label="Copy" onPress={copy} border={c.border} color={c.textMuted} />
       <Action icon="refresh-cw" label="Retry" onPress={onRegenerate} border={c.border} color={c.textMuted} />
       <Action icon="share-2" label="Share" onPress={share} border={c.border} color={c.textMuted} />
-    </View>
+    </RiseIn>
   )
 }
 
