@@ -6,6 +6,7 @@ import { useTheme } from '../theme/ThemeProvider'
 import { useAuth } from '../auth/AuthProvider'
 import BrandGradient from '../components/ui/BrandGradient'
 import ScreenBackground from '../components/ui/ScreenBackground'
+import Starfield from '../components/ui/Starfield'
 import Txt from '../components/ui/Txt'
 
 /** Sign-in gate shown before the chat: brand mark + "Continue with Google". */
@@ -18,6 +19,7 @@ export default function WelcomeScreen() {
   return (
     <ScreenBackground>
       <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
+      <Starfield count={22} />
 
       <View style={[styles.wrap, { paddingTop: insets.top, paddingBottom: insets.bottom + 24 }]}>
         <View style={styles.hero}>

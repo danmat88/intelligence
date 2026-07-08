@@ -13,6 +13,8 @@ import Composer from '../components/chat/Composer'
 import UpdateBanner from '../components/ui/UpdateBanner'
 import EmptyState from '../components/chat/EmptyState'
 import ConversationsDrawer from '../components/chat/ConversationsDrawer'
+import PersonaSheet from '../components/chat/PersonaSheet'
+import ReplyActions from '../components/chat/ReplyActions'
 import SettingsModal from './SettingsModal'
 
 /**
@@ -31,10 +33,15 @@ export default function ChatScreen() {
   const { theme, mode, toggle } = useTheme()
   const c = theme.colors
   const insets = useSafeAreaInsets()
-  const { current, sending, send, stop, newChat, loadOlder } = useChat()
+  const { current, sending, send, stop, regenerate, newChat, loadOlder, persona } = useChat()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [personaOpen, setPersonaOpen] = useState(false)
   const [showJump, setShowJump] = useState(false)
+
+  const last = current.messages[current.messages.length - 1]
+  const showActions =
+    !sending && last?.role === 'assistant' && !last.pending && !last.error && !last.streaming && !!last.text
   const listRef = useRef<FlatList<(typeof current.messages)[number]>>(null)
 
   const empty = current.messages.length === 0
@@ -61,14 +68,17 @@ export default function ChatScreen() {
       {/* transparent header - buttons float over the app, no bar */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <HeaderButton icon="menu" color={c.text} onPress={() => setDrawerOpen(true)} />
-        <Txt
-          numberOfLines={1}
-          size={16}
-          color={c.textMuted}
-          style={[styles.title, { fontFamily: theme.font.displayMedium }]}
-        >
-          {empty ? 'Intelligence' : current.title}
-        </Txt>
+        <Pressable onPress={() => setPersonaOpen(true)} style={styles.titleWrap} hitSlop={6}>
+          <Txt
+            numberOfLines={1}
+            size={16}
+            color={c.textMuted}
+            style={{ fontFamily: theme.font.displayMedium, maxWidth: '85%' }}
+          >
+            {empty ? 'Intelligence' : current.title}
+          </Txt>
+          <Feather name="chevron-down" size={14} color={c.textFaint} />
+        </Pressable>
         <View style={styles.headerRight}>
           <HeaderButton icon={mode === 'dark' ? 'sun' : 'moon'} color={c.text} onPress={toggle} />
           <HeaderButton icon="edit" color={c.text} onPress={newChat} />
@@ -100,6 +110,10 @@ export default function ChatScreen() {
               onEndReachedThreshold={0.3}
               onScroll={(e) => setShowJump(e.nativeEvent.contentOffset.y > 420)}
               scrollEventThrottle={120}
+              // inverted: the header renders at the visual bottom, under the newest reply
+              ListHeaderComponent={
+                showActions && last ? <ReplyActions text={last.text} onRegenerate={regenerate} /> : null
+              }
             />
           )}
 
@@ -133,6 +147,7 @@ export default function ChatScreen() {
         onOpenSettings={() => setSettingsOpen(true)}
       />
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <PersonaSheet open={personaOpen} onClose={() => setPersonaOpen(false)} />
     </ScreenBackground>
   )
 }
@@ -167,7 +182,14 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  title: { flex: 1, textAlign: 'center', marginHorizontal: 8 },
+  titleWrap: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    marginHorizontal: 8,
+  },
   hBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   column: { flex: 1, width: '100%', maxWidth: 720, alignSelf: 'center' },
   // inverted list flips vertical padding: paddingTop renders at the visual
@@ -182,6 +204,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 4,
   },
 })

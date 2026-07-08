@@ -16,6 +16,7 @@ import { ThemeProvider, useTheme } from './src/theme/ThemeProvider'
 import { AuthProvider, useAuth } from './src/auth/AuthProvider'
 import { ChatProvider } from './src/chat/store'
 import ErrorBoundary from './src/components/ErrorBoundary'
+import { ToastProvider } from './src/components/ui/Toast'
 import BrandGradient from './src/components/ui/BrandGradient'
 import ChatScreen from './src/screens/ChatScreen'
 import WelcomeScreen from './src/screens/WelcomeScreen'
@@ -36,7 +37,9 @@ export default function App() {
       <ErrorBoundary>
         <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
           <ThemeProvider>
-            <AuthProvider>{fontsLoaded ? <Gate /> : <BootSplash />}</AuthProvider>
+            <ToastProvider>
+              <AuthProvider>{fontsLoaded ? <Gate /> : <BootSplash />}</AuthProvider>
+            </ToastProvider>
           </ThemeProvider>
         </KeyboardProvider>
       </ErrorBoundary>

@@ -1,10 +1,11 @@
-import { useEffect, useRef } from 'react'
-import { Alert, Animated, Dimensions, Image, Pressable, ScrollView, StyleSheet, View } from 'react-native'
+import { useEffect, useRef, useState } from 'react'
+import { Animated, Dimensions, Image, Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../../theme/ThemeProvider'
 import { useAuth } from '../../auth/AuthProvider'
 import { useChat } from '../../chat/store'
+import ConfirmDialog from '../ui/ConfirmDialog'
 import Txt from '../ui/Txt'
 
 const PANEL_W = Math.min(340, Dimensions.get('window').width * 0.84)
@@ -34,6 +35,7 @@ export default function ConversationsDrawer({
   const insets = useSafeAreaInsets()
   const { conversations, current, newChat, selectChat, deleteChat } = useChat()
   const { user } = useAuth()
+  const [toDelete, setToDelete] = useState<{ id: string; title: string } | null>(null)
 
   const p = useRef(new Animated.Value(0)).current
   useEffect(() => {
@@ -118,12 +120,7 @@ export default function ConversationsDrawer({
                 </View>
                 <Pressable
                   hitSlop={10}
-                  onPress={() =>
-                    Alert.alert('Delete chat?', `"${conv.title || 'New chat'}" will be gone forever.`, [
-                      { text: 'Cancel', style: 'cancel' },
-                      { text: 'Delete', style: 'destructive', onPress: () => deleteChat(conv.id) },
-                    ])
-                  }
+                  onPress={() => setToDelete({ id: conv.id, title: conv.title || 'New chat' })}
                 >
                   <Feather name="trash-2" size={15} color={c.textFaint} />
                 </Pressable>
@@ -156,6 +153,14 @@ export default function ConversationsDrawer({
           </Pressable>
         )}
       </Animated.View>
+
+      <ConfirmDialog
+        open={toDelete !== null}
+        title="Delete chat?"
+        message={`"${toDelete?.title ?? ''}" and its messages will be gone forever.`}
+        onConfirm={() => toDelete && deleteChat(toDelete.id)}
+        onClose={() => setToDelete(null)}
+      />
     </View>
   )
 }

@@ -57,6 +57,30 @@ const SYSTEM =
   'You are Intelligence, a helpful, warm, and concise AI assistant. Answer clearly. ' +
   'Use short paragraphs and lists where useful.'
 
+/** Response styles the user can switch between - a real product control. */
+export type Persona = 'balanced' | 'creative' | 'precise'
+
+export const PERSONAS: Record<Persona, { label: string; blurb: string; system: string; temperature: number }> = {
+  balanced: {
+    label: 'Balanced',
+    blurb: 'Warm, clear, versatile',
+    system: '',
+    temperature: 0.7,
+  },
+  creative: {
+    label: 'Creative',
+    blurb: 'Vivid, bold, imaginative',
+    system: ' Lean imaginative: vivid language, bold ideas, surprising angles.',
+    temperature: 1.0,
+  },
+  precise: {
+    label: 'Precise',
+    blurb: 'Rigorous, terse, factual',
+    system: ' Be rigorous and terse: facts first, no filler, show reasoning briefly.',
+    temperature: 0.3,
+  },
+}
+
 /** currentId value for the not-yet-persisted "New chat". */
 const NEW = 'new'
 
@@ -75,8 +99,12 @@ type ChatContextValue = {
   send: (text: string) => void
   /** Stop the in-flight reply; the partial text is kept, like ChatGPT's stop. */
   stop: () => void
+  /** Re-answer the last question: the old reply is replaced by a fresh one. */
+  regenerate: () => void
   /** Fetch the next (older) page of the open conversation, if any. */
   loadOlder: () => void
+  persona: Persona
+  setPersona: (p: Persona) => void
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null)
@@ -94,6 +122,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   // reply's Firestore doc id, so the merge in `value` hides it exactly when
   // the persisted message arrives — no timers, no content heuristics.
   const [draft, setDraft] = useState<Message | null>(null)
+  const [persona, setPersona] = useState<Persona>('balanced')
   const draftConv = useRef<string | null>(null)
   const inFlight = useRef<AbortController | null>(null)
 
@@ -215,39 +244,75 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           { role: 'user', text },
         ]
 
-        // the reply's doc id is decided up front: the streaming draft carries it,
-        // and the merge in `value` swaps draft -> persisted message by this id
-        const replyRef = doc(msgCol(cid))
-        draftConv.current = cid
-        setDraft({ id: replyRef.id, role: 'assistant', text: '', pending: true, streaming: true })
-
-        const controller = new AbortController()
-        inFlight.current = controller
-        try {
-          const res = await ai.stream(
-            turns,
-            (delta) => setDraft((d) => (d ? { ...d, text: d.text + delta, pending: false } : d)),
-            { system: SYSTEM, maxTokens: 2048, signal: controller.signal },
-          )
-          if (res.text) {
-            setDoc(replyRef, { role: 'assistant', text: res.text, createdAt: Date.now() }).catch(() => {})
-            updateDoc(doc(convCol(), cid), { updatedAt: Date.now() }).catch(() => {})
-          } else {
-            setDraft(null) // stopped before the first token - nothing to keep
-          }
-        } catch (e) {
-          // ephemeral: shown until the next send / chat switch, never persisted
-          const msg = e instanceof Error ? e.message : String(e)
-          setDraft({ id: replyRef.id, role: 'assistant', text: msg, error: true })
-        } finally {
-          inFlight.current = null
-        }
+        await streamReply(cid, turns)
       } finally {
         setSending(false)
       }
     },
-    [convCol, msgCol, currentId, messages, sending, uid],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [convCol, msgCol, currentId, messages, sending, uid, persona],
   )
+
+  /**
+   * Streams one assistant reply into `cid`: draft bubble while tokens arrive,
+   * one Firestore write when done. Shared by send() and regenerate().
+   */
+  const streamReply = useCallback(
+    async (cid: string, turns: ChatTurn[]) => {
+      // the reply's doc id is decided up front: the streaming draft carries it,
+      // and the merge in `value` swaps draft -> persisted message by this id
+      const replyRef = doc(msgCol(cid))
+      draftConv.current = cid
+      setDraft({ id: replyRef.id, role: 'assistant', text: '', pending: true, streaming: true })
+
+      const style = PERSONAS[persona]
+      const controller = new AbortController()
+      inFlight.current = controller
+      try {
+        const res = await ai.stream(
+          turns,
+          (delta) => setDraft((d) => (d ? { ...d, text: d.text + delta, pending: false } : d)),
+          {
+            system: SYSTEM + style.system,
+            temperature: style.temperature,
+            maxTokens: 2048,
+            signal: controller.signal,
+          },
+        )
+        if (res.text) {
+          setDoc(replyRef, { role: 'assistant', text: res.text, createdAt: Date.now() }).catch(() => {})
+          updateDoc(doc(convCol(), cid), { updatedAt: Date.now() }).catch(() => {})
+        } else {
+          setDraft(null) // stopped before the first token - nothing to keep
+        }
+      } catch (e) {
+        // ephemeral: shown until the next send / chat switch, never persisted
+        const msg = e instanceof Error ? e.message : String(e)
+        setDraft({ id: replyRef.id, role: 'assistant', text: msg, error: true })
+      } finally {
+        inFlight.current = null
+      }
+    },
+    [convCol, msgCol, persona],
+  )
+
+  /** Replace the last assistant reply with a freshly generated one. */
+  const regenerate = useCallback(async () => {
+    if (sending || !uid || currentId === NEW) return
+    const lastReply = [...messages].reverse().find((m) => m.role === 'assistant' && !m.error)
+    const turns: ChatTurn[] = messages
+      .filter((m) => !m.error && m.id !== lastReply?.id)
+      .map((m) => ({ role: m.role, text: m.text }))
+    if (!turns.length || turns[turns.length - 1].role !== 'user') return
+
+    setSending(true)
+    try {
+      if (lastReply) deleteDoc(doc(msgCol(currentId), lastReply.id)).catch(() => {})
+      await streamReply(currentId, turns)
+    } finally {
+      setSending(false)
+    }
+  }, [messages, msgCol, currentId, sending, uid, streamReply])
 
   const stop = useCallback(() => inFlight.current?.abort(), [])
 
@@ -266,8 +331,21 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
     const conversations: Conversation[] = metas.map((m) => ({ ...m, messages: [] }))
 
-    return { conversations, current, sending, newChat, selectChat, deleteChat, send, stop, loadOlder }
-  }, [metas, messages, draft, currentId, sending, newChat, selectChat, deleteChat, send, stop, loadOlder])
+    return {
+      conversations,
+      current,
+      sending,
+      newChat,
+      selectChat,
+      deleteChat,
+      send,
+      stop,
+      regenerate,
+      loadOlder,
+      persona,
+      setPersona,
+    }
+  }, [metas, messages, draft, currentId, sending, newChat, selectChat, deleteChat, send, stop, regenerate, loadOlder, persona])
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>
 }

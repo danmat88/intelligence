@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { ActivityIndicator, Alert, Image, Modal, Pressable, StyleSheet, View } from 'react-native'
+import { ActivityIndicator, Image, Modal, Pressable, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
 import { useAuth } from '../auth/AuthProvider'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
+import { useToast } from '../components/ui/Toast'
 import Txt from '../components/ui/Txt'
 
 /**
@@ -15,32 +17,21 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
   const c = theme.colors
   const insets = useSafeAreaInsets()
   const { user, signOut, deleteAccount } = useAuth()
+  const toast = useToast()
   const [deleting, setDeleting] = useState(false)
+  const [confirming, setConfirming] = useState(false)
 
   if (!user) return null
 
-  const confirmDelete = () => {
-    Alert.alert(
-      'Delete account?',
-      'This permanently deletes your account and every conversation, on all devices. There is no undo.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete forever',
-          style: 'destructive',
-          onPress: async () => {
-            setDeleting(true)
-            try {
-              await deleteAccount() // success -> auth gate returns to Welcome
-            } catch (e) {
-              Alert.alert('Could not delete account', e instanceof Error ? e.message : 'Please try again.')
-            } finally {
-              setDeleting(false)
-            }
-          },
-        },
-      ],
-    )
+  const doDelete = async () => {
+    setDeleting(true)
+    try {
+      await deleteAccount() // success -> auth gate returns to Welcome
+    } catch (e) {
+      toast.show(e instanceof Error ? e.message : 'Could not delete account - try again.', 'alert-triangle')
+    } finally {
+      setDeleting(false)
+    }
   }
 
   return (
@@ -86,7 +77,7 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
         <Row icon="log-out" label="Sign out" onPress={() => { onClose(); signOut() }} c={c} />
 
         <Pressable
-          onPress={confirmDelete}
+          onPress={() => setConfirming(true)}
           disabled={deleting}
           style={({ pressed }) => [styles.row, { opacity: pressed || deleting ? 0.6 : 1 }]}
         >
@@ -102,6 +93,15 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
         <Txt size={12} color={c.textFaint} style={{ paddingHorizontal: 14, lineHeight: 17 }}>
           Deleting removes your account and all conversations permanently.
         </Txt>
+
+        <ConfirmDialog
+          open={confirming}
+          title="Delete account?"
+          message="This permanently deletes your account and every conversation, on all devices. There is no undo."
+          confirmLabel="Delete forever"
+          onConfirm={doDelete}
+          onClose={() => setConfirming(false)}
+        />
       </View>
     </Modal>
   )

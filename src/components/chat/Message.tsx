@@ -1,8 +1,9 @@
 import { memo, useEffect, useRef, type ReactNode } from 'react'
-import { Animated, Platform, Pressable, StyleSheet, ToastAndroid, View } from 'react-native'
+import { Animated, Pressable, StyleSheet, View } from 'react-native'
 import * as Clipboard from 'expo-clipboard'
 import { Ionicons } from '@expo/vector-icons'
 import { useTheme } from '../../theme/ThemeProvider'
+import { useToast } from '../ui/Toast'
 import Txt from '../ui/Txt'
 import Markdown from '../ui/Markdown'
 import BrandGradient from '../ui/BrandGradient'
@@ -16,11 +17,12 @@ import type { Message as Msg } from '../../chat/store'
 function Message({ message }: { message: Msg }) {
   const { theme } = useTheme()
   const c = theme.colors
+  const toast = useToast()
 
   const copy = () => {
     if (!message.text) return
     Clipboard.setStringAsync(message.text)
-    if (Platform.OS === 'android') ToastAndroid.show('Copied', ToastAndroid.SHORT)
+    toast.show('Copied', 'copy')
   }
 
   if (message.role === 'user') {
@@ -45,12 +47,10 @@ function Message({ message }: { message: Msg }) {
   return (
     <Entrance>
       <Pressable onLongPress={copy} style={styles.botRow}>
-        <BrandGradient style={styles.avatar}>
-          <Ionicons name="sparkles" size={15} color={c.onAccent} />
-        </BrandGradient>
+        <AvatarMark active={!!message.streaming} />
         <View style={styles.botBody}>
           {message.pending && !message.text ? (
-            <TypingDots color={c.textFaint} />
+            <ThinkingOrb />
           ) : message.error ? (
             <Txt size={16} color={c.danger} style={{ lineHeight: 25 }}>
               {message.text}
@@ -80,32 +80,67 @@ function Entrance({ children }: { children: ReactNode }) {
   return <Animated.View style={{ opacity, transform: [{ translateY: rise }] }}>{children}</Animated.View>
 }
 
-function TypingDots({ color }: { color: string }) {
-  const dots = [
-    useRef(new Animated.Value(0.3)).current,
-    useRef(new Animated.Value(0.3)).current,
-    useRef(new Animated.Value(0.3)).current,
-  ]
+/** The assistant mark; it breathes while the reply is streaming. */
+function AvatarMark({ active }: { active: boolean }) {
+  const { theme } = useTheme()
+  const scale = useRef(new Animated.Value(1)).current
   useEffect(() => {
-    const loops = dots.map((d, i) =>
+    if (!active) {
+      scale.setValue(1)
+      return
+    }
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(scale, { toValue: 1.14, duration: 620, useNativeDriver: true }),
+        Animated.timing(scale, { toValue: 1, duration: 620, useNativeDriver: true }),
+      ]),
+    )
+    loop.start()
+    return () => loop.stop()
+  }, [active, scale])
+  return (
+    <Animated.View style={{ transform: [{ scale }] }}>
+      <BrandGradient style={styles.avatar}>
+        <Ionicons name="sparkles" size={15} color={theme.colors.onAccent} />
+      </BrandGradient>
+    </Animated.View>
+  )
+}
+
+/** Pre-first-token state: a slowly revolving, pulsing gradient orb. */
+function ThinkingOrb() {
+  const pulse = useRef(new Animated.Value(0)).current
+  const spin = useRef(new Animated.Value(0)).current
+  useEffect(() => {
+    const loops = [
       Animated.loop(
         Animated.sequence([
-          Animated.delay(i * 160),
-          Animated.timing(d, { toValue: 1, duration: 320, useNativeDriver: true }),
-          Animated.timing(d, { toValue: 0.3, duration: 320, useNativeDriver: true }),
-          Animated.delay((2 - i) * 160),
+          Animated.timing(pulse, { toValue: 1, duration: 800, useNativeDriver: true }),
+          Animated.timing(pulse, { toValue: 0, duration: 800, useNativeDriver: true }),
         ]),
       ),
-    )
+      Animated.loop(Animated.timing(spin, { toValue: 1, duration: 3200, useNativeDriver: true })),
+    ]
     loops.forEach((l) => l.start())
     return () => loops.forEach((l) => l.stop())
-  }, [])
+  }, [pulse, spin])
   return (
-    <View style={styles.dots}>
-      {dots.map((d, i) => (
-        <Animated.View key={i} style={[styles.dot, { backgroundColor: color, opacity: d }]} />
-      ))}
-    </View>
+    <Animated.View
+      style={{
+        width: 26,
+        height: 26,
+        marginVertical: 4,
+        opacity: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.65, 1] }),
+        transform: [
+          { scale: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.86, 1.12] }) },
+          { rotate: spin.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] }) },
+        ],
+      }}
+    >
+      <BrandGradient style={{ flex: 1, borderRadius: 13, alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.9)' }} />
+      </BrandGradient>
+    </Animated.View>
   )
 }
 
@@ -115,6 +150,4 @@ const styles = StyleSheet.create({
   botRow: { flexDirection: 'row', gap: 12, paddingRight: 8 },
   avatar: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginTop: 2 },
   botBody: { flex: 1, paddingTop: 3 },
-  dots: { flexDirection: 'row', gap: 5, paddingVertical: 8 },
-  dot: { width: 7, height: 7, borderRadius: 4 },
 })
