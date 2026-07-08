@@ -1,8 +1,8 @@
-import { useEffect, useRef, type ReactNode } from 'react'
-import { Animated, Easing, View } from 'react-native'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { Animated, Image, StyleSheet, View } from 'react-native'
 import { KeyboardProvider } from 'react-native-keyboard-controller'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
-import { Ionicons } from '@expo/vector-icons'
+import * as SplashScreen from 'expo-splash-screen'
 import {
   useFonts,
   Inter_400Regular,
@@ -12,14 +12,27 @@ import {
   Inter_800ExtraBold,
 } from '@expo-google-fonts/inter'
 import { SpaceGrotesk_500Medium, SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk'
-import { ThemeProvider, useTheme } from './src/theme/ThemeProvider'
+import { ThemeProvider } from './src/theme/ThemeProvider'
 import { AuthProvider, useAuth } from './src/auth/AuthProvider'
 import { ChatProvider } from './src/chat/store'
 import ErrorBoundary from './src/components/ErrorBoundary'
 import { ToastProvider } from './src/components/ui/Toast'
-import BrandGradient from './src/components/ui/BrandGradient'
 import ChatScreen from './src/screens/ChatScreen'
 import WelcomeScreen from './src/screens/WelcomeScreen'
+
+/**
+ * Boot choreography - one continuous scene, no cuts, no layout shift:
+ * 1. Native splash: pure background colour, held while fonts + session load.
+ * 2. It fades into an identical JS frame (undetectable - same plain colour),
+ *    then the logo and wordmark make their entrance together, in space that
+ *    is already reserved, so nothing ever moves around them.
+ * 3. A beat, then the app cross-fades in: chat if signed in, Google sign-in
+ *    if not.
+ */
+SplashScreen.preventAutoHideAsync().catch(() => {})
+SplashScreen.setOptions({ fade: true, duration: 300 })
+
+const BOOT_BG = '#FAFAFC' // matches the native splash and the app background
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -38,7 +51,9 @@ export default function App() {
         <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
           <ThemeProvider>
             <ToastProvider>
-              <AuthProvider>{fontsLoaded ? <Gate /> : <BootSplash />}</AuthProvider>
+              <AuthProvider>
+                <Root fontsLoaded={fontsLoaded} />
+              </AuthProvider>
             </ToastProvider>
           </ThemeProvider>
         </KeyboardProvider>
@@ -47,11 +62,17 @@ export default function App() {
   )
 }
 
-/** Requires a Google account before the chat: Welcome when signed out. */
-function Gate() {
+function Root({ fontsLoaded }: { fontsLoaded: boolean }) {
   const { user, initializing } = useAuth()
-  if (initializing) return <BootSplash />
-  // key remounts the fade on auth changes, so screens cross-fade in
+  const [introDone, setIntroDone] = useState(false)
+  const ready = fontsLoaded && !initializing
+
+  useEffect(() => {
+    if (ready) SplashScreen.hideAsync().catch(() => {}) // fades into BootScreen
+  }, [ready])
+
+  if (!introDone) return <BootScreen ready={ready} onFinish={() => setIntroDone(true)} />
+
   return (
     <FadeIn key={user ? 'app' : 'welcome'}>
       {user ? (
@@ -65,6 +86,47 @@ function Gate() {
   )
 }
 
+/**
+ * Starts as a plain twin of the native splash (just the background colour).
+ * Once `ready`, the logo and the wordmark enter together - opacity and a
+ * gentle settle only, into pre-reserved space: zero layout shift.
+ */
+function BootScreen({ ready, onFinish }: { ready: boolean; onFinish: () => void }) {
+  const logo = useRef(new Animated.Value(0)).current
+  const name = useRef(new Animated.Value(0)).current
+
+  useEffect(() => {
+    if (!ready) return
+    Animated.parallel([
+      Animated.timing(logo, { toValue: 1, duration: 420, useNativeDriver: true }),
+      Animated.timing(name, { toValue: 1, duration: 420, delay: 160, useNativeDriver: true }),
+    ]).start(() => {
+      setTimeout(onFinish, 600)
+    })
+  }, [ready, logo, name, onFinish])
+
+  return (
+    <View style={styles.boot}>
+      <Animated.View
+        style={{
+          opacity: logo,
+          transform: [{ scale: logo.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1] }) }],
+        }}
+      >
+        <Image source={require('./assets/splash-icon.png')} style={styles.mark} resizeMode="contain" />
+      </Animated.View>
+      <Animated.View
+        style={{
+          opacity: name,
+          transform: [{ translateY: name.interpolate({ inputRange: [0, 1], outputRange: [8, 0] }) }],
+        }}
+      >
+        <Animated.Text style={styles.wordmark}>Intelligence</Animated.Text>
+      </Animated.View>
+    </View>
+  )
+}
+
 function FadeIn({ children }: { children: ReactNode }) {
   const opacity = useRef(new Animated.Value(0)).current
   useEffect(() => {
@@ -73,37 +135,13 @@ function FadeIn({ children }: { children: ReactNode }) {
   return <Animated.View style={{ flex: 1, opacity }}>{children}</Animated.View>
 }
 
-/**
- * Animated boot moment shown while fonts load and the session restores:
- * the brand mark breathing on the dark base. Feels alive from frame one.
- */
-function BootSplash() {
-  const { theme } = useTheme()
-  const pulse = useRef(new Animated.Value(0)).current
-
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse, { toValue: 1, duration: 850, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
-        Animated.timing(pulse, { toValue: 0, duration: 850, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
-      ]),
-    )
-    loop.start()
-    return () => loop.stop()
-  }, [pulse])
-
-  const scale = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.94, 1.05] })
-  const glow = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.55, 1] })
-
-  return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.bg, alignItems: 'center', justifyContent: 'center' }}>
-      <Animated.View style={{ transform: [{ scale }], opacity: glow }}>
-        <BrandGradient
-          style={{ width: 88, height: 88, borderRadius: 28, alignItems: 'center', justifyContent: 'center' }}
-        >
-          <Ionicons name="sparkles" size={40} color={theme.colors.onAccent} />
-        </BrandGradient>
-      </Animated.View>
-    </View>
-  )
-}
+const styles = StyleSheet.create({
+  boot: { flex: 1, backgroundColor: BOOT_BG, alignItems: 'center', justifyContent: 'center', gap: 18 },
+  mark: { width: 150, height: 150 },
+  wordmark: {
+    color: '#111114',
+    fontSize: 26,
+    letterSpacing: -0.5,
+    fontFamily: 'SpaceGrotesk_700Bold',
+  },
+})

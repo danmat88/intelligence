@@ -14,7 +14,7 @@ import Txt from '../components/ui/Txt'
  * account deletion the Play Store requires of apps with sign-in.
  */
 export default function SettingsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { theme, mode, toggle } = useTheme()
+  const { theme } = useTheme()
   const c = theme.colors
   const insets = useSafeAreaInsets()
   const { user, signOut, deleteAccount } = useAuth()
@@ -72,7 +72,6 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
           </View>
         </View>
 
-        <Row icon={mode === 'dark' ? 'sun' : 'moon'} label={mode === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'} onPress={toggle} c={c} />
         <Row icon="log-out" label="Sign out" onPress={() => { onClose(); signOut() }} c={c} />
 
         <Pressable

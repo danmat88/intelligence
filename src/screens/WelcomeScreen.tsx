@@ -10,14 +10,14 @@ import Txt from '../components/ui/Txt'
 
 /** Sign-in gate shown before the chat: brand mark + "Continue with Google". */
 export default function WelcomeScreen() {
-  const { theme, mode } = useTheme()
+  const { theme } = useTheme()
   const c = theme.colors
   const insets = useSafeAreaInsets()
   const { signIn, signingIn, error } = useAuth()
 
   return (
     <ScreenBackground>
-      <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
+      <StatusBar style="dark" />
 
       <View style={[styles.wrap, { paddingTop: insets.top, paddingBottom: insets.bottom + 24 }]}>
         <View style={styles.hero}>

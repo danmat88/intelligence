@@ -33,7 +33,7 @@ import { MODELS } from '../chat/store'
  * offset the avoiding view by -insets.bottom to not double-count it.
  */
 export default function ChatScreen() {
-  const { theme, mode } = useTheme()
+  const { theme } = useTheme()
   const c = theme.colors
   const insets = useSafeAreaInsets()
   const { current, sending, send, stop, regenerate, newChat, loadOlder, model } = useChat()
@@ -73,7 +73,7 @@ export default function ChatScreen() {
 
   return (
     <ScreenBackground>
-      <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
+      <StatusBar style="dark" />
 
       {/* keyboard doctrine: any move of attention away from writing closes it */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>

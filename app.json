@@ -5,13 +5,8 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
-    "backgroundColor": "#09090B",
-    "splash": {
-      "image": "./assets/icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#09090B"
-    },
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#FAFAFC",
     "ios": {
       "supportsTablet": true
     },
@@ -34,7 +29,13 @@
       "@react-native-google-signin/google-signin",
       "@react-native-firebase/app",
       "@react-native-firebase/auth",
-      "@react-native-firebase/crashlytics"
+      "@react-native-firebase/crashlytics",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FAFAFC"
+        }
+      ]
     ],
     "owner": "matdan88-studio",
     "extra": {
