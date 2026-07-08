@@ -1,9 +1,10 @@
-import { Modal, Pressable, StyleSheet, View } from 'react-native'
+import { Pressable, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../../theme/ThemeProvider'
 import { MODELS, useChat, type ModelChoice } from '../../chat/store'
 import BrandGradient from '../ui/BrandGradient'
+import Overlay from '../ui/Overlay'
 import Txt from '../ui/Txt'
 
 const ICONS: Record<ModelChoice, keyof typeof Feather.glyphMap> = {
@@ -22,15 +23,7 @@ export default function ModelSheet({ open, onClose }: { open: boolean; onClose: 
   const { model, setModel } = useChat()
 
   return (
-    <Modal
-      visible={open}
-      transparent
-      animationType="slide"
-      statusBarTranslucent
-      navigationBarTranslucent
-      onRequestClose={onClose}
-    >
-      <Pressable style={styles.backdrop} onPress={onClose} />
+    <Overlay open={open} onClose={onClose} align="bottom">
       <View
         style={[
           styles.sheet,
@@ -82,17 +75,15 @@ export default function ModelSheet({ open, onClose }: { open: boolean; onClose: 
           Applies to your next message. Flash is fast; Pro thinks harder and takes longer.
         </Txt>
       </View>
-    </Modal>
+    </Overlay>
   )
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)' },
   sheet: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     borderWidth: 1,
-    marginTop: 'auto',
     paddingHorizontal: 16,
     paddingTop: 10,
     gap: 6,

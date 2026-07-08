@@ -36,7 +36,7 @@ export default function Composer({
   return (
     <View style={[styles.rim, { borderRadius: theme.radius.xl }]}>
       <LinearGradient
-        colors={[brand[0] + '80', brand[1] + '2E', brand[2] + '80']}
+        colors={[brand[0] + '73', brand[1] + '73']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[StyleSheet.absoluteFill, { borderRadius: theme.radius.xl }]}

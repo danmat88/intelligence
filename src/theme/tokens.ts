@@ -62,29 +62,30 @@ const FONT = {
   displayMedium: 'SpaceGrotesk_500Medium',
 }
 
-// The one signature gradient, shared by both themes — violet → indigo → cyan.
-const BRAND = ['#8B5CF6', '#6366F1', '#22D3EE']
+// The one signature gradient, shared by both themes — a restrained two-stop
+// violet→blue. One voice, used sparingly; everything else stays neutral.
+const BRAND = ['#7C6CFF', '#4F8DFF']
 
 export const darkTheme: Theme = {
   mode: 'dark',
   colors: {
-    bg: '#050509',
-    bgElevated: '#0B0C15',
-    surface: '#12131E',
-    surfaceAlt: '#1A1B2B',
-    border: 'rgba(255,255,255,0.08)',
-    text: '#F4F5FA',
-    textMuted: '#A2A6B6',
-    textFaint: '#6B6F82',
-    accent: '#8B5CF6',
+    bg: '#09090B',
+    bgElevated: '#101014',
+    surface: '#141419',
+    surfaceAlt: '#1D1D24',
+    border: 'rgba(255,255,255,0.07)',
+    text: '#FAFAFC',
+    textMuted: '#9FA1AD',
+    textFaint: '#5F6170',
+    accent: '#7C6CFF',
     onAccent: '#FFFFFF',
-    danger: '#FF6B7A',
-    success: '#34E5A3',
+    danger: '#FF5C6E',
+    success: '#2FD98F',
   },
   gradient: {
     brand: BRAND,
-    surface: ['#12131E', '#0B0C15'],
-    glow: ['rgba(139,92,246,0.42)', 'rgba(139,92,246,0)'],
+    surface: ['#141419', '#101014'],
+    glow: ['rgba(124,108,255,0.10)', 'rgba(124,108,255,0)'],
   },
   radius,
   space,
@@ -98,23 +99,23 @@ export const darkTheme: Theme = {
 export const lightTheme: Theme = {
   mode: 'light',
   colors: {
-    bg: '#F5F6FB',
+    bg: '#FAFAFC',
     bgElevated: '#FFFFFF',
     surface: '#FFFFFF',
-    surfaceAlt: '#EEF0F7',
-    border: 'rgba(12,14,34,0.08)',
-    text: '#0D0F1E',
-    textMuted: '#565B70',
-    textFaint: '#9296A8',
-    accent: '#6D5CFF',
+    surfaceAlt: '#F0F0F5',
+    border: 'rgba(10,10,20,0.09)',
+    text: '#111114',
+    textMuted: '#5A5C68',
+    textFaint: '#9AA0AC',
+    accent: '#6B5AFF',
     onAccent: '#FFFFFF',
-    danger: '#E23D53',
-    success: '#12B886',
+    danger: '#E0364C',
+    success: '#0FA97A',
   },
   gradient: {
     brand: BRAND,
-    surface: ['#FFFFFF', '#F1F2F9'],
-    glow: ['rgba(109,92,255,0.20)', 'rgba(109,92,255,0)'],
+    surface: ['#FFFFFF', '#F3F3F8'],
+    glow: ['rgba(107,90,255,0.08)', 'rgba(107,90,255,0)'],
   },
   radius,
   space,

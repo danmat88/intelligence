@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { ActivityIndicator, Image, Modal, Pressable, StyleSheet, View } from 'react-native'
+import { ActivityIndicator, Image, Pressable, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
 import { useAuth } from '../auth/AuthProvider'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
+import Overlay from '../components/ui/Overlay'
 import { useToast } from '../components/ui/Toast'
 import Txt from '../components/ui/Txt'
 
@@ -35,23 +36,14 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
   }
 
   return (
-    <Modal
-      visible={open}
-      transparent
-      animationType="slide"
-      statusBarTranslucent
-      navigationBarTranslucent
-      onRequestClose={onClose}
-    >
-      {/* backdrop */}
-      <Pressable style={styles.backdrop} onPress={onClose} />
-
-      <View
-        style={[
-          styles.sheet,
-          { backgroundColor: c.bgElevated, borderColor: c.border, paddingBottom: insets.bottom + 20 },
-        ]}
-      >
+    <>
+      <Overlay open={open} onClose={onClose} align="bottom">
+        <View
+          style={[
+            styles.sheet,
+            { backgroundColor: c.bgElevated, borderColor: c.border, paddingBottom: insets.bottom + 20 },
+          ]}
+        >
         <View style={styles.head}>
           <Txt weight="extrabold" size={20} style={{ letterSpacing: -0.3 }}>
             Settings
@@ -100,17 +92,19 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
         <Txt size={12} color={c.textFaint} style={{ paddingHorizontal: 14, lineHeight: 17 }}>
           Deleting removes your account and all conversations permanently.
         </Txt>
+        </View>
+      </Overlay>
 
-        <ConfirmDialog
-          open={confirming}
-          title="Delete account?"
-          message="This permanently deletes your account and every conversation, on all devices. There is no undo."
-          confirmLabel="Delete forever"
-          onConfirm={doDelete}
-          onClose={() => setConfirming(false)}
-        />
-      </View>
-    </Modal>
+      {/* sibling of the sheet's overlay so it stacks fullscreen above it */}
+      <ConfirmDialog
+        open={confirming}
+        title="Delete account?"
+        message="This permanently deletes your account and every conversation, on all devices. There is no undo."
+        confirmLabel="Delete forever"
+        onConfirm={doDelete}
+        onClose={() => setConfirming(false)}
+      />
+    </>
   )
 }
 
@@ -134,7 +128,6 @@ function Row({
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' },
   sheet: {
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
