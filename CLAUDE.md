@@ -16,6 +16,8 @@ This project is set up for **EAS cloud builds** (Expo), not local builds.
 - **Data:** Firestore `users/{uid}/conversations/{id}/messages/{id}` — `src/chat/store.tsx` (live snapshots, offline cache, fire-and-forget writes; streaming reply lives in a local draft bubble, only the finished message is written). Rules in `firestore.rules`.
 - **AI:** `functions/src/index.ts` — Cloud Function `gemini` (europe-west1) proxies Gemini, verifies the Firebase ID token, holds the API key as secret `GEMINI_API_KEY`, pins the model server-side. Client hits it when `EXPO_PUBLIC_AI_PROXY_URL` is set (`src/ai/index.ts`); without it, dev fallback calls Gemini directly with the local key.
 - **Keyboard:** react-native-keyboard-controller (`KeyboardProvider` in App.tsx, `KeyboardAvoidingView` in ChatScreen with `keyboardVerticalOffset={-insets.bottom}`).
+- **Reliability:** Crashlytics (native + JS, reported via `src/components/ErrorBoundary.tsx`), `npm test` = jest-expo suites for the SSE and markdown parsers, inverted virtualized FlatList with newest-80 pagination, per-user rate limit (20 req/min, `rate_limits/{uid}`, admin-only) in the function.
+- **Gotcha:** RNFirebase's modular `collection()` crashes at runtime with a CollectionReference parent despite its types allowing it — always parent subcollections on a DocumentReference (see `msgCol` in store.tsx).
 - **Expo Go does NOT run this app** (native modules: google-signin, RN Firebase). Use a development build (`--profile development` + `npx expo start --dev-client`).
 
 ### Deployed state (2026-07-08 — all backend setup DONE)
