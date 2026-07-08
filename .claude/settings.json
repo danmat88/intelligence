@@ -40,7 +40,12 @@
       "PowerShell(git remote add origin https://github.com/danmat88/intelligence.git)",
       "PowerShell(git push -u origin main)",
       "PowerShell(npx expo install @react-native-firebase/crashlytics jest-expo jest)",
-      "PowerShell(npm install --save-dev @types/jest)"
+      "PowerShell(npm install --save-dev @types/jest)",
+      "PowerShell(curl.exe -s -o - -w \"`nHTTP %{http_code}`n\" -X POST \"https://europe-west1-gen-lang-client-0286445774.cloudfunctions.net/gemini/models/x:generateContent\" -H \"Content-Type: application/json\" -d \"{}\")",
+      "PowerShell(git add CLAUDE.md)",
+      "PowerShell(npx eas-cli build:view 32aea08e-45ec-4394-86ec-567a39eb092b)",
+      "PowerShell(npx eas-cli build --platform android --profile development --non-interactive --no-wait)",
+      "PowerShell(npx expo install expo-dev-client)"
     ]
   },
   "enabledPlugins": {
