@@ -176,25 +176,41 @@ export default function ChatScreen() {
   )
 }
 
-/** Title that crossfades (out-up, in-from-below) whenever the text changes. */
+/**
+ * Title that crossfades (out-up, in-from-below) when the text changes.
+ * Interruption-proof: rapid changes coalesce into one clean transition to the
+ * latest value - it can never stutter or overlap itself.
+ */
 function HeaderTitle({ text, color, fontFamily }: { text: string; color: string; fontFamily: string }) {
   const [shown, setShown] = useState(text)
+  const target = useRef(text)
+  const animating = useRef(false)
   const opacity = useRef(new Animated.Value(1)).current
   const y = useRef(new Animated.Value(0)).current
 
   useEffect(() => {
-    if (text === shown) return
-    Animated.parallel([
-      Animated.timing(opacity, { toValue: 0, duration: 90, useNativeDriver: true }),
-      Animated.timing(y, { toValue: -6, duration: 90, useNativeDriver: true }),
-    ]).start(() => {
-      setShown(text)
-      y.setValue(6)
+    target.current = text
+    if (animating.current || text === shown) return
+
+    const animate = () => {
+      animating.current = true
       Animated.parallel([
-        Animated.timing(opacity, { toValue: 1, duration: 150, useNativeDriver: true }),
-        Animated.timing(y, { toValue: 0, duration: 150, useNativeDriver: true }),
-      ]).start()
-    })
+        Animated.timing(opacity, { toValue: 0, duration: 90, useNativeDriver: true }),
+        Animated.timing(y, { toValue: -6, duration: 90, useNativeDriver: true }),
+      ]).start(() => {
+        const next = target.current
+        setShown(next)
+        y.setValue(6)
+        Animated.parallel([
+          Animated.timing(opacity, { toValue: 1, duration: 150, useNativeDriver: true }),
+          Animated.timing(y, { toValue: 0, duration: 150, useNativeDriver: true }),
+        ]).start(() => {
+          animating.current = false
+          if (target.current !== next) animate() // a newer title arrived mid-flight
+        })
+      })
+    }
+    animate()
   }, [text, shown, opacity, y])
 
   return (

@@ -61,7 +61,6 @@ export default function Composer({
           value={text}
           onChangeText={setText}
           multiline
-          editable={!sending}
         />
         <Pressable
           onPress={sending ? onStop : submit}

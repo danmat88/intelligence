@@ -215,7 +215,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         if (cid === NEW) {
           const ref = doc(convCol())
           cid = ref.id
-          setDoc(ref, { title: text.slice(0, 40), createdAt: now, updatedAt: now }).catch(() => {})
+          const title = text.slice(0, 40)
+          setDoc(ref, { title, createdAt: now, updatedAt: now }).catch(() => {})
+          // optimistic meta: the header shows the real title immediately, with
+          // no placeholder frame while the snapshot round-trips
+          setMetas((prev) => [{ id: cid, title, updatedAt: now }, ...prev])
           setCurrentId(cid)
         } else {
           updateDoc(doc(convCol(), cid), { updatedAt: now }).catch(() => {})
