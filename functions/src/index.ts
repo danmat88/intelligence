@@ -2,6 +2,7 @@ import { onRequest } from 'firebase-functions/v2/https'
 import { defineSecret } from 'firebase-functions/params'
 import { initializeApp } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
+import { getFirestore } from 'firebase-admin/firestore'
 
 initializeApp()
 
@@ -23,6 +24,28 @@ const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY')
 const MODEL = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash'
 const GOOGLE_BASE = 'https://generativelanguage.googleapis.com/v1beta'
 
+// Per-user fixed-window rate limit. The window doc lives at the Firestore
+// root (rate_limits/{uid}), which client security rules don't expose - only
+// this function (Admin SDK) can touch it. Transactional, so parallel
+// requests can't slip past the ceiling.
+const RATE_LIMIT = 20 // requests
+const RATE_WINDOW_MS = 60_000 // per minute
+
+async function underRateLimit(uid: string): Promise<boolean> {
+  const ref = getFirestore().collection('rate_limits').doc(uid)
+  return getFirestore().runTransaction(async (tx) => {
+    const now = Date.now()
+    const data = (await tx.get(ref)).data() as { windowStart: number; count: number } | undefined
+    if (!data || now - data.windowStart >= RATE_WINDOW_MS) {
+      tx.set(ref, { windowStart: now, count: 1 })
+      return true
+    }
+    if (data.count >= RATE_LIMIT) return false
+    tx.update(ref, { count: data.count + 1 })
+    return true
+  })
+}
+
 export const gemini = onRequest(
   {
     region: 'europe-west1',
@@ -43,10 +66,16 @@ export const gemini = onRequest(
       res.status(401).json({ error: 'Missing auth token' })
       return
     }
+    let uid: string
     try {
-      await getAuth().verifyIdToken(bearer[1])
+      uid = (await getAuth().verifyIdToken(bearer[1])).uid
     } catch {
       res.status(401).json({ error: 'Invalid or expired auth token' })
+      return
+    }
+
+    if (!(await underRateLimit(uid))) {
+      res.status(429).json({ error: 'Too many requests - please wait a moment.' })
       return
     }
 

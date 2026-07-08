@@ -12,6 +12,7 @@ import {
 import { ThemeProvider, useTheme } from './src/theme/ThemeProvider'
 import { AuthProvider, useAuth } from './src/auth/AuthProvider'
 import { ChatProvider } from './src/chat/store'
+import ErrorBoundary from './src/components/ErrorBoundary'
 import ChatScreen from './src/screens/ChatScreen'
 import WelcomeScreen from './src/screens/WelcomeScreen'
 
@@ -26,11 +27,13 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
-        <ThemeProvider>
-          <AuthProvider>{fontsLoaded ? <Gate /> : <Splash />}</AuthProvider>
-        </ThemeProvider>
-      </KeyboardProvider>
+      <ErrorBoundary>
+        <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
+          <ThemeProvider>
+            <AuthProvider>{fontsLoaded ? <Gate /> : <Splash />}</AuthProvider>
+          </ThemeProvider>
+        </KeyboardProvider>
+      </ErrorBoundary>
     </SafeAreaProvider>
   )
 }

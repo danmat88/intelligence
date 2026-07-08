@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { Keyboard, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { FlatList, Keyboard, Platform, Pressable, StyleSheet, View } from 'react-native'
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 import { StatusBar } from 'expo-status-bar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -29,22 +29,26 @@ export default function ChatScreen() {
   const { theme, mode, toggle } = useTheme()
   const c = theme.colors
   const insets = useSafeAreaInsets()
-  const { current, sending, send, newChat } = useChat()
+  const { current, sending, send, newChat, loadOlder } = useChat()
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const scrollRef = useRef<ScrollView>(null)
+  const listRef = useRef<FlatList<(typeof current.messages)[number]>>(null)
 
   const empty = current.messages.length === 0
 
-  const scrollToEnd = useCallback((animated = true) => {
-    requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated }))
+  // inverted FlatList wants newest-first data; it then pins the newest message
+  // to the bottom natively (no manual scroll-to-end on new content needed)
+  const newestFirst = useMemo(() => [...current.messages].reverse(), [current.messages])
+
+  const scrollToNewest = useCallback(() => {
+    requestAnimationFrame(() => listRef.current?.scrollToOffset({ offset: 0, animated: true }))
   }, [])
 
-  // two orthogonal scroll triggers: content growth (new turns + streamed
-  // tokens) via onContentSizeChange on the ScrollView, and the keyboard here
+  // the one scroll case the inverted list doesn't cover: keyboard opening
+  // while the user had scrolled up - snap back to the newest message
   useEffect(() => {
-    const sub = Keyboard.addListener('keyboardDidShow', () => scrollToEnd())
+    const sub = Keyboard.addListener('keyboardDidShow', scrollToNewest)
     return () => sub.remove()
-  }, [scrollToEnd])
+  }, [scrollToNewest])
 
   return (
     <ScreenBackground>
@@ -71,19 +75,21 @@ export default function ChatScreen() {
           {empty ? (
             <EmptyState onPick={send} />
           ) : (
-            <ScrollView
-              ref={scrollRef}
+            <FlatList
+              ref={listRef}
+              inverted
+              data={newestFirst}
+              keyExtractor={(m) => m.id}
+              renderItem={({ item }) => <Message message={item} />}
               style={styles.flex}
               contentContainerStyle={styles.thread}
               keyboardShouldPersistTaps="handled"
               keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
               showsVerticalScrollIndicator={false}
-              onContentSizeChange={() => scrollToEnd(false)}
-            >
-              {current.messages.map((m) => (
-                <Message key={m.id} message={m} />
-              ))}
-            </ScrollView>
+              // inverted list: "end" = scrolled up to the oldest loaded message
+              onEndReached={loadOlder}
+              onEndReachedThreshold={0.3}
+            />
           )}
 
           <View style={{ paddingHorizontal: 16, paddingTop: 6, paddingBottom: insets.bottom + 8 }}>
@@ -130,5 +136,7 @@ const styles = StyleSheet.create({
   title: { flex: 1, textAlign: 'center', marginHorizontal: 8 },
   hBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   column: { flex: 1, width: '100%', maxWidth: 720, alignSelf: 'center' },
-  thread: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24, gap: 22 },
+  // inverted list flips vertical padding: paddingTop renders at the visual
+  // bottom (24 above the composer) and paddingBottom at the visual top (12)
+  thread: { paddingHorizontal: 16, paddingTop: 24, paddingBottom: 12, gap: 22 },
 })

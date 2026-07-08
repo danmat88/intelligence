@@ -20,8 +20,8 @@ type GeminiConfig = {
 type Part = { text?: string; inlineData?: { mimeType: string; data: string } }
 type Content = { role: 'user' | 'model'; parts: Part[] }
 
-/** Extract the text carried by the given complete SSE `data:` lines. */
-function extractSSE(raw: string): string {
+/** Extract the text carried by the given complete SSE `data:` lines. Exported for tests. */
+export function extractSSE(raw: string): string {
   let out = ''
   for (const line of raw.split('\n')) {
     const l = line.trim()

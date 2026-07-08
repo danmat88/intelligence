@@ -37,7 +37,10 @@
       "PowerShell(npx eas-cli build:cancel 0c607667-1a81-4e73-9132-a0e79ba184e5 --non-interactive)",
       "PowerShell(npx expo install expo-updates)",
       "PowerShell(npx eas-cli update:configure --non-interactive)",
-      "PowerShell(git remote add origin https://github.com/danmat88/intelligence.git)"
+      "PowerShell(git remote add origin https://github.com/danmat88/intelligence.git)",
+      "PowerShell(git push -u origin main)",
+      "PowerShell(npx expo install @react-native-firebase/crashlytics jest-expo jest)",
+      "PowerShell(npm install --save-dev @types/jest)"
     ]
   },
   "enabledPlugins": {

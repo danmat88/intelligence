@@ -5,6 +5,7 @@ import {
   doc,
   getDocs,
   getFirestore,
+  limit,
   onSnapshot,
   orderBy,
   query,
@@ -57,6 +58,9 @@ const SYSTEM =
 /** currentId value for the not-yet-persisted "New chat". */
 const NEW = 'new'
 
+/** Messages are loaded newest-first in pages of this size. */
+const PAGE = 80
+
 type ConversationMeta = { id: string; title: string; updatedAt: number }
 
 type ChatContextValue = {
@@ -67,6 +71,8 @@ type ChatContextValue = {
   selectChat: (id: string) => void
   deleteChat: (id: string) => void
   send: (text: string) => void
+  /** Fetch the next (older) page of the open conversation, if any. */
+  loadOlder: () => void
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null)
@@ -78,6 +84,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [metas, setMetas] = useState<ConversationMeta[]>([])
   const [currentId, setCurrentId] = useState<string>(NEW)
   const [messages, setMessages] = useState<Message[]>([])
+  const [msgLimit, setMsgLimit] = useState(PAGE)
   const [sending, setSending] = useState(false)
   // The streaming (or error) assistant bubble for `draftConv`. Its id is the
   // reply's Firestore doc id, so the merge in `value` hides it exactly when
@@ -114,33 +121,45 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     )
   }, [uid, convCol])
 
-  // live messages of the open conversation. Cleared synchronously on every
-  // switch so a send can never read (or show) the previous chat's thread.
+  // live messages of the open conversation, newest `msgLimit` of them (stored
+  // in chronological order). Cleared synchronously on every switch so a send
+  // can never read (or show) the previous chat's thread.
   useEffect(() => {
     setMessages([])
     if (!uid || currentId === NEW) return
-    const q = query(msgCol(currentId), orderBy('createdAt', 'asc'))
+    const q = query(msgCol(currentId), orderBy('createdAt', 'desc'), limit(msgLimit))
     return onSnapshot(
       q,
       (snap) => {
         setMessages(
-          snap.docs.map((d) => {
-            const data = d.data() as { role: Role; text: string; error?: boolean }
-            return { id: d.id, role: data.role, text: data.text, error: data.error }
-          }),
+          snap.docs
+            .map((d) => {
+              const data = d.data() as { role: Role; text: string; error?: boolean }
+              return { id: d.id, role: data.role, text: data.text, error: data.error }
+            })
+            .reverse(),
         )
       },
       (e) => console.warn('messages listener:', e.message),
     )
-  }, [uid, currentId, msgCol])
+  }, [uid, currentId, msgLimit, msgCol])
+
+  const loadOlder = useCallback(() => {
+    // a full page means there may be more history behind it
+    setMsgLimit((l) => (messages.length >= l ? l + PAGE : l))
+  }, [messages.length])
 
   const newChat = useCallback(() => {
     setCurrentId(NEW)
+    setMsgLimit(PAGE)
     setDraft(null)
     draftConv.current = null
   }, [])
 
-  const selectChat = useCallback((id: string) => setCurrentId(id), [])
+  const selectChat = useCallback((id: string) => {
+    setCurrentId(id)
+    setMsgLimit(PAGE)
+  }, [])
 
   const deleteChat = useCallback(
     (id: string) => {
@@ -148,6 +167,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       if (id === currentId) {
         const rest = metas.filter((m) => m.id !== id)
         setCurrentId(rest[0]?.id ?? NEW)
+        setMsgLimit(PAGE)
       }
       if (draftConv.current === id) {
         setDraft(null)
@@ -231,8 +251,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
     const conversations: Conversation[] = metas.map((m) => ({ ...m, messages: [] }))
 
-    return { conversations, current, sending, newChat, selectChat, deleteChat, send }
-  }, [metas, messages, draft, currentId, sending, newChat, selectChat, deleteChat, send])
+    return { conversations, current, sending, newChat, selectChat, deleteChat, send, loadOlder }
+  }, [metas, messages, draft, currentId, sending, newChat, selectChat, deleteChat, send, loadOlder])
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>
 }

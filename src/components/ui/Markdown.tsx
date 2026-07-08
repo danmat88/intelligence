@@ -19,7 +19,8 @@ type Block =
 
 const MONO = Platform.OS === 'ios' ? 'Menlo' : 'monospace'
 
-function parseBlocks(src: string): Block[] {
+/** Exported for tests. */
+export function parseBlocks(src: string): Block[] {
   const lines = src.replace(/\r\n/g, '\n').split('\n')
   const blocks: Block[] = []
   let para: string[] = []
