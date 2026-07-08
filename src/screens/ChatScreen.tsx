@@ -10,6 +10,7 @@ import ScreenBackground from '../components/ui/ScreenBackground'
 import Txt from '../components/ui/Txt'
 import Message from '../components/chat/Message'
 import Composer from '../components/chat/Composer'
+import UpdateBanner from '../components/ui/UpdateBanner'
 import EmptyState from '../components/chat/EmptyState'
 import ConversationsDrawer from '../components/chat/ConversationsDrawer'
 import SettingsModal from './SettingsModal'
@@ -95,6 +96,7 @@ export default function ChatScreen() {
           )}
 
           <View style={{ paddingHorizontal: 16, paddingTop: 6, paddingBottom: insets.bottom + 8 }}>
+            <UpdateBanner />
             <Composer onSend={send} sending={sending} />
           </View>
         </View>
