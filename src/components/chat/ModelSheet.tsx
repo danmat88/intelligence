@@ -8,6 +8,7 @@ import Overlay from '../ui/Overlay'
 import Txt from '../ui/Txt'
 
 const ICONS: Record<ModelChoice, keyof typeof Feather.glyphMap> = {
+  lite: 'wind',
   flash: 'zap',
   pro: 'cpu',
 }

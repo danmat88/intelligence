@@ -14,9 +14,11 @@ import UpdateBanner from '../components/ui/UpdateBanner'
 import EmptyState from '../components/chat/EmptyState'
 import ConversationsDrawer from '../components/chat/ConversationsDrawer'
 import ModelSheet from '../components/chat/ModelSheet'
+import ChatMenu, { type ChatMenuTarget } from '../components/chat/ChatMenu'
 import { Appear, FadeSwitch } from '../components/ui/Transitions'
 import ReplyActions from '../components/chat/ReplyActions'
 import SettingsModal from './SettingsModal'
+import { MODELS } from '../chat/store'
 
 /**
  * The whole chat experience. Keyboard handling is delegated entirely to
@@ -34,10 +36,11 @@ export default function ChatScreen() {
   const { theme, mode } = useTheme()
   const c = theme.colors
   const insets = useSafeAreaInsets()
-  const { current, sending, send, stop, regenerate, newChat, loadOlder } = useChat()
+  const { current, sending, send, stop, regenerate, newChat, loadOlder, model } = useChat()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [modelOpen, setModelOpen] = useState(false)
+  const [menuTarget, setMenuTarget] = useState<ChatMenuTarget | null>(null)
   const [showJump, setShowJump] = useState(false)
 
   const last = current.messages[current.messages.length - 1]
@@ -82,21 +85,7 @@ export default function ChatScreen() {
             setDrawerOpen(true)
           }}
         />
-        <Pressable
-          onPress={() => {
-            Keyboard.dismiss()
-            setModelOpen(true)
-          }}
-          style={styles.titleWrap}
-          hitSlop={6}
-        >
-          <HeaderTitle
-            text={empty ? 'Intelligence' : current.title}
-            color={c.textMuted}
-            fontFamily={theme.font.displayMedium}
-          />
-          <Feather name="chevron-down" size={14} color={c.textFaint} />
-        </Pressable>
+        <View style={styles.flex} />
         <View style={styles.headerRight}>
           <HeaderButton
             icon="edit"
@@ -106,6 +95,16 @@ export default function ChatScreen() {
               newChat()
             }}
           />
+          {!empty && (
+            <HeaderButton
+              icon="more-horizontal"
+              color={c.text}
+              onPress={() => {
+                Keyboard.dismiss()
+                setMenuTarget({ id: current.id, title: current.title, starred: current.starred })
+              }}
+            />
+          )}
         </View>
       </View>
 
@@ -157,7 +156,13 @@ export default function ChatScreen() {
 
           <View style={{ paddingHorizontal: 16, paddingTop: 6, paddingBottom: insets.bottom + 6 }}>
             <UpdateBanner />
-            <Composer onSend={send} onStop={stop} sending={sending} />
+            <Composer
+              onSend={send}
+              onStop={stop}
+              sending={sending}
+              modelLabel={MODELS[model].short}
+              onModelPress={() => setModelOpen(true)}
+            />
             <Txt size={10.5} color={c.textFaint} style={styles.disclaimer}>
               Intelligence can make mistakes. Verify important info.
             </Txt>
@@ -172,53 +177,8 @@ export default function ChatScreen() {
       />
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <ModelSheet open={modelOpen} onClose={() => setModelOpen(false)} />
+      <ChatMenu target={menuTarget} onClose={() => setMenuTarget(null)} />
     </ScreenBackground>
-  )
-}
-
-/**
- * Title that crossfades (out-up, in-from-below) when the text changes.
- * Interruption-proof: rapid changes coalesce into one clean transition to the
- * latest value - it can never stutter or overlap itself.
- */
-function HeaderTitle({ text, color, fontFamily }: { text: string; color: string; fontFamily: string }) {
-  const [shown, setShown] = useState(text)
-  const target = useRef(text)
-  const animating = useRef(false)
-  const opacity = useRef(new Animated.Value(1)).current
-  const y = useRef(new Animated.Value(0)).current
-
-  useEffect(() => {
-    target.current = text
-    if (animating.current || text === shown) return
-
-    const animate = () => {
-      animating.current = true
-      Animated.parallel([
-        Animated.timing(opacity, { toValue: 0, duration: 90, useNativeDriver: true }),
-        Animated.timing(y, { toValue: -6, duration: 90, useNativeDriver: true }),
-      ]).start(() => {
-        const next = target.current
-        setShown(next)
-        y.setValue(6)
-        Animated.parallel([
-          Animated.timing(opacity, { toValue: 1, duration: 150, useNativeDriver: true }),
-          Animated.timing(y, { toValue: 0, duration: 150, useNativeDriver: true }),
-        ]).start(() => {
-          animating.current = false
-          if (target.current !== next) animate() // a newer title arrived mid-flight
-        })
-      })
-    }
-    animate()
-  }, [text, shown, opacity, y])
-
-  return (
-    <Animated.View style={{ flexShrink: 1, opacity, transform: [{ translateY: y }] }}>
-      <Txt numberOfLines={1} size={16} color={color} style={{ fontFamily }}>
-        {shown}
-      </Txt>
-    </Animated.View>
   )
 }
 
@@ -252,14 +212,6 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  titleWrap: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    marginHorizontal: 8,
-  },
   hBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   column: { flex: 1, width: '100%', maxWidth: 720, alignSelf: 'center' },
   // inverted list flips vertical padding: paddingTop renders at the visual

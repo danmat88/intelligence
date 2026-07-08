@@ -5,38 +5,16 @@ import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../../theme/ThemeProvider'
 import { useAuth } from '../../auth/AuthProvider'
 import { useChat, type Conversation } from '../../chat/store'
-import ConfirmDialog from '../ui/ConfirmDialog'
+import AllChatsSheet from './AllChatsSheet'
+import ChatMenu, { type ChatMenuTarget } from './ChatMenu'
 import Txt from '../ui/Txt'
 
 const PANEL_W = Math.min(340, Dimensions.get('window').width * 0.84)
 
-/** Claude-style time buckets for the history list. */
-function groupByTime(conversations: Conversation[]): { label: string; items: Conversation[] }[] {
-  const dayStart = new Date()
-  dayStart.setHours(0, 0, 0, 0)
-  const today = dayStart.getTime()
-  const yesterday = today - 86400_000
-  const week = today - 7 * 86400_000
-
-  const buckets: { label: string; items: Conversation[] }[] = [
-    { label: 'Today', items: [] },
-    { label: 'Yesterday', items: [] },
-    { label: 'Previous 7 days', items: [] },
-    { label: 'Older', items: [] },
-  ]
-  for (const conv of conversations) {
-    if (conv.updatedAt >= today) buckets[0].items.push(conv)
-    else if (conv.updatedAt >= yesterday) buckets[1].items.push(conv)
-    else if (conv.updatedAt >= week) buckets[2].items.push(conv)
-    else buckets[3].items.push(conv)
-  }
-  return buckets.filter((b) => b.items.length > 0)
-}
-
 /**
- * Slide-in history drawer, Claude-app discipline: wordmark, chats grouped by
- * time as plain titles, account chip at the bottom. No clutter on rows -
- * hold a chat to delete it.
+ * Slide-in sidebar: wordmark, an "All chats" library entry, then Starred and
+ * Recents sections as plain titles. Hold a chat for rename/star/delete.
+ * Account chip at the bottom opens Settings.
  */
 export default function ConversationsDrawer({
   open,
@@ -50,9 +28,10 @@ export default function ConversationsDrawer({
   const { theme } = useTheme()
   const c = theme.colors
   const insets = useSafeAreaInsets()
-  const { conversations, current, selectChat, deleteChat } = useChat()
+  const { conversations, current, selectChat } = useChat()
   const { user } = useAuth()
-  const [toDelete, setToDelete] = useState<{ id: string; title: string } | null>(null)
+  const [menuTarget, setMenuTarget] = useState<ChatMenuTarget | null>(null)
+  const [allOpen, setAllOpen] = useState(false)
 
   const p = useRef(new Animated.Value(0)).current
   useEffect(() => {
@@ -66,7 +45,44 @@ export default function ConversationsDrawer({
   const translateX = p.interpolate({ inputRange: [0, 1], outputRange: [-PANEL_W - 20, 0], extrapolate: 'clamp' })
   const backdrop = p.interpolate({ inputRange: [0, 1], outputRange: [0, 0.5], extrapolate: 'clamp' })
 
-  const groups = groupByTime(conversations)
+  const starred = conversations.filter((conv) => conv.starred)
+  const recents = conversations.filter((conv) => !conv.starred).slice(0, 12)
+
+  const goTo = (id: string) => {
+    Keyboard.dismiss()
+    selectChat(id)
+    setAllOpen(false)
+    onClose()
+  }
+
+  const Row = ({ conv }: { conv: Conversation }) => {
+    const active = conv.id === current.id
+    return (
+      <Pressable
+        onPress={() => goTo(conv.id)}
+        onLongPress={() => setMenuTarget({ id: conv.id, title: conv.title || 'New chat', starred: conv.starred })}
+        delayLongPress={350}
+        style={({ pressed }) => [
+          styles.row,
+          {
+            backgroundColor: active ? c.surfaceAlt : 'transparent',
+            borderRadius: theme.radius.sm,
+            opacity: pressed ? 0.7 : 1,
+          },
+        ]}
+      >
+        <Txt
+          numberOfLines={1}
+          weight={active ? 'medium' : 'regular'}
+          size={14.5}
+          color={active ? c.text : c.textMuted}
+          style={{ flex: 1 }}
+        >
+          {conv.title || 'New chat'}
+        </Txt>
+      </Pressable>
+    )
+  }
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents={open ? 'auto' : 'none'}>
@@ -91,55 +107,49 @@ export default function ConversationsDrawer({
           Intelligence
         </Txt>
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: 8 }}
+        {/* library entry */}
+        <Pressable
+          onPress={() => setAllOpen(true)}
+          style={({ pressed }) => [
+            styles.navRow,
+            { backgroundColor: pressed ? c.surfaceAlt : 'transparent', borderRadius: theme.radius.sm },
+          ]}
         >
-          {groups.length === 0 && (
+          <Feather name="inbox" size={16} color={c.textMuted} />
+          <Txt weight="medium" size={14.5} style={{ flex: 1 }}>
+            Chats
+          </Txt>
+          <Feather name="chevron-right" size={15} color={c.textFaint} />
+        </Pressable>
+
+        <View style={[styles.divider, { backgroundColor: c.border }]} />
+
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 8 }}>
+          {conversations.length === 0 && (
             <Txt size={13.5} color={c.textFaint} style={{ paddingHorizontal: 20, paddingVertical: 10 }}>
               Your conversations will appear here.
             </Txt>
           )}
-          {groups.map((group) => (
-            <View key={group.label} style={{ marginBottom: 10 }}>
+          {starred.length > 0 && (
+            <View style={{ marginBottom: 10 }}>
               <Txt size={11.5} weight="semibold" color={c.textFaint} style={styles.groupLabel}>
-                {group.label}
+                STARRED
               </Txt>
-              {group.items.map((conv) => {
-                const active = conv.id === current.id
-                return (
-                  <Pressable
-                    key={conv.id}
-                    onPress={() => {
-                      Keyboard.dismiss()
-                      selectChat(conv.id)
-                      onClose()
-                    }}
-                    onLongPress={() => setToDelete({ id: conv.id, title: conv.title || 'New chat' })}
-                    delayLongPress={350}
-                    style={({ pressed }) => [
-                      styles.row,
-                      {
-                        backgroundColor: active ? c.surfaceAlt : 'transparent',
-                        borderRadius: theme.radius.sm,
-                        opacity: pressed ? 0.7 : 1,
-                      },
-                    ]}
-                  >
-                    <Txt
-                      numberOfLines={1}
-                      weight={active ? 'medium' : 'regular'}
-                      size={14.5}
-                      color={active ? c.text : c.textMuted}
-                    >
-                      {conv.title || 'New chat'}
-                    </Txt>
-                  </Pressable>
-                )
-              })}
+              {starred.map((conv) => (
+                <Row key={conv.id} conv={conv} />
+              ))}
             </View>
-          ))}
+          )}
+          {recents.length > 0 && (
+            <View>
+              <Txt size={11.5} weight="semibold" color={c.textFaint} style={styles.groupLabel}>
+                RECENTS
+              </Txt>
+              {recents.map((conv) => (
+                <Row key={conv.id} conv={conv} />
+              ))}
+            </View>
+          )}
         </ScrollView>
 
         {user && (
@@ -165,13 +175,8 @@ export default function ConversationsDrawer({
         )}
       </Animated.View>
 
-      <ConfirmDialog
-        open={toDelete !== null}
-        title="Delete chat?"
-        message={`"${toDelete?.title ?? ''}" and its messages will be gone forever.`}
-        onConfirm={() => toDelete && deleteChat(toDelete.id)}
-        onClose={() => setToDelete(null)}
-      />
+      <AllChatsSheet open={allOpen} onClose={() => setAllOpen(false)} onPicked={goTo} />
+      <ChatMenu target={menuTarget} onClose={() => setMenuTarget(null)} />
     </View>
   )
 }
@@ -185,8 +190,10 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     paddingHorizontal: 10,
   },
-  groupLabel: { paddingHorizontal: 10, marginBottom: 4, letterSpacing: 0.4, textTransform: 'uppercase' },
-  row: { paddingHorizontal: 10, paddingVertical: 11 },
+  navRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 12, paddingVertical: 12 },
+  divider: { height: StyleSheet.hairlineWidth, marginHorizontal: 8, marginVertical: 6 },
+  groupLabel: { paddingHorizontal: 12, marginBottom: 4, letterSpacing: 0.4 },
+  row: { paddingHorizontal: 12, paddingVertical: 11 },
   account: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -51,18 +51,20 @@ export type Conversation = {
   title: string
   messages: Message[]
   updatedAt: number
+  starred?: boolean
 }
 
 const SYSTEM =
   'You are Intelligence, a helpful, warm, and concise AI assistant. Answer clearly. ' +
   'Use short paragraphs and lists where useful.'
 
-/** Real model selection, like ChatGPT's header picker. Whitelisted server-side. */
-export type ModelChoice = 'flash' | 'pro'
+/** Real model selection. Whitelisted server-side. */
+export type ModelChoice = 'lite' | 'flash' | 'pro'
 
-export const MODELS: Record<ModelChoice, { label: string; blurb: string; id: string }> = {
-  flash: { label: 'Gemini Flash', blurb: 'Fast and sharp — everyday answers', id: 'gemini-2.5-flash' },
-  pro: { label: 'Gemini Pro', blurb: 'Deepest reasoning — hard problems', id: 'gemini-2.5-pro' },
+export const MODELS: Record<ModelChoice, { label: string; short: string; blurb: string; id: string }> = {
+  lite: { label: 'Gemini Lite', short: 'Lite', blurb: 'Instant — quick everyday questions', id: 'gemini-2.5-flash-lite' },
+  flash: { label: 'Gemini Flash', short: 'Flash', blurb: 'Fast and sharp — the daily driver', id: 'gemini-2.5-flash' },
+  pro: { label: 'Gemini Pro', short: 'Pro', blurb: 'Deepest reasoning — hard problems', id: 'gemini-2.5-pro' },
 }
 
 /** currentId value for the not-yet-persisted "New chat". */
@@ -72,7 +74,7 @@ const NEW = NEW_CHAT
 /** Messages are loaded newest-first in pages of this size. */
 const PAGE = 80
 
-type ConversationMeta = { id: string; title: string; updatedAt: number }
+type ConversationMeta = { id: string; title: string; updatedAt: number; starred?: boolean }
 
 type ChatContextValue = {
   conversations: Conversation[]
@@ -81,6 +83,8 @@ type ChatContextValue = {
   newChat: () => void
   selectChat: (id: string) => void
   deleteChat: (id: string) => void
+  renameChat: (id: string, title: string) => void
+  toggleStar: (id: string) => void
   send: (text: string) => void
   /** Stop the in-flight reply; the partial text is kept, like ChatGPT's stop. */
   stop: () => void
@@ -130,8 +134,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       (snap) => {
         setMetas(
           snap.docs.map((d) => {
-            const data = d.data() as { title?: string; updatedAt?: number }
-            return { id: d.id, title: data.title ?? 'New chat', updatedAt: data.updatedAt ?? 0 }
+            const data = d.data() as { title?: string; updatedAt?: number; starred?: boolean }
+            return { id: d.id, title: data.title ?? 'New chat', updatedAt: data.updatedAt ?? 0, starred: data.starred }
           }),
         )
       },
@@ -199,6 +203,23 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         .catch(() => {})
     },
     [convCol, msgCol, currentId, metas],
+  )
+
+  const renameChat = useCallback(
+    (id: string, title: string) => {
+      const clean = title.trim().slice(0, 60)
+      if (!clean) return
+      updateDoc(doc(convCol(), id), { title: clean }).catch(() => {})
+    },
+    [convCol],
+  )
+
+  const toggleStar = useCallback(
+    (id: string) => {
+      const meta = metas.find((m) => m.id === id)
+      updateDoc(doc(convCol(), id), { starred: !meta?.starred }).catch(() => {})
+    },
+    [convCol, metas],
   )
 
   const send = useCallback(
@@ -315,6 +336,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       title: currentId === NEW ? 'New chat' : meta?.title ?? 'New chat',
       messages: withDraft,
       updatedAt: meta?.updatedAt ?? Date.now(),
+      starred: meta?.starred,
     }
 
     const conversations: Conversation[] = metas.map((m) => ({ ...m, messages: [] }))
@@ -326,6 +348,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       newChat,
       selectChat,
       deleteChat,
+      renameChat,
+      toggleStar,
       send,
       stop,
       regenerate,
@@ -333,7 +357,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       model,
       setModel,
     }
-  }, [metas, messages, draft, currentId, sending, newChat, selectChat, deleteChat, send, stop, regenerate, loadOlder, model])
+  }, [metas, messages, draft, currentId, sending, newChat, selectChat, deleteChat, renameChat, toggleStar, send, stop, regenerate, loadOlder, model])
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>
 }
