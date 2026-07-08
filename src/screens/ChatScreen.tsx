@@ -31,9 +31,10 @@ export default function ChatScreen() {
   const { theme, mode, toggle } = useTheme()
   const c = theme.colors
   const insets = useSafeAreaInsets()
-  const { current, sending, send, newChat, loadOlder } = useChat()
+  const { current, sending, send, stop, newChat, loadOlder } = useChat()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [showJump, setShowJump] = useState(false)
   const listRef = useRef<FlatList<(typeof current.messages)[number]>>(null)
 
   const empty = current.messages.length === 0
@@ -60,7 +61,12 @@ export default function ChatScreen() {
       {/* transparent header - buttons float over the app, no bar */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <HeaderButton icon="menu" color={c.text} onPress={() => setDrawerOpen(true)} />
-        <Txt numberOfLines={1} weight="bold" size={16} color={c.textMuted} style={styles.title}>
+        <Txt
+          numberOfLines={1}
+          size={16}
+          color={c.textMuted}
+          style={[styles.title, { fontFamily: theme.font.displayMedium }]}
+        >
           {empty ? 'Intelligence' : current.title}
         </Txt>
         <View style={styles.headerRight}>
@@ -92,12 +98,31 @@ export default function ChatScreen() {
               // inverted list: "end" = scrolled up to the oldest loaded message
               onEndReached={loadOlder}
               onEndReachedThreshold={0.3}
+              onScroll={(e) => setShowJump(e.nativeEvent.contentOffset.y > 420)}
+              scrollEventThrottle={120}
             />
+          )}
+
+          {showJump && !empty && (
+            <Pressable
+              onPress={scrollToNewest}
+              style={({ pressed }) => [
+                styles.jump,
+                {
+                  backgroundColor: c.surface,
+                  borderColor: c.border,
+                  bottom: insets.bottom + 92,
+                  opacity: pressed ? 0.7 : 1,
+                },
+              ]}
+            >
+              <Feather name="arrow-down" size={18} color={c.accent} />
+            </Pressable>
           )}
 
           <View style={{ paddingHorizontal: 16, paddingTop: 6, paddingBottom: insets.bottom + 8 }}>
             <UpdateBanner />
-            <Composer onSend={send} sending={sending} />
+            <Composer onSend={send} onStop={stop} sending={sending} />
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -148,4 +173,15 @@ const styles = StyleSheet.create({
   // inverted list flips vertical padding: paddingTop renders at the visual
   // bottom (24 above the composer) and paddingBottom at the visual top (12)
   thread: { paddingHorizontal: 16, paddingTop: 24, paddingBottom: 12, gap: 22 },
+  jump: {
+    position: 'absolute',
+    alignSelf: 'center',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 4,
+  },
 })

@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef } from 'react'
+import { memo, useEffect, useRef, type ReactNode } from 'react'
 import { Animated, Platform, Pressable, StyleSheet, ToastAndroid, View } from 'react-native'
 import * as Clipboard from 'expo-clipboard'
 import { Ionicons } from '@expo/vector-icons'
@@ -25,42 +25,60 @@ function Message({ message }: { message: Msg }) {
 
   if (message.role === 'user') {
     return (
-      <Pressable onLongPress={copy} style={styles.userRow}>
-        <View
-          style={[
-            styles.userBubble,
-            { backgroundColor: c.surfaceAlt, borderColor: c.border, borderRadius: theme.radius.lg },
-          ]}
-        >
-          <Txt size={16} style={{ lineHeight: 23 }}>
-            {message.text}
-          </Txt>
-        </View>
-      </Pressable>
+      <Entrance>
+        <Pressable onLongPress={copy} style={styles.userRow}>
+          <View
+            style={[
+              styles.userBubble,
+              { backgroundColor: c.surfaceAlt, borderColor: c.border, borderRadius: theme.radius.lg },
+            ]}
+          >
+            <Txt size={16} style={{ lineHeight: 23 }}>
+              {message.text}
+            </Txt>
+          </View>
+        </Pressable>
+      </Entrance>
     )
   }
 
   return (
-    <Pressable onLongPress={copy} style={styles.botRow}>
-      <BrandGradient style={styles.avatar}>
-        <Ionicons name="sparkles" size={15} color={c.onAccent} />
-      </BrandGradient>
-      <View style={styles.botBody}>
-        {message.pending && !message.text ? (
-          <TypingDots color={c.textFaint} />
-        ) : message.error ? (
-          <Txt size={16} color={c.danger} style={{ lineHeight: 25 }}>
-            {message.text}
-          </Txt>
-        ) : (
-          <Markdown text={message.text} />
-        )}
-      </View>
-    </Pressable>
+    <Entrance>
+      <Pressable onLongPress={copy} style={styles.botRow}>
+        <BrandGradient style={styles.avatar}>
+          <Ionicons name="sparkles" size={15} color={c.onAccent} />
+        </BrandGradient>
+        <View style={styles.botBody}>
+          {message.pending && !message.text ? (
+            <TypingDots color={c.textFaint} />
+          ) : message.error ? (
+            <Txt size={16} color={c.danger} style={{ lineHeight: 25 }}>
+              {message.text}
+            </Txt>
+          ) : (
+            // a soft cursor rides the end of the text while tokens stream in
+            <Markdown text={message.streaming ? `${message.text} ▍` : message.text} />
+          )}
+        </View>
+      </Pressable>
+    </Entrance>
   )
 }
 
 export default memo(Message)
+
+/** Fade-and-rise on mount, so new messages arrive instead of popping. */
+function Entrance({ children }: { children: ReactNode }) {
+  const opacity = useRef(new Animated.Value(0)).current
+  const rise = useRef(new Animated.Value(8)).current
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(opacity, { toValue: 1, duration: 240, useNativeDriver: true }),
+      Animated.timing(rise, { toValue: 0, duration: 240, useNativeDriver: true }),
+    ]).start()
+  }, [opacity, rise])
+  return <Animated.View style={{ opacity, transform: [{ translateY: rise }] }}>{children}</Animated.View>
+}
 
 function TypingDots({ color }: { color: string }) {
   const dots = [

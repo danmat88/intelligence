@@ -137,6 +137,9 @@ export function createGeminiClient(config: GeminiConfig): AIClient {
           }
         }
 
+        // user hit stop: abort the request and keep whatever already arrived
+        opts.signal?.addEventListener('abort', () => xhr.abort())
+
         xhr.onreadystatechange = () => {
           // readyState 3 = LOADING: responseText grows as chunks arrive
           if (xhr.readyState >= 3 && xhr.responseText) {
@@ -146,12 +149,17 @@ export function createGeminiClient(config: GeminiConfig): AIClient {
             if (xhr.status >= 200 && xhr.status < 300) {
               consume(xhr.responseText.length) // flush any unterminated tail
               resolve({ text: delivered, ms: Date.now() - t0 })
+            } else if (opts.signal?.aborted) {
+              resolve({ text: delivered, ms: Date.now() - t0 })
             } else {
               reject(new Error(`Gemini ${xhr.status}: ${xhr.responseText || 'stream error'}`))
             }
           }
         }
-        xhr.onerror = () => reject(new Error('Network error during streaming'))
+        xhr.onerror = () =>
+          opts.signal?.aborted
+            ? resolve({ text: delivered, ms: Date.now() - t0 })
+            : reject(new Error('Network error during streaming'))
         xhr.send(JSON.stringify(buildBody(toContents(turns), opts)))
       })
     },

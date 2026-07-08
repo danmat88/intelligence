@@ -9,6 +9,16 @@ import Txt from '../ui/Txt'
 
 const PANEL_W = Math.min(340, Dimensions.get('window').width * 0.84)
 
+/** Compact relative time: now, 5m, 3h, 2d, then a short date. */
+function timeAgo(ts: number): string {
+  const s = Math.max(0, (Date.now() - ts) / 1000)
+  if (s < 60) return 'now'
+  if (s < 3600) return `${Math.floor(s / 60)}m`
+  if (s < 86400) return `${Math.floor(s / 3600)}h`
+  if (s < 86400 * 7) return `${Math.floor(s / 86400)}d`
+  return new Date(ts).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
+}
+
 /** Slide-in sidebar of conversations, like Claude's chat history. */
 export default function ConversationsDrawer({
   open,
@@ -27,11 +37,20 @@ export default function ConversationsDrawer({
 
   const p = useRef(new Animated.Value(0)).current
   useEffect(() => {
-    Animated.timing(p, { toValue: open ? 1 : 0, duration: 220, useNativeDriver: true }).start()
+    // spring on open for a physical, alive feel; brisk timing on close
+    if (open) {
+      Animated.spring(p, { toValue: 1, useNativeDriver: true, damping: 19, stiffness: 210, mass: 0.8 }).start()
+    } else {
+      Animated.timing(p, { toValue: 0, duration: 180, useNativeDriver: true }).start()
+    }
   }, [open, p])
 
-  const translateX = p.interpolate({ inputRange: [0, 1], outputRange: [-PANEL_W - 20, 0] })
-  const backdrop = p.interpolate({ inputRange: [0, 1], outputRange: [0, 0.5] })
+  const translateX = p.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-PANEL_W - 20, 0],
+    extrapolate: 'clamp',
+  })
+  const backdrop = p.interpolate({ inputRange: [0, 1], outputRange: [0, 0.5], extrapolate: 'clamp' })
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents={open ? 'auto' : 'none'}>
@@ -53,7 +72,7 @@ export default function ConversationsDrawer({
         ]}
       >
         <View style={styles.head}>
-          <Txt weight="extrabold" size={20} style={{ letterSpacing: -0.3 }}>
+          <Txt size={21} style={{ letterSpacing: -0.4, fontFamily: theme.font.display }}>
             Chats
           </Txt>
           <Pressable
@@ -84,15 +103,19 @@ export default function ConversationsDrawer({
                 ]}
               >
                 <Feather name="message-circle" size={16} color={active ? c.accent : c.textFaint} />
-                <Txt
-                  numberOfLines={1}
-                  weight={active ? 'semibold' : 'regular'}
-                  size={15}
-                  color={active ? c.text : c.textMuted}
-                  style={{ flex: 1 }}
-                >
-                  {conv.title || 'New chat'}
-                </Txt>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Txt
+                    numberOfLines={1}
+                    weight={active ? 'semibold' : 'regular'}
+                    size={15}
+                    color={active ? c.text : c.textMuted}
+                  >
+                    {conv.title || 'New chat'}
+                  </Txt>
+                  <Txt size={11.5} color={c.textFaint}>
+                    {timeAgo(conv.updatedAt)}
+                  </Txt>
+                </View>
                 <Pressable
                   hitSlop={10}
                   onPress={() =>

@@ -32,13 +32,16 @@ export type Theme = {
   radius: { sm: number; md: number; lg: number; xl: number; pill: number }
   /** 4px base spacing scale: space(4) = 16. */
   space: (n: number) => number
-  /** Inter font families by weight (loaded in App). */
+  /** Font families (loaded in App): Inter for text, Space Grotesk for display. */
   font: {
     regular: string
     medium: string
     semibold: string
     bold: string
     extrabold: string
+    /** Display face for brand moments: titles, greetings, the wordmark. */
+    display: string
+    displayMedium: string
   }
   shadow: {
     color: string
@@ -55,6 +58,8 @@ const FONT = {
   semibold: 'Inter_600SemiBold',
   bold: 'Inter_700Bold',
   extrabold: 'Inter_800ExtraBold',
+  display: 'SpaceGrotesk_700Bold',
+  displayMedium: 'SpaceGrotesk_500Medium',
 }
 
 // The one signature gradient, shared by both themes — violet → indigo → cyan.
@@ -63,10 +68,10 @@ const BRAND = ['#8B5CF6', '#6366F1', '#22D3EE']
 export const darkTheme: Theme = {
   mode: 'dark',
   colors: {
-    bg: '#08080C',
-    bgElevated: '#0E0E16',
-    surface: '#14141F',
-    surfaceAlt: '#1C1C2A',
+    bg: '#050509',
+    bgElevated: '#0B0C15',
+    surface: '#12131E',
+    surfaceAlt: '#1A1B2B',
     border: 'rgba(255,255,255,0.08)',
     text: '#F4F5FA',
     textMuted: '#A2A6B6',
@@ -78,8 +83,8 @@ export const darkTheme: Theme = {
   },
   gradient: {
     brand: BRAND,
-    surface: ['#14141F', '#0E0E16'],
-    glow: ['rgba(139,92,246,0.34)', 'rgba(139,92,246,0)'],
+    surface: ['#12131E', '#0B0C15'],
+    glow: ['rgba(139,92,246,0.42)', 'rgba(139,92,246,0)'],
   },
   radius,
   space,

@@ -48,7 +48,19 @@
       "PowerShell(npx expo install expo-dev-client)",
       "PowerShell(npx eas-cli build:view 4efeb1b6-b17a-4368-9028-e2ed085bd6bb)",
       "PowerShell(npx eas-cli build:cancel 4efeb1b6-b17a-4368-9028-e2ed085bd6bb --non-interactive)",
-      "PowerShell(npx expo install expo-clipboard)"
+      "PowerShell(npx expo install expo-clipboard)",
+      "PowerShell(npx expo start --dev-client)",
+      "PowerShell(Remove-Item -Recurse -Force \"android\" -Confirm:$false)",
+      "PowerShell(npm install --save-dev @expo/ngrok)",
+      "PowerShell(npx expo start --dev-client --tunnel)",
+      "PowerShell(netsh advfirewall firewall add rule name=\"Expo Metro 8081\" dir=in action=allow protocol=TCP localport=8081)",
+      "PowerShell(Start-Process powershell -Verb RunAs -ArgumentList '-NoProfile','-Command','netsh advfirewall firewall add rule name=\\\\\"Expo Metro 8081\\\\\" dir=in action=allow protocol=TCP localport=8081' -Wait)",
+      "PowerShell(netsh advfirewall firewall show rule name=\"Expo Metro 8081\")",
+      "PowerShell(curl.exe -s -m 5 \"http://localhost:8081/status\"; \"\"; curl.exe -s -m 5 \"http://10.191.189.42:8081/status\"; \"\"; Get-NetIPConfiguration | Where-Object { $_.IPv4Address } | ForEach-Object { \"$\\($_.InterfaceAlias\\): $\\($_.IPv4Address.IPAddress\\) gw=$\\($_.IPv4DefaultGateway.NextHop\\)\" })",
+      "PowerShell(adb reverse tcp:8081 tcp:8081)",
+      "PowerShell(curl.exe -s -m 5 \"http://localhost:8081/status\")",
+      "PowerShell(adb shell am start -a android.intent.action.VIEW -d \"exp+intelligence://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081\")",
+      "PowerShell(npm install @expo-google-fonts/space-grotesk)"
     ]
   },
   "enabledPlugins": {

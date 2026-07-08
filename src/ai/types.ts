@@ -13,6 +13,8 @@ export type GenerateOptions = {
   temperature?: number
   /** A base64-encoded image (no `data:` prefix) for vision requests. */
   image?: { base64: string; mimeType: string }
+  /** Abort to stop generation early; streaming resolves with the partial text. */
+  signal?: AbortSignal
 }
 
 export type AIResult = {

@@ -24,7 +24,7 @@ export default function WelcomeScreen() {
           <BrandGradient style={styles.mark}>
             <Ionicons name="sparkles" size={34} color={c.onAccent} />
           </BrandGradient>
-          <Txt weight="extrabold" size={34} style={{ letterSpacing: -0.8 }}>
+          <Txt size={36} style={{ letterSpacing: -1, fontFamily: theme.font.display }}>
             Intelligence
           </Txt>
           <Txt size={16} color={c.textMuted} style={styles.tagline}>

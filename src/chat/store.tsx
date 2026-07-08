@@ -42,6 +42,8 @@ export type Message = {
   text: string
   pending?: boolean
   error?: boolean
+  /** true only on the live draft while tokens are still arriving. */
+  streaming?: boolean
 }
 
 export type Conversation = {
@@ -71,6 +73,8 @@ type ChatContextValue = {
   selectChat: (id: string) => void
   deleteChat: (id: string) => void
   send: (text: string) => void
+  /** Stop the in-flight reply; the partial text is kept, like ChatGPT's stop. */
+  stop: () => void
   /** Fetch the next (older) page of the open conversation, if any. */
   loadOlder: () => void
 }
@@ -91,6 +95,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   // the persisted message arrives — no timers, no content heuristics.
   const [draft, setDraft] = useState<Message | null>(null)
   const draftConv = useRef<string | null>(null)
+  const inFlight = useRef<AbortController | null>(null)
 
   const convCol = useCallback(() => {
     if (!uid) throw new Error('Chat requires a signed-in user')
@@ -214,20 +219,28 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         // and the merge in `value` swaps draft -> persisted message by this id
         const replyRef = doc(msgCol(cid))
         draftConv.current = cid
-        setDraft({ id: replyRef.id, role: 'assistant', text: '', pending: true })
+        setDraft({ id: replyRef.id, role: 'assistant', text: '', pending: true, streaming: true })
 
+        const controller = new AbortController()
+        inFlight.current = controller
         try {
           const res = await ai.stream(
             turns,
             (delta) => setDraft((d) => (d ? { ...d, text: d.text + delta, pending: false } : d)),
-            { system: SYSTEM, maxTokens: 2048 },
+            { system: SYSTEM, maxTokens: 2048, signal: controller.signal },
           )
-          setDoc(replyRef, { role: 'assistant', text: res.text, createdAt: Date.now() }).catch(() => {})
-          updateDoc(doc(convCol(), cid), { updatedAt: Date.now() }).catch(() => {})
+          if (res.text) {
+            setDoc(replyRef, { role: 'assistant', text: res.text, createdAt: Date.now() }).catch(() => {})
+            updateDoc(doc(convCol(), cid), { updatedAt: Date.now() }).catch(() => {})
+          } else {
+            setDraft(null) // stopped before the first token - nothing to keep
+          }
         } catch (e) {
           // ephemeral: shown until the next send / chat switch, never persisted
           const msg = e instanceof Error ? e.message : String(e)
           setDraft({ id: replyRef.id, role: 'assistant', text: msg, error: true })
+        } finally {
+          inFlight.current = null
         }
       } finally {
         setSending(false)
@@ -235,6 +248,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     },
     [convCol, msgCol, currentId, messages, sending, uid],
   )
+
+  const stop = useCallback(() => inFlight.current?.abort(), [])
 
   const value = useMemo<ChatContextValue>(() => {
     const showDraft =
@@ -251,8 +266,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
     const conversations: Conversation[] = metas.map((m) => ({ ...m, messages: [] }))
 
-    return { conversations, current, sending, newChat, selectChat, deleteChat, send, loadOlder }
-  }, [metas, messages, draft, currentId, sending, newChat, selectChat, deleteChat, send, loadOlder])
+    return { conversations, current, sending, newChat, selectChat, deleteChat, send, stop, loadOlder }
+  }, [metas, messages, draft, currentId, sending, newChat, selectChat, deleteChat, send, stop, loadOlder])
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>
 }
