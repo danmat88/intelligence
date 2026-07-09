@@ -1,13 +1,14 @@
 import { memo, useEffect, useRef, type ReactNode } from 'react'
-import { Animated, Pressable, StyleSheet, View } from 'react-native'
+import { Animated, Image, Pressable, StyleSheet, View } from 'react-native'
 import * as Clipboard from 'expo-clipboard'
-import { Ionicons } from '@expo/vector-icons'
 import { useTheme } from '../../theme/ThemeProvider'
 import { useToast } from '../ui/Toast'
 import Txt from '../ui/Txt'
 import Markdown from '../ui/Markdown'
 import BrandGradient from '../ui/BrandGradient'
 import type { Message as Msg } from '../../chat/store'
+
+const BRAND_SYMBOL = require('../../../assets/android-icon-foreground.png')
 
 /**
  * One chat row: user = right-aligned bubble, assistant = full-width text with
@@ -47,9 +48,9 @@ function Message({ message }: { message: Msg }) {
   return (
     <Entrance>
       <Pressable onLongPress={copy} style={styles.botRow}>
-        <BrandGradient style={styles.avatar}>
-          <Ionicons name="sparkles" size={15} color={c.onAccent} />
-        </BrandGradient>
+        <View style={[styles.avatar, { backgroundColor: c.surface, borderColor: c.border }]}>
+          <Image source={BRAND_SYMBOL} style={styles.avatarMark} resizeMode="contain" />
+        </View>
         <View style={styles.botBody}>
           {message.pending && !message.text ? (
             <ThinkingOrb />
@@ -123,6 +124,15 @@ const styles = StyleSheet.create({
   userRow: { alignItems: 'flex-end' },
   userBubble: { maxWidth: '86%', paddingHorizontal: 16, paddingVertical: 11, borderWidth: 1 },
   botRow: { flexDirection: 'row', gap: 12, paddingRight: 8 },
-  avatar: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginTop: 2 },
+  avatar: {
+    width: 30,
+    height: 30,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  avatarMark: { width: 54, height: 54 },
   botBody: { flex: 1, paddingTop: 3 },
 })

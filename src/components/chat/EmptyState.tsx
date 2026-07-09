@@ -1,10 +1,10 @@
 import { useEffect, useRef, type ReactNode } from 'react'
-import { Animated, StyleSheet, View } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
+import { Animated, Image, StyleSheet, View } from 'react-native'
 import { useTheme } from '../../theme/ThemeProvider'
 import { useAuth } from '../../auth/AuthProvider'
-import BrandGradient from '../ui/BrandGradient'
 import Txt from '../ui/Txt'
+
+const BRAND_SYMBOL = require('../../../assets/android-icon-foreground.png')
 
 /** Time-of-day greeting, personalized with the user's first name. */
 function greeting(name?: string | null): string {
@@ -20,17 +20,13 @@ function greeting(name?: string | null): string {
  */
 export default function EmptyState(_props: { onPick?: (t: string) => void }) {
   const { theme } = useTheme()
-  const c = theme.colors
   const { user } = useAuth()
 
   return (
     <View style={styles.wrap}>
       <Rise delay={0}>
-        <View style={styles.orbBox}>
-          <View style={[styles.orbRing, { borderColor: c.accent + '33' }]} />
-          <BrandGradient style={styles.orbCore}>
-            <Ionicons name="sparkles" size={32} color={c.onAccent} />
-          </BrandGradient>
+        <View style={styles.markStage}>
+          <Image source={BRAND_SYMBOL} style={styles.mark} resizeMode="contain" />
         </View>
       </Rise>
       <Rise delay={70}>
@@ -57,7 +53,6 @@ function Rise({ delay, children }: { delay: number; children: ReactNode }) {
 
 const styles = StyleSheet.create({
   wrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, gap: 10 },
-  orbBox: { width: 108, height: 108, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
-  orbRing: { position: 'absolute', width: 108, height: 108, borderRadius: 54, borderWidth: 1.5 },
-  orbCore: { width: 86, height: 86, borderRadius: 43, alignItems: 'center', justifyContent: 'center' },
+  markStage: { width: 108, height: 108, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  mark: { width: 190, height: 190 },
 })

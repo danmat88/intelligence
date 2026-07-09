@@ -1,38 +1,50 @@
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native'
+import { useRef } from 'react'
+import { ActivityIndicator, Animated, Pressable, StyleSheet, View } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { AntDesign, Ionicons } from '@expo/vector-icons'
+import { AntDesign } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
 import { useAuth } from '../auth/AuthProvider'
-import BrandGradient from '../components/ui/BrandGradient'
+import BrandMark from '../components/ui/BrandMark'
 import ScreenBackground from '../components/ui/ScreenBackground'
 import Txt from '../components/ui/Txt'
 
-/** Sign-in gate shown before the chat: brand mark + "Continue with Google". */
+/**
+ * Sign-in gate shown before the chat. The shared brand mark enters first (same
+ * mark as the boot beat, so nothing changes shape or jumps), and only once it
+ * has landed does the "Continue with Google" button settle in beneath it.
+ */
 export default function WelcomeScreen() {
   const { theme } = useTheme()
   const c = theme.colors
   const insets = useSafeAreaInsets()
   const { signIn, signingIn, error } = useAuth()
 
+  // Revealed by BrandMark's onEntered, so the button appears after the lockup.
+  const footer = useRef(new Animated.Value(0)).current
+  const revealFooter = () => {
+    Animated.timing(footer, { toValue: 1, duration: 420, useNativeDriver: true }).start()
+  }
+
   return (
     <ScreenBackground>
       <StatusBar style="dark" />
 
       <View style={[styles.wrap, { paddingTop: insets.top, paddingBottom: insets.bottom + 24 }]}>
-        <View style={styles.hero}>
-          <BrandGradient style={styles.mark}>
-            <Ionicons name="sparkles" size={34} color={c.onAccent} />
-          </BrandGradient>
-          <Txt size={36} style={{ letterSpacing: -1, fontFamily: theme.font.display }}>
-            Intelligence
-          </Txt>
-          <Txt size={16} color={c.textMuted} style={styles.tagline}>
-            Your AI assistant for ideas, answers and everything in between.
-          </Txt>
-        </View>
+        <BrandMark
+          tagline="Your AI assistant for ideas, answers and everything in between."
+          onEntered={revealFooter}
+        />
 
-        <View style={styles.footer}>
+        <Animated.View
+          style={[
+            styles.footer,
+            {
+              opacity: footer,
+              transform: [{ translateY: footer.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }],
+            },
+          ]}
+        >
           <Pressable
             onPress={signIn}
             disabled={signingIn}
@@ -65,10 +77,10 @@ export default function WelcomeScreen() {
             </Txt>
           ) : (
             <Txt size={13} color={c.textFaint} style={styles.error}>
-              Sign in to start chatting. Your conversations stay on this device.
+              Sign in to save your conversations securely to your account.
             </Txt>
           )}
-        </View>
+        </Animated.View>
       </View>
     </ScreenBackground>
   )
@@ -76,9 +88,6 @@ export default function WelcomeScreen() {
 
 const styles = StyleSheet.create({
   wrap: { flex: 1, paddingHorizontal: 28 },
-  hero: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10 },
-  mark: { width: 76, height: 76, borderRadius: 24, alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
-  tagline: { textAlign: 'center', lineHeight: 23, maxWidth: 300 },
   footer: { width: '100%', maxWidth: 420, alignSelf: 'center', gap: 14 },
   googleBtn: {
     height: 56,

@@ -15,6 +15,14 @@
       },
       "channel": "preview"
     },
+    "release-apk": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "autoIncrement": true,
+      "channel": "production"
+    },
     "production": {
       "autoIncrement": true,
       "channel": "production"
