@@ -97,7 +97,17 @@
       "PowerShell($dir = \"C:\\\\Users\\\\coste\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-coste-OneDrive-Desktop-intelligence\\\\e239acc0-7f26-4396-accb-4c6292d0ec6a\\\\scratchpad\"; npx eas-cli build:list --platform android --limit 1 --json --non-interactive | Out-File -Encoding utf8 \"$dir\\\\builds2.json\"; $b = \\(Get-Content \"$dir\\\\builds2.json\" -Raw | ConvertFrom-Json\\)[0]; $b.id; $b.error.message; curl.exe -s -o \"$dir\\\\fail2.br\" $b.logFiles[0]; node -e \"const z=require\\('zlib'\\),fs=require\\('fs'\\);fs.writeFileSync\\(process.argv[2],z.brotliDecompressSync\\(fs.readFileSync\\(process.argv[1]\\)\\)\\);\" \"$dir\\\\fail2.br\" \"$dir\\\\fail2.txt\"; $msgs = Get-Content \"$dir\\\\fail2.txt\" | ForEach-Object { try { \\($_ | ConvertFrom-Json\\).msg } catch { $_ } }; $msgs | Select-String -Pattern \"What went wrong\" -Context 0,8 | Select-Object -First 2 | ForEach-Object { $_.Line; $_.Context.PostContext })",
       "PowerShell($dir = \"C:\\\\Users\\\\coste\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-coste-OneDrive-Desktop-intelligence\\\\e239acc0-7f26-4396-accb-4c6292d0ec6a\\\\scratchpad\"; $msgs = Get-Content \"$dir\\\\fail2.txt\" | ForEach-Object { try { \\($_ | ConvertFrom-Json\\).msg } catch { $_ } }; $msgs | Select-String -Pattern \"PREBUILD\" -Context 0,2 | Select-Object -First 3 | ForEach-Object { $_.Line }; $msgs | Select-String -Pattern \"Error|error|failed|Invalid\" | Select-Object -First 25 | ForEach-Object { $_.Line })",
       "PowerShell(node \"C:\\\\Users\\\\coste\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-coste-OneDrive-Desktop-intelligence\\\\e239acc0-7f26-4396-accb-4c6292d0ec6a\\\\scratchpad\\\\make-png.js\" \"assets\\\\splash-transparent.png\")",
-      "PowerShell(npx expo prebuild --platform android --no-install 2>&1)"
+      "PowerShell(npx expo prebuild --platform android --no-install 2>&1)",
+      "PowerShell(if \\($?\\) { \"TSC OK\" })",
+      "PowerShell(npm test 2>&1)",
+      "Bash(magick -version)",
+      "Bash(py --version)",
+      "Bash(python -c \"import PIL; print\\('PIL', PIL.__version__\\)\")",
+      "Bash(node -e \"require\\('sharp'\\); console.log\\('sharp ok'\\)\")",
+      "PowerShell(npx eas-cli whoami)",
+      "PowerShell(npx eas-cli build --platform android --profile development --non-interactive)",
+      "PowerShell(adb shell \"curl -s --max-time 60 -o /dev/null -w 'HTTP:%{http_code} time:%{time_total}s size:%{size_download}\\\\n' 'http://localhost:8081/index.bundle?platform=android&dev=true'\")",
+      "PowerShell(adb shell \"curl -s --max-time 60 -o /dev/null -w 'HTTP:%{http_code} time:%{time_total}s size:%{size_download}\\\\n' -H 'expo-platform: android' http://localhost:8081/\")"
     ]
   },
   "enabledPlugins": {
