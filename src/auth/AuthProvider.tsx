@@ -126,14 +126,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await reauthenticateWithCredential(fbUser, GoogleAuthProvider.credential(idToken, accessToken))
 
       // Play policy: deleting the account must delete the data. Wipe every
-      // conversation (messages first, then the conversation docs).
+      // saved problem, then the user doc.
       const db = getFirestore()
-      const convs = await getDocs(collection(db, 'users', fbUser.uid, 'conversations'))
-      for (const conv of convs.docs) {
-        const msgs = await getDocs(collection(conv.ref, 'messages'))
-        await Promise.all(msgs.docs.map((m) => deleteDoc(m.ref)))
-        await deleteDoc(conv.ref)
-      }
+      const problems = await getDocs(collection(doc(db, 'users', fbUser.uid), 'problems'))
+      await Promise.all(problems.docs.map((p) => deleteDoc(p.ref)))
       await deleteDoc(doc(db, 'users', fbUser.uid)).catch(() => {}) // in case a user doc ever exists
 
       await fbUser.delete() // also signs out -> onAuthStateChanged clears `user`

@@ -12,12 +12,18 @@ import {
   Inter_800ExtraBold,
 } from '@expo-google-fonts/inter'
 import { SpaceGrotesk_500Medium, SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk'
+import {
+  Fraunces_400Regular,
+  Fraunces_500Medium,
+  Fraunces_600SemiBold,
+  Fraunces_600SemiBold_Italic,
+} from '@expo-google-fonts/fraunces'
+import { JetBrainsMono_500Medium, JetBrainsMono_600SemiBold } from '@expo-google-fonts/jetbrains-mono'
 import { ThemeProvider } from './src/theme/ThemeProvider'
 import { AuthProvider, useAuth } from './src/auth/AuthProvider'
-import { ChatProvider } from './src/chat/store'
 import ErrorBoundary from './src/components/ErrorBoundary'
 import { ToastProvider } from './src/components/ui/Toast'
-import ChatScreen from './src/screens/ChatScreen'
+import SolverScreen from './src/screens/SolverScreen'
 import WelcomeScreen from './src/screens/WelcomeScreen'
 import BrandMark from './src/components/ui/BrandMark'
 
@@ -34,7 +40,7 @@ import BrandMark from './src/components/ui/BrandMark'
 SplashScreen.preventAutoHideAsync().catch(() => {})
 SplashScreen.setOptions({ fade: true, duration: 300 })
 
-const BOOT_BG = '#FAFAFC' // matches the native splash and the app background
+const BOOT_BG = '#F5F7FB' // matches the paper background
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -45,6 +51,12 @@ export default function App() {
     Inter_800ExtraBold,
     SpaceGrotesk_500Medium,
     SpaceGrotesk_700Bold,
+    Fraunces_400Regular,
+    Fraunces_500Medium,
+    Fraunces_600SemiBold,
+    Fraunces_600SemiBold_Italic,
+    JetBrainsMono_500Medium,
+    JetBrainsMono_600SemiBold,
   })
 
   return (
@@ -93,13 +105,7 @@ function Root({ fontsLoaded }: { fontsLoaded: boolean }) {
 
   return (
     <FadeIn key={user ? 'app' : 'welcome'}>
-      {user ? (
-        <ChatProvider>
-          <ChatScreen />
-        </ChatProvider>
-      ) : (
-        <WelcomeScreen />
-      )}
+      {user ? <SolverScreen /> : <WelcomeScreen />}
     </FadeIn>
   )
 }

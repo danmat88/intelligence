@@ -39,6 +39,13 @@
           "resizeMode": "contain",
           "backgroundColor": "#FAFAFC"
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Intelligence to access your photos to solve problems from images.",
+          "cameraPermission": "Allow Intelligence to use the camera to snap math problems."
+        }
       ]
     ],
     "owner": "matdan88-studio",

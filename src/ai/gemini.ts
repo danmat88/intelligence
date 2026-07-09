@@ -63,9 +63,10 @@ export function createGeminiClient(config: GeminiConfig): AIClient {
       generationConfig: {
         maxOutputTokens: opts.maxTokens ?? 2048,
         temperature: opts.temperature ?? 0.7,
-        // No pre-answer "thinking" — text starts streaming immediately (snappier
-        // chat + cheaper). Bump this for heavier reasoning tasks later.
-        thinkingConfig: { thinkingBudget: 0 },
+        // Chat keeps thinking OFF so text streams immediately. Solving turns it
+        // ON (-1 = dynamic budget, the model decides) — accuracy over latency.
+        thinkingConfig: { thinkingBudget: opts.thinking ? -1 : 0 },
+        ...(opts.json ? { responseMimeType: 'application/json' } : {}),
       },
     }
     if (opts.system) body.systemInstruction = { parts: [{ text: opts.system }] }
@@ -87,6 +88,7 @@ export function createGeminiClient(config: GeminiConfig): AIClient {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...headers },
       body: JSON.stringify(buildBody(contents, opts)),
+      signal: opts.signal,
     })
     const ms = Date.now() - t0
     if (!res.ok) {
