@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ActivityIndicator, Image, Pressable, StyleSheet, View } from 'react-native'
+import { ActivityIndicator, Image, Linking, Pressable, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
@@ -73,6 +73,19 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
             </Txt>
           </View>
         </View>
+
+        <Row
+          icon="shield"
+          label={t('settings.privacy')}
+          onPress={() => Linking.openURL('https://rezolvo.web.app/privacy')}
+          c={c}
+        />
+        <Row
+          icon="file-text"
+          label={t('settings.terms')}
+          onPress={() => Linking.openURL('https://rezolvo.web.app/terms')}
+          c={c}
+        />
 
         {/* Language: RO ↔ EN toggle (persisted; the AI answers follow it too). */}
         <Row

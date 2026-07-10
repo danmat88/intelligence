@@ -86,6 +86,8 @@ const STRINGS = {
       'This permanently deletes your account and every solved problem, on all devices. There is no undo.',
     'settings.confirm.cta': 'Delete forever',
     'settings.confirm.cancel': 'Cancel',
+    'settings.privacy': 'Privacy policy',
+    'settings.terms': 'Terms of service',
   },
   ro: {
     // — solver hero
@@ -159,6 +161,8 @@ const STRINGS = {
       'Îți șterge definitiv contul și toate problemele rezolvate, de pe toate dispozitivele. Nu există anulare.',
     'settings.confirm.cta': 'Șterge definitiv',
     'settings.confirm.cancel': 'Anulează',
+    'settings.privacy': 'Politica de confidențialitate',
+    'settings.terms': 'Termeni și condiții',
   },
 } as const
 
