@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Intelligence",
+    "name": "Rezolvo",
     "slug": "intelligence",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -11,7 +11,7 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.danielmatei.intelligence",
+      "package": "com.rezolvo.app",
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",

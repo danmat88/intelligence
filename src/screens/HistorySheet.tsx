@@ -108,6 +108,7 @@ export default function HistorySheet({
                 placeholderTextColor={c.textFaint}
                 value={query}
                 onChangeText={setQuery}
+                maxFontSizeMultiplier={1.2}
               />
               {!!query && (
                 <Pressable onPress={() => setQuery('')} hitSlop={8}>

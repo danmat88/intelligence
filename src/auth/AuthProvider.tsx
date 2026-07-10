@@ -1,13 +1,15 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import {
   getAuth,
   GoogleAuthProvider,
   linkWithCredential,
   onAuthStateChanged,
   reauthenticateWithCredential,
+  reload,
   signInAnonymously,
   signInWithCredential,
   signOut as firebaseSignOut,
+  updateProfile,
 } from '@react-native-firebase/auth'
 import { collection, deleteDoc, doc, getDocs, getFirestore } from '@react-native-firebase/firestore'
 import {
@@ -64,13 +66,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [signingIn, setSigningIn] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Professional consumer pattern: the app NEVER gates on sign-in. Whenever
+  // there is no session (first launch, sign-out, account deletion), we silently
+  // create an anonymous one and drop the user straight into the product; their
+  // work saves under the anonymous uid and carries over when they later link
+  // Google. One attempt per "null" event — if it fails (offline first launch),
+  // initializing ends and the Welcome fallback renders with manual options.
+  const autoAnonInFlight = useRef(false)
+
   useEffect(() => {
     if (WEB_CLIENT_ID) GoogleSignin.configure({ webClientId: WEB_CLIENT_ID })
     // Firebase persists the session natively; this fires immediately with the
     // restored user (or null) and again on every sign-in/out.
     return onAuthStateChanged(getAuth(), (u) => {
-      setUser(u ? toAuthUser(u) : null)
-      setInitializing(false)
+      if (u) {
+        autoAnonInFlight.current = false
+        setUser(toAuthUser(u))
+        setInitializing(false)
+        return
+      }
+      setUser(null)
+      if (!autoAnonInFlight.current) {
+        autoAnonInFlight.current = true
+        setInitializing(true) // hold the boot frame instead of flashing a gate
+        signInAnonymously(getAuth()).catch(() => {
+          // Offline / disabled — fall through to the manual Welcome fallback.
+          autoAnonInFlight.current = false
+          setInitializing(false)
+        })
+      } else {
+        setInitializing(false)
+      }
     })
   }, [])
 
@@ -87,6 +113,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const response = await GoogleSignin.signIn()
         // response.type is 'cancelled' when the user backs out - not an error
         if (isSuccessResponse(response)) {
+          // Google's own profile data — needed below because LINKING an anonymous
+          // user does NOT copy the provider profile onto the account.
+          const gUser = response.data.user
           // RNFirebase's native credential requires BOTH tokens; the signIn()
           // response only carries idToken, so fetch the pair via getTokens()
           const { idToken, accessToken } = await GoogleSignin.getTokens()
@@ -111,7 +140,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           } else {
             await signInWithCredential(getAuth(), credential)
           }
-          // onAuthStateChanged updates `user`
+
+          // Post sign-in fixups for the LINK path (harmless on the others):
+          // 1. Linking keeps the anonymous (empty) profile — backfill name/photo
+          //    from Google so the account actually shows who's signed in.
+          const fresh = getAuth().currentUser
+          if (fresh && (!fresh.displayName || !fresh.photoURL)) {
+            try {
+              await updateProfile(fresh, {
+                displayName: fresh.displayName ?? gUser.name ?? undefined,
+                photoURL: fresh.photoURL ?? gUser.photo ?? undefined,
+              })
+              await reload(fresh)
+            } catch {
+              // profile polish is best-effort — never block the sign-in on it
+            }
+          }
+          // 2. Linking does NOT fire onAuthStateChanged (same user), so push the
+          //    updated user into React state by hand.
+          const now = getAuth().currentUser
+          if (now) setUser(toAuthUser(now))
         }
       } catch (e) {
         if (isErrorWithCode(e)) {

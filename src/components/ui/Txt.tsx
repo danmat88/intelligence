@@ -14,11 +14,16 @@ type Props = TextProps & {
  * The app's only text primitive. Applies the Inter family for the given weight
  * (named families carry their own weight, so we never set fontWeight alongside).
  * Use this instead of <Text> everywhere for consistent typography.
+ *
+ * Accessibility font scaling is honoured but CAPPED (1.3×) so huge system fonts
+ * enlarge text without shattering fixed-height chrome — the standard big-app
+ * compromise. Pass your own maxFontSizeMultiplier to override per case.
  */
 export default function Txt({ weight = 'regular', size, color, style, ...rest }: Props) {
   const { theme } = useTheme()
   return (
     <Text
+      maxFontSizeMultiplier={1.3}
       style={[
         { fontFamily: theme.font[weight], color: color ?? theme.colors.text },
         size != null ? { fontSize: size } : null,

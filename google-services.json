@@ -22,6 +22,51 @@
           }
         },
         {
+          "client_id": "781036746021-k5l5er0r47acigf87bc7i7kuat9n78fm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.danielmatei.intelligence",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "781036746021-g2p1lnmu4617b25042lgo6pc13a1tblu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAqJ9j1cgmlF7HIbPJZXCsFQocPRDcStvY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "781036746021-g2p1lnmu4617b25042lgo6pc13a1tblu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:781036746021:android:7e4e7ee46c1a11a62256cc",
+        "android_client_info": {
+          "package_name": "com.rezolvo.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "781036746021-ajcav820es25ms3t0040ee40l27hepcu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.rezolvo.app",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
           "client_id": "781036746021-g2p1lnmu4617b25042lgo6pc13a1tblu.apps.googleusercontent.com",
           "client_type": 3
         }

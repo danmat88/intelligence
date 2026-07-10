@@ -91,8 +91,18 @@ function Root({ fontsLoaded }: { fontsLoaded: boolean }) {
     if (ready) SplashScreen.hideAsync().catch(() => {}) // fades into the JS frame below
   }, [ready])
 
+  // Once the app has been ready, a later not-ready spell means a session switch
+  // (sign-out → fresh guest). Show the brand beat instead of a blank cut.
+  const wasReady = useRef(false)
+  if (ready) wasReady.current = true
+
   // Plain twin of the native splash, held until fonts + session are ready.
-  if (!ready) return <View style={styles.boot} />
+  if (!ready)
+    return (
+      <View style={styles.boot}>
+        {wasReady.current ? <BrandMark /> : null}
+      </View>
+    )
 
   if (bootedSignedIn.current === null) bootedSignedIn.current = !!user
 

@@ -53,8 +53,8 @@ export default function BrandMark({
           transform: [{ translateY: name.interpolate({ inputRange: [0, 1], outputRange: [8, 0] }) }],
         }}
       >
-        <Txt size={36} style={{ letterSpacing: 0, fontFamily: theme.font.display }}>
-          Intelligence
+        <Txt size={38} style={{ letterSpacing: 0, fontFamily: theme.font.serif }}>
+          Rezolvo
         </Txt>
         {tagline ? (
           <Txt size={16} color={c.textMuted} style={styles.tagline}>

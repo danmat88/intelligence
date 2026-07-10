@@ -1,15 +1,15 @@
 @echo off
-title IntelliMath dev launcher
+title Rezolvo dev launcher
 cd /d C:\dev\intelligence
 
 echo.
 echo  ============================================
-echo   Starting IntelliMath dev environment
+echo   Starting Rezolvo dev environment
 echo  ============================================
 echo.
 
 REM 1) Open Metro in its own window (leave it running).
-start "IntelliMath Metro" cmd /k "cd /d C:\dev\intelligence && npm run dev:client"
+start "Rezolvo Metro" cmd /k "cd /d C:\dev\intelligence && npm run dev:client"
 
 REM 2) Wait until Metro answers on 8081 (up to ~120s; cold start is slow).
 echo  Waiting for Metro to come up...
@@ -18,7 +18,7 @@ powershell -NoProfile -Command "for($i=0;$i -lt 60;$i++){try{if((Invoke-WebReque
 REM 3) Connect the phone (tunnel + launch the app).
 echo.
 echo  Connecting phone...
-start "IntelliMath Reconnect" powershell -NoExit -ExecutionPolicy Bypass -File "C:\dev\intelligence\reconnect.ps1"
+start "Rezolvo Reconnect" powershell -NoExit -ExecutionPolicy Bypass -File "C:\dev\intelligence\reconnect.ps1"
 
 echo.
 echo  Done. Watch your phone - it should bundle and open.

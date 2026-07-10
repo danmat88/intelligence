@@ -6,7 +6,9 @@ import { StatusBar } from 'expo-status-bar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
+import CrossFade from '../components/ui/CrossFade'
 import ScreenBackground from '../components/ui/ScreenBackground'
+import { useToast } from '../components/ui/Toast'
 import Txt from '../components/ui/Txt'
 import SolutionView from '../components/ui/SolutionView'
 import SymbolBar from '../components/ui/SymbolBar'
@@ -69,7 +71,10 @@ function friendlyError(e: unknown): string {
     return "Couldn't reach the internet — check your connection and try again."
   if (/\b429\b|rate|quota|exhausted|resource_exhausted/i.test(raw))
     return "I'm a bit busy right now — give it a moment and try again."
-  if (/\b40[13]\b|not signed in|unauthenticated/i.test(raw)) return 'Please sign in again, then retry.'
+  // 403 = the AI service refusing us (billing/permissions upstream), NOT the user's login.
+  if (/\b403\b|permission.?denied|dunning/i.test(raw))
+    return 'The AI service is unavailable right now — please try again later.'
+  if (/\b401\b|not signed in|unauthenticated/i.test(raw)) return 'Please sign in again, then retry.'
   if (/\b50\d\b|unavailable|overloaded|high demand/i.test(raw))
     return 'The model is busy right now — please try again in a moment.'
   return 'Something went wrong solving that. Try again.'
@@ -109,7 +114,8 @@ export default function SolverScreen() {
   const { theme } = useTheme()
   const c = theme.colors
   const insets = useSafeAreaInsets()
-  const { user, signIn, signingIn } = useAuth()
+  const { user, signIn, signingIn, error: authError } = useAuth()
+  const toast = useToast()
   const [thread, setThread] = useState<Turn[]>([])
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
@@ -130,6 +136,21 @@ export default function SolverScreen() {
       problemIdRef.current = null
     }
   }, [user?.id])
+
+  // Visible feedback for the sign-in flow (linking fires no navigation, so the
+  // moment needs its own confirmation): toast on guest→signed-in, toast on error.
+  const wasAnonRef = useRef(user?.isAnonymous ?? false)
+  useEffect(() => {
+    if (wasAnonRef.current && user && !user.isAnonymous) {
+      toast.show(`Signed in as ${user.name ?? user.email}`)
+    }
+    wasAnonRef.current = user?.isAnonymous ?? false
+  }, [user, toast])
+  const lastAuthErrRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (authError && authError !== lastAuthErrRef.current) toast.show(authError, 'alert-triangle')
+    lastAuthErrRef.current = authError
+  }, [authError, toast])
 
   const scrollDown = useCallback(() => {
     requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: true }))
@@ -270,10 +291,10 @@ export default function SolverScreen() {
       <StatusBar style="dark" />
 
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+        <View style={styles.headerInner}>
         <Txt style={[styles.wordmark, { fontFamily: theme.font.serif, color: c.text }]}>
-          Intelli
-          <Txt style={{ fontFamily: theme.font.serif, color: c.accent, fontSize: 20 }}>·</Txt>
-          Math
+          Rezolv
+          <Txt style={{ fontFamily: theme.font.serifItalic, color: c.accent, fontSize: 20 }}>o</Txt>
         </Txt>
         <View style={styles.headerRight}>
           {!empty && (
@@ -299,35 +320,48 @@ export default function SolverScreen() {
           >
             <Feather name="clock" size={19} color={c.textMuted} />
           </Pressable>
-          {user?.isAnonymous ? (
-            // Guest: one clear upgrade action — linking keeps their saved work.
-            <Pressable
-              onPress={signIn}
-              disabled={signingIn}
-              hitSlop={8}
-              style={({ pressed }) => [
-                styles.newBtn,
-                { borderColor: c.accent, backgroundColor: c.accentSoft, opacity: pressed || signingIn ? 0.6 : 1 },
-              ]}
-            >
-              <Feather name="log-in" size={15} color={c.accent} />
-              <Txt weight="semibold" size={13} color={c.accent}>
-                Sign in
-              </Txt>
-            </Pressable>
-          ) : (
-            <Pressable
-              onPress={() => setSettingsOpen(true)}
-              hitSlop={8}
-              style={({ pressed }) => [styles.iconBtn, { backgroundColor: c.surface, borderColor: c.border, opacity: pressed ? 0.55 : 1 }]}
-            >
-              <Feather name="settings" size={19} color={c.textMuted} />
-            </Pressable>
-          )}
+          {/* Account slot: FIXED 38px footprint in both states, so the swap
+              never resizes the row and neighbours never move. */}
+          <CrossFade dep={user?.isAnonymous ? 'guest' : 'account'} style={styles.accountSlot}>
+            {user?.isAnonymous ? (
+              // Guest: circular log-in button (same size as the avatar it becomes).
+              <Pressable
+                onPress={signIn}
+                disabled={signingIn}
+                hitSlop={8}
+                style={({ pressed }) => [
+                  styles.iconBtn,
+                  { backgroundColor: c.accentSoft, borderColor: c.accent, opacity: pressed ? 0.6 : 1 },
+                ]}
+              >
+                {signingIn ? (
+                  <ActivityIndicator size="small" color={c.accent} />
+                ) : (
+                  <Feather name="log-in" size={17} color={c.accent} />
+                )}
+              </Pressable>
+            ) : (
+              // Signed in: your avatar IS the account button — the visible proof
+              // you're logged in. Falls back to the gear when there's no photo.
+              <Pressable
+                onPress={() => setSettingsOpen(true)}
+                hitSlop={8}
+                style={({ pressed }) => [styles.iconBtn, { backgroundColor: c.surface, borderColor: c.border, opacity: pressed ? 0.55 : 1 }]}
+              >
+                {user?.photo ? (
+                  <Image source={{ uri: user.photo }} style={styles.avatar} />
+                ) : (
+                  <Feather name="settings" size={19} color={c.textMuted} />
+                )}
+              </Pressable>
+            )}
+          </CrossFade>
+        </View>
         </View>
       </View>
 
       <KeyboardAvoidingView style={styles.flex} behavior="padding" keyboardVerticalOffset={-insets.bottom}>
+        <View style={styles.column}>
         {empty ? (
           <ScrollView
             contentContainerStyle={styles.heroWrap}
@@ -422,6 +456,7 @@ export default function SolverScreen() {
               value={input}
               onChangeText={setInput}
               multiline
+              maxFontSizeMultiplier={1.2}
             />
             <Pressable
               onPress={() => sendText(input)}
@@ -435,7 +470,7 @@ export default function SolverScreen() {
               <Feather name="arrow-up" size={18} color={input.trim() && !sending ? c.onAccent : c.textFaint} />
             </Pressable>
           </View>
-          {user?.isAnonymous && !empty ? (
+          {user?.isAnonymous ? (
             <Pressable onPress={signIn} hitSlop={6}>
               <Txt size={10.5} weight="semibold" color={c.accent} style={styles.disc}>
                 Sign in to keep your work — it takes 5 seconds
@@ -446,6 +481,7 @@ export default function SolverScreen() {
               Verify important answers — AI can make mistakes.
             </Txt>
           )}
+        </View>
         </View>
       </KeyboardAvoidingView>
 
@@ -551,16 +587,26 @@ function PendingRow() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  // One content column, identical on every screen size: full width on phones,
+  // capped and centered on wide/tablet screens (controls stay fixed-dp).
+  column: { flex: 1, width: '100%', maxWidth: 720, alignSelf: 'center' },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 18,
     paddingBottom: 10,
   },
+  headerInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    maxWidth: 720,
+    alignSelf: 'center',
+  },
   wordmark: { fontSize: 20, fontWeight: '600' },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  iconBtn: { width: 38, height: 38, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  iconBtn: { width: 38, height: 38, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  accountSlot: { width: 38, height: 38 },
+  avatar: { width: 30, height: 30, borderRadius: 15 },
   newBtn: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -1,7 +1,7 @@
 # reconnect.ps1 — reconnect the phone to Metro after unplug/replug.
 # Assumes Metro is already running (npm run dev:client). If not, start that first.
-$pkg    = "com.danielmatei.intelligence"
-$scheme = "exp+intelligence"
+$pkg    = "com.rezolvo.app"
+$scheme = "exp+intelligence"   # scheme follows the (unchanged) Expo slug, not the package
 $url    = "http://localhost:8081"
 
 Write-Host "1) adb devices:" -ForegroundColor Cyan
@@ -23,5 +23,6 @@ Write-Host "   Metro OK." -ForegroundColor Green
 Write-Host "4) relaunching app pointed at localhost..." -ForegroundColor Cyan
 adb shell am force-stop $pkg
 $deep = "$scheme`://expo-development-client/?url=$([uri]::EscapeDataString($url))"
-adb shell am start -a android.intent.action.VIEW -d $deep | Out-Null
+# target the package explicitly so the OLD app (if still installed) never opens instead
+adb shell am start -a android.intent.action.VIEW -d $deep $pkg | Out-Null
 Write-Host "Done. Watch the phone — it should bundle and open." -ForegroundColor Green

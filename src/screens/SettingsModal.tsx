@@ -72,7 +72,15 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
           </View>
         </View>
 
-        <Row icon="log-out" label="Sign out" onPress={() => { onClose(); signOut() }} c={c} />
+        <Row
+          icon="log-out"
+          label="Sign out"
+          onPress={() => {
+            onClose()
+            signOut().then(() => toast.show('Signed out'))
+          }}
+          c={c}
+        />
 
         <Pressable
           onPress={() => setConfirming(true)}
@@ -89,7 +97,7 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
           </Txt>
         </Pressable>
         <Txt size={12} color={c.textFaint} style={{ paddingHorizontal: 14, lineHeight: 17 }}>
-          Deleting removes your account and all conversations permanently.
+          Deleting removes your account and all your solved problems permanently.
         </Txt>
         </View>
       </Overlay>

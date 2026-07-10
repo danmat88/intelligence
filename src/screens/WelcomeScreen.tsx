@@ -32,7 +32,7 @@ export default function WelcomeScreen() {
 
       <View style={[styles.wrap, { paddingTop: insets.top, paddingBottom: insets.bottom + 24 }]}>
         <BrandMark
-          tagline="Your AI assistant for ideas, answers and everything in between."
+          tagline="Snap any math problem — solved and explained, step by step."
           onEntered={revealFooter}
         />
 
@@ -88,7 +88,7 @@ export default function WelcomeScreen() {
             style={({ pressed }) => [styles.tryBtn, { opacity: pressed || signingIn ? 0.5 : 1 }]}
           >
             <Txt weight="semibold" size={14} color={c.accent}>
-              Try it first — no account needed
+              Continue without an account
             </Txt>
           </Pressable>
         </Animated.View>
