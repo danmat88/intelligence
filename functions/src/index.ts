@@ -22,8 +22,13 @@ const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY')
 
 // Models are whitelisted server-side: the app can pick between these two,
 // and a stolen client still can't run anything pricier.
-const DEFAULT_MODEL = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash'
-const ALLOWED_MODELS = new Set([DEFAULT_MODEL, 'gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.5-pro'])
+const DEFAULT_MODEL = process.env.GEMINI_MODEL ?? 'gemini-flash-latest'
+const ALLOWED_MODELS = new Set([
+  DEFAULT_MODEL,
+  'gemini-flash-latest',
+  'gemini-flash-lite-latest',
+  'gemini-pro-latest',
+])
 const GOOGLE_BASE = 'https://generativelanguage.googleapis.com/v1beta'
 
 // Per-user fixed-window rate limit. The window doc lives at the Firestore
@@ -92,11 +97,14 @@ export const gemini = onRequest(
       contents?: unknown
       systemInstruction?: unknown
       generationConfig?: Record<string, unknown>
+      tools?: unknown
     }
     const gen = body.generationConfig ?? {}
     const payload = {
       contents: body.contents,
       systemInstruction: body.systemInstruction,
+      // Forward tools (e.g. code execution) when the app asks for exact computation.
+      ...(body.tools ? { tools: body.tools } : {}),
       generationConfig: {
         ...gen,
         maxOutputTokens: Math.min(Number(gen.maxOutputTokens) || 2048, 4096),

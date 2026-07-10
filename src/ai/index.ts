@@ -16,7 +16,7 @@ export type { AIClient, AIResult, GenerateOptions } from './types'
  */
 const proxyUrl = process.env.EXPO_PUBLIC_AI_PROXY_URL ?? ''
 const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY ?? ''
-const model = process.env.EXPO_PUBLIC_GEMINI_MODEL ?? 'gemini-2.5-flash'
+const model = process.env.EXPO_PUBLIC_GEMINI_MODEL ?? 'gemini-flash-latest'
 
 export const ai = proxyUrl
   ? createGeminiClient({

@@ -9,7 +9,7 @@ import { SOLVE_JSON_SYSTEM, FOLLOWUP_SYSTEM, SOLVE_USER_PROMPT } from './prompt'
 const SOLVE = {
   system: SOLVE_JSON_SYSTEM,
   json: true,
-  model: 'gemini-2.5-pro',
+  model: 'gemini-pro-latest',
   thinking: true,
   temperature: 0.2,
   maxTokens: 4096,
@@ -35,7 +35,7 @@ export async function solveProblem(problem: string, signal?: AbortSignal): Promi
 export async function followUp(turns: ChatTurn[], signal?: AbortSignal): Promise<string> {
   const { text } = await ai.chat(turns, {
     system: FOLLOWUP_SYSTEM,
-    model: 'gemini-2.5-flash',
+    model: 'gemini-flash-latest',
     temperature: 0.4,
     maxTokens: 1500,
     signal,
