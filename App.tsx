@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Animated, StyleSheet, View } from 'react-native'
 import { KeyboardProvider } from 'react-native-keyboard-controller'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
+import { SystemBars } from 'react-native-edge-to-edge'
 import * as SplashScreen from 'expo-splash-screen'
 import {
   useFonts,
@@ -61,6 +62,7 @@ export default function App() {
 
   return (
     <SafeAreaProvider style={styles.boot}>
+      <SystemBars style="dark" />
       <ErrorBoundary>
         <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
           <ThemeProvider>

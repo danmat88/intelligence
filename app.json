@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "backgroundColor": "#FAFAFC",
+    "backgroundColor": "#F5F7FB",
     "ios": {
       "supportsTablet": true
     },
@@ -37,7 +37,7 @@
           "image": "./assets/android-icon-foreground.png",
           "imageWidth": 192,
           "resizeMode": "contain",
-          "backgroundColor": "#FAFAFC"
+          "backgroundColor": "#F5F7FB"
         }
       ],
       [
@@ -45,6 +45,14 @@
         {
           "photosPermission": "Allow Intelligence to access your photos to solve problems from images.",
           "cameraPermission": "Allow Intelligence to use the camera to snap math problems."
+        }
+      ],
+      [
+        "react-native-edge-to-edge",
+        {
+          "android": {
+            "enforceNavigationBarContrast": false
+          }
         }
       ]
     ],

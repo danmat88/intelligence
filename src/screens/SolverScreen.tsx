@@ -1,5 +1,5 @@
-import { useCallback, useRef, useState } from 'react'
-import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { ActivityIndicator, Animated, Image, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native'
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 import { StatusBar } from 'expo-status-bar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -215,14 +215,14 @@ export default function SolverScreen() {
           <Pressable
             onPress={() => setHistoryOpen(true)}
             hitSlop={8}
-            style={({ pressed }) => [styles.gearBtn, { opacity: pressed ? 0.5 : 1 }]}
+            style={({ pressed }) => [styles.iconBtn, { backgroundColor: c.surface, borderColor: c.border, opacity: pressed ? 0.55 : 1 }]}
           >
             <Feather name="clock" size={19} color={c.textMuted} />
           </Pressable>
           <Pressable
             onPress={() => setSettingsOpen(true)}
             hitSlop={8}
-            style={({ pressed }) => [styles.gearBtn, { opacity: pressed ? 0.5 : 1 }]}
+            style={({ pressed }) => [styles.iconBtn, { backgroundColor: c.surface, borderColor: c.border, opacity: pressed ? 0.55 : 1 }]}
           >
             <Feather name="settings" size={19} color={c.textMuted} />
           </Pressable>
@@ -273,8 +273,24 @@ export default function SolverScreen() {
               </Txt>
             </Pressable>
             <Txt size={13} color={c.textFaint} style={styles.orType}>
-              …or type an equation below
+              …or tap an example
             </Txt>
+            <View style={styles.examples}>
+              {['2x² + 5x − 3 = 0', '∫ x·eˣ dx', 'derivative of x²·sin(x)'].map((ex) => (
+                <Pressable
+                  key={ex}
+                  onPress={() => sendText(ex)}
+                  style={({ pressed }) => [
+                    styles.chip,
+                    { backgroundColor: c.surface, borderColor: c.border, opacity: pressed ? 0.6 : 1 },
+                  ]}
+                >
+                  <Txt size={12.5} color={c.textMuted} style={{ fontFamily: theme.font.mono }}>
+                    {ex}
+                  </Txt>
+                </Pressable>
+              ))}
+            </View>
           </ScrollView>
         ) : (
           <ScrollView
@@ -320,7 +336,7 @@ export default function SolverScreen() {
               <Feather name="arrow-up" size={18} color={input.trim() && !sending ? c.onAccent : c.textFaint} />
             </Pressable>
           </View>
-          <Txt size={10.5} color={c.textFaint} style={styles.disc}>
+          <Txt size={10} color={c.textFaint} style={[styles.disc, { fontFamily: theme.font.mono }]}>
             Verify important answers — AI can make mistakes.
           </Txt>
         </View>
@@ -335,9 +351,18 @@ export default function SolverScreen() {
 function Bubble({ turn, onChip }: { turn: Turn; onChip?: (id: string) => void }) {
   const { theme } = useTheme()
   const c = theme.colors
+  const anim = useRef(new Animated.Value(0)).current
+  useEffect(() => {
+    Animated.timing(anim, { toValue: 1, duration: 320, useNativeDriver: true }).start()
+  }, [anim])
+  const wrap = {
+    opacity: anim,
+    transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [10, 0] }) }],
+  }
 
+  let inner: ReactNode
   if (turn.role === 'user') {
-    return (
+    inner = (
       <View style={[styles.userBubble, { backgroundColor: c.accent }]}>
         {!!turn.imageUri && <Image source={{ uri: turn.imageUri }} style={styles.userImg} resizeMode="cover" />}
         {!!turn.text && (
@@ -347,10 +372,8 @@ function Bubble({ turn, onChip }: { turn: Turn; onChip?: (id: string) => void })
         )}
       </View>
     )
-  }
-
-  if (turn.pending) {
-    return (
+  } else if (turn.pending) {
+    inner = (
       <View style={[styles.asstCard, { backgroundColor: c.surface, borderColor: c.border }]}>
         <View style={styles.pendingRow}>
           <ActivityIndicator color={c.accent} />
@@ -360,23 +383,22 @@ function Bubble({ turn, onChip }: { turn: Turn; onChip?: (id: string) => void })
         </View>
       </View>
     )
-  }
-
-  if (turn.error) {
-    return (
+  } else if (turn.error) {
+    inner = (
       <View style={[styles.asstCard, { backgroundColor: c.surface, borderColor: c.danger }]}>
         <Txt size={14} color={c.danger}>
           {turn.text}
         </Txt>
       </View>
     )
+  } else {
+    inner = (
+      <View style={[styles.asstCard, { backgroundColor: c.surface, borderColor: c.border }]}>
+        <SolutionView content={turn.text} onChip={onChip} />
+      </View>
+    )
   }
-
-  return (
-    <View style={[styles.asstCard, { backgroundColor: c.surface, borderColor: c.border }]}>
-      <SolutionView content={turn.text} onChip={onChip} />
-    </View>
-  )
+  return <Animated.View style={wrap}>{inner}</Animated.View>
 }
 
 const styles = StyleSheet.create({
@@ -390,7 +412,7 @@ const styles = StyleSheet.create({
   },
   wordmark: { fontSize: 20, fontWeight: '600' },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  gearBtn: { width: 34, height: 34, alignItems: 'center', justifyContent: 'center' },
+  iconBtn: { width: 38, height: 38, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   newBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -422,6 +444,8 @@ const styles = StyleSheet.create({
   snapSub: { marginTop: 5, textAlign: 'center' },
   libBtn: { flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 20, padding: 6 },
   orType: { marginTop: 22 },
+  examples: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginTop: 12 },
+  chip: { borderWidth: 1, borderRadius: 999, paddingVertical: 8, paddingHorizontal: 13 },
 
   // thread
   thread: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 16, gap: 14 },
@@ -466,8 +490,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 5 },
     elevation: 3,
   },
-  camBtn: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
+  camBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   input: { flex: 1, fontSize: 15.5, fontFamily: 'Inter_400Regular', maxHeight: 120, paddingVertical: 8, paddingTop: 9 },
-  sendBtn: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
+  sendBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   disc: { textAlign: 'center', marginTop: 7 },
 })

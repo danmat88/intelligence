@@ -45,6 +45,14 @@ function buildHtml(content: string, c: Theme['colors']) {
   .katex-display{margin:.3em 0;overflow-x:auto;overflow-y:hidden}
   p{margin:.5em 0}
   strong{font-weight:700}
+  @media (prefers-reduced-motion:no-preference){
+    #c{animation:fadeup .45s ease both}
+    @keyframes fadeup{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    .parabola{stroke-dasharray:640;stroke-dashoffset:640;animation:draw 1.25s ease .25s forwards}
+    @keyframes draw{to{stroke-dashoffset:0}}
+    .answer{animation:pop .5s cubic-bezier(.2,.8,.3,1) .15s both}
+    @keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+  }
 </style></head><body>
 <div id="c"></div>
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
