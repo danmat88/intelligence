@@ -34,6 +34,8 @@ const STRINGS = {
     'pending.1': 'Reading the problem…',
     'pending.2': 'Working the steps…',
     'pending.3': 'Double-checking the answer…',
+    'pending.4': 'This one is tougher — still working on it…',
+    'pending.cancel': 'Cancel',
     // — chips / turns
     'turn.explainStep': 'Explain step {n}',
     'turn.similar': 'A similar problem',
@@ -109,6 +111,8 @@ const STRINGS = {
     'pending.1': 'Citesc problema…',
     'pending.2': 'Lucrez pașii…',
     'pending.3': 'Verific răspunsul…',
+    'pending.4': 'E mai grea — încă lucrez la ea…',
+    'pending.cancel': 'Anulează',
     // — chips / turns
     'turn.explainStep': 'Explică pasul {n}',
     'turn.similar': 'O problemă similară',

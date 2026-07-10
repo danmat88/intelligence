@@ -79,6 +79,25 @@ function friendlyError(e: unknown, t: T): string {
   return t('err.generic')
 }
 
+/** Readable-ify LaTeX for plain-text sharing (√ instead of \sqrt etc.). */
+function deTeXShare(s: string): string {
+  return s
+    .replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, '($1)/($2)')
+    .replace(/\\sqrt\{([^{}]*)\}/g, '√($1)')
+    .replace(/\\int/g, '∫')
+    .replace(/\\cdot/g, '·')
+    .replace(/\\times/g, '×')
+    .replace(/\\pi/g, 'π')
+    .replace(/\\theta/g, 'θ')
+    .replace(/\\leq?/g, '≤')
+    .replace(/\\geq?/g, '≥')
+    .replace(/\\neq?/g, '≠')
+    .replace(/\\pm/g, '±')
+    .replace(/\\infty/g, '∞')
+    .replace(/\\[a-zA-Z]+/g, (m) => m.slice(1))
+    .replace(/[{}]/g, '')
+}
+
 /** Flatten a structured solution (or follow-up) into shareable plain text. */
 function solutionText(raw: string): string {
   try {
@@ -92,9 +111,9 @@ function solutionText(raw: string): string {
       }
       if (j.error) return j.error
       const lines = (j.steps ?? []).map(
-        (st, i) => `${i + 1}. ${st.math ?? ''}${st.why ? `  (${st.why})` : ''}`,
+        (st, i) => `${i + 1}. ${deTeXShare(st.math ?? '')}${st.why ? `  (${deTeXShare(st.why)})` : ''}`,
       )
-      if (j.answer) lines.push(`\nAnswer: ${j.answer}`)
+      if (j.answer) lines.push(`\nAnswer: ${deTeXShare(j.answer)}`)
       if (lines.length) return lines.join('\n')
     }
   } catch {
@@ -124,6 +143,7 @@ export default function SolverScreen() {
   const scrollRef = useRef<ScrollView>(null)
   const threadRef = useRef<Turn[]>([])
   const problemIdRef = useRef<string | null>(null)
+  const abortRef = useRef<AbortController | null>(null)
   const prevUidRef = useRef<string | undefined>(user?.id)
   const empty = thread.length === 0
 
@@ -190,26 +210,43 @@ export default function SolverScreen() {
   )
 
   const run = useCallback(
-    async (userTurn: Turn, solver: () => Promise<string>) => {
+    async (userTurn: Turn, solver: (signal: AbortSignal) => Promise<string>) => {
       const asstId = uid()
       const base = threadRef.current
+      const ctrl = new AbortController()
+      abortRef.current = ctrl
       commit([...base, userTurn, { id: asstId, role: 'assistant', text: '', pending: true }])
       setSending(true)
       scrollDown()
       try {
-        const text = await solver()
+        const text = await solver(ctrl.signal)
+        if (ctrl.signal.aborted) return
         const done: Turn[] = [...base, userTurn, { id: asstId, role: 'assistant', text }]
         commit(done)
         persist(done)
       } catch (e) {
+        if (ctrl.signal.aborted) {
+          // User cancelled — quietly drop the attempt, back to where they were.
+          commit(base)
+          return
+        }
         commit([...base, userTurn, { id: asstId, role: 'assistant', text: friendlyError(e, t), error: true }])
       } finally {
+        if (abortRef.current === ctrl) abortRef.current = null
         setSending(false)
         scrollDown()
       }
     },
     [commit, persist, scrollDown, t],
   )
+
+  const cancelRun = useCallback(() => {
+    abortRef.current?.abort()
+    // abort may not reject an in-flight fetch immediately on RN — clear the UI now
+    const base = threadRef.current.filter((x) => !x.pending)
+    commit(base.length && base[base.length - 1].role === 'user' ? base.slice(0, -1) : base)
+    setSending(false)
+  }, [commit])
 
   const priorTurns = useCallback(
     (): ChatTurn[] =>
@@ -226,8 +263,8 @@ export default function SolverScreen() {
       setInput('')
       const isFirst = threadRef.current.length === 0
       const turns: ChatTurn[] = [...priorTurns(), { role: 'user', text }]
-      run({ id: uid(), role: 'user', text }, () =>
-        isFirst ? solveProblem(text, langName) : followUp(turns, langName),
+      run({ id: uid(), role: 'user', text }, (sig) =>
+        isFirst ? solveProblem(text, langName, sig) : followUp(turns, langName, sig),
       )
     },
     [sending, run, priorTurns, langName],
@@ -258,18 +295,20 @@ export default function SolverScreen() {
       }
       if (id.startsWith('step:')) {
         const n = id.slice(5)
-        run({ id: uid(), role: 'user', text: t('turn.explainStep', { n }) }, () =>
+        run({ id: uid(), role: 'user', text: t('turn.explainStep', { n }) }, (sig) =>
           followUp(
             [...priorTurns(), { role: 'user', text: `Explain step ${n} again, more simply — I don't get that move.` }],
             langName,
+            sig,
           ),
         )
         return
       }
-      run({ id: uid(), role: 'user', text: t('turn.similar') }, () =>
+      run({ id: uid(), role: 'user', text: t('turn.similar') }, (sig) =>
         followUp(
           [...priorTurns(), { role: 'user', text: 'Give me a similar problem to practice — just the problem, no solution.' }],
           langName,
+          sig,
         ),
       )
     },
@@ -285,7 +324,7 @@ export default function SolverScreen() {
         // A photo is always a NEW problem — one thread per problem keeps the
         // model accurate and history clean, so leave the previous thread behind.
         if (threadRef.current.length > 0) reset()
-        run({ id: uid(), role: 'user', text: '', imageUri: img.uri }, () => solveImage(img, langName))
+        run({ id: uid(), role: 'user', text: '', imageUri: img.uri }, (sig) => solveImage(img, langName, sig))
       } catch {
         commit([...threadRef.current, { id: uid(), role: 'assistant', text: t('err.camera'), error: true }])
       }
@@ -440,8 +479,8 @@ export default function SolverScreen() {
             keyboardShouldPersistTaps="handled"
             onContentSizeChange={scrollDown}
           >
-            {thread.map((t) => (
-              <Bubble key={t.id} turn={t} onChip={handleChip} />
+            {thread.map((x) => (
+              <Bubble key={x.id} turn={x} onChip={handleChip} onCancel={cancelRun} />
             ))}
           </ScrollView>
         )}
@@ -498,7 +537,15 @@ export default function SolverScreen() {
   )
 }
 
-function Bubble({ turn, onChip }: { turn: Turn; onChip?: (id: string) => void }) {
+function Bubble({
+  turn,
+  onChip,
+  onCancel,
+}: {
+  turn: Turn
+  onChip?: (id: string) => void
+  onCancel?: () => void
+}) {
   const { theme } = useTheme()
   const { t } = useI18n()
   const c = theme.colors
@@ -526,7 +573,7 @@ function Bubble({ turn, onChip }: { turn: Turn; onChip?: (id: string) => void })
   } else if (turn.pending) {
     inner = (
       <View style={[styles.asstCard, { backgroundColor: c.surface, borderColor: c.border }]}>
-        <PendingRow />
+        <PendingRow onCancel={onCancel} />
       </View>
     )
   } else if (turn.error) {
@@ -581,24 +628,36 @@ function Bubble({ turn, onChip }: { turn: Turn; onChip?: (id: string) => void })
   return <Animated.View style={wrap}>{inner}</Animated.View>
 }
 
-// Rotating status while the model works — honest about the stages and makes the
-// (reasoning-model) wait feel alive instead of a silent spinner.
-function PendingRow() {
+// Elapsed-aware status while the model works: honest stages early on, and past
+// ~20s an explicit "this one is tougher" so a long solve reads as intentional
+// effort, not a hang — plus a cancel escape hatch.
+function PendingRow({ onCancel }: { onCancel?: () => void }) {
   const { theme } = useTheme()
   const { t } = useI18n()
   const c = theme.colors
-  const stages = [t('pending.1'), t('pending.2'), t('pending.3')]
-  const [stage, setStage] = useState(0)
+  const [elapsed, setElapsed] = useState(0)
   useEffect(() => {
-    const id = setInterval(() => setStage((s) => Math.min(s + 1, 2)), 3500)
+    const started = Date.now()
+    const id = setInterval(() => setElapsed(Date.now() - started), 1000)
     return () => clearInterval(id)
   }, [])
+  const label =
+    elapsed < 4000 ? t('pending.1') : elapsed < 10000 ? t('pending.2') : elapsed < 22000 ? t('pending.3') : t('pending.4')
   return (
-    <View style={styles.pendingRow}>
-      <ActivityIndicator color={c.accent} />
-      <Txt size={13.5} color={c.textMuted}>
-        {stages[stage]}
-      </Txt>
+    <View style={styles.pendingWrap}>
+      <View style={styles.pendingRow}>
+        <ActivityIndicator color={c.accent} />
+        <Txt size={13.5} color={c.textMuted} style={styles.flex}>
+          {label}
+        </Txt>
+      </View>
+      {onCancel && elapsed >= 5000 && (
+        <Pressable onPress={onCancel} hitSlop={8} style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}>
+          <Txt size={12.5} weight="semibold" color={c.textFaint}>
+            {t('pending.cancel')}
+          </Txt>
+        </Pressable>
+      )}
     </View>
   )
 }
@@ -684,7 +743,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     elevation: 2,
   },
-  pendingRow: { flexDirection: 'row', alignItems: 'center', gap: 11 },
+  pendingWrap: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  pendingRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 11 },
   asstActions: { flexDirection: 'row', gap: 20, marginTop: 10, paddingTop: 11, borderTopWidth: 1 },
   actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 5 },
 

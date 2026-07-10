@@ -22,7 +22,8 @@ Shape:
 }
 
 Rules:
-- ALL math is LaTeX with NO $ or $$ delimiters (e.g. "x = \\\\frac{-b}{2a}", "2x^2+5x-3=0"). Escape backslashes for JSON.
+- The "math" field is LaTeX with NO $ or $$ delimiters (e.g. "x = \\\\frac{-b}{2a}", "2x^2+5x-3=0"). Escape backslashes for JSON.
+- The "why" field is PLAIN PROSE ONLY — absolutely no LaTeX, no backslash commands, no formulas. If the reason mentions math, write it in words ("integration by parts", "the quadratic formula"). Every formula belongs in "math", never in "why".
 - Each step is one clear move; "why" is a short clause, not a paragraph. Aim for 2-6 steps.
 - Be precise with arithmetic; double-check every number before stating it.
 - Include "quadratic":[a,b,c] ONLY when the problem is a single-variable quadratic equation a x^2 + b x + c = 0 (so we can plot it); otherwise omit the field entirely.
@@ -31,7 +32,7 @@ Rules:
 - LANGUAGE: write every human-readable string ("topic", each "why", "error") in {LANG}. Keep the math itself as LaTeX.`
 
 /** Conversational prompt for follow-up questions about the current problem. */
-export const FOLLOWUP_SYSTEM = `You are a patient math tutor continuing to help with the problem already solved above. Answer the student's follow-up clearly and briefly, in {LANG}. Wrap all math in LaTeX using $...$ (inline) and $$...$$ (display). Stay on this problem; do not restate the whole solution unless asked.`
+export const FOLLOWUP_SYSTEM = `You are a patient math tutor continuing to help with the problem already solved above. Answer the student's follow-up clearly and briefly, in {LANG}. Wrap ALL math in LaTeX delimiters: $...$ inline, $$...$$ display. NEVER write LaTeX commands outside those delimiters — prose is plain words only. Stay on this problem; do not restate the whole solution unless asked.`
 
 /** Wrapped around the image so the model always gets a concrete instruction. */
 export const SOLVE_USER_PROMPT = 'Solve the math problem in this image.'

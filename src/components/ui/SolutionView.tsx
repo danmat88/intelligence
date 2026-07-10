@@ -75,7 +75,22 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels) 
   function h(){ post('H:'+document.body.scrollHeight); }
   function chip(v){ post('C:'+v); }
   function esc(s){ var d=document.createElement('div'); d.textContent=s==null?'':String(s); return d.innerHTML; }
-  function tex(t){ try{ return katex.renderToString(t||'',{throwOnError:false,displayMode:false}); }catch(e){ return esc(t); } }
+  // Prose fields must be plain text, but models occasionally leak TeX commands
+  // into them — map the common ones to readable symbols, drop stray backslashes.
+  function deTeX(s){
+    return String(s==null?'':s)
+      .replace(/\\\\int/g,'∫').replace(/\\\\cdot/g,'·').replace(/\\\\times/g,'×')
+      .replace(/\\\\sqrt/g,'√').replace(/\\\\pi/g,'π').replace(/\\\\theta/g,'θ')
+      .replace(/\\\\leq?/g,'≤').replace(/\\\\geq?/g,'≥').replace(/\\\\neq?/g,'≠')
+      .replace(/\\\\pm/g,'±').replace(/\\\\infty/g,'∞')
+      .replace(/\\\\(?:Rightarrow|implies)/g,'⇒').replace(/\\\\(?:to|rightarrow)/g,'→')
+      .replace(/\\\\([a-zA-Z]+)/g,'$1').replace(/[{}]/g,'');
+  }
+  function tex(t){
+    // models sometimes wrap the math field in $/$$ despite instructions — strip
+    var s=String(t==null?'':t).trim().replace(/^\\$+/,'').replace(/\\$+$/,'').trim();
+    try{ return katex.renderToString(s,{throwOnError:false,displayMode:false}); }catch(e){ return esc(s); }
+  }
 
   function parse(raw){
     var s=raw.indexOf('{'), e=raw.lastIndexOf('}');
@@ -123,7 +138,7 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels) 
         (data.steps||[]).forEach(function(st,i){
           var n=(i+1<10?'0':'')+(i+1);
           out+='<div class="step" onclick="chip(\\'step:'+(i+1)+'\\')"><div class="no">'+n+'</div><div><div class="math">'+tex(st.math)+'</div>'+
-               (st.why?'<div class="why">'+esc(st.why)+'</div>':'')+'</div></div>';
+               (st.why?'<div class="why">'+esc(deTeX(st.why))+'</div>':'')+'</div></div>';
         });
         if(data.answer){
           out+='<div class="answer"><div class="tick"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>'+
@@ -134,7 +149,20 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels) 
              '<button class="fu" onclick="chip(\\'mistake\\')">'+esc(L.mistake)+'</button></div>';
         el.innerHTML=out;
       } else {
-        el.innerHTML = window.marked ? marked.parse(RAW) : esc(RAW);
+        // Markdown + math conflict: underscores INSIDE $...$/$$...$$ read as
+        // markdown emphasis and split the math into <em> fragments, so KaTeX
+        // never sees a whole block. Standard fix: pull math out, run markdown,
+        // put math back, THEN typeset.
+        var MATHS=[];
+        function stash(m){ MATHS.push(m); return '§§'+(MATHS.length-1)+'§§'; }
+        var prot=String(RAW)
+          .replace(/\\$\\$[\\s\\S]+?\\$\\$/g,stash)
+          .replace(/\\\\\\[[\\s\\S]+?\\\\\\]/g,stash)
+          .replace(/\\\\\\([\\s\\S]+?\\\\\\)/g,stash)
+          .replace(/\\$(?!\\s)[^$\\n]+?(?<!\\s)\\$/g,stash); // no space at edges → "5$ și 10$" prose stays prose
+        var html=window.marked ? marked.parse(prot) : esc(prot);
+        html=html.replace(/§§(\\d+)§§/g,function(_,i){ return esc(MATHS[+i]); });
+        el.innerHTML=html;
         if(window.renderMathInElement) renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\\\[',right:'\\\\]',display:true},{left:'\\\\(',right:'\\\\)',display:false}],throwOnError:false});
       }
     }catch(e){ el.innerHTML=esc(RAW); }

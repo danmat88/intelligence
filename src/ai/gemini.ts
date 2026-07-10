@@ -84,21 +84,34 @@ export function createGeminiClient(config: GeminiConfig): AIClient {
   async function run(contents: Content[], opts: GenerateOptions): Promise<AIResult> {
     // Credentials go in headers (not the URL) so they stay out of logs.
     const headers = await authHeaders()
+    const body = JSON.stringify(buildBody(contents, opts))
+    const url = `${base}/models/${opts.model ?? config.model}:generateContent`
     const t0 = Date.now()
-    const res = await fetch(`${base}/models/${opts.model ?? config.model}:generateContent`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...headers },
-      body: JSON.stringify(buildBody(contents, opts)),
-      signal: opts.signal,
-    })
-    const ms = Date.now() - t0
-    if (!res.ok) {
-      const detail = await res.text().catch(() => '')
-      throw new Error(`Gemini ${res.status}: ${detail || res.statusText}`)
+
+    // Transient 429/503s get up to two quick retries — but only when the
+    // failure came back FAST. A slow failure means the server held the request
+    // while congested; retrying would just double the user's wait.
+    for (let attempt = 0; ; attempt++) {
+      const tReq = Date.now()
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...headers },
+        body,
+        signal: opts.signal,
+      })
+      if (res.ok) {
+        const data = (await res.json()) as { candidates?: { content?: { parts?: { text?: string }[] } }[] }
+        const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text).filter(Boolean).join('') ?? ''
+        return { text, ms: Date.now() - t0 }
+      }
+      const failedFast = Date.now() - tReq < 8000
+      const retryable = (res.status === 429 || res.status === 503) && failedFast && attempt < 2
+      if (!retryable || opts.signal?.aborted) {
+        const detail = await res.text().catch(() => '')
+        throw new Error(`Gemini ${res.status}: ${detail || res.statusText}`)
+      }
+      await new Promise((r) => setTimeout(r, 1200 * (attempt + 1)))
     }
-    const data = (await res.json()) as { candidates?: { content?: { parts?: { text?: string }[] } }[] }
-    const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text).filter(Boolean).join('') ?? ''
-    return { text, ms }
   }
 
   return {
