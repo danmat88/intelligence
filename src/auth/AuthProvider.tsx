@@ -2,8 +2,10 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import {
   getAuth,
   GoogleAuthProvider,
+  linkWithCredential,
   onAuthStateChanged,
   reauthenticateWithCredential,
+  signInAnonymously,
   signInWithCredential,
   signOut as firebaseSignOut,
 } from '@react-native-firebase/auth'
@@ -21,6 +23,8 @@ export type AuthUser = {
   name: string | null
   email: string
   photo: string | null
+  /** Guest (anonymous Firebase) session — real uid, no Google identity yet. */
+  isAnonymous: boolean
 }
 
 type AuthContextValue = {
@@ -31,6 +35,8 @@ type AuthContextValue = {
   /** Human-readable reason the last sign-in attempt failed, if any. */
   error: string | null
   signIn: () => Promise<void>
+  /** Start an anonymous (guest) session — solve first, sign in later. */
+  signInGuest: () => Promise<void>
   signOut: () => Promise<void>
   /** Permanently removes the account and every chat. Throws on failure. */
   deleteAccount: () => Promise<void>
@@ -47,8 +53,9 @@ function toAuthUser(u: {
   displayName: string | null
   email: string | null
   photoURL: string | null
+  isAnonymous: boolean
 }): AuthUser {
-  return { id: u.uid, name: u.displayName, email: u.email ?? '', photo: u.photoURL }
+  return { id: u.uid, name: u.displayName, email: u.email ?? '', photo: u.photoURL, isAnonymous: u.isAnonymous }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -84,7 +91,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // response only carries idToken, so fetch the pair via getTokens()
           const { idToken, accessToken } = await GoogleSignin.getTokens()
           if (!idToken) throw new Error('Google returned no ID token - check the Web client ID.')
-          await signInWithCredential(getAuth(), GoogleAuthProvider.credential(idToken, accessToken))
+          const credential = GoogleAuthProvider.credential(idToken, accessToken)
+          const current = getAuth().currentUser
+          if (current?.isAnonymous) {
+            // Guest upgrading: LINK the Google identity onto the anonymous
+            // account — same uid, so everything already saved carries over.
+            try {
+              await linkWithCredential(current, credential)
+            } catch (linkErr) {
+              const code = (linkErr as { code?: string }).code ?? ''
+              // This Google account already exists — switch to it instead
+              // (the guest scratch work stays behind on the orphaned uid).
+              if (/credential-already-in-use|email-already-in-use/.test(code)) {
+                await signInWithCredential(getAuth(), credential)
+              } else {
+                throw linkErr
+              }
+            }
+          } else {
+            await signInWithCredential(getAuth(), credential)
+          }
           // onAuthStateChanged updates `user`
         }
       } catch (e) {
@@ -96,6 +122,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
         setError(e instanceof Error ? e.message : 'Sign-in failed. Please try again.')
+      } finally {
+        setSigningIn(false)
+      }
+    }
+
+    const signInGuest = async () => {
+      setSigningIn(true)
+      setError(null)
+      try {
+        // A real Firebase session with a real uid — the AI proxy and Firestore
+        // rules work unchanged, and the per-user rate limit applies.
+        await signInAnonymously(getAuth())
+        // onAuthStateChanged updates `user`
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Could not start a guest session. Please try again.')
       } finally {
         setSigningIn(false)
       }
@@ -140,7 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    return { user, initializing, signingIn, error, signIn, signOut, deleteAccount }
+    return { user, initializing, signingIn, error, signIn, signInGuest, signOut, deleteAccount }
   }, [user, initializing, signingIn, error])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

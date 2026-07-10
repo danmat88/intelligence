@@ -5,12 +5,12 @@ import { SOLVE_JSON_SYSTEM, FOLLOWUP_SYSTEM, SOLVE_USER_PROMPT } from './prompt'
 
 // Solving uses the strong reasoning model in JSON mode → structured steps we can
 // render as the crafted "textbook" card. Follow-ups use the cheaper model in
-// plain prose (the solution already explained everything).
+// plain prose (the solution already explained everything). Both models reason
+// by default — we deliberately send no thinkingConfig (see gemini.ts).
 const SOLVE = {
   system: SOLVE_JSON_SYSTEM,
   json: true,
   model: 'gemini-pro-latest',
-  thinking: true,
   temperature: 0.2,
   maxTokens: 4096,
 } as const

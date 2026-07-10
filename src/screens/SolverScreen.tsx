@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
-import { ActivityIndicator, Animated, Image, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native'
+import { ActivityIndicator, Animated, Image, Pressable, ScrollView, Share, StyleSheet, TextInput, View } from 'react-native'
+import * as Clipboard from 'expo-clipboard'
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 import { StatusBar } from 'expo-status-bar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -8,11 +9,12 @@ import { useTheme } from '../theme/ThemeProvider'
 import ScreenBackground from '../components/ui/ScreenBackground'
 import Txt from '../components/ui/Txt'
 import SolutionView from '../components/ui/SolutionView'
+import SymbolBar from '../components/ui/SymbolBar'
 import { captureFromCamera, captureFromLibrary } from '../solve/capture'
 import { solveImage, solveProblem, followUp } from '../solve/solve'
 import type { ChatTurn } from '../ai/types'
 import { useAuth } from '../auth/AuthProvider'
-import { createProblem, updateProblemTurns, toStoredTurns, type Problem } from '../solve/store'
+import { createProblem, updateProblemTurns, removeProblem, toStoredTurns, type Problem } from '../solve/store'
 import SettingsModal from './SettingsModal'
 import HistorySheet from './HistorySheet'
 
@@ -45,6 +47,58 @@ function extractTopic(thread: { role: string; text: string }[]): string | null {
   return null
 }
 
+/** True if a solve response is the {"error": ...} shape (non-math / unreadable). */
+function isErrorResult(text: string): boolean {
+  try {
+    const s = text.indexOf('{')
+    const e = text.lastIndexOf('}')
+    if (s >= 0 && e > s) {
+      const j = JSON.parse(text.slice(s, e + 1)) as { error?: unknown }
+      return typeof j.error === 'string'
+    }
+  } catch {
+    // not JSON
+  }
+  return false
+}
+
+/** Map a raw error to a calm, human message. */
+function friendlyError(e: unknown): string {
+  const raw = e instanceof Error ? e.message : String(e)
+  if (/network|failed to fetch|timeout|timed out/i.test(raw))
+    return "Couldn't reach the internet — check your connection and try again."
+  if (/\b429\b|rate|quota|exhausted|resource_exhausted/i.test(raw))
+    return "I'm a bit busy right now — give it a moment and try again."
+  if (/\b40[13]\b|not signed in|unauthenticated/i.test(raw)) return 'Please sign in again, then retry.'
+  if (/\b50\d\b|unavailable|overloaded|high demand/i.test(raw))
+    return 'The model is busy right now — please try again in a moment.'
+  return 'Something went wrong solving that. Try again.'
+}
+
+/** Flatten a structured solution (or follow-up) into shareable plain text. */
+function solutionText(raw: string): string {
+  try {
+    const s = raw.indexOf('{')
+    const e = raw.lastIndexOf('}')
+    if (s >= 0 && e > s) {
+      const j = JSON.parse(raw.slice(s, e + 1)) as {
+        error?: string
+        steps?: { math?: string; why?: string }[]
+        answer?: string
+      }
+      if (j.error) return j.error
+      const lines = (j.steps ?? []).map(
+        (st, i) => `${i + 1}. ${st.math ?? ''}${st.why ? `  (${st.why})` : ''}`,
+      )
+      if (j.answer) lines.push(`\nAnswer: ${j.answer}`)
+      if (lines.length) return lines.join('\n')
+    }
+  } catch {
+    // not JSON — a follow-up in markdown
+  }
+  return raw
+}
+
 /**
  * The whole app for signed-in users: a conversational math solver. Send a
  * problem (photo or text) and get it worked out step by step; ask short
@@ -55,7 +109,7 @@ export default function SolverScreen() {
   const { theme } = useTheme()
   const c = theme.colors
   const insets = useSafeAreaInsets()
-  const { user } = useAuth()
+  const { user, signIn, signingIn } = useAuth()
   const [thread, setThread] = useState<Turn[]>([])
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
@@ -64,7 +118,18 @@ export default function SolverScreen() {
   const scrollRef = useRef<ScrollView>(null)
   const threadRef = useRef<Turn[]>([])
   const problemIdRef = useRef<string | null>(null)
+  const prevUidRef = useRef<string | undefined>(user?.id)
   const empty = thread.length === 0
+
+  // If the account changes mid-session (guest link fell back to an existing
+  // Google account = new uid), the open problem's doc id belongs to the old
+  // account — drop it so the next persist re-creates it under the new uid.
+  useEffect(() => {
+    if (prevUidRef.current !== user?.id) {
+      prevUidRef.current = user?.id
+      problemIdRef.current = null
+    }
+  }, [user?.id])
 
   const scrollDown = useCallback(() => {
     requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: true }))
@@ -81,7 +146,11 @@ export default function SolverScreen() {
   const persist = useCallback(
     async (turns: Turn[]) => {
       if (!user) return
-      const stored = toStoredTurns(turns)
+      // Never save a non-math / unreadable result — it would just clutter history.
+      const lastAsst = [...turns].reverse().find((t) => t.role === 'assistant')
+      if (lastAsst && isErrorResult(lastAsst.text)) return
+      // Failed/pending turns are UI state, not part of the problem — drop them.
+      const stored = toStoredTurns(turns.filter((t) => !t.pending && !t.error))
       if (stored.length === 0) return
       const firstUser = turns.find((t) => t.role === 'user')
       const title = (firstUser?.text?.trim() || 'Photo problem').slice(0, 90)
@@ -109,8 +178,7 @@ export default function SolverScreen() {
         commit(done)
         persist(done)
       } catch (e) {
-        const msg = e instanceof Error ? e.message : 'Something went wrong. Try again.'
-        commit([...base, userTurn, { id: asstId, role: 'assistant', text: msg, error: true }])
+        commit([...base, userTurn, { id: asstId, role: 'assistant', text: friendlyError(e), error: true }])
       } finally {
         setSending(false)
         scrollDown()
@@ -157,18 +225,26 @@ export default function SolverScreen() {
     (id: string) => {
       if (sending) return
       if (id === 'mistake') {
+        // The saved problem is wrong input — remove it so history stays clean.
+        if (user && problemIdRef.current) removeProblem(user.id, problemIdRef.current).catch(() => {})
         reset()
         return
       }
-      const ask =
-        id === 'explain'
-          ? 'Explain the trickiest step again, more simply.'
-          : 'Give me a similar problem to practice — just the problem, no solution.'
-      run({ id: uid(), role: 'user', text: id === 'explain' ? 'Explain a step' : 'A similar problem' }, () =>
-        followUp([...priorTurns(), { role: 'user', text: ask }]),
+      if (id.startsWith('step:')) {
+        const n = id.slice(5)
+        run({ id: uid(), role: 'user', text: `Explain step ${n}` }, () =>
+          followUp([...priorTurns(), { role: 'user', text: `Explain step ${n} again, more simply — I don't get that move.` }]),
+        )
+        return
+      }
+      run({ id: uid(), role: 'user', text: 'A similar problem' }, () =>
+        followUp([
+          ...priorTurns(),
+          { role: 'user', text: 'Give me a similar problem to practice — just the problem, no solution.' },
+        ]),
       )
     },
-    [sending, run, reset, priorTurns],
+    [sending, run, reset, priorTurns, user],
   )
 
   const snap = useCallback(
@@ -177,13 +253,16 @@ export default function SolverScreen() {
       try {
         const img = await (source === 'camera' ? captureFromCamera() : captureFromLibrary())
         if (!img || !img.base64) return
+        // A photo is always a NEW problem — one thread per problem keeps the
+        // model accurate and history clean, so leave the previous thread behind.
+        if (threadRef.current.length > 0) reset()
         run({ id: uid(), role: 'user', text: '', imageUri: img.uri }, () => solveImage(img))
       } catch (e) {
         const msg = e instanceof Error ? e.message : 'Could not open the camera.'
         commit([...threadRef.current, { id: uid(), role: 'assistant', text: msg, error: true }])
       }
     },
-    [sending, run, commit],
+    [sending, run, commit, reset],
   )
 
   return (
@@ -212,6 +291,7 @@ export default function SolverScreen() {
               </Txt>
             </Pressable>
           )}
+          {/* Guests save work too (anonymous uid), so history is always available. */}
           <Pressable
             onPress={() => setHistoryOpen(true)}
             hitSlop={8}
@@ -219,13 +299,31 @@ export default function SolverScreen() {
           >
             <Feather name="clock" size={19} color={c.textMuted} />
           </Pressable>
-          <Pressable
-            onPress={() => setSettingsOpen(true)}
-            hitSlop={8}
-            style={({ pressed }) => [styles.iconBtn, { backgroundColor: c.surface, borderColor: c.border, opacity: pressed ? 0.55 : 1 }]}
-          >
-            <Feather name="settings" size={19} color={c.textMuted} />
-          </Pressable>
+          {user?.isAnonymous ? (
+            // Guest: one clear upgrade action — linking keeps their saved work.
+            <Pressable
+              onPress={signIn}
+              disabled={signingIn}
+              hitSlop={8}
+              style={({ pressed }) => [
+                styles.newBtn,
+                { borderColor: c.accent, backgroundColor: c.accentSoft, opacity: pressed || signingIn ? 0.6 : 1 },
+              ]}
+            >
+              <Feather name="log-in" size={15} color={c.accent} />
+              <Txt weight="semibold" size={13} color={c.accent}>
+                Sign in
+              </Txt>
+            </Pressable>
+          ) : (
+            <Pressable
+              onPress={() => setSettingsOpen(true)}
+              hitSlop={8}
+              style={({ pressed }) => [styles.iconBtn, { backgroundColor: c.surface, borderColor: c.border, opacity: pressed ? 0.55 : 1 }]}
+            >
+              <Feather name="settings" size={19} color={c.textMuted} />
+            </Pressable>
+          )}
         </View>
       </View>
 
@@ -308,6 +406,7 @@ export default function SolverScreen() {
         )}
 
         <View style={[styles.composerWrap, { paddingBottom: insets.bottom + 8 }]}>
+          <SymbolBar onInsert={(s) => setInput((v) => v + s)} />
           <View style={[styles.field, { backgroundColor: c.surface, borderColor: c.border }]}>
             <Pressable
               onPress={() => snap('camera')}
@@ -336,9 +435,17 @@ export default function SolverScreen() {
               <Feather name="arrow-up" size={18} color={input.trim() && !sending ? c.onAccent : c.textFaint} />
             </Pressable>
           </View>
-          <Txt size={10} color={c.textFaint} style={[styles.disc, { fontFamily: theme.font.mono }]}>
-            Verify important answers — AI can make mistakes.
-          </Txt>
+          {user?.isAnonymous && !empty ? (
+            <Pressable onPress={signIn} hitSlop={6}>
+              <Txt size={10.5} weight="semibold" color={c.accent} style={styles.disc}>
+                Sign in to keep your work — it takes 5 seconds
+              </Txt>
+            </Pressable>
+          ) : (
+            <Txt size={10} color={c.textFaint} style={[styles.disc, { fontFamily: theme.font.mono }]}>
+              Verify important answers — AI can make mistakes.
+            </Txt>
+          )}
         </View>
       </KeyboardAvoidingView>
 
@@ -375,12 +482,7 @@ function Bubble({ turn, onChip }: { turn: Turn; onChip?: (id: string) => void })
   } else if (turn.pending) {
     inner = (
       <View style={[styles.asstCard, { backgroundColor: c.surface, borderColor: c.border }]}>
-        <View style={styles.pendingRow}>
-          <ActivityIndicator color={c.accent} />
-          <Txt size={13.5} color={c.textMuted}>
-            Working it out…
-          </Txt>
-        </View>
+        <PendingRow />
       </View>
     )
   } else if (turn.error) {
@@ -395,10 +497,56 @@ function Bubble({ turn, onChip }: { turn: Turn; onChip?: (id: string) => void })
     inner = (
       <View style={[styles.asstCard, { backgroundColor: c.surface, borderColor: c.border }]}>
         <SolutionView content={turn.text} onChip={onChip} />
+        {!isErrorResult(turn.text) && (
+          <View style={[styles.asstActions, { borderColor: c.border }]}>
+            <Pressable
+              onPress={() => Clipboard.setStringAsync(solutionText(turn.text))}
+              hitSlop={6}
+              style={({ pressed }) => [styles.actionBtn, { opacity: pressed ? 0.5 : 1 }]}
+            >
+              <Feather name="copy" size={14} color={c.textMuted} />
+              <Txt size={12.5} weight="semibold" color={c.textMuted}>
+                Copy
+              </Txt>
+            </Pressable>
+            <Pressable
+              onPress={() => Share.share({ message: solutionText(turn.text) })}
+              hitSlop={6}
+              style={({ pressed }) => [styles.actionBtn, { opacity: pressed ? 0.5 : 1 }]}
+            >
+              <Feather name="share-2" size={14} color={c.textMuted} />
+              <Txt size={12.5} weight="semibold" color={c.textMuted}>
+                Share
+              </Txt>
+            </Pressable>
+          </View>
+        )}
       </View>
     )
   }
   return <Animated.View style={wrap}>{inner}</Animated.View>
+}
+
+// Rotating status while the model works — honest about the stages and makes the
+// (reasoning-model) wait feel alive instead of a silent spinner.
+const PENDING_STAGES = ['Reading the problem…', 'Working the steps…', 'Double-checking the answer…']
+
+function PendingRow() {
+  const { theme } = useTheme()
+  const c = theme.colors
+  const [stage, setStage] = useState(0)
+  useEffect(() => {
+    const t = setInterval(() => setStage((s) => Math.min(s + 1, PENDING_STAGES.length - 1)), 3500)
+    return () => clearInterval(t)
+  }, [])
+  return (
+    <View style={styles.pendingRow}>
+      <ActivityIndicator color={c.accent} />
+      <Txt size={13.5} color={c.textMuted}>
+        {PENDING_STAGES[stage]}
+      </Txt>
+    </View>
+  )
 }
 
 const styles = StyleSheet.create({
@@ -473,6 +621,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   pendingRow: { flexDirection: 'row', alignItems: 'center', gap: 11 },
+  asstActions: { flexDirection: 'row', gap: 20, marginTop: 10, paddingTop: 11, borderTopWidth: 1 },
+  actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 5 },
 
   // composer
   composerWrap: { paddingHorizontal: 14, paddingTop: 6 },

@@ -18,7 +18,7 @@ export default function WelcomeScreen() {
   const { theme } = useTheme()
   const c = theme.colors
   const insets = useSafeAreaInsets()
-  const { signIn, signingIn, error } = useAuth()
+  const { signIn, signInGuest, signingIn, error } = useAuth()
 
   // Revealed by BrandMark's onEntered, so the button appears after the lockup.
   const footer = useRef(new Animated.Value(0)).current
@@ -77,9 +77,20 @@ export default function WelcomeScreen() {
             </Txt>
           ) : (
             <Txt size={13} color={c.textFaint} style={styles.error}>
-              Sign in to save your conversations securely to your account.
+              Sign in to save your solved problems to your account.
             </Txt>
           )}
+
+          <Pressable
+            onPress={signInGuest}
+            disabled={signingIn}
+            hitSlop={8}
+            style={({ pressed }) => [styles.tryBtn, { opacity: pressed || signingIn ? 0.5 : 1 }]}
+          >
+            <Txt weight="semibold" size={14} color={c.accent}>
+              Try it first — no account needed
+            </Txt>
+          </Pressable>
         </Animated.View>
       </View>
     </ScreenBackground>
@@ -98,4 +109,5 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   error: { textAlign: 'center', lineHeight: 18, paddingHorizontal: 12 },
+  tryBtn: { alignSelf: 'center', paddingVertical: 6, paddingHorizontal: 10 },
 })

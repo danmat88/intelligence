@@ -34,11 +34,14 @@ const GOOGLE_BASE = 'https://generativelanguage.googleapis.com/v1beta'
 // Per-user fixed-window rate limit. The window doc lives at the Firestore
 // root (rate_limits/{uid}), which client security rules don't expose - only
 // this function (Admin SDK) can touch it. Transactional, so parallel
-// requests can't slip past the ceiling.
-const RATE_LIMIT = 20 // requests
+// requests can't slip past the ceiling. Guests (anonymous sign-in) get a
+// tighter ceiling: fresh anonymous uids are free to mint, so their allowance
+// must be small enough that farming them is pointless.
+const RATE_LIMIT = 20 // requests / window, signed-in users
+const RATE_LIMIT_GUEST = 5 // requests / window, anonymous guests
 const RATE_WINDOW_MS = 60_000 // per minute
 
-async function underRateLimit(uid: string): Promise<boolean> {
+async function underRateLimit(uid: string, limit: number): Promise<boolean> {
   const ref = getFirestore().collection('rate_limits').doc(uid)
   return getFirestore().runTransaction(async (tx) => {
     const now = Date.now()
@@ -47,7 +50,7 @@ async function underRateLimit(uid: string): Promise<boolean> {
       tx.set(ref, { windowStart: now, count: 1 })
       return true
     }
-    if (data.count >= RATE_LIMIT) return false
+    if (data.count >= limit) return false
     tx.update(ref, { count: data.count + 1 })
     return true
   })
@@ -74,14 +77,17 @@ export const gemini = onRequest(
       return
     }
     let uid: string
+    let isGuest = false
     try {
-      uid = (await getAuth().verifyIdToken(bearer[1])).uid
+      const decoded = await getAuth().verifyIdToken(bearer[1])
+      uid = decoded.uid
+      isGuest = decoded.firebase?.sign_in_provider === 'anonymous'
     } catch {
       res.status(401).json({ error: 'Invalid or expired auth token' })
       return
     }
 
-    if (!(await underRateLimit(uid))) {
+    if (!(await underRateLimit(uid, isGuest ? RATE_LIMIT_GUEST : RATE_LIMIT))) {
       res.status(429).json({ error: 'Too many requests - please wait a moment.' })
       return
     }

@@ -23,7 +23,8 @@ function buildHtml(content: string, c: Theme['colors']) {
   html,body{margin:0;padding:0;background:transparent}
   body{font-family:${sans};color:${c.text};font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%;padding:1px}
   .lbl{font-family:${mono};font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:${c.textFaint};margin-bottom:13px}
-  .step{display:grid;grid-template-columns:24px 1fr;gap:11px;padding-bottom:13px}
+  .step{display:grid;grid-template-columns:24px 1fr;gap:11px;padding-bottom:13px;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:8px}
+  .step:active{opacity:.55}
   .step .no{font-family:${mono};font-size:12px;color:${c.accent};font-weight:600;padding-top:3px}
   .step .math{font-size:16px;color:${c.text};overflow-x:auto;overflow-y:hidden}
   .step .why{font-size:12px;color:${c.textMuted};margin-top:5px;line-height:1.4}
@@ -108,10 +109,10 @@ function buildHtml(content: string, c: Theme['colors']) {
       var data=parse(RAW);
       if(data && data.error){ el.innerHTML='<div class="errnote">'+esc(data.error)+'</div>'; h(); return; }
       if(data && (data.steps || data.answer)){
-        var out='<div class="lbl">Solution</div>';
+        var out='<div class="lbl">Solution · tap a step to re-explain</div>';
         (data.steps||[]).forEach(function(st,i){
           var n=(i+1<10?'0':'')+(i+1);
-          out+='<div class="step"><div class="no">'+n+'</div><div><div class="math">'+tex(st.math)+'</div>'+
+          out+='<div class="step" onclick="chip(\\'step:'+(i+1)+'\\')"><div class="no">'+n+'</div><div><div class="math">'+tex(st.math)+'</div>'+
                (st.why?'<div class="why">'+esc(st.why)+'</div>':'')+'</div></div>';
         });
         if(data.answer){
@@ -119,9 +120,8 @@ function buildHtml(content: string, c: Theme['colors']) {
                '<div><span class="ak">Answer</span><span class="math">'+tex(data.answer)+'</span></div></div>';
         }
         if(data.quadratic && data.quadratic.length===3){ out+=plot(+data.quadratic[0],+data.quadratic[1],+data.quadratic[2]); }
-        out+='<div class="chips"><button class="fu" onclick="chip(\\'explain\\')">Explain a step</button>'+
-             '<button class="fu" onclick="chip(\\'mistake\\')">I typed it wrong</button>'+
-             '<button class="fu" onclick="chip(\\'similar\\')">Similar problem</button></div>';
+        out+='<div class="chips"><button class="fu" onclick="chip(\\'similar\\')">Similar problem</button>'+
+             '<button class="fu" onclick="chip(\\'mistake\\')">I typed it wrong</button></div>';
         el.innerHTML=out;
       } else {
         el.innerHTML = window.marked ? marked.parse(RAW) : esc(RAW);

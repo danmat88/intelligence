@@ -105,6 +105,9 @@ function Root({ fontsLoaded }: { fontsLoaded: boolean }) {
     )
   }
 
+  // Guests are real (anonymous) Firebase users, so auth state drives the gate.
+  // Upgrading guest → Google LINKS the account (same uid): `user` stays truthy,
+  // the key stays 'app', and the solver never remounts — work stays on screen.
   return (
     <FadeIn key={user ? 'app' : 'welcome'}>
       {user ? <SolverScreen /> : <WelcomeScreen />}

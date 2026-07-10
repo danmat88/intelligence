@@ -13,11 +13,6 @@ export type GenerateOptions = {
   temperature?: number
   /** A base64-encoded image (no `data:` prefix) for vision requests. */
   image?: { base64: string; mimeType: string }
-  /**
-   * Turn on the model's step-by-step reasoning. Off by default (snappy chat);
-   * ON for math solving, where accuracy matters far more than latency.
-   */
-  thinking?: boolean
   /** Force the response to be a single valid JSON object (structured solutions). */
   json?: boolean
   /** Abort to stop generation early; streaming resolves with the partial text. */
