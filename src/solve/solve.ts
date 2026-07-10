@@ -7,8 +7,9 @@ import { SOLVE_JSON_SYSTEM, FOLLOWUP_SYSTEM, SOLVE_USER_PROMPT } from './prompt'
 // render as the crafted "textbook" card. Follow-ups use the cheaper model in
 // plain prose (the solution already explained everything). Both models reason
 // by default — we deliberately send no thinkingConfig (see gemini.ts).
+// `langName` ("Romanian"/"English") localizes every human-readable string the
+// model produces; the math itself stays LaTeX.
 const SOLVE = {
-  system: SOLVE_JSON_SYSTEM,
   json: true,
   model: 'gemini-pro-latest',
   temperature: 0.2,
@@ -16,9 +17,10 @@ const SOLVE = {
 } as const
 
 /** First solve from a photo → structured JSON solution. */
-export async function solveImage(image: CapturedImage, signal?: AbortSignal): Promise<string> {
+export async function solveImage(image: CapturedImage, langName: string, signal?: AbortSignal): Promise<string> {
   const { text } = await ai.generate(SOLVE_USER_PROMPT, {
     image: { base64: image.base64, mimeType: image.mimeType },
+    system: SOLVE_JSON_SYSTEM.replaceAll('{LANG}', langName),
     ...SOLVE,
     signal,
   })
@@ -26,15 +28,19 @@ export async function solveImage(image: CapturedImage, signal?: AbortSignal): Pr
 }
 
 /** First solve from a typed problem → structured JSON solution. */
-export async function solveProblem(problem: string, signal?: AbortSignal): Promise<string> {
-  const { text } = await ai.generate(problem, { ...SOLVE, signal })
+export async function solveProblem(problem: string, langName: string, signal?: AbortSignal): Promise<string> {
+  const { text } = await ai.generate(problem, {
+    system: SOLVE_JSON_SYSTEM.replaceAll('{LANG}', langName),
+    ...SOLVE,
+    signal,
+  })
   return text.trim()
 }
 
 /** A follow-up about the current problem → conversational Markdown + LaTeX. */
-export async function followUp(turns: ChatTurn[], signal?: AbortSignal): Promise<string> {
+export async function followUp(turns: ChatTurn[], langName: string, signal?: AbortSignal): Promise<string> {
   const { text } = await ai.chat(turns, {
-    system: FOLLOWUP_SYSTEM,
+    system: FOLLOWUP_SYSTEM.replaceAll('{LANG}', langName),
     model: 'gemini-flash-latest',
     temperature: 0.4,
     maxTokens: 1500,

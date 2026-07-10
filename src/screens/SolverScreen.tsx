@@ -15,6 +15,7 @@ import SymbolBar from '../components/ui/SymbolBar'
 import { captureFromCamera, captureFromLibrary } from '../solve/capture'
 import { solveImage, solveProblem, followUp } from '../solve/solve'
 import type { ChatTurn } from '../ai/types'
+import { useI18n, type StringKey } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import { createProblem, updateProblemTurns, removeProblem, toStoredTurns, type Problem } from '../solve/store'
 import SettingsModal from './SettingsModal'
@@ -64,20 +65,18 @@ function isErrorResult(text: string): boolean {
   return false
 }
 
-/** Map a raw error to a calm, human message. */
-function friendlyError(e: unknown): string {
+type T = (key: StringKey, vars?: Record<string, string | number>) => string
+
+/** Map a raw error to a calm, human message (localized via `t`). */
+function friendlyError(e: unknown, t: T): string {
   const raw = e instanceof Error ? e.message : String(e)
-  if (/network|failed to fetch|timeout|timed out/i.test(raw))
-    return "Couldn't reach the internet — check your connection and try again."
-  if (/\b429\b|rate|quota|exhausted|resource_exhausted/i.test(raw))
-    return "I'm a bit busy right now — give it a moment and try again."
+  if (/network|failed to fetch|timeout|timed out/i.test(raw)) return t('err.network')
+  if (/\b429\b|rate|quota|exhausted|resource_exhausted/i.test(raw)) return t('err.busy')
   // 403 = the AI service refusing us (billing/permissions upstream), NOT the user's login.
-  if (/\b403\b|permission.?denied|dunning/i.test(raw))
-    return 'The AI service is unavailable right now — please try again later.'
-  if (/\b401\b|not signed in|unauthenticated/i.test(raw)) return 'Please sign in again, then retry.'
-  if (/\b50\d\b|unavailable|overloaded|high demand/i.test(raw))
-    return 'The model is busy right now — please try again in a moment.'
-  return 'Something went wrong solving that. Try again.'
+  if (/\b403\b|permission.?denied|dunning/i.test(raw)) return t('err.unavailable')
+  if (/\b401\b|not signed in|unauthenticated/i.test(raw)) return t('err.auth')
+  if (/\b50\d\b|unavailable|overloaded|high demand/i.test(raw)) return t('err.busy')
+  return t('err.generic')
 }
 
 /** Flatten a structured solution (or follow-up) into shareable plain text. */
@@ -115,6 +114,7 @@ export default function SolverScreen() {
   const c = theme.colors
   const insets = useSafeAreaInsets()
   const { user, signIn, signingIn, error: authError } = useAuth()
+  const { t, langName } = useI18n()
   const toast = useToast()
   const [thread, setThread] = useState<Turn[]>([])
   const [input, setInput] = useState('')
@@ -142,10 +142,10 @@ export default function SolverScreen() {
   const wasAnonRef = useRef(user?.isAnonymous ?? false)
   useEffect(() => {
     if (wasAnonRef.current && user && !user.isAnonymous) {
-      toast.show(`Signed in as ${user.name ?? user.email}`)
+      toast.show(t('auth.signedInAs', { name: user.name ?? user.email }))
     }
     wasAnonRef.current = user?.isAnonymous ?? false
-  }, [user, toast])
+  }, [user, toast, t])
   const lastAuthErrRef = useRef<string | null>(null)
   useEffect(() => {
     if (authError && authError !== lastAuthErrRef.current) toast.show(authError, 'alert-triangle')
@@ -171,10 +171,13 @@ export default function SolverScreen() {
       const lastAsst = [...turns].reverse().find((t) => t.role === 'assistant')
       if (lastAsst && isErrorResult(lastAsst.text)) return
       // Failed/pending turns are UI state, not part of the problem — drop them.
-      const stored = toStoredTurns(turns.filter((t) => !t.pending && !t.error))
+      const stored = toStoredTurns(
+        turns.filter((x) => !x.pending && !x.error),
+        t('turn.photoProblem'),
+      )
       if (stored.length === 0) return
-      const firstUser = turns.find((t) => t.role === 'user')
-      const title = (firstUser?.text?.trim() || 'Photo problem').slice(0, 90)
+      const firstUser = turns.find((x) => x.role === 'user')
+      const title = (firstUser?.text?.trim() || t('turn.photoProblem')).slice(0, 90)
       const topic = extractTopic(turns)
       try {
         if (problemIdRef.current) await updateProblemTurns(user.id, problemIdRef.current, stored)
@@ -183,7 +186,7 @@ export default function SolverScreen() {
         // ignore — persistence is best-effort
       }
     },
-    [user],
+    [user, t],
   )
 
   const run = useCallback(
@@ -199,13 +202,13 @@ export default function SolverScreen() {
         commit(done)
         persist(done)
       } catch (e) {
-        commit([...base, userTurn, { id: asstId, role: 'assistant', text: friendlyError(e), error: true }])
+        commit([...base, userTurn, { id: asstId, role: 'assistant', text: friendlyError(e, t), error: true }])
       } finally {
         setSending(false)
         scrollDown()
       }
     },
-    [commit, persist, scrollDown],
+    [commit, persist, scrollDown, t],
   )
 
   const priorTurns = useCallback(
@@ -223,9 +226,11 @@ export default function SolverScreen() {
       setInput('')
       const isFirst = threadRef.current.length === 0
       const turns: ChatTurn[] = [...priorTurns(), { role: 'user', text }]
-      run({ id: uid(), role: 'user', text }, () => (isFirst ? solveProblem(text) : followUp(turns)))
+      run({ id: uid(), role: 'user', text }, () =>
+        isFirst ? solveProblem(text, langName) : followUp(turns, langName),
+      )
     },
-    [sending, run, priorTurns],
+    [sending, run, priorTurns, langName],
   )
 
   const reset = useCallback(() => {
@@ -253,19 +258,22 @@ export default function SolverScreen() {
       }
       if (id.startsWith('step:')) {
         const n = id.slice(5)
-        run({ id: uid(), role: 'user', text: `Explain step ${n}` }, () =>
-          followUp([...priorTurns(), { role: 'user', text: `Explain step ${n} again, more simply — I don't get that move.` }]),
+        run({ id: uid(), role: 'user', text: t('turn.explainStep', { n }) }, () =>
+          followUp(
+            [...priorTurns(), { role: 'user', text: `Explain step ${n} again, more simply — I don't get that move.` }],
+            langName,
+          ),
         )
         return
       }
-      run({ id: uid(), role: 'user', text: 'A similar problem' }, () =>
-        followUp([
-          ...priorTurns(),
-          { role: 'user', text: 'Give me a similar problem to practice — just the problem, no solution.' },
-        ]),
+      run({ id: uid(), role: 'user', text: t('turn.similar') }, () =>
+        followUp(
+          [...priorTurns(), { role: 'user', text: 'Give me a similar problem to practice — just the problem, no solution.' }],
+          langName,
+        ),
       )
     },
-    [sending, run, reset, priorTurns, user],
+    [sending, run, reset, priorTurns, user, t, langName],
   )
 
   const snap = useCallback(
@@ -277,13 +285,12 @@ export default function SolverScreen() {
         // A photo is always a NEW problem — one thread per problem keeps the
         // model accurate and history clean, so leave the previous thread behind.
         if (threadRef.current.length > 0) reset()
-        run({ id: uid(), role: 'user', text: '', imageUri: img.uri }, () => solveImage(img))
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : 'Could not open the camera.'
-        commit([...threadRef.current, { id: uid(), role: 'assistant', text: msg, error: true }])
+        run({ id: uid(), role: 'user', text: '', imageUri: img.uri }, () => solveImage(img, langName))
+      } catch {
+        commit([...threadRef.current, { id: uid(), role: 'assistant', text: t('err.camera'), error: true }])
       }
     },
-    [sending, run, commit, reset],
+    [sending, run, commit, reset, langName, t],
   )
 
   return (
@@ -308,7 +315,7 @@ export default function SolverScreen() {
             >
               <Feather name="plus" size={15} color={c.accent} />
               <Txt weight="semibold" size={13} color={c.accent}>
-                New
+                {t('header.new')}
               </Txt>
             </Pressable>
           )}
@@ -369,12 +376,12 @@ export default function SolverScreen() {
             keyboardShouldPersistTaps="handled"
           >
             <Txt size={11} color={c.textFaint} style={[styles.kicker, { fontFamily: theme.font.mono }]}>
-              READY WHEN YOU ARE
+              {t('hero.kicker')}
             </Txt>
             <Txt style={[styles.heroTitle, { fontFamily: theme.font.serif, color: c.text }]}>
-              What are we{' '}
+              {t('hero.title.lead')}
               <Txt style={{ fontFamily: theme.font.serifItalic, color: c.accent, fontSize: 34 }}>
-                solving?
+                {t('hero.title.accent')}
               </Txt>
             </Txt>
             <Pressable
@@ -388,10 +395,10 @@ export default function SolverScreen() {
                 <Feather name="camera" size={25} color="#fff" />
               </View>
               <Txt weight="bold" size={16}>
-                Snap a problem
+                {t('hero.snap.title')}
               </Txt>
               <Txt size={13} color={c.textMuted} style={styles.snapSub}>
-                Point at anything — printed or handwritten.
+                {t('hero.snap.sub')}
               </Txt>
             </Pressable>
             <Pressable
@@ -401,11 +408,11 @@ export default function SolverScreen() {
             >
               <Feather name="image" size={15} color={c.accent} />
               <Txt weight="semibold" size={13.5} color={c.accent}>
-                Choose from library
+                {t('hero.library')}
               </Txt>
             </Pressable>
             <Txt size={13} color={c.textFaint} style={styles.orType}>
-              …or tap an example
+              {t('hero.examples')}
             </Txt>
             <View style={styles.examples}>
               {['2x² + 5x − 3 = 0', '∫ x·eˣ dx', 'derivative of x²·sin(x)'].map((ex) => (
@@ -451,7 +458,7 @@ export default function SolverScreen() {
             </Pressable>
             <TextInput
               style={[styles.input, { color: c.text }]}
-              placeholder={empty ? 'Type a problem…' : 'Ask about this problem…'}
+              placeholder={empty ? t('composer.placeholder.first') : t('composer.placeholder.followup')}
               placeholderTextColor={c.textFaint}
               value={input}
               onChangeText={setInput}
@@ -473,12 +480,12 @@ export default function SolverScreen() {
           {user?.isAnonymous ? (
             <Pressable onPress={signIn} hitSlop={6}>
               <Txt size={10.5} weight="semibold" color={c.accent} style={styles.disc}>
-                Sign in to keep your work — it takes 5 seconds
+                {t('composer.guestCta')}
               </Txt>
             </Pressable>
           ) : (
             <Txt size={10} color={c.textFaint} style={[styles.disc, { fontFamily: theme.font.mono }]}>
-              Verify important answers — AI can make mistakes.
+              {t('composer.disclaimer')}
             </Txt>
           )}
         </View>
@@ -493,6 +500,7 @@ export default function SolverScreen() {
 
 function Bubble({ turn, onChip }: { turn: Turn; onChip?: (id: string) => void }) {
   const { theme } = useTheme()
+  const { t } = useI18n()
   const c = theme.colors
   const anim = useRef(new Animated.Value(0)).current
   useEffect(() => {
@@ -532,7 +540,17 @@ function Bubble({ turn, onChip }: { turn: Turn; onChip?: (id: string) => void })
   } else {
     inner = (
       <View style={[styles.asstCard, { backgroundColor: c.surface, borderColor: c.border }]}>
-        <SolutionView content={turn.text} onChip={onChip} />
+        <SolutionView
+          content={turn.text}
+          onChip={onChip}
+          labels={{
+            solution: t('solution.label'),
+            answer: t('solution.answer'),
+            graph: t('solution.graph'),
+            similar: t('solution.chip.similar'),
+            mistake: t('solution.chip.mistake'),
+          }}
+        />
         {!isErrorResult(turn.text) && (
           <View style={[styles.asstActions, { borderColor: c.border }]}>
             <Pressable
@@ -542,7 +560,7 @@ function Bubble({ turn, onChip }: { turn: Turn; onChip?: (id: string) => void })
             >
               <Feather name="copy" size={14} color={c.textMuted} />
               <Txt size={12.5} weight="semibold" color={c.textMuted}>
-                Copy
+                {t('action.copy')}
               </Txt>
             </Pressable>
             <Pressable
@@ -552,7 +570,7 @@ function Bubble({ turn, onChip }: { turn: Turn; onChip?: (id: string) => void })
             >
               <Feather name="share-2" size={14} color={c.textMuted} />
               <Txt size={12.5} weight="semibold" color={c.textMuted}>
-                Share
+                {t('action.share')}
               </Txt>
             </Pressable>
           </View>
@@ -565,21 +583,21 @@ function Bubble({ turn, onChip }: { turn: Turn; onChip?: (id: string) => void })
 
 // Rotating status while the model works — honest about the stages and makes the
 // (reasoning-model) wait feel alive instead of a silent spinner.
-const PENDING_STAGES = ['Reading the problem…', 'Working the steps…', 'Double-checking the answer…']
-
 function PendingRow() {
   const { theme } = useTheme()
+  const { t } = useI18n()
   const c = theme.colors
+  const stages = [t('pending.1'), t('pending.2'), t('pending.3')]
   const [stage, setStage] = useState(0)
   useEffect(() => {
-    const t = setInterval(() => setStage((s) => Math.min(s + 1, PENDING_STAGES.length - 1)), 3500)
-    return () => clearInterval(t)
+    const id = setInterval(() => setStage((s) => Math.min(s + 1, 2)), 3500)
+    return () => clearInterval(id)
   }, [])
   return (
     <View style={styles.pendingRow}>
       <ActivityIndicator color={c.accent} />
       <Txt size={13.5} color={c.textMuted}>
-        {PENDING_STAGES[stage]}
+        {stages[stage]}
       </Txt>
     </View>
   )

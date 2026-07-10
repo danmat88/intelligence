@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { AntDesign } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
+import { useI18n } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import BrandMark from '../components/ui/BrandMark'
 import ScreenBackground from '../components/ui/ScreenBackground'
@@ -19,6 +20,7 @@ export default function WelcomeScreen() {
   const c = theme.colors
   const insets = useSafeAreaInsets()
   const { signIn, signInGuest, signingIn, error } = useAuth()
+  const { t } = useI18n()
 
   // Revealed by BrandMark's onEntered, so the button appears after the lockup.
   const footer = useRef(new Animated.Value(0)).current
@@ -31,10 +33,7 @@ export default function WelcomeScreen() {
       <StatusBar style="dark" />
 
       <View style={[styles.wrap, { paddingTop: insets.top, paddingBottom: insets.bottom + 24 }]}>
-        <BrandMark
-          tagline="Snap any math problem — solved and explained, step by step."
-          onEntered={revealFooter}
-        />
+        <BrandMark tagline={t('welcome.tagline')} onEntered={revealFooter} />
 
         <Animated.View
           style={[
@@ -65,7 +64,7 @@ export default function WelcomeScreen() {
               <>
                 <AntDesign name="google" size={20} color={c.text} />
                 <Txt weight="semibold" size={16}>
-                  Continue with Google
+                  {t('welcome.google')}
                 </Txt>
               </>
             )}
@@ -77,7 +76,7 @@ export default function WelcomeScreen() {
             </Txt>
           ) : (
             <Txt size={13} color={c.textFaint} style={styles.error}>
-              Sign in to save your solved problems to your account.
+              {t('welcome.caption')}
             </Txt>
           )}
 
@@ -88,7 +87,7 @@ export default function WelcomeScreen() {
             style={({ pressed }) => [styles.tryBtn, { opacity: pressed || signingIn ? 0.5 : 1 }]}
           >
             <Txt weight="semibold" size={14} color={c.accent}>
-              Continue without an account
+              {t('welcome.guest')}
             </Txt>
           </Pressable>
         </Animated.View>

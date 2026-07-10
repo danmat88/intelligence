@@ -12,10 +12,19 @@ import type { Theme } from '../../theme/tokens'
  * follow-up), it falls back to Markdown + KaTeX. Renders transparent inside the
  * assistant card that hosts it. KaTeX/marked load from jsDelivr (needs network).
  */
-function buildHtml(content: string, c: Theme['colors']) {
+export type SolutionLabels = {
+  solution: string
+  answer: string
+  graph: string
+  similar: string
+  mistake: string
+}
+
+function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels) {
   const sans = "system-ui,-apple-system,'Segoe UI',Roboto,sans-serif"
   const mono = "ui-monospace,'SF Mono','Cascadia Code',Menlo,monospace"
   const payload = JSON.stringify(content)
+  const L = JSON.stringify(labels)
   return `<!doctype html><html><head>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
@@ -61,6 +70,7 @@ function buildHtml(content: string, c: Theme['colors']) {
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 <script>
   var RAW = ${payload};
+  var L = ${L};
   function post(m){ try{ window.ReactNativeWebView && window.ReactNativeWebView.postMessage(m); }catch(e){} }
   function h(){ post('H:'+document.body.scrollHeight); }
   function chip(v){ post('C:'+v); }
@@ -96,7 +106,7 @@ function buildHtml(content: string, c: Theme['colors']) {
         [r1,r2].forEach(function(r){ roots+='<circle class="root" cx="'+px(r).toFixed(1)+'" cy="'+ay.toFixed(1)+'" r="4"/>'; });
       }
       var yaxis = (x0>=pad&&x0<=W-pad) ? '<line class="axis" x1="'+x0.toFixed(1)+'" y1="6" x2="'+x0.toFixed(1)+'" y2="'+(H-6)+'" opacity="0.4"/>' : '';
-      return '<div class="graph"><div class="glabel">See it — the curve meets the x-axis at your answers</div>'+
+      return '<div class="graph"><div class="glabel">'+esc(L.graph)+'</div>'+
         '<svg viewBox="0 0 '+W+' '+H+'">'+yaxis+
         '<line class="axis" x1="8" y1="'+ay.toFixed(1)+'" x2="'+(W-8)+'" y2="'+ay.toFixed(1)+'"/>'+
         '<path class="parabola" d="'+d+'"/>'+roots+'</svg></div>';
@@ -109,7 +119,7 @@ function buildHtml(content: string, c: Theme['colors']) {
       var data=parse(RAW);
       if(data && data.error){ el.innerHTML='<div class="errnote">'+esc(data.error)+'</div>'; h(); return; }
       if(data && (data.steps || data.answer)){
-        var out='<div class="lbl">Solution · tap a step to re-explain</div>';
+        var out='<div class="lbl">'+esc(L.solution)+'</div>';
         (data.steps||[]).forEach(function(st,i){
           var n=(i+1<10?'0':'')+(i+1);
           out+='<div class="step" onclick="chip(\\'step:'+(i+1)+'\\')"><div class="no">'+n+'</div><div><div class="math">'+tex(st.math)+'</div>'+
@@ -117,11 +127,11 @@ function buildHtml(content: string, c: Theme['colors']) {
         });
         if(data.answer){
           out+='<div class="answer"><div class="tick"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>'+
-               '<div><span class="ak">Answer</span><span class="math">'+tex(data.answer)+'</span></div></div>';
+               '<div><span class="ak">'+esc(L.answer)+'</span><span class="math">'+tex(data.answer)+'</span></div></div>';
         }
         if(data.quadratic && data.quadratic.length===3){ out+=plot(+data.quadratic[0],+data.quadratic[1],+data.quadratic[2]); }
-        out+='<div class="chips"><button class="fu" onclick="chip(\\'similar\\')">Similar problem</button>'+
-             '<button class="fu" onclick="chip(\\'mistake\\')">I typed it wrong</button></div>';
+        out+='<div class="chips"><button class="fu" onclick="chip(\\'similar\\')">'+esc(L.similar)+'</button>'+
+             '<button class="fu" onclick="chip(\\'mistake\\')">'+esc(L.mistake)+'</button></div>';
         el.innerHTML=out;
       } else {
         el.innerHTML = window.marked ? marked.parse(RAW) : esc(RAW);
@@ -135,10 +145,22 @@ function buildHtml(content: string, c: Theme['colors']) {
 </script></body></html>`
 }
 
-export default function SolutionView({ content, onChip }: { content: string; onChip?: (id: string) => void }) {
+export default function SolutionView({
+  content,
+  onChip,
+  labels,
+}: {
+  content: string
+  onChip?: (id: string) => void
+  labels: SolutionLabels
+}) {
   const { theme } = useTheme()
   const [height, setHeight] = useState(72)
-  const html = useMemo(() => buildHtml(content, theme.colors), [content, theme.colors])
+  const html = useMemo(
+    () => buildHtml(content, theme.colors, labels),
+    // labels change only with the app language — stringify keeps the dep stable
+    [content, theme.colors, JSON.stringify(labels)],
+  )
 
   return (
     <View style={{ height }}>

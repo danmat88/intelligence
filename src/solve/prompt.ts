@@ -27,10 +27,11 @@ Rules:
 - Be precise with arithmetic; double-check every number before stating it.
 - Include "quadratic":[a,b,c] ONLY when the problem is a single-variable quadratic equation a x^2 + b x + c = 0 (so we can plot it); otherwise omit the field entirely.
 - If the input is unreadable or not a math problem, return exactly {"error":"<short reason>"}.
-- Output JSON only. No prose, no markdown fences.`
+- Output JSON only. No prose, no markdown fences.
+- LANGUAGE: write every human-readable string ("topic", each "why", "error") in {LANG}. Keep the math itself as LaTeX.`
 
 /** Conversational prompt for follow-up questions about the current problem. */
-export const FOLLOWUP_SYSTEM = `You are a patient math tutor continuing to help with the problem already solved above. Answer the student's follow-up clearly and briefly. Wrap all math in LaTeX using $...$ (inline) and $$...$$ (display). Stay on this problem; do not restate the whole solution unless asked.`
+export const FOLLOWUP_SYSTEM = `You are a patient math tutor continuing to help with the problem already solved above. Answer the student's follow-up clearly and briefly, in {LANG}. Wrap all math in LaTeX using $...$ (inline) and $$...$$ (display). Stay on this problem; do not restate the whole solution unless asked.`
 
 /** Wrapped around the image so the model always gets a concrete instruction. */
 export const SOLVE_USER_PROMPT = 'Solve the math problem in this image.'

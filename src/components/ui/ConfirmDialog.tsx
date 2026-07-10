@@ -12,6 +12,7 @@ export default function ConfirmDialog({
   title,
   message,
   confirmLabel = 'Delete',
+  cancelLabel = 'Cancel',
   onConfirm,
   onClose,
 }: {
@@ -19,6 +20,7 @@ export default function ConfirmDialog({
   title: string
   message: string
   confirmLabel?: string
+  cancelLabel?: string
   onConfirm: () => void
   onClose: () => void
 }) {
@@ -40,7 +42,7 @@ export default function ConfirmDialog({
             style={({ pressed }) => [styles.btn, { borderColor: c.border, borderWidth: 1, opacity: pressed ? 0.6 : 1 }]}
           >
             <Txt weight="semibold" size={14.5} color={c.textMuted}>
-              Cancel
+              {cancelLabel}
             </Txt>
           </Pressable>
           <Pressable

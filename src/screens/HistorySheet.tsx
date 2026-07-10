@@ -3,20 +3,21 @@ import { FlatList, Pressable, ScrollView, StyleSheet, TextInput, View } from 're
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
+import { useI18n } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import Overlay from '../components/ui/Overlay'
 import Txt from '../components/ui/Txt'
 import { subscribeProblems, removeProblem, type Problem } from '../solve/store'
 
-function ago(ms: number): string {
+function ago(ms: number, justNow: string, daySuffix: string): string {
   const s = Math.max(0, (Date.now() - ms) / 1000)
-  if (s < 60) return 'just now'
+  if (s < 60) return justNow
   const m = s / 60
   if (m < 60) return `${Math.floor(m)}m`
   const h = m / 60
   if (h < 24) return `${Math.floor(h)}h`
   const d = h / 24
-  if (d < 7) return `${Math.floor(d)}d`
+  if (d < 7) return `${Math.floor(d)}${daySuffix}`
   return new Date(ms).toLocaleDateString()
 }
 
@@ -48,6 +49,7 @@ export default function HistorySheet({
   const c = theme.colors
   const insets = useSafeAreaInsets()
   const { user } = useAuth()
+  const { t, lang } = useI18n()
   const [items, setItems] = useState<Problem[]>([])
   const [query, setQuery] = useState('')
   const [topicFilter, setTopicFilter] = useState<string | null>(null)
@@ -84,9 +86,10 @@ export default function HistorySheet({
       >
         <View style={styles.grab} />
         <View style={styles.head}>
-          <Txt style={[styles.title, { fontFamily: theme.font.serif, color: c.text }]}>Your work</Txt>
+          <Txt style={[styles.title, { fontFamily: theme.font.serif, color: c.text }]}>{t('history.title')}</Txt>
           <Txt size={11} color={c.textFaint} style={mono}>
-            {items.length} SOLVED{streak > 0 ? `  ·  ${streak}D STREAK` : ''}
+            {t('history.meta', { n: items.length })}
+            {streak > 0 ? `  ·  ${t('history.streak', { d: streak })}` : ''}
           </Txt>
         </View>
 
@@ -94,7 +97,7 @@ export default function HistorySheet({
           <View style={styles.empty}>
             <Feather name="inbox" size={26} color={c.textFaint} />
             <Txt size={14} color={c.textMuted} style={styles.emptyTxt}>
-              Nothing yet — solve a problem and it lands here.
+              {t('history.empty')}
             </Txt>
           </View>
         ) : (
@@ -104,7 +107,7 @@ export default function HistorySheet({
               <Feather name="search" size={16} color={c.textFaint} />
               <TextInput
                 style={[styles.searchInput, { color: c.text }]}
-                placeholder="Search your work…"
+                placeholder={t('history.search')}
                 placeholderTextColor={c.textFaint}
                 value={query}
                 onChangeText={setQuery}
@@ -125,7 +128,7 @@ export default function HistorySheet({
                 keyboardShouldPersistTaps="handled"
                 contentContainerStyle={styles.chips}
               >
-                <TopicChip label="All" active={!topicFilter} c={c} mono={mono} onPress={() => setTopicFilter(null)} />
+                <TopicChip label={t('history.all')} active={!topicFilter} c={c} mono={mono} onPress={() => setTopicFilter(null)} />
                 {topics.map(([t, n]) => (
                   <TopicChip
                     key={t}
@@ -147,7 +150,7 @@ export default function HistorySheet({
               contentContainerStyle={styles.listPad}
               ListEmptyComponent={
                 <Txt size={13} color={c.textFaint} style={styles.noMatch}>
-                  No matches.
+                  {t('history.noMatch')}
                 </Txt>
               }
               renderItem={({ item }) => (
@@ -172,7 +175,7 @@ export default function HistorySheet({
                         </Txt>
                       )}
                       <Txt size={11} color={c.textFaint} style={mono}>
-                        {ago(item.createdAt)}
+                        {ago(item.createdAt, t('history.justNow'), lang === 'ro' ? 'z' : 'd')}
                       </Txt>
                     </View>
                   </View>

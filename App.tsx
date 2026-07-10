@@ -21,6 +21,7 @@ import {
 } from '@expo-google-fonts/fraunces'
 import { JetBrainsMono_500Medium, JetBrainsMono_600SemiBold } from '@expo-google-fonts/jetbrains-mono'
 import { ThemeProvider } from './src/theme/ThemeProvider'
+import { I18nProvider } from './src/i18n'
 import { AuthProvider, useAuth } from './src/auth/AuthProvider'
 import ErrorBoundary from './src/components/ErrorBoundary'
 import { ToastProvider } from './src/components/ui/Toast'
@@ -66,11 +67,13 @@ export default function App() {
       <ErrorBoundary>
         <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
           <ThemeProvider>
-            <ToastProvider>
-              <AuthProvider>
-                <Root fontsLoaded={fontsLoaded} />
-              </AuthProvider>
-            </ToastProvider>
+            <I18nProvider>
+              <ToastProvider>
+                <AuthProvider>
+                  <Root fontsLoaded={fontsLoaded} />
+                </AuthProvider>
+              </ToastProvider>
+            </I18nProvider>
           </ThemeProvider>
         </KeyboardProvider>
       </ErrorBoundary>

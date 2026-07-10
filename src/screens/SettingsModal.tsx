@@ -3,6 +3,7 @@ import { ActivityIndicator, Image, Pressable, StyleSheet, View } from 'react-nat
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
+import { useI18n } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import Overlay from '../components/ui/Overlay'
@@ -18,6 +19,7 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
   const c = theme.colors
   const insets = useSafeAreaInsets()
   const { user, signOut, deleteAccount } = useAuth()
+  const { t, lang, setLang } = useI18n()
   const toast = useToast()
   const [deleting, setDeleting] = useState(false)
   const [confirming, setConfirming] = useState(false)
@@ -29,7 +31,7 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
     try {
       await deleteAccount() // success -> auth gate returns to Welcome
     } catch (e) {
-      toast.show(e instanceof Error ? e.message : 'Could not delete account - try again.', 'alert-triangle')
+      toast.show(e instanceof Error ? e.message : t('settings.deleteError'), 'alert-triangle')
     } finally {
       setDeleting(false)
     }
@@ -46,7 +48,7 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
         >
         <View style={styles.head}>
           <Txt weight="extrabold" size={20} style={{ letterSpacing: -0.3 }}>
-            Settings
+            {t('settings.title')}
           </Txt>
           <Pressable onPress={onClose} hitSlop={8} style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}>
             <Feather name="x" size={22} color={c.textMuted} />
@@ -72,12 +74,20 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
           </View>
         </View>
 
+        {/* Language: RO ↔ EN toggle (persisted; the AI answers follow it too). */}
+        <Row
+          icon="globe"
+          label={`${t('settings.language')} · ${t('settings.language.value')}`}
+          onPress={() => setLang(lang === 'ro' ? 'en' : 'ro')}
+          c={c}
+        />
+
         <Row
           icon="log-out"
-          label="Sign out"
+          label={t('settings.signOut')}
           onPress={() => {
             onClose()
-            signOut().then(() => toast.show('Signed out'))
+            signOut().then(() => toast.show(t('auth.signedOut')))
           }}
           c={c}
         />
@@ -93,11 +103,11 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
             <Feather name="trash-2" size={19} color={c.danger} />
           )}
           <Txt size={16} color={c.danger}>
-            {deleting ? 'Deleting account…' : 'Delete account'}
+            {deleting ? t('settings.deleting') : t('settings.delete')}
           </Txt>
         </Pressable>
         <Txt size={12} color={c.textFaint} style={{ paddingHorizontal: 14, lineHeight: 17 }}>
-          Deleting removes your account and all your solved problems permanently.
+          {t('settings.deleteNote')}
         </Txt>
         </View>
       </Overlay>
@@ -105,9 +115,10 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
       {/* sibling of the sheet's overlay so it stacks fullscreen above it */}
       <ConfirmDialog
         open={confirming}
-        title="Delete account?"
-        message="This permanently deletes your account and every conversation, on all devices. There is no undo."
-        confirmLabel="Delete forever"
+        title={t('settings.confirm.title')}
+        message={t('settings.confirm.message')}
+        confirmLabel={t('settings.confirm.cta')}
+        cancelLabel={t('settings.confirm.cancel')}
         onConfirm={doDelete}
         onClose={() => setConfirming(false)}
       />
