@@ -1,30 +1,100 @@
 @AGENTS.md
 
-## Build / deploy status (handoff note — 2026-07-08)
+# Rezolvo — camera-first AI math solver (RO-first, freemium)
 
-This project is set up for **EAS cloud builds** (Expo), not local builds.
+Snap/type a math problem → step-by-step typeset solution, machine-verified.
+One thread per problem, saved history. Product plan: `docs/PLAN.md` ·
+Live status + remaining steps: `docs/ROADMAP.md`.
 
-- **Expo account/org:** `matdan88-studio` (owner set in app.json; logged-in CLI user is `matdan88`)
-- **Expo project:** https://expo.dev/accounts/matdan88-studio/projects/intelligence
-- **Config:** `eas.json` (profiles: development / preview / production). Android keystore is auto-generated and stored on Expo servers.
-- Start a build: `npx eas-cli build --platform android --profile preview` · List: `npx eas-cli build:list --limit 5`
-- Gemini env vars (`EXPO_PUBLIC_GEMINI_API_KEY` sensitive, `EXPO_PUBLIC_GEMINI_MODEL`) are set on EAS for preview + production. `.env` is local-only and never uploaded.
+**This folder (`C:\dev\intelligence`) is the ONE true working copy** — edit and
+build here. The old checkout at `C:\Users\coste\OneDrive\Desktop\intelligence`
+is a separate stale clone (OneDrive is uninstalled); don't work there.
 
-## Architecture (Firebase backend)
+**Verification culture:** claims about what's on the phone are proven with adb
+screenshots (`adb shell "screencap -p /sdcard/x.png"` + pull — quote the shell
+command or set `MSYS_NO_PATHCONV=1`, or Git Bash mangles `/sdcard`). The user
+expects evidence, not assurances.
 
-- **Auth:** Firebase Auth with Google provider — `src/auth/AuthProvider.tsx` (google-signin → idToken → `signInWithCredential`). Required sign-in gate in `App.tsx` → `WelcomeScreen`.
-- **Data:** Firestore `users/{uid}/conversations/{id}/messages/{id}` — `src/chat/store.tsx` (live snapshots, offline cache, fire-and-forget writes; streaming reply lives in a local draft bubble, only the finished message is written). Rules in `firestore.rules`.
-- **AI:** `functions/src/index.ts` — Cloud Function `gemini` (europe-west1) proxies Gemini, verifies the Firebase ID token, holds the API key as secret `GEMINI_API_KEY`, pins the model server-side. Client hits it when `EXPO_PUBLIC_AI_PROXY_URL` is set (`src/ai/index.ts`); without it, dev fallback calls Gemini directly with the local key.
-- **Keyboard:** react-native-keyboard-controller (`KeyboardProvider` in App.tsx, `KeyboardAvoidingView` in ChatScreen with `keyboardVerticalOffset={-insets.bottom}`).
-- **Reliability:** Crashlytics (native + JS, reported via `src/components/ErrorBoundary.tsx`), `npm test` = jest-expo suites for the SSE and markdown parsers, inverted virtualized FlatList with newest-80 pagination, per-user rate limit (20 req/min, `rate_limits/{uid}`, admin-only) in the function.
-- **Gotcha:** RNFirebase's modular `collection()` crashes at runtime with a CollectionReference parent despite its types allowing it — always parent subcollections on a DocumentReference (see `msgCol` in store.tsx).
-- **Expo Go does NOT run this app** (native modules: google-signin, RN Firebase). Use a development build (`--profile development` + `npx expo start --dev-client`).
+## Build & run
 
-### Deployed state (2026-07-08 — all backend setup DONE)
-- Firebase project: `gen-lang-client-0286445774` (attached to the user's AI Studio Google Cloud project). `google-services.json` in repo root (NOT gitignored — EAS needs it). Firestore database created (eur3), rules deployed.
-- Function `gemini` live at `https://europe-west1-gen-lang-client-0286445774.cloudfunctions.net/gemini` (Node 22 gen2; verified 401 without token). Secret `GEMINI_API_KEY` v1 in Secret Manager. Artifact cleanup policy set (1 day).
-- EAS env (preview + production): `EXPO_PUBLIC_AI_PROXY_URL`, `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`, `EXPO_PUBLIC_GEMINI_MODEL`. The raw `EXPO_PUBLIC_GEMINI_API_KEY` was deliberately DELETED from EAS (key must never ship in builds; it stays in local `.env` as dev fallback only).
-- firebase CLI logged in as mathosting@gmail.com; `.firebaserc` points at the project.
+- **Local debug build** (EAS Android quota exhausted until ~2026-08-01):
+  `cd android; .\gradlew.bat assembleDebug` then
+  `adb install -r app\build\outputs\apk\debug\app-debug.apk`.
+  Windows long-path fix lives in two gradle pins that **every `expo prebuild`
+  WIPES** — re-apply after any prebuild:
+  1. `android/app/build.gradle` → `android { externalNativeBuild { cmake { version "3.31.6" } } }`
+  2. `android/gradle.properties` → `reactNativeArchitectures=arm64-v8a`
+  Also preserve `android/app/debug.keystore` (SHA-1 `5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25` is registered in Firebase).
+  **Prefer avoiding prebuild:** for a new native module, `npx expo install` +
+  hand-edit `android/app/src/main/AndroidManifest.xml` (autolinking does the rest)
+  — that's how expo-camera shipped.
+- **Dev loop:** `npm run dev:client` (fast runtime; plain `expo start` manifests
+  time out the dev client), `adb reverse tcp:8081 tcp:8081` after every replug,
+  warm the manifest+bundle with curl before opening, then deep link
+  `exp+intelligence://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081`
+  (scheme follows the SLUG `intelligence`; package is `com.rezolvo.app`).
+  Helper: `reconnect.ps1` / desktop shortcut `start-dev.cmd`.
+- **Expo Go does NOT run this app** (google-signin, RN Firebase, expo-camera).
+- `npm test` = jest suites (gemini SSE, markdown, verdict helpers) ·
+  `npx tsc --noEmit` before shipping.
 
-### Notes
-- The local `android/` folder is **gitignored leftover** from an earlier local build attempt — EAS regenerates the native project from `app.json`. Safe to delete.
+## Architecture
+
+- **Solve stack** (`src/solve/`): `solve.ts` routes FAST=`gemini-flash-lite-latest`
+  (~2s) → DEEP=`gemini-pro-latest` (fallback on failure/broken JSON, direct for
+  proofs, escalation when verification fails). `verifyAnswer` runs the model with
+  `tools:[{code_execution:{}}]` (sympy) → `VERDICT: CORRECT|INCORRECT|UNVERIFIABLE`
+  → `_verified` badge / silent deep re-solve. `verdict.ts` = pure helpers (tested).
+  `prompt.ts`: structured-JSON solve prompt (steps+answer+problem restatement,
+  `{LANG}` placeholder) — **never invent a problem from an unreadable image**
+  (anti-hallucination rule, device-verified). NO `thinkingConfig` ever (Gemini 3.x
+  rejects it). `capture.ts`: clamped crop + 1024px/0.7 JPEG downscale (proxy 1MB cap).
+- **Capture** (`src/screens/CaptureScreen.tsx`): in-app dark "visor" (expo-camera
+  CameraView, autofocus on) + trim stage with corner-drag crop. Origin-aware nav:
+  camera entry → back=arrow to camera, "Refă"; gallery entry → picker opens OVER
+  Home (visor mounts only if a photo returns), back=X to Home, ghost="Alege alta"
+  (cancel keeps current photo). Hardware back mirrors the visible button.
+- **Screen** (`src/screens/SolverScreen.tsx`): hero ↔ thread (CrossFade), composer
+  + SymbolBar, solution cards in WebView (`src/components/ui/SolutionView.tsx` —
+  KaTeX+marked from CDN, math stashed around markdown, animated height, static
+  parabola: no draw animation, unreliable on MIUI). History/Settings = bottom
+  sheets on the shared `Overlay` engine (spring + keyboard dismiss both ways).
+- **Keyboard rules:** every context switch dismisses (send, chips, +Nouă, load
+  problem, overlay open/close, visor open); scroll dismisses on drag; HistorySheet
+  rises above the keyboard (`useKeyboardHeight` + capped maxHeight).
+- **Auth** (`src/auth/AuthProvider.tsx`): gateless — silent `signInAnonymously`
+  whenever session is null; Google sign-in LINKS the anonymous account (same uid,
+  work carries over) with fallback to `signInWithCredential` on
+  credential-already-in-use; manual profile backfill + `setUser` push (linking
+  fires no onAuthStateChanged). WelcomeScreen = offline-only fallback.
+- **Data** (`src/solve/store.ts`): `users/{uid}/problems/{id}` docs (title, topic,
+  turns, createdAt). **Gotcha:** RNFirebase modular `collection()` must be
+  parented on a DocumentReference (`doc(db,'users',uid)`), never a collection.
+- **i18n** (`src/i18n/index.tsx`): RO default + EN, `t(key,{vars})`, persisted
+  `@rezolvo.lang`; `langName` is injected into solve prompts so the AI answers in
+  the app language.
+- **Design system:** ink-on-paper (#F5F7FB bg, #2B50E0 accent, #0E9F6E success),
+  Fraunces + Inter + JetBrains Mono, graph-paper grid, 720dp content column,
+  font scaling capped 1.3× (`Txt`), edge-to-edge. Motion contract: sheets spring
+  (Overlay), state swaps cross-fade in fixed slots (`CrossFade`), presses scale
+  0.96 (`Press`), solution cards grow (animated height) — nothing hard-cuts,
+  nothing reflows. Capture visor is the one dark surface.
+
+## Deployed state (2026-07-11)
+
+- Firebase project `gen-lang-client-0286445774`; Android app "Rezolvo"
+  `com.rezolvo.app` (`google-services.json` in repo root, NOT gitignored).
+  Firestore rules: `users/{uid}/{document=**}` owner-only.
+- Cloud Function `gemini` (europe-west1, Node 22 gen2):
+  `https://gemini-rgb3szbt2a-ew.a.run.app` — verifies Firebase ID token, model
+  whitelist `gemini-flash-latest|gemini-flash-lite-latest|gemini-pro-latest`,
+  forwards `tools`, clamps maxOutputTokens ≤ 4096, rate limit 20/min (users) vs
+  5/min (anonymous). Secret `GEMINI_API_KEY` in Secret Manager. The raw Gemini
+  key lives ONLY in local `.env` as dev fallback — it must never ship in builds.
+- Hosting: site `rezolvo` → https://rezolvo.web.app (`web/` folder) — bilingual
+  privacy/terms/delete-account + landing. Contact: mathosting@gmail.com.
+- EAS project `intelligence` (owner `matdan88-studio`); env for preview+production:
+  `EXPO_PUBLIC_AI_PROXY_URL`, `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`,
+  `EXPO_PUBLIC_GEMINI_MODEL`. firebase CLI logged in as mathosting@gmail.com.
+- Launcher icon/splash still show the OLD "Intelligence" mark — Rezolvo logo is
+  an open roadmap item.
