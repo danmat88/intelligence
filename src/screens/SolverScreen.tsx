@@ -8,12 +8,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
 import CrossFade from '../components/ui/CrossFade'
+import Press from '../components/ui/Press'
 import ScreenBackground from '../components/ui/ScreenBackground'
 import { useToast } from '../components/ui/Toast'
 import Txt from '../components/ui/Txt'
 import SolutionView from '../components/ui/SolutionView'
 import SymbolBar from '../components/ui/SymbolBar'
-import { captureFromCamera, captureFromLibrary } from '../solve/capture'
+import type { CapturedImage } from '../solve/capture'
 import { solveImage, solveProblem, followUp, solveDeep, verifyAnswer } from '../solve/solve'
 import { getSolveJson, isStructuredSolution, withJsonFlags } from '../solve/verdict'
 import type { ChatTurn } from '../ai/types'
@@ -22,6 +23,7 @@ import { useAuth } from '../auth/AuthProvider'
 import { createProblem, updateProblemTurns, removeProblem, toStoredTurns, type Problem } from '../solve/store'
 import SettingsModal from './SettingsModal'
 import HistorySheet from './HistorySheet'
+import CaptureScreen from './CaptureScreen'
 
 type Turn = {
   id: string
@@ -142,9 +144,12 @@ export default function SolverScreen() {
   const [sending, setSending] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
+  // The in-app capture flow (camera visor / gallery pick + trim).
+  const [capture, setCapture] = useState<'camera' | 'library' | null>(null)
   // Turn-ids whose answers are being machine-checked right now (badge pending).
   const [verifyingMap, setVerifyingMap] = useState<Record<string, boolean>>({})
   const scrollRef = useRef<ScrollView>(null)
+  const inputRef = useRef<TextInput>(null)
   const threadRef = useRef<Turn[]>([])
   const problemIdRef = useRef<string | null>(null)
   const abortRef = useRef<AbortController | null>(null)
@@ -373,24 +378,34 @@ export default function SolverScreen() {
     [sending, run, reset, priorTurns, user, t, langName],
   )
 
+  // Open the in-app capture flow (Rezolvo's own camera + trim — never the
+  // system camera). The photo comes back through solvePhoto below.
   const snap = useCallback(
-    async (source: 'camera' | 'library') => {
-      if (sending) return
-      try {
-        const img = await (source === 'camera' ? captureFromCamera() : captureFromLibrary())
-        if (!img || !img.base64) return
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
-        // A photo is always a NEW problem — one thread per problem keeps the
-        // model accurate and history clean, so leave the previous thread behind.
-        if (threadRef.current.length > 0) reset()
-        // '' → the verifier reads the problem from the solution's own restatement
-        run({ id: uid(), role: 'user', text: '', imageUri: img.uri }, (sig) => solveImage(img, langName, sig), '')
-      } catch {
-        commit([...threadRef.current, { id: uid(), role: 'assistant', text: t('err.camera'), error: true }])
-      }
+    (source: 'camera' | 'library') => {
+      if (!sending) setCapture(source)
     },
-    [sending, run, commit, reset, langName, t],
+    [sending],
   )
+
+  const solvePhoto = useCallback(
+    (img: CapturedImage) => {
+      setCapture(null)
+      if (!img.base64) return
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
+      // A photo is always a NEW problem — one thread per problem keeps the
+      // model accurate and history clean, so leave the previous thread behind.
+      if (threadRef.current.length > 0) reset()
+      // '' → the verifier reads the problem from the solution's own restatement
+      run({ id: uid(), role: 'user', text: '', imageUri: img.uri }, (sig) => solveImage(img, langName, sig), '')
+    },
+    [run, reset, langName],
+  )
+
+  const typeInstead = useCallback(() => {
+    setCapture(null)
+    // focus once the visor has slid away, so the keyboard rises over Home
+    setTimeout(() => inputRef.current?.focus(), 280)
+  }, [])
 
   return (
     <ScreenBackground>
@@ -404,68 +419,58 @@ export default function SolverScreen() {
         </Txt>
         <View style={styles.headerRight}>
           {!empty && (
-            <Pressable
-              onPress={() => !sending && reset()}
-              hitSlop={8}
-              style={({ pressed }) => [
-                styles.newBtn,
-                { borderColor: c.border, backgroundColor: c.surface, opacity: pressed ? 0.6 : 1 },
-              ]}
-            >
+            <Press onPress={() => !sending && reset()} hitSlop={8} style={[styles.newBtn, { borderColor: c.border, backgroundColor: c.surface }]}>
               <Feather name="plus" size={15} color={c.accent} />
               <Txt weight="semibold" size={13} color={c.accent}>
                 {t('header.new')}
               </Txt>
-            </Pressable>
+            </Press>
           )}
           {/* Guests save work too (anonymous uid), so history is always available. */}
-          <Pressable
+          <Press
             onPress={() => setHistoryOpen(true)}
             hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel={t('history.title')}
-            style={({ pressed }) => [styles.iconBtn, { backgroundColor: c.surface, borderColor: c.border, opacity: pressed ? 0.55 : 1 }]}
+            style={[styles.iconBtn, { backgroundColor: c.surface, borderColor: c.border }]}
           >
             <Feather name="clock" size={19} color={c.textMuted} />
-          </Pressable>
+          </Press>
           {/* Account slot: FIXED 38px footprint in both states, so the swap
               never resizes the row and neighbours never move. */}
           <CrossFade dep={user?.isAnonymous ? 'guest' : 'account'} style={styles.accountSlot}>
             {user?.isAnonymous ? (
               // Guest: circular log-in button (same size as the avatar it becomes).
-              <Pressable
+              <Press
                 onPress={signIn}
                 disabled={signingIn}
                 hitSlop={8}
                 accessibilityRole="button"
                 accessibilityLabel={t('auth.signIn')}
-                style={({ pressed }) => [
-                  styles.iconBtn,
-                  { backgroundColor: c.accentSoft, borderColor: c.accent, opacity: pressed ? 0.6 : 1 },
-                ]}
+                style={[styles.iconBtn, { backgroundColor: c.accentSoft, borderColor: c.accent }]}
               >
                 {signingIn ? (
                   <ActivityIndicator size="small" color={c.accent} />
                 ) : (
                   <Feather name="log-in" size={17} color={c.accent} />
                 )}
-              </Pressable>
+              </Press>
             ) : (
               // Signed in: your avatar IS the account button — the visible proof
               // you're logged in. Falls back to the gear when there's no photo.
-              <Pressable
+              <Press
                 onPress={() => setSettingsOpen(true)}
                 hitSlop={8}
                 accessibilityRole="button"
                 accessibilityLabel={t('settings.title')}
-                style={({ pressed }) => [styles.iconBtn, { backgroundColor: c.surface, borderColor: c.border, opacity: pressed ? 0.55 : 1 }]}
+                style={[styles.iconBtn, { backgroundColor: c.surface, borderColor: c.border }]}
               >
                 {user?.photo ? (
                   <Image source={{ uri: user.photo }} style={styles.avatar} />
                 ) : (
                   <Feather name="settings" size={19} color={c.textMuted} />
                 )}
-              </Pressable>
+              </Press>
             )}
           </CrossFade>
         </View>
@@ -489,12 +494,11 @@ export default function SolverScreen() {
                 {t('hero.title.accent')}
               </Txt>
             </Txt>
-            <Pressable
+            <Press
               onPress={() => snap('camera')}
-              style={({ pressed }) => [
-                styles.snapCard,
-                { backgroundColor: c.surface, borderColor: c.border, opacity: pressed ? 0.92 : 1 },
-              ]}
+              scaleTo={0.975}
+              containerStyle={styles.stretch}
+              style={[styles.snapCard, { backgroundColor: c.surface, borderColor: c.border }]}
             >
               <View style={[styles.lens, { backgroundColor: c.accent }]}>
                 <Feather name="camera" size={25} color="#fff" />
@@ -505,34 +509,23 @@ export default function SolverScreen() {
               <Txt size={13} color={c.textMuted} style={styles.snapSub}>
                 {t('hero.snap.sub')}
               </Txt>
-            </Pressable>
-            <Pressable
-              onPress={() => snap('library')}
-              hitSlop={8}
-              style={({ pressed }) => [styles.libBtn, { opacity: pressed ? 0.6 : 1 }]}
-            >
+            </Press>
+            <Press onPress={() => snap('library')} hitSlop={8} style={styles.libBtn}>
               <Feather name="image" size={15} color={c.accent} />
               <Txt weight="semibold" size={13.5} color={c.accent}>
                 {t('hero.library')}
               </Txt>
-            </Pressable>
+            </Press>
             <Txt size={13} color={c.textFaint} style={styles.orType}>
               {t('hero.examples')}
             </Txt>
             <View style={styles.examples}>
               {['2x² + 5x − 3 = 0', '∫ x·eˣ dx', t('hero.example.derivative')].map((ex) => (
-                <Pressable
-                  key={ex}
-                  onPress={() => sendText(ex)}
-                  style={({ pressed }) => [
-                    styles.chip,
-                    { backgroundColor: c.surface, borderColor: c.border, opacity: pressed ? 0.6 : 1 },
-                  ]}
-                >
+                <Press key={ex} onPress={() => sendText(ex)} style={[styles.chip, { backgroundColor: c.surface, borderColor: c.border }]}>
                   <Txt size={12.5} color={c.textMuted} style={{ fontFamily: theme.font.mono }}>
                     {ex}
                   </Txt>
-                </Pressable>
+                </Press>
               ))}
             </View>
           </ScrollView>
@@ -554,16 +547,17 @@ export default function SolverScreen() {
         <View style={[styles.composerWrap, { paddingBottom: insets.bottom + 8 }]}>
           <SymbolBar onInsert={(s) => setInput((v) => v + s)} />
           <View style={[styles.field, { backgroundColor: c.surface, borderColor: c.border }]}>
-            <Pressable
+            <Press
               onPress={() => snap('camera')}
               hitSlop={6}
               accessibilityRole="button"
               accessibilityLabel={t('a11y.camera')}
-              style={({ pressed }) => [styles.camBtn, { backgroundColor: c.accentSoft, opacity: pressed ? 0.6 : 1 }]}
+              style={[styles.camBtn, { backgroundColor: c.accentSoft }]}
             >
               <Feather name="camera" size={18} color={c.accent} />
-            </Pressable>
+            </Press>
             <TextInput
+              ref={inputRef}
               style={[styles.input, { color: c.text }]}
               placeholder={empty ? t('composer.placeholder.first') : t('composer.placeholder.followup')}
               placeholderTextColor={c.textFaint}
@@ -572,19 +566,16 @@ export default function SolverScreen() {
               multiline
               maxFontSizeMultiplier={1.2}
             />
-            <Pressable
+            <Press
               onPress={() => sendText(input)}
               disabled={!input.trim() || sending}
               hitSlop={6}
               accessibilityRole="button"
               accessibilityLabel={t('a11y.send')}
-              style={({ pressed }) => [
-                styles.sendBtn,
-                { backgroundColor: input.trim() && !sending ? c.accent : c.surfaceAlt, opacity: pressed ? 0.7 : 1 },
-              ]}
+              style={[styles.sendBtn, { backgroundColor: input.trim() && !sending ? c.accent : c.surfaceAlt }]}
             >
               <Feather name="arrow-up" size={18} color={input.trim() && !sending ? c.onAccent : c.textFaint} />
-            </Pressable>
+            </Press>
           </View>
           {user?.isAnonymous ? (
             <Pressable onPress={signIn} hitSlop={6}>
@@ -603,6 +594,7 @@ export default function SolverScreen() {
 
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <HistorySheet open={historyOpen} onClose={() => setHistoryOpen(false)} onSelect={loadProblem} />
+      <CaptureScreen open={capture} onClose={() => setCapture(null)} onUsePhoto={solvePhoto} onTypeInstead={typeInstead} />
     </ScreenBackground>
   )
 }
@@ -740,6 +732,7 @@ function PendingRow({ onCancel }: { onCancel?: () => void }) {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  stretch: { alignSelf: 'stretch' },
   // One content column, identical on every screen size: full width on phones,
   // capped and centered on wide/tablet screens (controls stay fixed-dp).
   column: { flex: 1, width: '100%', maxWidth: 720, alignSelf: 'center' },

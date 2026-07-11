@@ -98,6 +98,18 @@ const STRINGS = {
     'a11y.camera': 'Take a photo',
     'a11y.delete': 'Delete',
     'a11y.close': 'Close',
+    'a11y.torch': 'Flashlight',
+    'a11y.shutter': 'Take the photo',
+    // — in-app capture (camera visor + trim)
+    'capture.title': 'Take a photo',
+    'capture.hint': 'Frame the problem',
+    'capture.denied': 'Rezolvo needs the camera to photograph problems. Enable it in Settings.',
+    'capture.allow': 'Allow the camera',
+    'capture.openSettings': 'Open settings',
+    'capture.typeInstead': 'Type it instead',
+    'crop.title': 'Select the problem',
+    'crop.retake': 'Retake',
+    'crop.solve': 'Solve',
   },
   ro: {
     // — solver hero
@@ -183,6 +195,18 @@ const STRINGS = {
     'a11y.camera': 'Fotografiază',
     'a11y.delete': 'Șterge',
     'a11y.close': 'Închide',
+    'a11y.torch': 'Lanternă',
+    'a11y.shutter': 'Fă poza',
+    // — in-app capture (camera visor + trim)
+    'capture.title': 'Fotografiază',
+    'capture.hint': 'Încadrează problema',
+    'capture.denied': 'Rezolvo are nevoie de cameră ca să fotografieze probleme. Activeaz-o în Setări.',
+    'capture.allow': 'Permite camera',
+    'capture.openSettings': 'Deschide setările',
+    'capture.typeInstead': 'Scrie în loc',
+    'crop.title': 'Alege problema',
+    'crop.retake': 'Refă',
+    'crop.solve': 'Rezolvă',
   },
 } as const
 

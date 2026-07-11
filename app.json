@@ -41,10 +41,16 @@
         }
       ],
       [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Rezolvo to use the camera to photograph math problems."
+        }
+      ],
+      [
         "expo-image-picker",
         {
-          "photosPermission": "Allow Intelligence to access your photos to solve problems from images.",
-          "cameraPermission": "Allow Intelligence to use the camera to snap math problems."
+          "photosPermission": "Allow Rezolvo to access your photos to solve problems from images.",
+          "cameraPermission": "Allow Rezolvo to use the camera to snap math problems."
         }
       ],
       [
