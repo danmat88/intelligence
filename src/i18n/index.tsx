@@ -23,6 +23,7 @@ const STRINGS = {
     'hero.snap.sub': 'Point at anything — printed or handwritten.',
     'hero.library': 'Choose from library',
     'hero.examples': '…or tap an example',
+    'hero.example.derivative': 'derivative of x²·sin(x)',
     // — header
     'header.new': 'New',
     // — composer
@@ -107,6 +108,7 @@ const STRINGS = {
     'hero.snap.sub': 'Țintește orice — tipărit sau scris de mână.',
     'hero.library': 'Alege din galerie',
     'hero.examples': '…sau atinge un exemplu',
+    'hero.example.derivative': 'derivata lui x²·sin(x)',
     // — header
     'header.new': 'Nouă',
     // — composer

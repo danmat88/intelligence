@@ -87,6 +87,10 @@ export function subscribeProblems(uid: string, cb: (items: Problem[]) => void): 
         }),
       )
     },
-    () => cb([]),
+    (err) => {
+      // surface the real reason instead of silently showing an empty history
+      console.warn('[history] snapshot error:', err?.message ?? err)
+      cb([])
+    },
   )
 }

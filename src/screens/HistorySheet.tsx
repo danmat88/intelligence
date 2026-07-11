@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { FlatList, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native'
+import { FlatList, Pressable, ScrollView, StyleSheet, TextInput, useWindowDimensions, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
@@ -48,6 +48,7 @@ export default function HistorySheet({
   const { theme } = useTheme()
   const c = theme.colors
   const insets = useSafeAreaInsets()
+  const { height: winH } = useWindowDimensions()
   const { user } = useAuth()
   const { t, lang } = useI18n()
   const [items, setItems] = useState<Problem[]>([])
@@ -81,7 +82,9 @@ export default function HistorySheet({
       <View
         style={[
           styles.sheet,
-          { backgroundColor: c.bgElevated, borderColor: c.border, paddingBottom: insets.bottom + 12 },
+          // pixel maxHeight — a percentage here resolves against an
+          // undefined-height absolute parent and un-anchors the sheet
+          { backgroundColor: c.bgElevated, borderColor: c.border, paddingBottom: insets.bottom + 12, maxHeight: winH * 0.85 },
         ]}
       >
         <View style={styles.grab} />
@@ -126,6 +129,9 @@ export default function HistorySheet({
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
+                // flexShrink:0 — without it the sheet's maxHeight squeezes this
+                // row vertically and clips the chip text
+                style={styles.chipsBar}
                 contentContainerStyle={styles.chips}
               >
                 <TopicChip label={t('history.all')} active={!topicFilter} c={c} mono={mono} onPress={() => setTopicFilter(null)} />
@@ -223,7 +229,8 @@ function TopicChip({
         },
       ]}
     >
-      <Txt size={12} weight="semibold" color={active ? c.onAccent : c.textMuted} style={mono}>
+      {/* Inter, not mono — the mono face clips vertically inside chips on Android */}
+      <Txt size={12} weight="semibold" color={active ? c.onAccent : c.textMuted} style={styles.chipTxt}>
         {label}
       </Txt>
     </Pressable>
@@ -237,7 +244,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingHorizontal: 16,
     paddingTop: 10,
-    maxHeight: '86%',
   },
   grab: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: 'rgba(20,25,34,0.14)', marginBottom: 12 },
   head: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12, paddingHorizontal: 4 },
@@ -255,8 +261,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   searchInput: { flex: 1, fontSize: 14.5, fontFamily: 'Inter_400Regular', padding: 0 },
+  chipsBar: { flexGrow: 0, flexShrink: 0 },
   chips: { gap: 7, paddingBottom: 12, paddingRight: 4 },
   chip: { borderWidth: 1, borderRadius: 999, paddingVertical: 7, paddingHorizontal: 12 },
+  chipTxt: { lineHeight: 16, includeFontPadding: false },
   listPad: { paddingBottom: 8 },
   noMatch: { textAlign: 'center', paddingVertical: 24 },
   card: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderRadius: 16, padding: 14, marginBottom: 10 },

@@ -66,8 +66,9 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels, 
   @media (prefers-reduced-motion:no-preference){
     #c{animation:fadeup .45s ease both}
     @keyframes fadeup{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-    .parabola{stroke-dasharray:640;stroke-dashoffset:640;animation:draw 1.25s ease .25s forwards}
-    @keyframes draw{to{stroke-dashoffset:0}}
+    /* NOTE: no stroke-dash "draw" animation on the curve — it proved unreliable
+       on Android WebView (curve stayed invisible when the animation stalled).
+       The graph must always be visible; the card fade is animation enough. */
     .answer{animation:pop .5s cubic-bezier(.2,.8,.3,1) .15s both}
     @keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
   }

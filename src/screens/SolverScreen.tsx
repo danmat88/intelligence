@@ -520,7 +520,7 @@ export default function SolverScreen() {
               {t('hero.examples')}
             </Txt>
             <View style={styles.examples}>
-              {['2x² + 5x − 3 = 0', '∫ x·eˣ dx', 'derivative of x²·sin(x)'].map((ex) => (
+              {['2x² + 5x − 3 = 0', '∫ x·eˣ dx', t('hero.example.derivative')].map((ex) => (
                 <Pressable
                   key={ex}
                   onPress={() => sendText(ex)}
