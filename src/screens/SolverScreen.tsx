@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { ActivityIndicator, Animated, Image, Pressable, ScrollView, Share, StyleSheet, TextInput, View } from 'react-native'
 import * as Clipboard from 'expo-clipboard'
+import * as Haptics from 'expo-haptics'
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 import { StatusBar } from 'expo-status-bar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -227,6 +228,7 @@ export default function SolverScreen() {
         const v = await verifyAnswer(problemText, turn.text)
         if (v === 'correct') {
           applyText(withJsonFlags(turn.text, { _verified: true }))
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {})
         } else if (v === 'incorrect') {
           const j = getSolveJson(turn.text)
           const prob = String(j?.problem ?? '').trim() || problemText.trim()
@@ -282,6 +284,7 @@ export default function SolverScreen() {
           commit(base)
           return
         }
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {})
         commit([...base, userTurn, { id: asstId, role: 'assistant', text: friendlyError(e, t), error: true }])
       } finally {
         if (abortRef.current === ctrl) abortRef.current = null
@@ -312,6 +315,7 @@ export default function SolverScreen() {
     (raw: string) => {
       const text = raw.trim()
       if (!text || sending) return
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
       setInput('')
       const isFirst = threadRef.current.length === 0
       const turns: ChatTurn[] = [...priorTurns(), { role: 'user', text }]
@@ -375,6 +379,7 @@ export default function SolverScreen() {
       try {
         const img = await (source === 'camera' ? captureFromCamera() : captureFromLibrary())
         if (!img || !img.base64) return
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
         // A photo is always a NEW problem — one thread per problem keeps the
         // model accurate and history clean, so leave the previous thread behind.
         if (threadRef.current.length > 0) reset()
@@ -417,6 +422,8 @@ export default function SolverScreen() {
           <Pressable
             onPress={() => setHistoryOpen(true)}
             hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('history.title')}
             style={({ pressed }) => [styles.iconBtn, { backgroundColor: c.surface, borderColor: c.border, opacity: pressed ? 0.55 : 1 }]}
           >
             <Feather name="clock" size={19} color={c.textMuted} />
@@ -430,6 +437,8 @@ export default function SolverScreen() {
                 onPress={signIn}
                 disabled={signingIn}
                 hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={t('auth.signIn')}
                 style={({ pressed }) => [
                   styles.iconBtn,
                   { backgroundColor: c.accentSoft, borderColor: c.accent, opacity: pressed ? 0.6 : 1 },
@@ -447,6 +456,8 @@ export default function SolverScreen() {
               <Pressable
                 onPress={() => setSettingsOpen(true)}
                 hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={t('settings.title')}
                 style={({ pressed }) => [styles.iconBtn, { backgroundColor: c.surface, borderColor: c.border, opacity: pressed ? 0.55 : 1 }]}
               >
                 {user?.photo ? (
@@ -546,6 +557,8 @@ export default function SolverScreen() {
             <Pressable
               onPress={() => snap('camera')}
               hitSlop={6}
+              accessibilityRole="button"
+              accessibilityLabel={t('a11y.camera')}
               style={({ pressed }) => [styles.camBtn, { backgroundColor: c.accentSoft, opacity: pressed ? 0.6 : 1 }]}
             >
               <Feather name="camera" size={18} color={c.accent} />
@@ -563,6 +576,8 @@ export default function SolverScreen() {
               onPress={() => sendText(input)}
               disabled={!input.trim() || sending}
               hitSlop={6}
+              accessibilityRole="button"
+              accessibilityLabel={t('a11y.send')}
               style={({ pressed }) => [
                 styles.sendBtn,
                 { backgroundColor: input.trim() && !sending ? c.accent : c.surfaceAlt, opacity: pressed ? 0.7 : 1 },

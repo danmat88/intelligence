@@ -179,7 +179,13 @@ export default function HistorySheet({
                       </Txt>
                     </View>
                   </View>
-                  <Pressable onPress={() => user && removeProblem(user.id, item.id)} hitSlop={10} style={styles.del}>
+                  <Pressable
+                    onPress={() => user && removeProblem(user.id, item.id)}
+                    hitSlop={10}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('a11y.delete')}
+                    style={styles.del}
+                  >
                     <Feather name="trash-2" size={16} color={c.textFaint} />
                   </Pressable>
                 </Pressable>

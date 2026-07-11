@@ -93,6 +93,10 @@ const STRINGS = {
     'settings.confirm.cancel': 'Cancel',
     'settings.privacy': 'Privacy policy',
     'settings.terms': 'Terms of service',
+    'a11y.send': 'Send',
+    'a11y.camera': 'Take a photo',
+    'a11y.delete': 'Delete',
+    'a11y.close': 'Close',
   },
   ro: {
     // — solver hero
@@ -173,6 +177,10 @@ const STRINGS = {
     'settings.confirm.cancel': 'Anulează',
     'settings.privacy': 'Politica de confidențialitate',
     'settings.terms': 'Termeni și condiții',
+    'a11y.send': 'Trimite',
+    'a11y.camera': 'Fotografiază',
+    'a11y.delete': 'Șterge',
+    'a11y.close': 'Închide',
   },
 } as const
 

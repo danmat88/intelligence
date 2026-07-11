@@ -50,7 +50,13 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
           <Txt weight="extrabold" size={20} style={{ letterSpacing: -0.3 }}>
             {t('settings.title')}
           </Txt>
-          <Pressable onPress={onClose} hitSlop={8} style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}>
+          <Pressable
+            onPress={onClose}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('a11y.close')}
+            style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+          >
             <Feather name="x" size={22} color={c.textMuted} />
           </Pressable>
         </View>
