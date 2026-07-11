@@ -1,8 +1,10 @@
-import { useMemo, useRef } from 'react'
-import { Animated, Easing, StyleSheet } from 'react-native'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Animated, Easing, StyleSheet, View } from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { WebView } from 'react-native-webview'
 import { useTheme } from '../../theme/ThemeProvider'
 import type { Theme } from '../../theme/tokens'
+import { ensureMathAssets, mathAssetsBase } from './mathAssets'
 
 /**
  * Renders a solution the way the mockup does: numbered step cards, a checked
@@ -23,17 +25,27 @@ export type SolutionLabels = {
   unverified: string
 }
 
-function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels, verifying: boolean) {
+function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels, verifying: boolean, local: boolean) {
   const sans = "system-ui,-apple-system,'Segoe UI',Roboto,sans-serif"
   const mono = "ui-monospace,'SF Mono','Cascadia Code',Menlo,monospace"
   const payload = JSON.stringify(content)
   const L = JSON.stringify(labels)
+  // Bundled-on-disk KaTeX/marked (relative to the WebView's file:// baseUrl);
+  // CDN only as the safety net if the local copy failed.
+  const src = local
+    ? { css: 'katex.css', katex: 'katex.js', autoRender: 'auto-render.js', marked: 'marked.js' }
+    : {
+        css: 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css',
+        katex: 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js',
+        autoRender: 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js',
+        marked: 'https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js',
+      }
   return `<!doctype html><html><head>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<link rel="stylesheet" href="${src.css}">
 <style>
-  html,body{margin:0;padding:0;background:transparent}
-  body{font-family:${sans};color:${c.text};font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%;padding:1px}
+  html,body{margin:0;padding:0;background:transparent;overflow-x:hidden;max-width:100%}
+  body{font-family:${sans};color:${c.text};font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%;padding:1px;word-break:break-word}
   .lbl{font-family:${mono};font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:${c.textFaint};margin-bottom:12px}
   .step{display:grid;grid-template-columns:26px 1fr;gap:12px;padding:11px 8px;margin:0 -8px;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:14px}
   .step+.step{border-top:1px solid rgba(26,22,38,.06)}
@@ -45,7 +57,7 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels, 
   .answer .tick{width:26px;height:26px;border-radius:50%;background:${c.success};display:flex;align-items:center;justify-content:center;flex:0 0 auto;box-shadow:0 2px 8px rgba(14,159,110,.35)}
   .answer .tick svg{width:14px;height:14px;stroke:#fff;stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
   .answer .ak{display:block;font-family:${mono};font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:${c.success};font-weight:700;margin-bottom:3px}
-  .answer .math{font-size:17.5px;color:${c.text}}
+  .answer .math{font-size:17.5px;color:${c.text};overflow-x:auto;overflow-y:hidden}
   .vbadge{margin-left:auto;align-self:center;flex:0 0 auto;font-family:${mono};font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:#fff;background:${c.success};border-radius:999px;padding:5px 10px;box-shadow:0 2px 8px rgba(14,159,110,.3)}
   .vrf{display:inline-flex;align-items:center;gap:6px;font-family:${mono};font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${c.textFaint};margin-bottom:12px}
   .vrf .dot{width:6px;height:6px;border-radius:50%;background:${c.accent};animation:vpulse 1.1s ease-in-out infinite}
@@ -72,9 +84,9 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels, 
      Android WebView (curve stayed invisible when the animation stalled). */
 </style></head><body>
 <div id="c"></div>
-<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="${src.marked}"></script>
+<script src="${src.katex}"></script>
+<script src="${src.autoRender}"></script>
 <script>
   var RAW = ${payload};
   var L = ${L};
@@ -179,52 +191,209 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels, 
     }catch(e){ el.innerHTML=esc(RAW); }
     h();
   }
+  // Live update channel: the native side NEVER rebuilds this page — new
+  // content / verify states are injected here and re-rendered in place
+  // (KaTeX is already warm, so there is no reload, no flash, no refetch).
+  window.update = function(raw, verifying){ RAW = String(raw); VERIFYING = !!verifying; render(); };
   window.addEventListener('load',render);
   setTimeout(h,300); setTimeout(h,900); setTimeout(h,1600);
 </script></body></html>`
+}
+
+/**
+ * Once a card is measured, remember it FOREVER (persisted): any solution ever
+ * opened renders at its exact height instantly — no settle, no shift, across
+ * app restarts. Keyed by a hash of the content, capped, saved debounced.
+ */
+const heightCache = new Map<string, number>()
+const CACHE_KEY = '@rezolvo.solHeights'
+const CACHE_CAP = 300
+let saveTimer: ReturnType<typeof setTimeout> | null = null
+
+function contentKey(s: string): string {
+  let h = 5381
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0
+  return `${h}:${s.length}`
+}
+
+// Hydrate at module load — long before any history sheet can be opened.
+AsyncStorage.getItem(CACHE_KEY)
+  .then((v) => {
+    if (!v) return
+    const o = JSON.parse(v) as Record<string, number>
+    for (const k of Object.keys(o)) if (!heightCache.has(k)) heightCache.set(k, o[k])
+  })
+  .catch(() => {})
+
+function rememberHeight(key: string, h: number) {
+  heightCache.set(key, h)
+  if (saveTimer) clearTimeout(saveTimer)
+  saveTimer = setTimeout(() => {
+    const entries = [...heightCache.entries()].slice(-CACHE_CAP)
+    AsyncStorage.setItem(CACHE_KEY, JSON.stringify(Object.fromEntries(entries))).catch(() => {})
+  }, 1200)
+}
+
+/** Close first-render guess for unmeasured structured solutions. It must
+ *  UNDERSHOOT on purpose: growing later (below the anchor) is invisible,
+ *  while a too-tall box that shrinks under the reader is ugly. */
+function estimateHeight(content: string): number {
+  try {
+    const s = content.indexOf('{')
+    const e = content.lastIndexOf('}')
+    if (s >= 0 && e > s) {
+      const j = JSON.parse(content.slice(s, e + 1)) as {
+        error?: string
+        steps?: { why?: string }[]
+        answer?: string
+        quadratic?: unknown[]
+      }
+      if (j.error) return 56
+      if (j.steps || j.answer) {
+        const steps = Array.isArray(j.steps) ? j.steps.length : 0
+        const whys = Array.isArray(j.steps) ? j.steps.filter((st) => st && st.why).length : 0
+        let h = 34 + steps * 44 + whys * 18 + (j.answer ? 82 : 0) + 40
+        if (Array.isArray(j.quadratic) && j.quadratic.length === 3) h += 150
+        return Math.min(540, Math.max(72, h))
+      }
+    }
+  } catch {
+    // not structured JSON — a markdown follow-up
+  }
+  return 96
 }
 
 export default function SolutionView({
   content,
   onChip,
   labels,
+  reveal = true,
+  mountDelay = 0,
   verifying = false,
 }: {
   content: string
   onChip?: (id: string) => void
   labels: SolutionLabels
+  /**
+   * true (live answer): the card GROWS to its content — the growth IS the
+   * reveal, and the WebView mounts immediately. false (history load): the
+   * card is INERT — a fixed box at its remembered exact height (or a close
+   * estimate); nothing inside a loaded conversation ever resizes or rides
+   * an animation.
+   */
+  reveal?: boolean
+  /**
+   * How long to hold the WebView back (ms). Non-zero ONLY when a screen
+   * transition needs covering (hero→thread push); switching between loaded
+   * problems has no transition to protect, so the WebView mounts instantly.
+   */
+  mountDelay?: number
   verifying?: boolean
 }) {
   const { theme } = useTheme()
-  // The card GROWS to its content instead of snapping — every height report
-  // from the WebView (first paint, badge arriving, step re-layout) animates.
-  const height = useRef(new Animated.Value(72)).current
+  const c = theme.colors
+  const key = useMemo(() => contentKey(content), [content])
+  const height = useRef(
+    new Animated.Value(reveal ? 72 : (heightCache.get(key) ?? estimateHeight(content))),
+  ).current
+  const measuredRef = useRef(false)
+  // Hold the heavy WebView back only while a covering transition runs —
+  // the box (already final-size) carries the layout meanwhile.
+  const [webAlive, setWebAlive] = useState(reveal || mountDelay <= 0)
+  useEffect(() => {
+    if (webAlive) return
+    const id = setTimeout(() => setWebAlive(true), mountDelay)
+    return () => clearTimeout(id)
+  }, [webAlive, mountDelay])
+
+  // Where KaTeX/marked come from: a string = the on-disk bundle (file://),
+  // null = CDN fallback, undefined = still preparing (ghost box meanwhile —
+  // in practice it resolves at app boot, long before any card mounts).
+  const [assetBase, setAssetBase] = useState<string | null | undefined>(mathAssetsBase ?? undefined)
+  useEffect(() => {
+    if (assetBase !== undefined) return
+    let alive = true
+    ensureMathAssets().then((d) => {
+      if (alive) setAssetBase(d)
+    })
+    return () => {
+      alive = false
+    }
+  }, [assetBase])
+
+  // The page is built ONCE per card. Every later change (verify badge, deep
+  // re-solve swapping the text) is INJECTED into the live page — a WebView
+  // reload would flash an empty card at a stale height (the "tall empty
+  // card" bug) and refetch KaTeX for nothing.
+  const webRef = useRef<WebView>(null)
+  const initial = useRef({ content, verifying })
   const html = useMemo(
-    () => buildHtml(content, theme.colors, labels, verifying),
-    // labels change only with the app language — stringify keeps the dep stable
-    [content, theme.colors, JSON.stringify(labels), verifying],
+    () => buildHtml(initial.current.content, theme.colors, labels, initial.current.verifying, !!assetBase),
+    // labels/colors are stable in practice; content updates flow via update()
+    [theme.colors, JSON.stringify(labels), assetBase],
   )
+  const propsRef = useRef({ content, verifying })
+  propsRef.current = { content, verifying }
+  const shownRef = useRef({ ...initial.current })
+  const loadedRef = useRef(false)
+  const sync = () => {
+    if (!loadedRef.current) return
+    const want = propsRef.current
+    if (shownRef.current.content === want.content && shownRef.current.verifying === want.verifying) return
+    shownRef.current = { ...want }
+    webRef.current?.injectJavaScript(
+      `window.update && window.update(${JSON.stringify(want.content)}, ${want.verifying ? 'true' : 'false'}); true;`,
+    )
+  }
+  useEffect(sync, [content, verifying])
+
+  if (!webAlive || assetBase === undefined) {
+    return (
+      <Animated.View style={{ height, overflow: 'hidden' }}>
+        <View style={[styles.ghostBar, { backgroundColor: c.surfaceAlt, width: '38%' }]} />
+        <View style={[styles.ghostBar, { backgroundColor: c.surfaceAlt, width: '86%' }]} />
+        <View style={[styles.ghostBar, { backgroundColor: c.surfaceAlt, width: '72%' }]} />
+        <View style={[styles.ghostBar, { backgroundColor: c.surfaceAlt, width: '64%' }]} />
+      </Animated.View>
+    )
+  }
 
   return (
     <Animated.View style={{ height }}>
       <WebView
+        ref={webRef}
         originWhitelist={['*']}
-        source={{ html }}
+        source={{ html, baseUrl: assetBase ?? undefined }}
         style={styles.web}
         scrollEnabled={false}
+        overScrollMode="never"
+        allowFileAccess
+        allowFileAccessFromFileURLs
+        allowingReadAccessToURL={assetBase ?? undefined}
         showsVerticalScrollIndicator={false}
         javaScriptEnabled
+        onLoadEnd={() => {
+          loadedRef.current = true
+          sync() // flush anything that changed while the page was loading
+        }}
         onMessage={(e) => {
           const d = e.nativeEvent.data
           if (d.startsWith('H:')) {
             const n = Number(d.slice(2))
             if (n > 0) {
-              Animated.timing(height, {
-                toValue: Math.ceil(n) + 6,
-                duration: 400,
-                easing: Easing.bezier(0.22, 1, 0.36, 1), // the growth IS the reveal — keep it calm
-                useNativeDriver: false, // height is a layout prop
-              }).start()
+              const target = Math.ceil(n) + 6
+              rememberHeight(key, target)
+              if (!reveal && !measuredRef.current) {
+                height.setValue(target) // land at full size, no growth
+              } else {
+                Animated.timing(height, {
+                  toValue: target,
+                  duration: 400,
+                  easing: Easing.bezier(0.22, 1, 0.36, 1), // calm growth
+                  useNativeDriver: false, // height is a layout prop
+                }).start()
+              }
+              measuredRef.current = true
             }
           } else if (d.startsWith('C:')) {
             onChip?.(d.slice(2))
@@ -237,4 +406,5 @@ export default function SolutionView({
 
 const styles = StyleSheet.create({
   web: { flex: 1, backgroundColor: 'transparent' },
+  ghostBar: { height: 13, borderRadius: 7, marginBottom: 12 },
 })

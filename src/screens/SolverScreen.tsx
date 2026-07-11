@@ -156,6 +156,25 @@ export default function SolverScreen() {
   const problemIdRef = useRef<string | null>(null)
   const abortRef = useRef<AbortController | null>(null)
   const prevUidRef = useRef<string | undefined>(user?.id)
+  // Scroll intent, the chat-app contract (ChatGPT/WhatsApp behavior):
+  // 'follow'  — live turns pull the scroll (animated) to the newest message.
+  // 'anchor'  — history just opened: land at the BOTTOM instantly and stay
+  //             glued there while card heights settle above (content grows,
+  //             the visible edge never moves).
+  // 'none'    — the reader owns the scroll; nothing moves without them.
+  // Any user drag takes over (→ 'none'). History turns are also static:
+  // no entrances, cards land at full size.
+  const staticIdsRef = useRef<Set<string>>(new Set())
+  const scrollIntentRef = useRef<'follow' | 'anchor' | 'none'>('none')
+  // WebView hold-back for loaded cards while the covering push runs — the
+  // ghost boxes ride the slide, content lights up right at landing.
+  const mountDelayRef = useRef(0)
+  // Context header for a problem opened from history (topic + date).
+  const [problemMeta, setProblemMeta] = useState<{ topic: string | null; createdAt: number } | null>(null)
+  // Identity of the conversation on screen. Changing it drives the
+  // conversation→conversation PUSH (whole thread slides out/in as one
+  // surface; the inert cards just ride it). 'live-*' keys are fresh problems.
+  const [threadKey, setThreadKey] = useState('live-0')
   const empty = thread.length === 0
 
   // If the account changes mid-session (guest link fell back to an existing
@@ -274,6 +293,7 @@ export default function SolverScreen() {
       const base = threadRef.current
       const ctrl = new AbortController()
       abortRef.current = ctrl
+      scrollIntentRef.current = 'follow' // live turns pull the scroll with them
       commit([...base, userTurn, { id: asstId, role: 'assistant', text: '', pending: true }])
       setSending(true)
       scrollDown()
@@ -283,6 +303,12 @@ export default function SolverScreen() {
         const done: Turn[] = [...base, userTurn, { id: asstId, role: 'assistant', text }]
         commit(done)
         persist(done)
+        // One last follow puts the TOP of the fresh (still small) answer card
+        // in view; then the card grows DOWNWARD while you read — the scroll
+        // must never yank along with the growth.
+        setTimeout(() => {
+          scrollIntentRef.current = 'none'
+        }, 700)
         // First solves get the background correctness check (not follow-ups).
         if (verifyProblem !== undefined && isStructuredSolution(text)) void verifyFlow(asstId, verifyProblem)
       } catch (e) {
@@ -341,21 +367,42 @@ export default function SolverScreen() {
   const reset = useCallback(() => {
     Keyboard.dismiss() // fresh problem, fresh screen — no keyboard left over the hero
     problemIdRef.current = null
+    setProblemMeta(null)
+    staticIdsRef.current = new Set()
+    scrollIntentRef.current = 'none'
+    setThreadKey(`live-${Date.now()}`)
     commit([])
   }, [commit])
 
   const loadProblem = useCallback(
     (p: Problem) => {
       Keyboard.dismiss()
-      // Sequenced flow: the sheet slides out FIRST, the thread (with its
-      // WebViews) mounts after — never two heavy moments at once.
+      // Tapping the conversation that is already open: the sheet just closes.
+      if (problemIdRef.current === p.id && threadRef.current.length > 0) return
+      Haptics.selectionAsync().catch(() => {})
+      // Choreography: the sheet starts sliding away, and mid-exit the thread
+      // PUSH begins — old conversation slides out, the new one slides in as
+      // one surface carrying its inert cards. WebViews light up on landing.
       setTimeout(() => {
         problemIdRef.current = p.id
-        commit(p.turns.map((t) => ({ id: uid(), role: t.role, text: t.text })))
-        scrollDown()
-      }, 380)
+        const turns = p.turns.map((t) => ({ id: uid(), role: t.role, text: t.text }))
+        // Reading mode: cards land at full size with no entrances, and the
+        // view opens ANCHORED at the bottom — the newest turn — like every
+        // chat app. The anchor holds while heights settle; a drag releases it.
+        staticIdsRef.current = new Set(turns.map((t) => t.id))
+        scrollIntentRef.current = 'anchor'
+        // A push always covers this swap — hold the WebViews until it lands.
+        mountDelayRef.current = 520
+        setProblemMeta({ topic: p.topic, createdAt: p.createdAt })
+        setThreadKey(p.id)
+        commit(turns)
+        // Deterministic landing: place the scroll at the bottom NOW — never
+        // rely on a size-change event that cached heights may not produce
+        // (that was the "problem B opens at problem A's scroll" bug).
+        requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: false }))
+      }, 200)
     },
-    [commit, scrollDown],
+    [commit],
   )
 
   const handleChip = useCallback(
@@ -492,8 +539,9 @@ export default function SolverScreen() {
 
       <KeyboardAvoidingView style={styles.flex} behavior="padding" keyboardVerticalOffset={-insets.bottom}>
         <View style={styles.column}>
-        {/* Hero ↔ thread pushes sideways like a navigation — fully opaque, no fade. */}
-        <CrossFade dep={empty ? 'hero' : 'thread'} axis="x" style={styles.flex}>
+        {/* Hero ↔ thread AND conversation ↔ conversation push sideways like a
+            navigation — one opaque surface slides out, the next slides in. */}
+        <CrossFade dep={empty ? 'hero' : `thread:${threadKey}`} axis="x" style={styles.flex}>
         {empty ? (
           <ScrollView
             contentContainerStyle={styles.heroWrap}
@@ -579,10 +627,35 @@ export default function SolverScreen() {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
-            onContentSizeChange={scrollDown}
+            // 'follow' rides live turns (animated); 'anchor' keeps the bottom
+            // edge glued, instantly, while loaded cards settle their heights —
+            // the reader never sees the layout move. 'none' = hands off.
+            onContentSizeChange={() => {
+              if (scrollIntentRef.current === 'follow') scrollDown()
+              else if (scrollIntentRef.current === 'anchor') scrollRef.current?.scrollToEnd({ animated: false })
+            }}
+            // The reader's finger outranks every automatic scroll.
+            onScrollBeginDrag={() => {
+              scrollIntentRef.current = 'none'
+            }}
           >
+            {problemMeta && (
+              <Txt size={10.5} color={c.textFaint} style={[styles.threadMeta, { fontFamily: theme.font.mono }]}>
+                {[problemMeta.topic?.toUpperCase(), new Date(problemMeta.createdAt).toLocaleDateString()]
+                  .filter(Boolean)
+                  .join('  ·  ')}
+              </Txt>
+            )}
             {thread.map((x) => (
-              <Bubble key={x.id} turn={x} onChip={handleChip} onCancel={cancelRun} verifying={!!verifyingMap[x.id]} />
+              <Bubble
+                key={x.id}
+                turn={x}
+                animate={!staticIdsRef.current.has(x.id)}
+                mountDelay={staticIdsRef.current.has(x.id) ? mountDelayRef.current : 0}
+                onChip={handleChip}
+                onCancel={cancelRun}
+                verifying={!!verifyingMap[x.id]}
+              />
             ))}
           </ScrollView>
         )}
@@ -658,11 +731,17 @@ export default function SolverScreen() {
 
 function Bubble({
   turn,
+  animate = true,
+  mountDelay = 0,
   onChip,
   onCancel,
   verifying = false,
 }: {
   turn: Turn
+  /** False for history-loaded turns: no entrance, cards land at full size. */
+  animate?: boolean
+  /** WebView hold-back for loaded turns (covers the hero→thread push only). */
+  mountDelay?: number
   onChip?: (id: string) => void
   onCancel?: () => void
   verifying?: boolean
@@ -711,6 +790,8 @@ function Bubble({
         <SolutionView
           content={turn.text}
           onChip={onChip}
+          reveal={animate}
+          mountDelay={mountDelay}
           verifying={verifying}
           labels={{
             solution: t('solution.label'),
@@ -750,8 +831,9 @@ function Bubble({
       </View>
     )
   }
-  // UI-thread entrance: the turn rises from behind the composer, fully opaque.
-  return <ReAnimated.View entering={bubbleEnter}>{inner}</ReAnimated.View>
+  // UI-thread entrance: a live turn rises from behind the composer, fully
+  // opaque; loaded history lands already in place.
+  return <ReAnimated.View entering={animate ? bubbleEnter : undefined}>{inner}</ReAnimated.View>
 }
 
 const BUBBLE_EASE = REasing.bezier(0.22, 1, 0.36, 1)
@@ -922,6 +1004,7 @@ const styles = StyleSheet.create({
 
   // thread
   thread: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 16, gap: 14 },
+  threadMeta: { textAlign: 'center', letterSpacing: 1.1, paddingTop: 4, paddingBottom: 2 },
   userBubble: {
     alignSelf: 'flex-end',
     maxWidth: '82%',

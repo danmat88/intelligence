@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react'
-import { Animated, Easing, StyleSheet } from 'react-native'
+import { Animated, Easing, Pressable, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../../theme/ThemeProvider'
@@ -7,9 +7,12 @@ import Txt from './Txt'
 
 type ToastIcon = keyof typeof Feather.glyphMap
 
+type ToastAction = { label: string; onPress: () => void }
+
 type ToastContextValue = {
-  /** Show a themed toast pill at the top of the screen for ~2s. */
-  show: (message: string, icon?: ToastIcon) => void
+  /** Show a themed toast pill at the top of the screen for ~2s.
+   *  With an `action` (e.g. Undo) it stays longer and is tappable. */
+  show: (message: string, icon?: ToastIcon, action?: ToastAction) => void
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null)
@@ -22,20 +25,24 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const { theme } = useTheme()
   const c = theme.colors
   const insets = useSafeAreaInsets()
-  const [msg, setMsg] = useState<{ text: string; icon: ToastIcon } | null>(null)
+  const [msg, setMsg] = useState<{ text: string; icon: ToastIcon; action?: ToastAction } | null>(null)
   const anim = useRef(new Animated.Value(0)).current
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  const hide = useCallback(() => {
+    if (timer.current) clearTimeout(timer.current)
+    Animated.timing(anim, { toValue: 0, duration: 320, easing: Easing.in(Easing.cubic), useNativeDriver: true }).start(() => setMsg(null))
+  }, [anim])
+
   const show = useCallback(
-    (text: string, icon: ToastIcon = 'check') => {
+    (text: string, icon: ToastIcon = 'check', action?: ToastAction) => {
       if (timer.current) clearTimeout(timer.current)
-      setMsg({ text, icon })
+      setMsg({ text, icon, action })
       Animated.timing(anim, { toValue: 1, duration: 460, easing: Easing.bezier(0.22, 1, 0.36, 1), useNativeDriver: true }).start()
-      timer.current = setTimeout(() => {
-        Animated.timing(anim, { toValue: 0, duration: 320, easing: Easing.in(Easing.cubic), useNativeDriver: true }).start(() => setMsg(null))
-      }, 2100)
+      // An actionable toast lingers long enough to actually be used.
+      timer.current = setTimeout(hide, action ? 5000 : 2100)
     },
-    [anim],
+    [anim, hide],
   )
 
   return (
@@ -43,7 +50,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       {msg && (
         <Animated.View
-          pointerEvents="none"
+          pointerEvents={msg.action ? 'box-none' : 'none'}
           style={[
             styles.toast,
             {
@@ -62,6 +69,20 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <Txt size={13.5} weight="medium">
             {msg.text}
           </Txt>
+          {msg.action && (
+            <Pressable
+              onPress={() => {
+                msg.action?.onPress()
+                hide()
+              }}
+              hitSlop={10}
+              style={({ pressed }) => [styles.action, { borderColor: c.border, opacity: pressed ? 0.6 : 1 }]}
+            >
+              <Txt size={13} weight="bold" color={c.accent}>
+                {msg.action.label}
+              </Txt>
+            </Pressable>
+          )}
         </Animated.View>
       )}
     </ToastContext.Provider>
@@ -91,4 +112,5 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     elevation: 8,
   },
+  action: { marginLeft: 4, paddingLeft: 12, borderLeftWidth: 1, paddingVertical: 2 },
 })

@@ -84,6 +84,8 @@ const STRINGS = {
     'history.empty': 'Nothing yet — solve a problem and it lands here.',
     'history.noMatch': 'No matches.',
     'history.justNow': 'just now',
+    'history.deleted': 'Problem deleted',
+    'history.undo': 'Undo',
     // — settings
     'settings.title': 'Settings',
     'settings.section.prefs': 'Preferences',
@@ -191,6 +193,8 @@ const STRINGS = {
     'history.empty': 'Nimic încă — rezolvă o problemă și apare aici.',
     'history.noMatch': 'Nimic găsit.',
     'history.justNow': 'chiar acum',
+    'history.deleted': 'Problemă ștearsă',
+    'history.undo': 'Anulează',
     // — settings
     'settings.title': 'Setări',
     'settings.section.prefs': 'Preferințe',

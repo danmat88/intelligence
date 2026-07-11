@@ -1,14 +1,17 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Keyboard, Pressable, ScrollView, SectionList, StyleSheet, TextInput, useWindowDimensions, View } from 'react-native'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Keyboard, Pressable, ScrollView, StyleSheet, TextInput, useWindowDimensions, View } from 'react-native'
+import RAnimated, { Easing as REasing, LinearTransition, SlideOutLeft } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import * as Haptics from 'expo-haptics'
 import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
 import { useI18n } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import Overlay from '../components/ui/Overlay'
 import Press from '../components/ui/Press'
+import { useToast } from '../components/ui/Toast'
 import Txt from '../components/ui/Txt'
-import { subscribeProblems, removeProblem, type Problem } from '../solve/store'
+import { subscribeProblems, removeProblem, createProblem, type Problem } from '../solve/store'
 
 function ago(ms: number, justNow: string, daySuffix: string): string {
   const s = Math.max(0, (Date.now() - ms) / 1000)
@@ -73,12 +76,19 @@ function bucketOf(ms: number): DayBucket {
   return 'earlier'
 }
 
+/** The list flattened for one FlatList: day headers between problem rows. */
+type Row = { kind: 'header'; key: string; title: string } | { kind: 'item'; key: string; p: Problem }
+
+const ROW_EXIT = SlideOutLeft.duration(280).easing(REasing.in(REasing.cubic))
+const ROW_SHIFT = LinearTransition.duration(320).easing(REasing.bezier(0.22, 1, 0.36, 1))
+
 /**
- * "Your work" — a bottom sheet with real structure: stat tiles (solved count +
- * streak), search, a topic skill-map, and the problems grouped by day
- * (Today / Yesterday / This week / Earlier). Each problem is a card with an
- * icon tile telling photo from typed at a glance. No emoji anywhere — icons do
- * the talking.
+ * "Your work" — a FIXED-HEIGHT bottom sheet (the panel never grows or shrinks
+ * as data arrives; content changes inside it): stat tiles, search, a topic
+ * skill-map, and problems grouped by day. While loading, a ghost layout
+ * mirrors the real one so data lights up IN PLACE. Deleting slides the row
+ * out (siblings glide up on the UI thread) with an Undo toast — no confirm
+ * dialogs, no accidents. No emoji anywhere — icons do the talking.
  */
 export default function HistorySheet({
   open,
@@ -96,6 +106,7 @@ export default function HistorySheet({
   const kb = useKeyboardHeight()
   const { user } = useAuth()
   const { t, lang } = useI18n()
+  const toast = useToast()
   const [items, setItems] = useState<Problem[]>([])
   const [loaded, setLoaded] = useState(false)
   const [settled, setSettled] = useState(false)
@@ -134,7 +145,7 @@ export default function HistorySheet({
     for (const p of items) if (p.topic) m.set(p.topic, (m.get(p.topic) ?? 0) + 1)
     return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10)
   }, [items])
-  const sections = useMemo(() => {
+  const rows = useMemo<Row[]>(() => {
     const q = query.trim().toLowerCase()
     const filtered = items.filter((p) => {
       if (topicFilter && p.topic !== topicFilter) return false
@@ -147,28 +158,50 @@ export default function HistorySheet({
       const b = bucketOf(p.createdAt)
       byBucket.set(b, [...(byBucket.get(b) ?? []), p])
     }
-    return order
-      .filter((b) => byBucket.has(b))
-      .map((b) => ({ key: b, title: t(`history.section.${b}` as const), data: byBucket.get(b)! }))
+    const out: Row[] = []
+    for (const b of order) {
+      const list = byBucket.get(b)
+      if (!list) continue
+      out.push({ kind: 'header', key: `h:${b}`, title: t(`history.section.${b}` as const) })
+      for (const p of list) out.push({ kind: 'item', key: p.id, p })
+    }
+    return out
   }, [items, query, topicFilter, t])
 
+  // Delete = optimistic + reversible: the row slides out, an Undo toast
+  // brings the problem back with one tap. No confirm dialog friction.
+  const onDelete = useCallback(
+    (item: Problem) => {
+      if (!user) return
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
+      removeProblem(user.id, item.id).catch(() => {})
+      toast.show(t('history.deleted'), 'trash-2', {
+        label: t('history.undo'),
+        onPress: () => {
+          createProblem(user.id, cleanTitle(item.title), item.topic, item.turns).catch(() => {})
+        },
+      })
+    },
+    [user, toast, t],
+  )
+
   const mono = { fontFamily: theme.font.mono }
+  // The panel's ONE height: stable no matter what the content is doing.
+  // Only the keyboard (search) legitimately reshapes it.
+  const sheetH = Math.min(winH * 0.86, winH - kb - insets.top - 16)
+  const hasContent = loaded && items.length > 0
 
   return (
     <Overlay open={open} onClose={onClose} align="bottom">
       <View
         style={[
           styles.sheet,
-          // pixel maxHeight — a percentage here resolves against an
-          // undefined-height absolute parent and un-anchors the sheet.
-          // While the search keyboard is up, the whole sheet rises above it
-          // and shrinks to the space that remains — the list stays reachable.
           {
             backgroundColor: c.bgElevated,
             borderColor: c.border,
             paddingBottom: insets.bottom + 12,
             marginBottom: Math.max(0, kb - insets.bottom),
-            maxHeight: Math.min(winH * 0.88, winH - kb - insets.top - 16),
+            height: sheetH,
           },
         ]}
       >
@@ -180,21 +213,8 @@ export default function HistorySheet({
           </Press>
         </View>
 
-        {!loaded ? (
-          // Placeholder rows while the sheet settles and the first snapshot
-          // arrives — the list never mounts mid-slide.
-          <View style={styles.skelWrap}>
-            {[0, 1, 2, 3].map((i) => (
-              <View key={i} style={[styles.skelCard, { backgroundColor: c.surface, borderColor: c.border }]}>
-                <View style={[styles.skelIcon, { backgroundColor: c.surfaceAlt }]} />
-                <View style={styles.flex}>
-                  <View style={[styles.skelBar, { backgroundColor: c.surfaceAlt, width: '72%' }]} />
-                  <View style={[styles.skelBar, styles.skelBarSm, { backgroundColor: c.surfaceAlt, width: '38%' }]} />
-                </View>
-              </View>
-            ))}
-          </View>
-        ) : items.length === 0 ? (
+        {loaded && items.length === 0 ? (
+          // Brand-new account: the panel keeps its size; the message owns it.
           <View style={styles.empty}>
             <View style={[styles.emptyBadge, { backgroundColor: c.accentSoft }]}>
               <Feather name="inbox" size={24} color={c.accent} />
@@ -205,19 +225,19 @@ export default function HistorySheet({
           </View>
         ) : (
           <>
-            {/* stats — drawn as real tiles, not a line of mono text */}
+            {/* stats — ghost values until the first snapshot lands */}
             <View style={styles.stats}>
               <StatTile
                 icon="check-circle"
-                value={String(items.length)}
+                value={loaded ? String(items.length) : null}
                 label={t('history.stat.solved')}
                 c={c}
                 displayFont={theme.font.display}
               />
-              {streak > 0 && (
+              {(!loaded || streak > 0) && (
                 <StatTile
                   icon="zap"
-                  value={String(streak)}
+                  value={loaded ? String(streak) : null}
                   label={streak === 1 ? t('history.stat.streak.one') : t('history.stat.streak')}
                   c={c}
                   displayFont={theme.font.display}
@@ -225,37 +245,44 @@ export default function HistorySheet({
               )}
             </View>
 
-            {/* search */}
-            <View style={[styles.search, { backgroundColor: c.surface, borderColor: c.border }]}>
-              <Feather name="search" size={16} color={c.textFaint} />
-              <TextInput
-                style={[styles.searchInput, { color: c.text }]}
-                placeholder={t('history.search')}
-                placeholderTextColor={c.textFaint}
-                value={query}
-                onChangeText={setQuery}
-                returnKeyType="search"
-                maxFontSizeMultiplier={1.2}
-              />
-              {!!query && (
-                <Pressable onPress={() => setQuery('')} hitSlop={8}>
-                  <Feather name="x" size={16} color={c.textFaint} />
-                </Pressable>
-              )}
-            </View>
+            {/* search — a ghost twin while loading, so nothing jumps */}
+            {loaded ? (
+              <View style={[styles.search, { backgroundColor: c.surface, borderColor: c.border }]}>
+                <Feather name="search" size={16} color={c.textFaint} />
+                <TextInput
+                  style={[styles.searchInput, { color: c.text }]}
+                  placeholder={t('history.search')}
+                  placeholderTextColor={c.textFaint}
+                  value={query}
+                  onChangeText={setQuery}
+                  returnKeyType="search"
+                  maxFontSizeMultiplier={1.2}
+                />
+                {!!query && (
+                  <Pressable onPress={() => setQuery('')} hitSlop={8}>
+                    <Feather name="x" size={16} color={c.textFaint} />
+                  </Pressable>
+                )}
+              </View>
+            ) : (
+              <View style={[styles.search, { backgroundColor: c.surface, borderColor: c.border }]}>
+                <Feather name="search" size={16} color={c.textFaint} />
+                <View style={[styles.ghostBar, { backgroundColor: c.surfaceAlt, width: 132 }]} />
+              </View>
+            )}
 
             {/* skill map — tap a topic to filter */}
-            {topics.length > 0 && (
+            {hasContent && topics.length > 0 && (
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
-                // flexShrink:0 — without it the sheet's maxHeight squeezes this
+                // flexShrink:0 — without it the sheet's height squeezes this
                 // row vertically and clips the chip text
                 style={styles.chipsBar}
                 contentContainerStyle={styles.chips}
               >
-                <TopicChip label={t('history.all')} active={!topicFilter} c={c} onPress={() => setTopicFilter(null)} />
+                <TopicChip label={`${t('history.all')} · ${items.length}`} active={!topicFilter} c={c} onPress={() => setTopicFilter(null)} />
                 {topics.map(([topic, n]) => (
                   <TopicChip
                     key={topic}
@@ -268,63 +295,83 @@ export default function HistorySheet({
               </ScrollView>
             )}
 
-            <SectionList
-              sections={sections}
-              keyExtractor={(p) => p.id}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-              keyboardDismissMode="on-drag"
-              stickySectionHeadersEnabled={false}
-              contentContainerStyle={styles.listPad}
-              ListEmptyComponent={
-                <Txt size={13} color={c.textFaint} style={styles.noMatch}>
-                  {t('history.noMatch')}
-                </Txt>
-              }
-              renderSectionHeader={({ section }) => (
-                <Txt size={10.5} color={c.textFaint} style={[styles.sectionLabel, mono]}>
-                  {section.title.toUpperCase()}
-                </Txt>
-              )}
-              renderItem={({ item }) => (
-                <Press
-                  onPress={() => {
-                    onSelect(item)
-                    onClose()
-                  }}
-                  scaleTo={0.975}
-                  style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }]}
-                >
-                  <View style={[styles.cardIcon, { backgroundColor: c.accentSoft }]}>
-                    <Feather name={isPhotoProblem(item) ? 'camera' : 'edit-3'} size={16} color={c.accent} />
-                  </View>
-                  <View style={styles.flex}>
-                    <Txt weight="semibold" size={14.5} numberOfLines={1} color={c.text}>
-                      {cleanTitle(item.title)}
-                    </Txt>
-                    <View style={styles.meta}>
-                      {!!item.topic && (
-                        <Txt size={11} weight="semibold" color={c.accent} style={[styles.tag, { backgroundColor: c.accentSoft }]}>
-                          {item.topic}
-                        </Txt>
-                      )}
-                      <Txt size={11} color={c.textFaint} style={mono}>
-                        {ago(item.createdAt, t('history.justNow'), lang === 'ro' ? 'z' : 'd')}
-                      </Txt>
+            {!loaded ? (
+              <View style={styles.flex}>
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <View key={i} style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }]}>
+                    <View style={[styles.cardIcon, { backgroundColor: c.surfaceAlt }]} />
+                    <View style={styles.flex}>
+                      <View style={[styles.ghostBar, { backgroundColor: c.surfaceAlt, width: '72%' }]} />
+                      <View style={[styles.ghostBar, styles.ghostBarSm, { backgroundColor: c.surfaceAlt, width: '38%' }]} />
                     </View>
                   </View>
-                  <Pressable
-                    onPress={() => user && removeProblem(user.id, item.id)}
-                    hitSlop={10}
-                    accessibilityRole="button"
-                    accessibilityLabel={t('a11y.delete')}
-                    style={({ pressed }) => [styles.del, { opacity: pressed ? 0.5 : 1 }]}
-                  >
-                    <Feather name="trash-2" size={16} color={c.textFaint} />
-                  </Pressable>
-                </Press>
-              )}
-            />
+                ))}
+              </View>
+            ) : (
+              <RAnimated.FlatList
+                data={rows}
+                keyExtractor={(r: Row) => r.key}
+                itemLayoutAnimation={ROW_SHIFT}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
+                style={styles.flex}
+                contentContainerStyle={styles.listPad}
+                ListEmptyComponent={
+                  <Txt size={13} color={c.textFaint} style={styles.noMatch}>
+                    {t('history.noMatch')}
+                  </Txt>
+                }
+                renderItem={({ item }: { item: Row }) =>
+                  item.kind === 'header' ? (
+                    <RAnimated.View layout={ROW_SHIFT}>
+                      <Txt size={10.5} color={c.textFaint} style={[styles.sectionLabel, mono]}>
+                        {item.title.toUpperCase()}
+                      </Txt>
+                    </RAnimated.View>
+                  ) : (
+                    <RAnimated.View layout={ROW_SHIFT} exiting={ROW_EXIT}>
+                      <Press
+                        onPress={() => {
+                          onSelect(item.p)
+                          onClose()
+                        }}
+                        scaleTo={0.975}
+                        style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }]}
+                      >
+                        <View style={[styles.cardIcon, { backgroundColor: c.accentSoft }]}>
+                          <Feather name={isPhotoProblem(item.p) ? 'camera' : 'edit-3'} size={16} color={c.accent} />
+                        </View>
+                        <View style={styles.flex}>
+                          <Txt weight="semibold" size={14.5} numberOfLines={1} color={c.text}>
+                            {cleanTitle(item.p.title)}
+                          </Txt>
+                          <View style={styles.meta}>
+                            {!!item.p.topic && (
+                              <Txt size={11} weight="semibold" color={c.accent} style={[styles.tag, { backgroundColor: c.accentSoft }]}>
+                                {item.p.topic}
+                              </Txt>
+                            )}
+                            <Txt size={11} color={c.textFaint} style={mono}>
+                              {ago(item.p.createdAt, t('history.justNow'), lang === 'ro' ? 'z' : 'd')}
+                            </Txt>
+                          </View>
+                        </View>
+                        <Pressable
+                          onPress={() => onDelete(item.p)}
+                          hitSlop={10}
+                          accessibilityRole="button"
+                          accessibilityLabel={t('a11y.delete')}
+                          style={({ pressed }) => [styles.del, { opacity: pressed ? 0.5 : 1 }]}
+                        >
+                          <Feather name="trash-2" size={16} color={c.textFaint} />
+                        </Pressable>
+                      </Press>
+                    </RAnimated.View>
+                  )
+                }
+              />
+            )}
           </>
         )}
       </View>
@@ -340,9 +387,10 @@ function StatTile({
   displayFont,
 }: {
   icon: keyof typeof Feather.glyphMap
-  value: string
+  /** null while loading — renders a ghost bar in the value slot. */
+  value: string | null
   label: string
-  c: { surface: string; border: string; accent: string; accentSoft: string; text: string; textFaint: string }
+  c: { surface: string; surfaceAlt: string; border: string; accent: string; accentSoft: string; text: string; textFaint: string }
   displayFont: string
 }) {
   return (
@@ -350,8 +398,12 @@ function StatTile({
       <View style={[styles.statIcon, { backgroundColor: c.accentSoft }]}>
         <Feather name={icon} size={15} color={c.accent} />
       </View>
-      <View>
-        <Txt style={{ fontFamily: displayFont, fontSize: 17, color: c.text, lineHeight: 20 }}>{value}</Txt>
+      <View style={styles.flex}>
+        {value == null ? (
+          <View style={[styles.ghostBar, { backgroundColor: c.surfaceAlt, width: 34, marginBottom: 5 }]} />
+        ) : (
+          <Txt style={{ fontFamily: displayFont, fontSize: 17, color: c.text, lineHeight: 20 }}>{value}</Txt>
+        )}
         <Txt size={11} color={c.textFaint}>
           {label}
         </Txt>
@@ -402,7 +454,7 @@ const styles = StyleSheet.create({
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, paddingHorizontal: 4 },
   title: { fontSize: 22, letterSpacing: -0.4 },
   closeBtn: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
-  empty: { alignItems: 'center', paddingVertical: 44, paddingHorizontal: 30 },
+  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 30, paddingBottom: 40 },
   emptyBadge: { width: 54, height: 54, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   emptyTxt: { marginTop: 12, textAlign: 'center' },
   stats: { flexDirection: 'row', gap: 8, marginBottom: 10 },
@@ -426,6 +478,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 9,
     marginBottom: 10,
+    minHeight: 42,
   },
   searchInput: { flex: 1, fontSize: 14.5, fontFamily: 'Inter_400Regular', padding: 0 },
   chipsBar: { flexGrow: 0, flexShrink: 0 },
@@ -436,14 +489,11 @@ const styles = StyleSheet.create({
   sectionLabel: { letterSpacing: 1.1, marginBottom: 8, marginTop: 4, paddingHorizontal: 4 },
   noMatch: { textAlign: 'center', paddingVertical: 24 },
   card: { flexDirection: 'row', alignItems: 'center', gap: 11, borderWidth: 1, borderRadius: 16, padding: 13, marginBottom: 9 },
-  skelWrap: { paddingBottom: 8 },
-  skelCard: { flexDirection: 'row', alignItems: 'center', gap: 11, borderWidth: 1, borderRadius: 16, padding: 13, marginBottom: 9 },
-  skelIcon: { width: 36, height: 36, borderRadius: 12 },
-  skelBar: { height: 13, borderRadius: 7 },
-  skelBarSm: { height: 10, marginTop: 8 },
   cardIcon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   flex: { flex: 1 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },
   tag: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, overflow: 'hidden' },
   del: { padding: 4 },
+  ghostBar: { height: 13, borderRadius: 7 },
+  ghostBarSm: { height: 10, marginTop: 8 },
 })
