@@ -73,12 +73,21 @@ expects evidence, not assurances.
 - **i18n** (`src/i18n/index.tsx`): RO default + EN, `t(key,{vars})`, persisted
   `@rezolvo.lang`; `langName` is injected into solve prompts so the AI answers in
   the app language.
-- **Design system:** ink-on-paper (#F5F7FB bg, #2B50E0 accent, #0E9F6E success),
-  Fraunces + Inter + JetBrains Mono, graph-paper grid, 720dp content column,
-  font scaling capped 1.3× (`Txt`), edge-to-edge. Motion contract: sheets spring
-  (Overlay), state swaps cross-fade in fixed slots (`CrossFade`), presses scale
-  0.96 (`Press`), solution cards grow (animated height) — nothing hard-cuts,
-  nothing reflows. Capture visor is the one dark surface.
+- **Design system:** electric-on-warm-paper (#F7F6F2 bg, #6355FF blurple accent,
+  violet→indigo brand gradient #7A5CFF→#4F33EA, #0E9F6E success), Space Grotesk
+  display + Inter UI + JetBrains Mono labels (Fraunces only for math glyphs like
+  the ∫ watermark; NO emoji in UI ever — Feather icons in tinted tiles),
+  graph-paper grid, 720dp content column,
+  font scaling capped 1.3× (`Txt`), edge-to-edge. Motion contract (Dan's rules:
+  never zoom+opacity TOGETHER — that combo ghosts; and never snappy — short
+  durations read as cheap. House style: fully-opaque movement, ~460-560ms,
+  easing bezier(0.22,1,0.36,1) long soft tail; scrims may fade): Overlay slides
+  content in from below the screen; `CrossFade` is an opaque PUSH in a clipped
+  slot (old exits one edge, new enters the other; render-phase snapshot so no
+  flash); toasts slide from above; thread bubbles slide from behind the
+  composer; solution cards grow (animated height = the reveal, WebView has no
+  entrance CSS); presses scale 0.96 depth-only (`Press`, stays fast — feedback,
+  not transition).
 
 ## Deployed state (2026-07-11)
 

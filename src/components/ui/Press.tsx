@@ -38,8 +38,8 @@ export default function Press({
         style={[
           style,
           {
+            // Depth only — never dim: opacity on press reads as ghosting.
             transform: [{ scale: p.interpolate({ inputRange: [0, 1], outputRange: [1, scaleTo] }) }],
-            opacity: p.interpolate({ inputRange: [0, 1], outputRange: [1, 0.9] }),
           },
         ]}
       >

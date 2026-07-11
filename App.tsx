@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Animated, StyleSheet, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import { KeyboardProvider } from 'react-native-keyboard-controller'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { SystemBars } from 'react-native-edge-to-edge'
@@ -25,6 +25,7 @@ import { I18nProvider } from './src/i18n'
 import { AuthProvider, useAuth } from './src/auth/AuthProvider'
 import ErrorBoundary from './src/components/ErrorBoundary'
 import { ToastProvider } from './src/components/ui/Toast'
+import CrossFade from './src/components/ui/CrossFade'
 import SolverScreen from './src/screens/SolverScreen'
 import WelcomeScreen from './src/screens/WelcomeScreen'
 import BrandMark from './src/components/ui/BrandMark'
@@ -42,7 +43,7 @@ import BrandMark from './src/components/ui/BrandMark'
 SplashScreen.preventAutoHideAsync().catch(() => {})
 SplashScreen.setOptions({ fade: true, duration: 300 })
 
-const BOOT_BG = '#F5F7FB' // matches the paper background
+const BOOT_BG = '#F7F6F2' // matches the paper background
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -86,7 +87,7 @@ function Root({ fontsLoaded }: { fontsLoaded: boolean }) {
   const ready = fontsLoaded && !initializing
   const [beatDone, setBeatDone] = useState(false)
   // Whether the session was already signed in at cold boot. Only that case gets
-  // the brand beat; signing in from the welcome screen cross-fades straight to
+  // the brand beat; signing in from the welcome screen pushes straight to
   // chat (the mark is already on screen - no need to replay it).
   const bootedSignedIn = useRef<boolean | null>(null)
 
@@ -97,43 +98,41 @@ function Root({ fontsLoaded }: { fontsLoaded: boolean }) {
   // Once the app has been ready, a later not-ready spell means a session switch
   // (sign-out → fresh guest). Show the brand beat instead of a blank cut.
   const wasReady = useRef(false)
-  if (ready) wasReady.current = true
-
-  // Plain twin of the native splash, held until fonts + session are ready.
-  if (!ready)
-    return (
-      <View style={styles.boot}>
-        {wasReady.current ? <BrandMark /> : null}
-      </View>
-    )
-
-  if (bootedSignedIn.current === null) bootedSignedIn.current = !!user
-
-  // Cold start while signed in: a brief brand beat, then the app.
-  if (user && bootedSignedIn.current && !beatDone) {
-    return (
-      <View style={styles.boot}>
-        <BrandMark onEntered={() => setTimeout(() => setBeatDone(true), 500)} />
-      </View>
-    )
+  if (ready) {
+    wasReady.current = true
+    if (bootedSignedIn.current === null) bootedSignedIn.current = !!user
   }
 
-  // Guests are real (anonymous) Firebase users, so auth state drives the gate.
-  // Upgrading guest → Google LINKS the account (same uid): `user` stays truthy,
-  // the key stays 'app', and the solver never remounts — work stays on screen.
-  return (
-    <FadeIn key={user ? 'app' : 'welcome'}>
-      {user ? <SolverScreen /> : <WelcomeScreen />}
-    </FadeIn>
-  )
-}
+  // Every phase of the session lives in ONE opaque push (house motion style):
+  // boot → brand beat → app, sign-out → brand beat → fresh guest app,
+  // offline welcome → app. No screen ever hard-cuts into another.
+  let phase: 'boot' | 'beat' | 'app' | 'welcome'
+  let content: ReactNode
+  if (!ready) {
+    // Plain twin of the native splash, held until fonts + session are ready.
+    phase = 'boot'
+    content = wasReady.current ? <BrandMark /> : null
+  } else if (user && bootedSignedIn.current && !beatDone) {
+    // Cold start while signed in: a brief brand beat, then the app.
+    phase = 'beat'
+    content = <BrandMark onEntered={() => setTimeout(() => setBeatDone(true), 500)} />
+  } else if (user) {
+    // Guests are real (anonymous) Firebase users, so auth state drives the
+    // gate. Upgrading guest → Google LINKS the account (same uid): `user`
+    // stays truthy, the phase stays 'app', and the solver never remounts —
+    // work stays on screen.
+    phase = 'app'
+    content = <SolverScreen />
+  } else {
+    phase = 'welcome'
+    content = <WelcomeScreen />
+  }
 
-function FadeIn({ children }: { children: ReactNode }) {
-  const opacity = useRef(new Animated.Value(0)).current
-  useEffect(() => {
-    Animated.timing(opacity, { toValue: 1, duration: 380, useNativeDriver: true }).start()
-  }, [opacity])
-  return <Animated.View style={{ flex: 1, opacity }}>{children}</Animated.View>
+  return (
+    <CrossFade dep={phase} axis="y" duration={560} style={styles.boot}>
+      <View style={styles.boot}>{content}</View>
+    </CrossFade>
+  )
 }
 
 const styles = StyleSheet.create({

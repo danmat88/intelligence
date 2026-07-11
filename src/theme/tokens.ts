@@ -1,8 +1,10 @@
 /**
  * Design tokens — the single source of truth for the whole app's look.
- * Direction: "ink on paper." A cool paper ground (not stark white), a single
- * fountain-pen-ink blue accent, graphite text, and math typeset like a textbook.
- * A serif display face carries the academic moments; Inter runs the UI.
+ * Direction: "electric on warm paper." A warm near-white ground, one vivid
+ * blurple accent with a violet→indigo gradient for brand moments, indigo-ink
+ * text. Space Grotesk carries display/headers, Inter runs the UI, JetBrains
+ * Mono does the technical labels; Fraunces survives only for math GLYPHS
+ * (the ∫ watermark) where a serif italic reads as notation, not nostalgia.
  */
 
 export type Theme = {
@@ -19,6 +21,7 @@ export type Theme = {
     accentSoft: string
     onAccent: string
     danger: string
+    dangerSoft: string
     success: string
     successSoft: string
   }
@@ -48,29 +51,30 @@ export type Theme = {
   }
 }
 
-// The one signature accent — fountain-pen ink blue, deepened slightly for the gradient.
-const BRAND = ['#2B50E0', '#2440C6']
+// The one signature accent — electric blurple; the gradient runs violet → indigo.
+const BRAND = ['#7A5CFF', '#4F33EA']
 
 export const theme: Theme = {
   colors: {
-    bg: '#F5F7FB',
+    bg: '#F7F6F2',
     bgElevated: '#FFFFFF',
     surface: '#FFFFFF',
-    surfaceAlt: '#EDF0F7',
-    border: 'rgba(20,25,34,0.10)',
-    text: '#141922',
-    textMuted: '#5A6472',
-    textFaint: '#97A1B0',
-    accent: '#2B50E0',
-    accentSoft: '#EAEFFF',
+    surfaceAlt: '#EFEDE7',
+    border: 'rgba(26,22,38,0.10)',
+    text: '#1A1626',
+    textMuted: '#5D5870',
+    textFaint: '#9B96AB',
+    accent: '#6355FF',
+    accentSoft: '#EDEAFF',
     onAccent: '#FFFFFF',
-    danger: '#E0364C',
+    danger: '#E5484D',
+    dangerSoft: '#FCEBEC',
     success: '#0E9F6E',
     successSoft: '#E3F6EE',
   },
   gradient: {
     brand: BRAND,
-    surface: ['#FFFFFF', '#F1F4FA'],
+    surface: ['#FFFFFF', '#F4F2EC'],
   },
   radius: { sm: 12, md: 16, lg: 22, xl: 30, pill: 999 },
   space: (n: number) => n * 4,

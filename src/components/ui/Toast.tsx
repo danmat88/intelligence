@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react'
-import { Animated, StyleSheet } from 'react-native'
+import { Animated, Easing, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../../theme/ThemeProvider'
@@ -30,10 +30,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     (text: string, icon: ToastIcon = 'check') => {
       if (timer.current) clearTimeout(timer.current)
       setMsg({ text, icon })
-      Animated.spring(anim, { toValue: 1, useNativeDriver: true, damping: 16, stiffness: 240 }).start()
+      Animated.timing(anim, { toValue: 1, duration: 460, easing: Easing.bezier(0.22, 1, 0.36, 1), useNativeDriver: true }).start()
       timer.current = setTimeout(() => {
-        Animated.timing(anim, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => setMsg(null))
-      }, 1900)
+        Animated.timing(anim, { toValue: 0, duration: 320, easing: Easing.in(Easing.cubic), useNativeDriver: true }).start(() => setMsg(null))
+      }, 2100)
     },
     [anim],
   )
@@ -50,10 +50,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               top: insets.top + 12,
               backgroundColor: c.surface,
               borderColor: c.border,
-              opacity: anim,
+              // Pure slide from above the screen edge — no fade, no scale:
+              // the pill arrives fully opaque, like it was pushed in.
               transform: [
-                { translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [-14, 0] }) },
-                { scale: anim.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1] }) },
+                { translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [-(insets.top + 92), 0] }) },
               ],
             },
           ]}
@@ -85,5 +85,10 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 16,
     paddingVertical: 10,
+    shadowColor: '#1A1626',
+    shadowOpacity: 0.14,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 8,
   },
 })

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Animated, Image, StyleSheet, View } from 'react-native'
+import { Animated, Easing, Image, StyleSheet, View } from 'react-native'
 import { useTheme } from '../../theme/ThemeProvider'
 import Txt from './Txt'
 
@@ -27,17 +27,17 @@ export default function BrandMark({
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(mark, { toValue: 1, duration: 420, useNativeDriver: true }),
-      Animated.timing(name, { toValue: 1, duration: 420, delay: 140, useNativeDriver: true }),
+      Animated.timing(mark, { toValue: 1, duration: 560, easing: Easing.bezier(0.22, 1, 0.36, 1), useNativeDriver: true }),
+      Animated.timing(name, { toValue: 1, duration: 560, delay: 160, easing: Easing.bezier(0.22, 1, 0.36, 1), useNativeDriver: true }),
     ]).start(() => entered.current?.())
   }, [mark, name])
 
   return (
     <View style={styles.hero}>
+      {/* Pure slides — the lockup settles into place fully opaque (no fade/zoom). */}
       <Animated.View
         style={{
-          opacity: mark,
-          transform: [{ scale: mark.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1] }) }],
+          transform: [{ translateY: mark.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }) }],
         }}
       >
         <View style={styles.markStage}>
@@ -49,11 +49,10 @@ export default function BrandMark({
         style={{
           alignItems: 'center',
           gap: 10,
-          opacity: name,
-          transform: [{ translateY: name.interpolate({ inputRange: [0, 1], outputRange: [8, 0] }) }],
+          transform: [{ translateY: name.interpolate({ inputRange: [0, 1], outputRange: [22, 0] }) }],
         }}
       >
-        <Txt size={38} style={{ letterSpacing: 0, fontFamily: theme.font.serif }}>
+        <Txt size={38} style={{ letterSpacing: -1, fontFamily: theme.font.display }}>
           Rezolvo
         </Txt>
         {tagline ? (

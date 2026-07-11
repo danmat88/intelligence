@@ -42,7 +42,7 @@ export default function SymbolBar({ onInsert }: { onInsert: (s: string) => void 
           scaleTo={0.88}
           style={[styles.key, { backgroundColor: c.surface, borderColor: c.border }]}
         >
-          <Txt size={16} color={c.text} style={{ fontFamily: theme.font.serif }}>
+          <Txt size={16} weight="medium" color={c.text}>
             {s.label}
           </Txt>
         </Press>
@@ -54,12 +54,17 @@ export default function SymbolBar({ onInsert }: { onInsert: (s: string) => void 
 const styles = StyleSheet.create({
   row: { gap: 7, paddingHorizontal: 14, paddingBottom: 8 },
   key: {
-    minWidth: 40,
+    minWidth: 42,
     height: 38,
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: 9,
+    shadowColor: '#1A1626',
+    shadowOpacity: 0.04,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
 })

@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { ActivityIndicator, Animated, Pressable, StyleSheet, View } from 'react-native'
+import { ActivityIndicator, Animated, Easing, Pressable, StyleSheet, View } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { AntDesign } from '@expo/vector-icons'
@@ -25,7 +25,7 @@ export default function WelcomeScreen() {
   // Revealed by BrandMark's onEntered, so the button appears after the lockup.
   const footer = useRef(new Animated.Value(0)).current
   const revealFooter = () => {
-    Animated.timing(footer, { toValue: 1, duration: 420, useNativeDriver: true }).start()
+    Animated.timing(footer, { toValue: 1, duration: 560, easing: Easing.bezier(0.22, 1, 0.36, 1), useNativeDriver: true }).start()
   }
 
   return (
@@ -35,12 +35,12 @@ export default function WelcomeScreen() {
       <View style={[styles.wrap, { paddingTop: insets.top, paddingBottom: insets.bottom + 24 }]}>
         <BrandMark tagline={t('welcome.tagline')} onEntered={revealFooter} />
 
+        {/* Slides up from below the screen edge, fully opaque — no fade. */}
         <Animated.View
           style={[
             styles.footer,
             {
-              opacity: footer,
-              transform: [{ translateY: footer.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }],
+              transform: [{ translateY: footer.interpolate({ inputRange: [0, 1], outputRange: [220, 0] }) }],
             },
           ]}
         >
@@ -106,6 +106,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
+    shadowColor: '#1A1626',
+    shadowOpacity: 0.07,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
   },
   error: { textAlign: 'center', lineHeight: 18, paddingHorizontal: 12 },
   tryBtn: { alignSelf: 'center', paddingVertical: 6, paddingHorizontal: 10 },

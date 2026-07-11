@@ -1,11 +1,14 @@
-import { Pressable, StyleSheet, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
+import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../../theme/ThemeProvider'
 import Overlay from './Overlay'
+import Press from './Press'
 import Txt from './Txt'
 
 /**
- * Themed confirmation on the app's own overlay engine: centered card,
- * display-face title, ghost cancel, filled destructive confirm.
+ * Themed confirmation on the app's own overlay engine: centered card with an
+ * alert icon tile, display-face title, filled ghost cancel and filled
+ * destructive confirm — reads as one designed object, not a stock alert.
  */
 export default function ConfirmDialog({
   open,
@@ -29,33 +32,35 @@ export default function ConfirmDialog({
 
   return (
     <Overlay open={open} onClose={onClose} align="center">
-      <View style={[styles.card, { backgroundColor: c.bgElevated, borderColor: c.border, borderRadius: theme.radius.lg }]}>
-        <Txt size={18} style={{ fontFamily: theme.font.display }}>
+      <View style={[styles.card, { backgroundColor: c.bgElevated, borderColor: c.border }]}>
+        <View style={[styles.badge, { backgroundColor: c.dangerSoft }]}>
+          <Feather name="alert-triangle" size={20} color={c.danger} />
+        </View>
+        <Txt size={19} style={{ fontFamily: theme.font.display, letterSpacing: -0.3 }}>
           {title}
         </Txt>
-        <Txt size={14} color={c.textMuted} style={{ lineHeight: 21 }}>
+        <Txt size={14} color={c.textMuted} style={styles.message}>
           {message}
         </Txt>
         <View style={styles.row}>
-          <Pressable
-            onPress={onClose}
-            style={({ pressed }) => [styles.btn, { borderColor: c.border, borderWidth: 1, opacity: pressed ? 0.6 : 1 }]}
-          >
+          <Press onPress={onClose} scaleTo={0.97} containerStyle={styles.flex} style={[styles.btn, { backgroundColor: c.surfaceAlt }]}>
             <Txt weight="semibold" size={14.5} color={c.textMuted}>
               {cancelLabel}
             </Txt>
-          </Pressable>
-          <Pressable
+          </Press>
+          <Press
             onPress={() => {
               onClose()
               onConfirm()
             }}
-            style={({ pressed }) => [styles.btn, { backgroundColor: c.danger, opacity: pressed ? 0.75 : 1 }]}
+            scaleTo={0.97}
+            containerStyle={styles.flex}
+            style={[styles.btn, { backgroundColor: c.danger }]}
           >
             <Txt weight="semibold" size={14.5} color="#FFFFFF">
               {confirmLabel}
             </Txt>
-          </Pressable>
+          </Press>
         </View>
       </View>
     </Overlay>
@@ -63,7 +68,22 @@ export default function ConfirmDialog({
 }
 
 const styles = StyleSheet.create({
-  card: { width: '100%', maxWidth: 400, borderWidth: 1, padding: 22, gap: 10 },
-  row: { flexDirection: 'row', gap: 10, marginTop: 12 },
-  btn: { flex: 1, borderRadius: 999, paddingVertical: 13, alignItems: 'center', justifyContent: 'center' },
+  card: {
+    width: '100%',
+    maxWidth: 400,
+    borderWidth: 1,
+    borderRadius: 26,
+    padding: 24,
+    gap: 10,
+    shadowColor: '#1A1626',
+    shadowOpacity: 0.18,
+    shadowRadius: 30,
+    shadowOffset: { width: 0, height: 16 },
+    elevation: 12,
+  },
+  badge: { width: 44, height: 44, borderRadius: 15, alignItems: 'center', justifyContent: 'center', marginBottom: 2 },
+  message: { lineHeight: 21 },
+  row: { flexDirection: 'row', gap: 10, marginTop: 14 },
+  flex: { flex: 1 },
+  btn: { borderRadius: 999, paddingVertical: 13, alignItems: 'center', justifyContent: 'center' },
 })

@@ -41,7 +41,7 @@ const STRINGS = {
     // — chips / turns
     'turn.explainStep': 'Explain step {n}',
     'turn.similar': 'A similar problem',
-    'turn.photoProblem': '📷 Photo problem',
+    'turn.photoProblem': 'Photo problem',
     // — solution card (rendered in the WebView)
     'solution.label': 'Solution · tap a step to re-explain',
     'solution.answer': 'Answer',
@@ -72,8 +72,13 @@ const STRINGS = {
     'welcome.guest': 'Continue without an account',
     // — history
     'history.title': 'Your work',
-    'history.meta': '{n} SOLVED',
-    'history.streak': '{d}-DAY STREAK',
+    'history.stat.solved': 'solved',
+    'history.stat.streak': 'days in a row',
+    'history.stat.streak.one': 'day in a row',
+    'history.section.today': 'Today',
+    'history.section.yesterday': 'Yesterday',
+    'history.section.week': 'This week',
+    'history.section.earlier': 'Earlier',
     'history.search': 'Search your work…',
     'history.all': 'All',
     'history.empty': 'Nothing yet — solve a problem and it lands here.',
@@ -81,6 +86,9 @@ const STRINGS = {
     'history.justNow': 'just now',
     // — settings
     'settings.title': 'Settings',
+    'settings.section.prefs': 'Preferences',
+    'settings.section.legal': 'Legal',
+    'settings.section.account': 'Account',
     'settings.language': 'Language',
     'settings.language.value': 'English',
     'settings.signOut': 'Sign out',
@@ -140,7 +148,7 @@ const STRINGS = {
     // — chips / turns
     'turn.explainStep': 'Explică pasul {n}',
     'turn.similar': 'O problemă similară',
-    'turn.photoProblem': '📷 Problemă din poză',
+    'turn.photoProblem': 'Problemă din poză',
     // — solution card (rendered in the WebView)
     'solution.label': 'Rezolvare · atinge un pas pentru altă explicație',
     'solution.answer': 'Răspuns',
@@ -171,8 +179,13 @@ const STRINGS = {
     'welcome.guest': 'Continuă fără cont',
     // — history
     'history.title': 'Munca ta',
-    'history.meta': '{n} REZOLVATE',
-    'history.streak': '{d} ZILE LA RÂND',
+    'history.stat.solved': 'rezolvate',
+    'history.stat.streak': 'zile la rând',
+    'history.stat.streak.one': 'zi la rând',
+    'history.section.today': 'Azi',
+    'history.section.yesterday': 'Ieri',
+    'history.section.week': 'Săptămâna aceasta',
+    'history.section.earlier': 'Mai demult',
     'history.search': 'Caută în munca ta…',
     'history.all': 'Toate',
     'history.empty': 'Nimic încă — rezolvă o problemă și apare aici.',
@@ -180,6 +193,9 @@ const STRINGS = {
     'history.justNow': 'chiar acum',
     // — settings
     'settings.title': 'Setări',
+    'settings.section.prefs': 'Preferințe',
+    'settings.section.legal': 'Legal',
+    'settings.section.account': 'Cont',
     'settings.language': 'Limbă',
     'settings.language.value': 'Română',
     'settings.signOut': 'Deconectare',

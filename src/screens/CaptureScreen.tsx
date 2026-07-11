@@ -33,16 +33,16 @@ import { cropAndPrepare, pickFromLibrary, type CapturedImage, type RawShot } fro
 
 // Fixed visor palette — deliberately not the paper theme.
 const V = {
-  bg: '#0C0F14',
-  stage: '#171C26',
+  bg: '#0E0B18',
+  stage: '#1A152B',
   line: 'rgba(255,255,255,0.16)',
   fill: 'rgba(255,255,255,0.06)',
-  text: '#F2F5FA',
-  soft: '#CDD6E4',
-  faint: '#98A2B4',
-  accent: '#7E97FF',
-  onAccent: '#0C0F14',
-  scrim: 'rgba(8,10,14,0.6)',
+  text: '#F4F2FA',
+  soft: '#D3CDE4',
+  faint: '#9C95B4',
+  accent: '#A08CFF',
+  onAccent: '#0E0B18',
+  scrim: 'rgba(10,7,18,0.6)',
 }
 
 type Box = { x: number; y: number; w: number; h: number }
@@ -82,7 +82,7 @@ export default function CaptureScreen({
 
   const slideIn = useCallback(() => {
     setMounted(true)
-    Animated.timing(slide, { toValue: 1, duration: 300, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start()
+    Animated.timing(slide, { toValue: 1, duration: 460, easing: Easing.bezier(0.22, 1, 0.36, 1), useNativeDriver: true }).start()
   }, [slide])
 
   useEffect(() => {
@@ -117,7 +117,7 @@ export default function CaptureScreen({
       }
     } else {
       // Slide out with the CURRENT stage frozen; reset only once hidden.
-      Animated.timing(slide, { toValue: 0, duration: 230, easing: Easing.in(Easing.cubic), useNativeDriver: true }).start(() => {
+      Animated.timing(slide, { toValue: 0, duration: 340, easing: Easing.in(Easing.cubic), useNativeDriver: true }).start(() => {
         setMounted(false)
         setShot(null)
         setStage('camera')
@@ -179,7 +179,7 @@ export default function CaptureScreen({
       ]}
     >
       <StatusBar style="light" />
-      <CrossFade dep={stage} style={styles.flex} scaleFrom={0.985}>
+      <CrossFade dep={stage} style={styles.flex} axis="x">
         {stage === 'trim' && shot ? (
           <TrimStage
             shot={shot}
@@ -280,7 +280,7 @@ function CameraStage({
           hitSlop={10}
           accessibilityRole="button"
           accessibilityLabel={t('a11y.torch')}
-          style={[styles.chromeBtn, torch && { backgroundColor: 'rgba(126,151,255,0.22)', borderColor: V.accent }]}
+          style={[styles.chromeBtn, torch && { backgroundColor: 'rgba(160,140,255,0.22)', borderColor: V.accent }]}
         >
           <Feather name={torch ? 'zap' : 'zap-off'} size={17} color={torch ? V.accent : V.text} />
         </Press>
@@ -592,7 +592,7 @@ const styles = StyleSheet.create({
   cBR: { right: 0, bottom: 0, borderRightWidth: 3.5, borderBottomWidth: 3.5, borderBottomRightRadius: 10 },
   hintWrap: { position: 'absolute', left: 0, right: 0, bottom: '9%', alignItems: 'center' },
   hintPill: {
-    backgroundColor: 'rgba(20,25,34,0.62)',
+    backgroundColor: 'rgba(14,11,24,0.62)',
     paddingVertical: 7,
     paddingHorizontal: 14,
     borderRadius: 999,

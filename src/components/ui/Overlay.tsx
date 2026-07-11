@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Animated, BackHandler, Keyboard, Pressable, StyleSheet, View } from 'react-native'
+import { Animated, BackHandler, Easing, Keyboard, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native'
 
 /**
  * The app's own modal engine - no react-native Modal, no separate Android
  * window, no system quirks. Renders in-tree as an absolute layer we fully
- * control: animated backdrop, spring-in content (slide for bottom sheets,
- * scale for centered dialogs), hardware back closes it.
+ * control: animated backdrop scrim, and content that slides in FULLY from
+ * below the screen — bottom sheets and centered dialogs alike. The content
+ * itself never fades and never scales (design rule: only the scrim may fade;
+ * elements move, fully opaque). Hardware back closes it.
  *
  * Render it as a late sibling at screen root so it stacks above everything.
  */
@@ -22,6 +24,7 @@ export default function Overlay({
 }) {
   const [mounted, setMounted] = useState(open)
   const p = useRef(new Animated.Value(0)).current
+  const { height: winH } = useWindowDimensions()
 
   useEffect(() => {
     // Keyboard rule: an overlay is a context switch — the keyboard never
@@ -30,9 +33,13 @@ export default function Overlay({
     Keyboard.dismiss()
     if (open) {
       setMounted(true)
-      Animated.spring(p, { toValue: 1, useNativeDriver: true, damping: 20, stiffness: 260, mass: 0.9 }).start()
+      Animated.timing(p, { toValue: 1, duration: 500, easing: Easing.bezier(0.22, 1, 0.36, 1), useNativeDriver: true }).start()
     } else {
-      Animated.timing(p, { toValue: 0, duration: 150, useNativeDriver: true }).start(() => setMounted(false))
+      Animated.timing(p, { toValue: 0, duration: 340, easing: Easing.in(Easing.cubic), useNativeDriver: true }).start(
+        ({ finished }) => {
+          if (finished) setMounted(false)
+        },
+      )
     }
   }, [open, p])
 
@@ -50,13 +57,10 @@ export default function Overlay({
 
   const clamp = { extrapolate: 'clamp' as const }
   const backdropOpacity = p.interpolate({ inputRange: [0, 1], outputRange: [0, 0.62], ...clamp })
-  const contentStyle =
-    align === 'bottom'
-      ? { transform: [{ translateY: p.interpolate({ inputRange: [0, 1], outputRange: [48, 0], ...clamp }) }] }
-      : {
-          opacity: p.interpolate({ inputRange: [0, 1], outputRange: [0, 1], ...clamp }),
-          transform: [{ scale: p.interpolate({ inputRange: [0, 1], outputRange: [0.94, 1], ...clamp }) }],
-        }
+  // Full off-screen travel: at p=0 the content sits entirely below the screen.
+  const contentStyle = {
+    transform: [{ translateY: p.interpolate({ inputRange: [0, 1], outputRange: [winH, 0], ...clamp }) }],
+  }
 
   return (
     <View style={[StyleSheet.absoluteFill, styles.host]} pointerEvents="box-none">

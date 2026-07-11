@@ -38,7 +38,7 @@ function problemsCol(uid: string) {
 /** Drop runtime-only fields (image URIs, pending/error) before persisting. */
 export function toStoredTurns(
   turns: { role: 'user' | 'assistant'; text: string; imageUri?: string }[],
-  photoLabel = '📷 Photo problem',
+  photoLabel = 'Photo problem',
 ): StoredTurn[] {
   return turns
     .filter((t) => !!t.text || !!t.imageUri)

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
-import { ActivityIndicator, Animated, Image, Keyboard, Pressable, ScrollView, Share, StyleSheet, TextInput, View } from 'react-native'
+import { ActivityIndicator, Animated, Easing, Image, Keyboard, Pressable, ScrollView, Share, StyleSheet, TextInput, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import * as Clipboard from 'expo-clipboard'
 import * as Haptics from 'expo-haptics'
@@ -421,9 +421,9 @@ export default function SolverScreen() {
 
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <View style={styles.headerInner}>
-        <Txt style={[styles.wordmark, { fontFamily: theme.font.serif, color: c.text }]}>
+        <Txt style={[styles.wordmark, { fontFamily: theme.font.display, color: c.text }]}>
           Rezolv
-          <Txt style={{ fontFamily: theme.font.serifItalic, color: c.accent, fontSize: 20 }}>o</Txt>
+          <Txt style={{ fontFamily: theme.font.display, color: c.accent, fontSize: 21 }}>o</Txt>
         </Txt>
         <View style={styles.headerRight}>
           {!empty && (
@@ -487,8 +487,8 @@ export default function SolverScreen() {
 
       <KeyboardAvoidingView style={styles.flex} behavior="padding" keyboardVerticalOffset={-insets.bottom}>
         <View style={styles.column}>
-        {/* Hero ↔ thread swaps cross-fade — screens never hard-cut. */}
-        <CrossFade dep={empty ? 'hero' : 'thread'} style={styles.flex}>
+        {/* Hero ↔ thread pushes sideways like a navigation — fully opaque, no fade. */}
+        <CrossFade dep={empty ? 'hero' : 'thread'} axis="x" style={styles.flex}>
         {empty ? (
           <ScrollView
             contentContainerStyle={styles.heroWrap}
@@ -509,38 +509,47 @@ export default function SolverScreen() {
                 ? t('hero.kicker.named', { name: user.name.split(' ')[0].toUpperCase() })
                 : t('hero.kicker')}
             </Txt>
-            <Txt style={[styles.heroTitle, { fontFamily: theme.font.serif, color: c.text }]}>
+            <Txt style={[styles.heroTitle, { fontFamily: theme.font.display, color: c.text }]}>
               {t('hero.title.lead')}
-              <Txt style={{ fontFamily: theme.font.serifItalic, color: c.accent, fontSize: 34 }}>
+              <Txt style={{ fontFamily: theme.font.display, color: c.accent, fontSize: 35 }}>
                 {t('hero.title.accent')}
               </Txt>
             </Txt>
+            {/* primary CTA — Home's one brand-gradient moment */}
             <Press
               onPress={() => snap('camera')}
               scaleTo={0.975}
               containerStyle={styles.stretch}
-              style={[styles.snapCard, { backgroundColor: c.surface, borderColor: c.border }]}
+              style={[styles.snapCard, { backgroundColor: c.accent, shadowColor: c.accent }]}
             >
-              <View style={[styles.lensHalo, { backgroundColor: c.accentSoft }]}>
-                <LinearGradient
-                  colors={theme.gradient.brand as [string, string]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.lens}
-                >
-                  <Feather name="camera" size={25} color="#fff" />
-                </LinearGradient>
-              </View>
-              <Txt weight="bold" size={16}>
-                {t('hero.snap.title')}
-              </Txt>
-              <Txt size={13} color={c.textMuted} style={styles.snapSub}>
-                {t('hero.snap.sub')}
-              </Txt>
+              <LinearGradient
+                colors={theme.gradient.brand as [string, string]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.snapGrad}
+              >
+                <View style={styles.snapIcon}>
+                  <Feather name="camera" size={23} color="#fff" />
+                </View>
+                <View style={styles.flex}>
+                  <Txt weight="bold" size={16.5} color="#fff">
+                    {t('hero.snap.title')}
+                  </Txt>
+                  <Txt size={12.5} color="rgba(255,255,255,0.78)" style={styles.snapSub}>
+                    {t('hero.snap.sub')}
+                  </Txt>
+                </View>
+                <Feather name="arrow-right" size={20} color="rgba(255,255,255,0.9)" />
+              </LinearGradient>
             </Press>
-            <Press onPress={() => snap('library')} hitSlop={8} style={styles.libBtn}>
-              <Feather name="image" size={15} color={c.accent} />
-              <Txt weight="semibold" size={13.5} color={c.accent}>
+            <Press
+              onPress={() => snap('library')}
+              hitSlop={8}
+              containerStyle={styles.stretch}
+              style={[styles.libBtn, { backgroundColor: c.surface, borderColor: c.border }]}
+            >
+              <Feather name="image" size={16} color={c.accent} />
+              <Txt weight="semibold" size={14} color={c.text}>
                 {t('hero.library')}
               </Txt>
             </Press>
@@ -658,11 +667,11 @@ function Bubble({
   const c = theme.colors
   const anim = useRef(new Animated.Value(0)).current
   useEffect(() => {
-    Animated.timing(anim, { toValue: 1, duration: 320, useNativeDriver: true }).start()
+    Animated.timing(anim, { toValue: 1, duration: 480, easing: Easing.bezier(0.22, 1, 0.36, 1), useNativeDriver: true }).start()
   }, [anim])
+  // Pure slide up from behind the composer (the thread clips it) — no fade.
   const wrap = {
-    opacity: anim,
-    transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [10, 0] }) }],
+    transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [56, 0] }) }],
   }
 
   let inner: ReactNode
@@ -828,7 +837,7 @@ const styles = StyleSheet.create({
     maxWidth: 720,
     alignSelf: 'center',
   },
-  wordmark: { fontSize: 20, fontWeight: '600' },
+  wordmark: { fontSize: 21, letterSpacing: -0.4 },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   iconBtn: { width: 38, height: 38, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   accountSlot: { width: 38, height: 38 },
@@ -849,27 +858,60 @@ const styles = StyleSheet.create({
   heroWrap: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 30, paddingBottom: 20 },
   wm: { position: 'absolute', top: -6, right: -14, fontSize: 200, lineHeight: 210, opacity: 0.06 },
   kicker: { letterSpacing: 1.4 },
-  heroTitle: { fontSize: 34, marginTop: 12, marginBottom: 28, textAlign: 'center' },
+  heroTitle: { fontSize: 35, letterSpacing: -0.8, marginTop: 12, marginBottom: 28, textAlign: 'center' },
   snapCard: {
     alignSelf: 'stretch',
-    alignItems: 'center',
-    borderWidth: 1,
     borderRadius: 24,
-    paddingVertical: 26,
-    paddingHorizontal: 22,
-    shadowColor: '#141922',
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 4,
+    shadowOpacity: 0.32,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 9 },
+    elevation: 7,
   },
-  lensHalo: { width: 76, height: 76, borderRadius: 26, alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
-  lens: { width: 58, height: 58, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
-  snapSub: { marginTop: 5, textAlign: 'center' },
-  libBtn: { flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 20, padding: 6 },
-  orType: { marginTop: 22 },
+  snapGrad: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    borderRadius: 24,
+    paddingVertical: 18,
+    paddingHorizontal: 18,
+  },
+  snapIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.18)',
+  },
+  snapSub: { marginTop: 2 },
+  libBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 12,
+    height: 50,
+    borderRadius: 999,
+    borderWidth: 1,
+    shadowColor: '#1A1626',
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
+  },
+  orType: { marginTop: 24 },
   examples: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginTop: 12 },
-  chip: { borderWidth: 1, borderRadius: 999, paddingVertical: 8, paddingHorizontal: 13 },
+  chip: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingVertical: 8,
+    paddingHorizontal: 13,
+    shadowColor: '#1A1626',
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+  },
 
   // thread
   thread: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 16, gap: 14 },
@@ -890,7 +932,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 6,
     paddingVertical: 14,
     paddingHorizontal: 16,
-    shadowColor: '#141922',
+    shadowColor: '#1A1626',
     shadowOpacity: 0.05,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 6 },
@@ -913,7 +955,7 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     paddingVertical: 7,
     paddingHorizontal: 7,
-    shadowColor: '#141922',
+    shadowColor: '#1A1626',
     shadowOpacity: 0.06,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 5 },

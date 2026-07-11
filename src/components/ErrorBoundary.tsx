@@ -48,9 +48,9 @@ export default class ErrorBoundary extends Component<{ children: ReactNode }, { 
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, backgroundColor: '#FAFAFC', alignItems: 'center', justifyContent: 'center', padding: 32, gap: 12 },
-  title: { color: '#111114', fontSize: 22, fontWeight: '700' },
-  body: { color: '#5A5C68', fontSize: 15, textAlign: 'center', lineHeight: 22, maxWidth: 320 },
-  btn: { marginTop: 12, backgroundColor: '#6B5AFF', borderRadius: 999, paddingHorizontal: 28, paddingVertical: 14 },
+  wrap: { flex: 1, backgroundColor: '#F7F6F2', alignItems: 'center', justifyContent: 'center', padding: 32, gap: 12 },
+  title: { color: '#1A1626', fontSize: 22, fontWeight: '700' },
+  body: { color: '#5D5870', fontSize: 15, textAlign: 'center', lineHeight: 22, maxWidth: 320 },
+  btn: { marginTop: 12, backgroundColor: '#6355FF', borderRadius: 999, paddingHorizontal: 28, paddingVertical: 14 },
   btnLabel: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
 })

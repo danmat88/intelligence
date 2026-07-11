@@ -34,45 +34,42 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels, 
 <style>
   html,body{margin:0;padding:0;background:transparent}
   body{font-family:${sans};color:${c.text};font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%;padding:1px}
-  .lbl{font-family:${mono};font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:${c.textFaint};margin-bottom:14px}
-  .step{display:grid;grid-template-columns:24px 1fr;gap:11px;padding:7px 8px 13px;margin:0 -8px;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:12px}
+  .lbl{font-family:${mono};font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:${c.textFaint};margin-bottom:12px}
+  .step{display:grid;grid-template-columns:26px 1fr;gap:12px;padding:11px 8px;margin:0 -8px;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:14px}
+  .step+.step{border-top:1px solid rgba(26,22,38,.06)}
   .step:active{background:${c.accentSoft}}
-  .step .no{font-family:${mono};font-size:12px;color:${c.accent};font-weight:600;padding-top:3px}
-  .step .math{font-size:16px;color:${c.text};overflow-x:auto;overflow-y:hidden}
+  .step .no{width:26px;height:26px;border-radius:9px;background:${c.accentSoft};color:${c.accent};font-family:${mono};font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .step .math{font-size:16px;color:${c.text};overflow-x:auto;overflow-y:hidden;padding-top:3px}
   .step .why{font-size:12.5px;color:${c.textMuted};margin-top:5px;line-height:1.45}
-  .answer{display:flex;align-items:center;gap:10px;margin:2px 0 14px;padding:13px 15px;border-radius:16px;background:${c.successSoft};border:1px solid rgba(14,159,110,.30)}
-  .answer .tick{width:22px;height:22px;border-radius:50%;background:${c.success};display:flex;align-items:center;justify-content:center;flex:0 0 auto}
-  .answer .tick svg{width:13px;height:13px;stroke:#fff;stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
-  .answer .ak{display:block;font-family:${mono};font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:${c.success};font-weight:700;margin-bottom:2px}
-  .answer .math{font-size:17px;color:${c.text}}
-  .vbadge{margin-left:auto;align-self:center;flex:0 0 auto;font-family:${mono};font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:${c.success};border:1px solid rgba(14,159,110,.45);border-radius:999px;padding:4px 9px;background:#fff}
-  .vrf{display:inline-flex;align-items:center;gap:6px;font-family:${mono};font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${c.textFaint};margin-bottom:13px}
+  .answer{display:flex;align-items:center;gap:12px;margin:12px 0 14px;padding:14px 16px;border-radius:18px;background:${c.successSoft};border:1px solid rgba(14,159,110,.22)}
+  .answer .tick{width:26px;height:26px;border-radius:50%;background:${c.success};display:flex;align-items:center;justify-content:center;flex:0 0 auto;box-shadow:0 2px 8px rgba(14,159,110,.35)}
+  .answer .tick svg{width:14px;height:14px;stroke:#fff;stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .answer .ak{display:block;font-family:${mono};font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:${c.success};font-weight:700;margin-bottom:3px}
+  .answer .math{font-size:17.5px;color:${c.text}}
+  .vbadge{margin-left:auto;align-self:center;flex:0 0 auto;font-family:${mono};font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:#fff;background:${c.success};border-radius:999px;padding:5px 10px;box-shadow:0 2px 8px rgba(14,159,110,.3)}
+  .vrf{display:inline-flex;align-items:center;gap:6px;font-family:${mono};font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${c.textFaint};margin-bottom:12px}
   .vrf .dot{width:6px;height:6px;border-radius:50%;background:${c.accent};animation:vpulse 1.1s ease-in-out infinite}
   @keyframes vpulse{0%,100%{opacity:.25}50%{opacity:1}}
-  .vwarn{font-size:12.5px;color:#9a6700;background:#fff8e6;border:1px solid #f0d789;border-radius:12px;padding:9px 12px;margin:-5px 0 13px}
-  .graph{border:1px solid ${c.border};border-radius:16px;background:${c.bg};padding:10px 12px 6px;margin:0 0 14px}
-  .graph .glabel{font-family:${mono};font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:${c.textFaint};margin-bottom:5px}
+  .vwarn{font-size:12.5px;color:#9a6700;background:#fff8e6;border:1px solid #f0d789;border-radius:14px;padding:10px 13px;margin:-5px 0 13px}
+  .graph{border:1px solid ${c.border};border-radius:18px;background:${c.bg};padding:12px 14px 8px;margin:0 0 14px}
+  .graph .glabel{font-family:${mono};font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:${c.textFaint};margin-bottom:6px}
   .graph svg{width:100%;height:auto;display:block;overflow:visible}
   .axis{stroke:${c.border};stroke-width:1.3}
-  .parabola{stroke:#0c98a6;stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
-  .root{fill:${c.accent}}
-  .chips{display:flex;gap:8px;flex-wrap:wrap}
-  .fu{font-family:${sans};font-size:12px;color:${c.accent};border:1px solid rgba(43,80,224,.35);background:${c.accentSoft};border-radius:999px;padding:9px 14px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s,color .12s}
+  .parabola{stroke:${c.accent};stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .root{fill:${c.success}}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+  .fu{font-family:${sans};font-size:12.5px;color:${c.accent};border:none;background:${c.accentSoft};border-radius:999px;padding:10px 16px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s,color .12s}
   .fu:active{background:${c.accent};color:#fff}
   .errnote{color:${c.danger};font-size:14px}
   .katex{font-size:1.02em}
   .katex-display{margin:.3em 0;overflow-x:auto;overflow-y:hidden}
   p{margin:.5em 0}
   strong{font-weight:700}
-  @media (prefers-reduced-motion:no-preference){
-    #c{animation:fadeup .45s ease both}
-    @keyframes fadeup{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-    /* NOTE: no stroke-dash "draw" animation on the curve — it proved unreliable
-       on Android WebView (curve stayed invisible when the animation stalled).
-       The graph must always be visible; the card fade is animation enough. */
-    .answer{animation:pop .5s cubic-bezier(.2,.8,.3,1) .15s both}
-    @keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
-  }
+  /* NOTE: no entrance animations in here at all — the native card's animated
+     height growth IS the reveal (content is clipped and uncovered as it grows).
+     Design rule: content never fades or scales; only movement. Also no
+     stroke-dash "draw" animation on the curve — it proved unreliable on
+     Android WebView (curve stayed invisible when the animation stalled). */
 </style></head><body>
 <div id="c"></div>
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
@@ -148,7 +145,7 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels, 
         var out='<div class="lbl">'+esc(L.solution)+'</div>';
         if(VERIFYING){ out+='<div class="vrf"><span class="dot"></span>'+esc(L.verifying)+'</div>'; }
         (data.steps||[]).forEach(function(st,i){
-          var n=(i+1<10?'0':'')+(i+1);
+          var n=String(i+1);
           out+='<div class="step" onclick="chip(\\'step:'+(i+1)+'\\')"><div class="no">'+n+'</div><div><div class="math">'+tex(st.math)+'</div>'+
                (st.why?'<div class="why">'+esc(deTeX(st.why))+'</div>':'')+'</div></div>';
         });
@@ -224,8 +221,8 @@ export default function SolutionView({
             if (n > 0) {
               Animated.timing(height, {
                 toValue: Math.ceil(n) + 6,
-                duration: 220,
-                easing: Easing.out(Easing.cubic),
+                duration: 400,
+                easing: Easing.bezier(0.22, 1, 0.36, 1), // the growth IS the reveal — keep it calm
                 useNativeDriver: false, // height is a layout prop
               }).start()
             }

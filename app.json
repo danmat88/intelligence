@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "backgroundColor": "#F5F7FB",
+    "backgroundColor": "#F7F6F2",
     "ios": {
       "supportsTablet": true
     },
@@ -37,7 +37,7 @@
           "image": "./assets/android-icon-foreground.png",
           "imageWidth": 192,
           "resizeMode": "contain",
-          "backgroundColor": "#F5F7FB"
+          "backgroundColor": "#F7F6F2"
         }
       ],
       [
