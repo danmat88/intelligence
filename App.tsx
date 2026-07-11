@@ -95,20 +95,26 @@ function Root({ fontsLoaded }: { fontsLoaded: boolean }) {
     if (ready) SplashScreen.hideAsync().catch(() => {}) // fades into the JS frame below
   }, [ready])
 
-  // Once the app has been ready, a later not-ready spell means a session switch
-  // (sign-out → fresh guest). Show the brand beat instead of a blank cut.
+  // Once the app has been ready, a later not-ready spell means a session
+  // switch (sign-out → fresh guest).
   const wasReady = useRef(false)
+  const lastPhaseRef = useRef<'boot' | 'beat' | 'app' | 'welcome'>('boot')
   if (ready) {
     wasReady.current = true
     if (bootedSignedIn.current === null) bootedSignedIn.current = !!user
   }
 
   // Every phase of the session lives in ONE opaque push (house motion style):
-  // boot → brand beat → app, sign-out → brand beat → fresh guest app,
-  // offline welcome → app. No screen ever hard-cuts into another.
+  // boot → brand beat → app, offline welcome → app. Signing OUT never leaves
+  // the app at all — no splash, no beat: the screen resets in place (thread
+  // pushes back to the hero, the avatar swaps to the guest button, a toast
+  // confirms) while the fresh anonymous session attaches underneath.
   let phase: 'boot' | 'beat' | 'app' | 'welcome'
   let content: ReactNode
-  if (!ready) {
+  if (!ready && wasReady.current && lastPhaseRef.current === 'app') {
+    phase = 'app'
+    content = <SolverScreen />
+  } else if (!ready) {
     // Plain twin of the native splash, held until fonts + session are ready.
     phase = 'boot'
     content = wasReady.current ? <BrandMark /> : null
@@ -127,6 +133,8 @@ function Root({ fontsLoaded }: { fontsLoaded: boolean }) {
     phase = 'welcome'
     content = <WelcomeScreen />
   }
+
+  lastPhaseRef.current = phase
 
   return (
     <CrossFade dep={phase} axis="y" duration={560} style={styles.boot}>

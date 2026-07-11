@@ -18,6 +18,7 @@ import RAnimated, {
   withTiming,
   type EntryAnimationsValues,
 } from 'react-native-reanimated'
+import { LinearGradient } from 'expo-linear-gradient'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import * as Haptics from 'expo-haptics'
 import { StatusBar } from 'expo-status-bar'
@@ -207,6 +208,7 @@ export default function CaptureScreen({
             backIcon={entryRef.current === 'camera' ? 'arrow-left' : 'x'}
             onBack={backFromTrim}
             ghostLabel={shot.source === 'camera' ? t('crop.retake') : t('crop.chooseAnother')}
+            ghostIcon={shot.source === 'camera' ? 'rotate-ccw' : 'image'}
             onGhost={shot.source === 'camera' ? retake : repick}
             onUsePhoto={onUsePhoto}
           />
@@ -249,6 +251,8 @@ function CameraStage({
   const [torch, setTorch] = useState(false)
   const [busy, setBusy] = useState(false)
   const shutter = useRef(new Animated.Value(0)).current
+  // The capture blink — a real camera answers with light.
+  const flash = useRef(new Animated.Value(0)).current
 
   // Ask once, after the visor has landed (the system dialog is heavy — it
   // must never pop mid-slide). If it's refused, the panel below offers a
@@ -268,6 +272,10 @@ function CameraStage({
     Animated.sequence([
       Animated.timing(shutter, { toValue: 1, duration: 90, easing: Easing.out(Easing.quad), useNativeDriver: true }),
       Animated.spring(shutter, { toValue: 0, useNativeDriver: true, damping: 12, stiffness: 320 }),
+    ]).start()
+    Animated.sequence([
+      Animated.timing(flash, { toValue: 0.85, duration: 60, useNativeDriver: true }),
+      Animated.timing(flash, { toValue: 0, duration: 180, easing: Easing.out(Easing.quad), useNativeDriver: true }),
     ]).start()
     try {
       const p = await cam.current.takePictureAsync({ quality: 0.9 })
@@ -298,8 +306,8 @@ function CameraStage({
         <Press onPress={onClose} hitSlop={10} accessibilityRole="button" accessibilityLabel={t('a11y.close')} style={styles.chromeBtn}>
           <Feather name="x" size={19} color={V.text} />
         </Press>
-        <Txt size={11} color={V.soft} style={[styles.chromeTitle, { fontFamily: theme.font.mono }]}>
-          {t('capture.title').toUpperCase()}
+        <Txt size={15} color={V.text} style={[styles.chromeTitle, { fontFamily: theme.font.display }]}>
+          {t('capture.title')}
         </Txt>
         <Press
           onPress={() => setTorch((v) => !v)}
@@ -343,8 +351,14 @@ function CameraStage({
           // Dark stage while the visor travels / the camera warms up.
           <View style={[styles.flex, styles.center]}>
             <ActivityIndicator color={V.accent} />
+            <Txt size={12} color={V.faint} style={styles.warming}>
+              {t('capture.warming')}
+            </Txt>
           </View>
         )}
+
+        {/* capture blink */}
+        <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.flash, { opacity: flash }]} />
 
         {ready && (
           // The guides rise onto the live feed the moment the camera wakes.
@@ -368,9 +382,14 @@ function CameraStage({
 
       {/* bottom controls: gallery · shutter · type-instead */}
       <View style={[styles.camBar, { paddingBottom: insets.bottom + 14 }]}>
-        <Press onPress={pick} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('hero.library')} style={styles.sideBtn}>
-          <Feather name="image" size={20} color={V.text} />
-        </Press>
+        <View style={styles.side}>
+          <Press onPress={pick} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('hero.library')} style={styles.sideBtn}>
+            <Feather name="image" size={20} color={V.text} />
+          </Press>
+          <Txt size={10.5} weight="semibold" color={V.faint} style={styles.sideLbl}>
+            {t('capture.lblGallery')}
+          </Txt>
+        </View>
         <Press
           onPress={snap}
           disabled={!ready || busy}
@@ -388,9 +407,14 @@ function CameraStage({
             {busy && <ActivityIndicator color={V.onAccent} />}
           </Animated.View>
         </Press>
-        <Press onPress={onTypeInstead} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('capture.typeInstead')} style={styles.sideBtn}>
-          <Feather name="type" size={20} color={V.text} />
-        </Press>
+        <View style={styles.side}>
+          <Press onPress={onTypeInstead} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('capture.typeInstead')} style={styles.sideBtn}>
+            <Feather name="type" size={20} color={V.text} />
+          </Press>
+          <Txt size={10.5} weight="semibold" color={V.faint} style={styles.sideLbl}>
+            {t('capture.lblType')}
+          </Txt>
+        </View>
       </View>
     </View>
   )
@@ -403,6 +427,7 @@ function TrimStage({
   backIcon,
   onBack,
   ghostLabel,
+  ghostIcon,
   onGhost,
   onUsePhoto,
 }: {
@@ -412,6 +437,7 @@ function TrimStage({
   onBack: () => void
   /** "Refă" (retake) for camera shots, "Alege alta" (re-pick) for gallery picks. */
   ghostLabel: string
+  ghostIcon: 'rotate-ccw' | 'image'
   onGhost: () => void
   onUsePhoto: (img: CapturedImage) => void
 }) {
@@ -444,13 +470,15 @@ function TrimStage({
 
   const responders = useMemo(() => {
     const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi)
-    const make = (kind: 'tl' | 'tr' | 'bl' | 'br' | 'move') =>
+    type Kind = 'tl' | 'tr' | 'bl' | 'br' | 'l' | 'r' | 't' | 'b' | 'move'
+    const make = (kind: Kind) =>
       PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) + Math.abs(g.dy) > 2,
         onPanResponderTerminationRequest: () => false,
         onPanResponderGrant: () => {
           startRef.current = boxRef.current
+          Haptics.selectionAsync().catch(() => {}) // you FEEL the grab
         },
         onPanResponderMove: (_, g) => {
           const s = startRef.current
@@ -468,22 +496,34 @@ function TrimStage({
           const right = s.x + s.w
           const bottom = s.y + s.h
           let { x, y, w, h } = s
-          if (kind === 'tl' || kind === 'bl') {
+          // Corners move two sides; edge handles move exactly one — math
+          // problems are wide strips, so one-handed height tweaks matter.
+          if (kind === 'tl' || kind === 'bl' || kind === 'l') {
             x = clamp(s.x + g.dx, R.x, right - MIN_BOX)
             w = right - x
-          } else {
+          } else if (kind === 'tr' || kind === 'br' || kind === 'r') {
             w = clamp(s.w + g.dx, MIN_BOX, R.x + R.w - s.x)
           }
-          if (kind === 'tl' || kind === 'tr') {
+          if (kind === 'tl' || kind === 'tr' || kind === 't') {
             y = clamp(s.y + g.dy, R.y, bottom - MIN_BOX)
             h = bottom - y
-          } else {
+          } else if (kind === 'bl' || kind === 'br' || kind === 'b') {
             h = clamp(s.h + g.dy, MIN_BOX, R.y + R.h - s.y)
           }
           setBox({ x, y, w, h })
         },
       })
-    return { tl: make('tl'), tr: make('tr'), bl: make('bl'), br: make('br'), move: make('move') }
+    return {
+      tl: make('tl'),
+      tr: make('tr'),
+      bl: make('bl'),
+      br: make('br'),
+      l: make('l'),
+      r: make('r'),
+      t: make('t'),
+      b: make('b'),
+      move: make('move'),
+    }
   }, [imgRect])
 
   const confirm = useCallback(async () => {
@@ -515,8 +555,8 @@ function TrimStage({
         >
           <Feather name={backIcon} size={19} color={V.text} />
         </Press>
-        <Txt size={11} color={V.soft} style={[styles.chromeTitle, { fontFamily: theme.font.mono }]}>
-          {t('crop.title').toUpperCase()}
+        <Txt size={15} color={V.text} style={[styles.chromeTitle, { fontFamily: theme.font.display }]}>
+          {t('crop.title')}
         </Txt>
         <View style={styles.chromeGhost} />
       </View>
@@ -531,44 +571,76 @@ function TrimStage({
             <View pointerEvents="none" style={[styles.dim, { left: 0, width: box.x, top: box.y, height: box.h }]} />
             <View pointerEvents="none" style={[styles.dim, { left: box.x + box.w, right: 0, top: box.y, height: box.h }]} />
 
-            {/* the box itself — draggable body + four corner handles */}
+            {/* the box itself — draggable body, L-bracket corners, edge bars */}
             <View
               {...responders.move.panHandlers}
               style={[styles.trimBox, { left: box.x, top: box.y, width: box.w, height: box.h }]}
             />
             <View {...responders.tl.panHandlers} style={[styles.handleHit, { left: box.x - 22, top: box.y - 22 }]}>
-              <View style={styles.handle} />
+              <View style={[styles.bracket, styles.bTL]} />
             </View>
             <View {...responders.tr.panHandlers} style={[styles.handleHit, { left: box.x + box.w - 22, top: box.y - 22 }]}>
-              <View style={styles.handle} />
+              <View style={[styles.bracket, styles.bTR]} />
             </View>
             <View {...responders.bl.panHandlers} style={[styles.handleHit, { left: box.x - 22, top: box.y + box.h - 22 }]}>
-              <View style={styles.handle} />
+              <View style={[styles.bracket, styles.bBL]} />
             </View>
             <View {...responders.br.panHandlers} style={[styles.handleHit, { left: box.x + box.w - 22, top: box.y + box.h - 22 }]}>
-              <View style={styles.handle} />
+              <View style={[styles.bracket, styles.bBR]} />
+            </View>
+            <View {...responders.t.panHandlers} style={[styles.edgeHitH, { left: box.x + box.w / 2 - 30, top: box.y - 18 }]}>
+              <View style={styles.edgeBarH} />
+            </View>
+            <View {...responders.b.panHandlers} style={[styles.edgeHitH, { left: box.x + box.w / 2 - 30, top: box.y + box.h - 18 }]}>
+              <View style={styles.edgeBarH} />
+            </View>
+            <View {...responders.l.panHandlers} style={[styles.edgeHitV, { left: box.x - 18, top: box.y + box.h / 2 - 30 }]}>
+              <View style={styles.edgeBarV} />
+            </View>
+            <View {...responders.r.panHandlers} style={[styles.edgeHitV, { left: box.x + box.w - 18, top: box.y + box.h / 2 - 30 }]}>
+              <View style={styles.edgeBarV} />
+            </View>
+
+            {/* one quiet instruction, out of the way at the top */}
+            <View pointerEvents="none" style={styles.hintTopWrap}>
+              <View style={styles.hintPill}>
+                <Txt size={12} weight="semibold" color={V.soft}>
+                  {t('crop.hint')}
+                </Txt>
+              </View>
             </View>
           </>
         )}
       </View>
 
       <View style={[styles.trimBar, { paddingBottom: insets.bottom + 14 }]}>
-        <Press onPress={onGhost} disabled={busy} containerStyle={styles.flexOne} style={[styles.trimBtn, styles.ghostBtn]}>
-          <Txt size={14.5} weight="semibold" color={V.soft}>
-            {ghostLabel}
-          </Txt>
+        <Press
+          onPress={onGhost}
+          disabled={busy}
+          accessibilityRole="button"
+          accessibilityLabel={ghostLabel}
+          style={styles.ghostTile}
+        >
+          <Feather name={ghostIcon} size={18} color={V.soft} />
         </Press>
-        <Press onPress={confirm} disabled={busy || !box} containerStyle={styles.flexTwo} style={[styles.trimBtn, styles.goBtn]}>
-          {busy ? (
-            <ActivityIndicator color={V.onAccent} />
-          ) : (
-            <View style={styles.goInner}>
-              <Txt size={14.5} weight="bold" color={V.onAccent}>
-                {t('crop.solve')}
-              </Txt>
-              <Feather name="arrow-right" size={17} color={V.onAccent} />
-            </View>
-          )}
+        {/* "Obturator": the camera's shutter disc lives INSIDE the solve bar —
+            you press the shutter a second time and the problem gets solved.
+            While solving, the disc itself spins. */}
+        <Press onPress={confirm} disabled={busy || !box} containerStyle={styles.flexOne} style={styles.solveBar}>
+          <View style={styles.disc}>
+            <LinearGradient
+              colors={theme.gradient.brand as [string, string]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.discInner}
+            >
+              {busy && <ActivityIndicator size="small" color="#FFFFFF" />}
+            </LinearGradient>
+          </View>
+          <Txt size={16.5} color={V.text} style={[styles.solveLbl, { fontFamily: theme.font.display }]}>
+            {t('crop.solve')}
+          </Txt>
+          <Feather name="arrow-right" size={17} color={V.soft} style={styles.solveArrow} />
         </Press>
       </View>
     </View>
@@ -600,7 +672,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   chromeGhost: { width: 40, height: 40 },
-  chromeTitle: { letterSpacing: 2 },
+  chromeTitle: { letterSpacing: -0.2 },
 
   viewport: {
     flex: 1,
@@ -632,6 +704,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 44,
     paddingTop: 18,
   },
+  side: { alignItems: 'center', gap: 6, width: 60 },
+  sideLbl: { letterSpacing: 0.3 },
   sideBtn: {
     width: 46,
     height: 46,
@@ -642,6 +716,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  warming: { marginTop: 10 },
+  flash: { backgroundColor: '#FFFFFF' },
   shutterRing: {
     width: 74,
     height: 74,
@@ -678,29 +754,63 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   handleHit: { position: 'absolute', width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  handle: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 3,
-    borderColor: V.accent,
-  },
+  // L-bracket corners — the crop tool vernacular, not toy circles.
+  bracket: { width: 26, height: 26, borderColor: '#FFFFFF' },
+  bTL: { borderLeftWidth: 4, borderTopWidth: 4, borderTopLeftRadius: 10 },
+  bTR: { borderRightWidth: 4, borderTopWidth: 4, borderTopRightRadius: 10 },
+  bBL: { borderLeftWidth: 4, borderBottomWidth: 4, borderBottomLeftRadius: 10 },
+  bBR: { borderRightWidth: 4, borderBottomWidth: 4, borderBottomRightRadius: 10 },
+  // Midpoint edge bars: one-finger height/width tweaks for wide problem strips.
+  edgeHitH: { position: 'absolute', width: 60, height: 36, alignItems: 'center', justifyContent: 'center' },
+  edgeHitV: { position: 'absolute', width: 36, height: 60, alignItems: 'center', justifyContent: 'center' },
+  edgeBarH: { width: 32, height: 5, borderRadius: 3, backgroundColor: '#FFFFFF' },
+  edgeBarV: { width: 5, height: 32, borderRadius: 3, backgroundColor: '#FFFFFF' },
+  hintTopWrap: { position: 'absolute', left: 0, right: 0, top: 14, alignItems: 'center' },
   trimBar: {
     flexDirection: 'row',
     gap: 10,
     paddingHorizontal: 16,
     paddingTop: 16,
   },
-  trimBtn: {
-    height: 52,
-    borderRadius: 999,
+  // "Obturator" bar — compact icon tile + a solve bar carrying the shutter disc.
+  flexOne: { flex: 1 },
+  ghostTile: {
+    width: 58,
+    height: 58,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.16)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  flexOne: { flex: 1 },
-  flexTwo: { flex: 2 },
-  ghostBtn: { borderWidth: 1, borderColor: V.line, backgroundColor: V.fill },
-  goBtn: { backgroundColor: V.accent },
-  goInner: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  solveBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    height: 58,
+    borderRadius: 14,
+    backgroundColor: '#161027',
+    borderWidth: 1,
+    borderColor: 'rgba(160,140,255,0.40)',
+    paddingLeft: 9,
+    paddingRight: 16,
+    shadowColor: '#6355FF',
+    shadowOpacity: 0.25,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
+  },
+  disc: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  discInner: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  solveLbl: { flex: 1, letterSpacing: -0.2 },
+  solveArrow: { opacity: 0.7 },
 })

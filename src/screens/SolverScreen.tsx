@@ -177,16 +177,6 @@ export default function SolverScreen() {
   const [threadKey, setThreadKey] = useState('live-0')
   const empty = thread.length === 0
 
-  // If the account changes mid-session (guest link fell back to an existing
-  // Google account = new uid), the open problem's doc id belongs to the old
-  // account — drop it so the next persist re-creates it under the new uid.
-  useEffect(() => {
-    if (prevUidRef.current !== user?.id) {
-      prevUidRef.current = user?.id
-      problemIdRef.current = null
-    }
-  }, [user?.id])
-
   // Visible feedback for the sign-in flow (linking fires no navigation, so the
   // moment needs its own confirmation): toast on guest→signed-in, toast on error.
   const wasAnonRef = useRef(user?.isAnonymous ?? false)
@@ -211,6 +201,27 @@ export default function SolverScreen() {
     threadRef.current = next
     setThread(next)
   }, [])
+
+  // If the account changes mid-session (sign-out → fresh guest, or a guest
+  // link that fell back to an existing Google account), the open problem
+  // belongs to the OLD account. Sign-out no longer unmounts this screen —
+  // clear the previous account's work IN PLACE: the thread pushes back to
+  // the hero like any reset, no splash, no remount. (Guest → Google LINKING
+  // keeps the same uid, so linked work correctly survives this.)
+  useEffect(() => {
+    if (prevUidRef.current !== user?.id) {
+      prevUidRef.current = user?.id
+      problemIdRef.current = null
+      if (threadRef.current.length > 0) {
+        setInput('')
+        setProblemMeta(null)
+        staticIdsRef.current = new Set()
+        scrollIntentRef.current = 'none'
+        setThreadKey(`live-${Date.now()}`)
+        commit([])
+      }
+    }
+  }, [user?.id, commit])
 
   // Save the finished problem to Firestore (create on first solve, then update).
   // Fire-and-forget — a failed write must never disrupt solving.

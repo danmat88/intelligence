@@ -114,6 +114,10 @@ const STRINGS = {
     // — in-app capture (camera visor + trim)
     'capture.title': 'Take a photo',
     'capture.hint': 'Frame the problem',
+    'capture.warming': 'Starting the camera…',
+    'capture.lblGallery': 'Gallery',
+    'capture.lblType': 'Type',
+    'crop.hint': 'Drag the corners to frame the problem',
     'capture.denied': 'Rezolvo needs the camera to photograph problems. Enable it in Settings.',
     'capture.allow': 'Allow the camera',
     'capture.openSettings': 'Open settings',
@@ -223,6 +227,10 @@ const STRINGS = {
     // — in-app capture (camera visor + trim)
     'capture.title': 'Fotografiază',
     'capture.hint': 'Încadrează problema',
+    'capture.warming': 'Pornesc camera…',
+    'capture.lblGallery': 'Galerie',
+    'capture.lblType': 'Scrie',
+    'crop.hint': 'Trage colțurile ca să încadrezi problema',
     'capture.denied': 'Rezolvo are nevoie de cameră ca să fotografieze probleme. Activeaz-o în Setări.',
     'capture.allow': 'Permite camera',
     'capture.openSettings': 'Deschide setările',
