@@ -34,30 +34,31 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels, 
 <style>
   html,body{margin:0;padding:0;background:transparent}
   body{font-family:${sans};color:${c.text};font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%;padding:1px}
-  .lbl{font-family:${mono};font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:${c.textFaint};margin-bottom:13px}
-  .step{display:grid;grid-template-columns:24px 1fr;gap:11px;padding-bottom:13px;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:8px}
-  .step:active{opacity:.55}
+  .lbl{font-family:${mono};font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:${c.textFaint};margin-bottom:14px}
+  .step{display:grid;grid-template-columns:24px 1fr;gap:11px;padding:7px 8px 13px;margin:0 -8px;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:12px}
+  .step:active{background:${c.accentSoft}}
   .step .no{font-family:${mono};font-size:12px;color:${c.accent};font-weight:600;padding-top:3px}
   .step .math{font-size:16px;color:${c.text};overflow-x:auto;overflow-y:hidden}
-  .step .why{font-size:12px;color:${c.textMuted};margin-top:5px;line-height:1.4}
-  .answer{display:flex;align-items:center;gap:10px;margin:2px 0 13px;padding:12px 14px;border-radius:14px;background:${c.successSoft};border:1px solid rgba(14,159,110,.30)}
+  .step .why{font-size:12.5px;color:${c.textMuted};margin-top:5px;line-height:1.45}
+  .answer{display:flex;align-items:center;gap:10px;margin:2px 0 14px;padding:13px 15px;border-radius:16px;background:${c.successSoft};border:1px solid rgba(14,159,110,.30)}
   .answer .tick{width:22px;height:22px;border-radius:50%;background:${c.success};display:flex;align-items:center;justify-content:center;flex:0 0 auto}
   .answer .tick svg{width:13px;height:13px;stroke:#fff;stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
   .answer .ak{display:block;font-family:${mono};font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:${c.success};font-weight:700;margin-bottom:2px}
-  .answer .math{font-size:16px;color:${c.text}}
+  .answer .math{font-size:17px;color:${c.text}}
   .vbadge{margin-left:auto;align-self:center;flex:0 0 auto;font-family:${mono};font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:${c.success};border:1px solid rgba(14,159,110,.45);border-radius:999px;padding:4px 9px;background:#fff}
   .vrf{display:inline-flex;align-items:center;gap:6px;font-family:${mono};font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${c.textFaint};margin-bottom:13px}
   .vrf .dot{width:6px;height:6px;border-radius:50%;background:${c.accent};animation:vpulse 1.1s ease-in-out infinite}
   @keyframes vpulse{0%,100%{opacity:.25}50%{opacity:1}}
   .vwarn{font-size:12.5px;color:#9a6700;background:#fff8e6;border:1px solid #f0d789;border-radius:12px;padding:9px 12px;margin:-5px 0 13px}
-  .graph{border:1px solid ${c.border};border-radius:14px;background:${c.bg};padding:10px 12px 6px;margin:0 0 13px}
+  .graph{border:1px solid ${c.border};border-radius:16px;background:${c.bg};padding:10px 12px 6px;margin:0 0 14px}
   .graph .glabel{font-family:${mono};font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:${c.textFaint};margin-bottom:5px}
   .graph svg{width:100%;height:auto;display:block;overflow:visible}
   .axis{stroke:${c.border};stroke-width:1.3}
   .parabola{stroke:#0c98a6;stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
   .root{fill:${c.accent}}
   .chips{display:flex;gap:8px;flex-wrap:wrap}
-  .fu{font-family:${sans};font-size:12px;color:${c.accent};border:1px solid rgba(43,80,224,.35);background:${c.accentSoft};border-radius:999px;padding:8px 13px;font-weight:600;cursor:pointer}
+  .fu{font-family:${sans};font-size:12px;color:${c.accent};border:1px solid rgba(43,80,224,.35);background:${c.accentSoft};border-radius:999px;padding:9px 14px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s,color .12s}
+  .fu:active{background:${c.accent};color:#fff}
   .errnote{color:${c.danger};font-size:14px}
   .katex{font-size:1.02em}
   .katex-display{margin:.3em 0;overflow-x:auto;overflow-y:hidden}

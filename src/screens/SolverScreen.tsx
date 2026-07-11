@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { ActivityIndicator, Animated, Image, Keyboard, Pressable, ScrollView, Share, StyleSheet, TextInput, View } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
 import * as Clipboard from 'expo-clipboard'
 import * as Haptics from 'expo-haptics'
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
@@ -495,8 +496,18 @@ export default function SolverScreen() {
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
           >
+            {/* ambient math watermark — the approved mockup's giant faint ∫ */}
+            <Txt
+              pointerEvents="none"
+              maxFontSizeMultiplier={1}
+              style={[styles.wm, { fontFamily: theme.font.serifItalic, color: c.accent }]}
+            >
+              ∫
+            </Txt>
             <Txt size={11} color={c.textFaint} style={[styles.kicker, { fontFamily: theme.font.mono }]}>
-              {t('hero.kicker')}
+              {user && !user.isAnonymous && user.name
+                ? t('hero.kicker.named', { name: user.name.split(' ')[0].toUpperCase() })
+                : t('hero.kicker')}
             </Txt>
             <Txt style={[styles.heroTitle, { fontFamily: theme.font.serif, color: c.text }]}>
               {t('hero.title.lead')}
@@ -510,8 +521,15 @@ export default function SolverScreen() {
               containerStyle={styles.stretch}
               style={[styles.snapCard, { backgroundColor: c.surface, borderColor: c.border }]}
             >
-              <View style={[styles.lens, { backgroundColor: c.accent }]}>
-                <Feather name="camera" size={25} color="#fff" />
+              <View style={[styles.lensHalo, { backgroundColor: c.accentSoft }]}>
+                <LinearGradient
+                  colors={theme.gradient.brand as [string, string]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.lens}
+                >
+                  <Feather name="camera" size={25} color="#fff" />
+                </LinearGradient>
               </View>
               <Txt weight="bold" size={16}>
                 {t('hero.snap.title')}
@@ -584,9 +602,22 @@ export default function SolverScreen() {
               hitSlop={6}
               accessibilityRole="button"
               accessibilityLabel={t('a11y.send')}
-              style={[styles.sendBtn, { backgroundColor: input.trim() && !sending ? c.accent : c.surfaceAlt }]}
+              style={styles.sendBtn}
             >
-              <Feather name="arrow-up" size={18} color={input.trim() && !sending ? c.onAccent : c.textFaint} />
+              {input.trim() && !sending ? (
+                <LinearGradient
+                  colors={theme.gradient.brand as [string, string]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.sendFill}
+                >
+                  <Feather name="arrow-up" size={18} color={c.onAccent} />
+                </LinearGradient>
+              ) : (
+                <View style={[styles.sendFill, { backgroundColor: c.surfaceAlt }]}>
+                  <Feather name="arrow-up" size={18} color={c.textFaint} />
+                </View>
+              )}
             </Press>
           </View>
           {user?.isAnonymous ? (
@@ -637,14 +668,19 @@ function Bubble({
   let inner: ReactNode
   if (turn.role === 'user') {
     inner = (
-      <View style={[styles.userBubble, { backgroundColor: c.accent }]}>
+      <LinearGradient
+        colors={theme.gradient.brand as [string, string]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.userBubble}
+      >
         {!!turn.imageUri && <Image source={{ uri: turn.imageUri }} style={styles.userImg} resizeMode="cover" />}
         {!!turn.text && (
           <Txt size={15} color={c.onAccent}>
             {turn.text}
           </Txt>
         )}
-      </View>
+      </LinearGradient>
     )
   } else if (turn.pending) {
     inner = (
@@ -655,9 +691,12 @@ function Bubble({
   } else if (turn.error) {
     inner = (
       <View style={[styles.asstCard, { backgroundColor: c.surface, borderColor: c.danger }]}>
-        <Txt size={14} color={c.danger}>
-          {turn.text}
-        </Txt>
+        <View style={styles.errRow}>
+          <Feather name="alert-circle" size={16} color={c.danger} style={styles.errIcon} />
+          <Txt size={14} color={c.danger} style={styles.flex}>
+            {turn.text}
+          </Txt>
+        </View>
       </View>
     )
   } else {
@@ -724,21 +763,50 @@ function PendingRow({ onCancel }: { onCancel?: () => void }) {
   const label =
     elapsed < 4000 ? t('pending.1') : elapsed < 10000 ? t('pending.2') : elapsed < 22000 ? t('pending.3') : t('pending.4')
   return (
-    <View style={styles.pendingWrap}>
-      <View style={styles.pendingRow}>
-        <ActivityIndicator color={c.accent} />
-        <Txt size={13.5} color={c.textMuted} style={styles.flex}>
-          {label}
-        </Txt>
-      </View>
-      {onCancel && elapsed >= 5000 && (
-        <Pressable onPress={onCancel} hitSlop={8} style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}>
-          <Txt size={12.5} weight="semibold" color={c.textFaint}>
-            {t('pending.cancel')}
+    <View>
+      <View style={styles.pendingWrap}>
+        <View style={styles.pendingRow}>
+          <ActivityIndicator color={c.accent} />
+          <Txt size={13.5} color={c.textMuted} style={styles.flex}>
+            {label}
           </Txt>
-        </Pressable>
-      )}
+        </View>
+        {onCancel && elapsed >= 5000 && (
+          <Pressable onPress={onCancel} hitSlop={8} style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}>
+            <Txt size={12.5} weight="semibold" color={c.textFaint}>
+              {t('pending.cancel')}
+            </Txt>
+          </Pressable>
+        )}
+      </View>
+      <SkeletonSteps />
     </View>
+  )
+}
+
+/** Ghost of the incoming solution — pulsing step lines + an answer block. The
+ *  longest moment in the app should look like work happening, not a stall. */
+function SkeletonSteps() {
+  const { theme } = useTheme()
+  const c = theme.colors
+  const pulse = useRef(new Animated.Value(0.35)).current
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, { toValue: 0.85, duration: 650, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 0.35, duration: 650, useNativeDriver: true }),
+      ]),
+    )
+    loop.start()
+    return () => loop.stop()
+  }, [pulse])
+  return (
+    <Animated.View style={[styles.skel, { opacity: pulse }]}>
+      <View style={[styles.skelBar, { width: '86%', backgroundColor: c.surfaceAlt }]} />
+      <View style={[styles.skelBar, { width: '70%', backgroundColor: c.surfaceAlt }]} />
+      <View style={[styles.skelBar, { width: '55%', backgroundColor: c.surfaceAlt }]} />
+      <View style={[styles.skelAnswer, { backgroundColor: c.successSoft }]} />
+    </Animated.View>
   )
 }
 
@@ -768,15 +836,18 @@ const styles = StyleSheet.create({
   newBtn: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 5,
+    // same 38dp rhythm as every other header control — one visual row height
+    height: 38,
     borderWidth: 1,
     borderRadius: 999,
-    paddingVertical: 7,
-    paddingHorizontal: 12,
+    paddingHorizontal: 13,
   },
 
   // hero (empty state)
   heroWrap: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 30, paddingBottom: 20 },
+  wm: { position: 'absolute', top: -6, right: -14, fontSize: 200, lineHeight: 210, opacity: 0.06 },
   kicker: { letterSpacing: 1.4 },
   heroTitle: { fontSize: 34, marginTop: 12, marginBottom: 28, textAlign: 'center' },
   snapCard: {
@@ -792,7 +863,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     elevation: 4,
   },
-  lens: { width: 58, height: 58, borderRadius: 19, alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
+  lensHalo: { width: 76, height: 76, borderRadius: 26, alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
+  lens: { width: 58, height: 58, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
   snapSub: { marginTop: 5, textAlign: 'center' },
   libBtn: { flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 20, padding: 6 },
   orType: { marginTop: 22 },
@@ -824,6 +896,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     elevation: 2,
   },
+  errRow: { flexDirection: 'row', gap: 9, alignItems: 'flex-start' },
+  errIcon: { marginTop: 2 },
   pendingWrap: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   pendingRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 11 },
   asstActions: { flexDirection: 'row', gap: 20, marginTop: 10, paddingTop: 11, borderTopWidth: 1 },
@@ -847,6 +921,12 @@ const styles = StyleSheet.create({
   },
   camBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   input: { flex: 1, fontSize: 15.5, fontFamily: 'Inter_400Regular', maxHeight: 120, paddingVertical: 8, paddingTop: 9 },
-  sendBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  sendBtn: { width: 40, height: 40, borderRadius: 20, overflow: 'hidden' },
+  sendFill: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   disc: { textAlign: 'center', marginTop: 7 },
+
+  // pending skeleton
+  skel: { marginTop: 13, gap: 9 },
+  skelBar: { height: 13, borderRadius: 7 },
+  skelAnswer: { height: 30, width: '46%', borderRadius: 10, marginTop: 4 },
 })

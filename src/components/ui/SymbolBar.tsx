@@ -1,5 +1,6 @@
-import { Pressable, ScrollView, StyleSheet } from 'react-native'
+import { ScrollView, StyleSheet } from 'react-native'
 import { useTheme } from '../../theme/ThemeProvider'
+import Press from './Press'
 import Txt from './Txt'
 
 // Common math symbols. `label` is what the key shows; `insert` is what gets typed
@@ -35,18 +36,16 @@ export default function SymbolBar({ onInsert }: { onInsert: (s: string) => void 
       contentContainerStyle={styles.row}
     >
       {SYMBOLS.map((s) => (
-        <Pressable
+        <Press
           key={s.label}
           onPress={() => onInsert(s.insert)}
-          style={({ pressed }) => [
-            styles.key,
-            { backgroundColor: c.surface, borderColor: c.border, opacity: pressed ? 0.5 : 1 },
-          ]}
+          scaleTo={0.88}
+          style={[styles.key, { backgroundColor: c.surface, borderColor: c.border }]}
         >
           <Txt size={16} color={c.text} style={{ fontFamily: theme.font.serif }}>
             {s.label}
           </Txt>
-        </Pressable>
+        </Press>
       ))}
     </ScrollView>
   )

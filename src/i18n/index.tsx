@@ -17,6 +17,7 @@ const STRINGS = {
   en: {
     // — solver hero
     'hero.kicker': 'READY WHEN YOU ARE',
+    'hero.kicker.named': 'HI, {name} — READY WHEN YOU ARE',
     'hero.title.lead': 'What are we ',
     'hero.title.accent': 'solving?',
     'hero.snap.title': 'Snap a problem',
@@ -115,6 +116,7 @@ const STRINGS = {
   ro: {
     // — solver hero
     'hero.kicker': 'GATA CÂND EȘTI TU',
+    'hero.kicker.named': 'SALUT, {name} — GATA CÂND EȘTI TU',
     'hero.title.lead': 'Ce ',
     'hero.title.accent': 'rezolvăm?',
     'hero.snap.title': 'Fotografiază o problemă',
