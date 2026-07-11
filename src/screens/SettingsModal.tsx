@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ActivityIndicator, Image, Linking, Pressable, StyleSheet, View } from 'react-native'
+import { ActivityIndicator, Image, Linking, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
@@ -7,6 +7,7 @@ import { useI18n } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import Overlay from '../components/ui/Overlay'
+import Press from '../components/ui/Press'
 import { useToast } from '../components/ui/Toast'
 import Txt from '../components/ui/Txt'
 
@@ -50,15 +51,9 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
           <Txt weight="extrabold" size={20} style={{ letterSpacing: -0.3 }}>
             {t('settings.title')}
           </Txt>
-          <Pressable
-            onPress={onClose}
-            hitSlop={8}
-            accessibilityRole="button"
-            accessibilityLabel={t('a11y.close')}
-            style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
-          >
+          <Press onPress={onClose} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('a11y.close')} scaleTo={0.88}>
             <Feather name="x" size={22} color={c.textMuted} />
-          </Pressable>
+          </Press>
         </View>
 
         {/* profile */}
@@ -111,11 +106,7 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
           c={c}
         />
 
-        <Pressable
-          onPress={() => setConfirming(true)}
-          disabled={deleting}
-          style={({ pressed }) => [styles.row, { opacity: pressed || deleting ? 0.6 : 1 }]}
-        >
+        <Press onPress={() => setConfirming(true)} disabled={deleting} style={[styles.row, deleting && styles.dim]}>
           {deleting ? (
             <ActivityIndicator size="small" color={c.danger} />
           ) : (
@@ -124,7 +115,7 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
           <Txt size={16} color={c.danger}>
             {deleting ? t('settings.deleting') : t('settings.delete')}
           </Txt>
-        </Pressable>
+        </Press>
         <Txt size={12} color={c.textFaint} style={{ paddingHorizontal: 14, lineHeight: 17 }}>
           {t('settings.deleteNote')}
         </Txt>
@@ -157,10 +148,10 @@ function Row({
   c: { text: string; textMuted: string }
 }) {
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.row, { opacity: pressed ? 0.6 : 1 }]}>
+    <Press onPress={onPress} scaleTo={0.97} style={styles.row}>
       <Feather name={icon} size={19} color={c.textMuted} />
       <Txt size={16}>{label}</Txt>
-    </Pressable>
+    </Press>
   )
 }
 
@@ -178,4 +169,5 @@ const styles = StyleSheet.create({
   avatar: { width: 44, height: 44, borderRadius: 22 },
   avatarFallback: { alignItems: 'center', justifyContent: 'center' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 13 },
+  dim: { opacity: 0.6 },
 })

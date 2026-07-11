@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { StyleSheet, View } from 'react-native'
+import { useMemo, useRef } from 'react'
+import { Animated, Easing, StyleSheet } from 'react-native'
 import { WebView } from 'react-native-webview'
 import { useTheme } from '../../theme/ThemeProvider'
 import type { Theme } from '../../theme/tokens'
@@ -198,7 +198,9 @@ export default function SolutionView({
   verifying?: boolean
 }) {
   const { theme } = useTheme()
-  const [height, setHeight] = useState(72)
+  // The card GROWS to its content instead of snapping — every height report
+  // from the WebView (first paint, badge arriving, step re-layout) animates.
+  const height = useRef(new Animated.Value(72)).current
   const html = useMemo(
     () => buildHtml(content, theme.colors, labels, verifying),
     // labels change only with the app language — stringify keeps the dep stable
@@ -206,7 +208,7 @@ export default function SolutionView({
   )
 
   return (
-    <View style={{ height }}>
+    <Animated.View style={{ height }}>
       <WebView
         originWhitelist={['*']}
         source={{ html }}
@@ -218,13 +220,20 @@ export default function SolutionView({
           const d = e.nativeEvent.data
           if (d.startsWith('H:')) {
             const n = Number(d.slice(2))
-            if (n > 0) setHeight(Math.ceil(n) + 6)
+            if (n > 0) {
+              Animated.timing(height, {
+                toValue: Math.ceil(n) + 6,
+                duration: 220,
+                easing: Easing.out(Easing.cubic),
+                useNativeDriver: false, // height is a layout prop
+              }).start()
+            }
           } else if (d.startsWith('C:')) {
             onChip?.(d.slice(2))
           }
         }}
       />
-    </View>
+    </Animated.View>
   )
 }
 

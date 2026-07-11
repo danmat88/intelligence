@@ -10,10 +10,13 @@ export default function CrossFade({
   dep,
   children,
   style,
+  scaleFrom = 1,
 }: {
   dep: string | number | boolean
   children: ReactNode
   style?: StyleProp<ViewStyle>
+  /** Incoming content also scales from this value (e.g. 0.985) for a softer morph. */
+  scaleFrom?: number
 }) {
   const opacity = useRef(new Animated.Value(1)).current
   const [content, setContent] = useState<ReactNode>(children)
@@ -33,5 +36,9 @@ export default function CrossFade({
     })
   }, [dep, children, opacity])
 
-  return <Animated.View style={[style, { opacity }]}>{content}</Animated.View>
+  const transform =
+    scaleFrom !== 1
+      ? [{ scale: opacity.interpolate({ inputRange: [0, 1], outputRange: [scaleFrom, 1] }) }]
+      : undefined
+  return <Animated.View style={[style, { opacity }, transform ? { transform } : null]}>{content}</Animated.View>
 }

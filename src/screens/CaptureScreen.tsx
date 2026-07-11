@@ -5,6 +5,7 @@ import {
   BackHandler,
   Easing,
   Image,
+  Keyboard,
   Linking,
   PanResponder,
   StyleSheet,
@@ -62,55 +63,110 @@ export default function CaptureScreen({
   onTypeInstead: () => void
 }) {
   const { height: winH } = useWindowDimensions()
-  const [mounted, setMounted] = useState(!!open)
-  const [shot, setShot] = useState<RawShot | null>(null)
+  const { t } = useI18n()
+  const [mounted, setMounted] = useState(false)
+  // The photo remembers where it came from — "back" and the retake button
+  // must return the user THERE, never to a surface they never visited.
+  const [shot, setShot] = useState<(RawShot & { source: 'camera' | 'library' }) | null>(null)
+  // Which surface the visor shows. Kept stable through the exit animation so
+  // a closing frame can never flash the other stage (the "camera flash after
+  // cancelling the gallery" bug).
+  const [stage, setStage] = useState<'camera' | 'trim'>('camera')
+  // How the visor was ENTERED: from the camera there is a camera to go back
+  // to; from the gallery there is only Home behind the trim stage.
+  const entryRef = useRef<'camera' | 'library'>('camera')
   const slide = useRef(new Animated.Value(0)).current
-  // After a retake, the library entry must NOT re-fire the picker — the user
-  // asked for the camera.
-  const retakenRef = useRef(false)
   const pickingRef = useRef(false)
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
+
+  const slideIn = useCallback(() => {
+    setMounted(true)
+    Animated.timing(slide, { toValue: 1, duration: 300, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start()
+  }, [slide])
 
   useEffect(() => {
-    if (open) {
-      retakenRef.current = false
+    if (open === 'camera') {
+      Keyboard.dismiss() // the visor is fullscreen — never let the keyboard sit over it
+      entryRef.current = 'camera'
       setShot(null)
-      setMounted(true)
-      Animated.timing(slide, { toValue: 1, duration: 300, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start()
+      setStage('camera')
+      slideIn()
+    } else if (open === 'library') {
+      // No visor yet: the system picker opens over Home. The visor only
+      // appears if a photo actually comes back — sliding straight into the
+      // trim stage. Cancel = nothing ever covered the screen.
+      Keyboard.dismiss()
+      entryRef.current = 'library'
+      if (!pickingRef.current) {
+        pickingRef.current = true
+        pickFromLibrary()
+          .then((s) => {
+            if (s) {
+              setShot({ ...s, source: 'library' })
+              setStage('trim')
+              slideIn()
+            } else {
+              onCloseRef.current()
+            }
+          })
+          .catch(() => onCloseRef.current())
+          .finally(() => {
+            pickingRef.current = false
+          })
+      }
     } else {
+      // Slide out with the CURRENT stage frozen; reset only once hidden.
       Animated.timing(slide, { toValue: 0, duration: 230, easing: Easing.in(Easing.cubic), useNativeDriver: true }).start(() => {
         setMounted(false)
         setShot(null)
+        setStage('camera')
       })
     }
-  }, [open, slide])
+  }, [open, slide, slideIn])
 
-  // Library entry: fire the picker immediately; cancel = leave the flow.
-  useEffect(() => {
-    if (open !== 'library' || shot || retakenRef.current || pickingRef.current) return
-    pickingRef.current = true
-    pickFromLibrary()
-      .then((s) => (s ? setShot(s) : onClose()))
-      .catch(() => onClose())
-      .finally(() => {
-        pickingRef.current = false
-      })
-  }, [open, shot, onClose])
+  const showTrim = useCallback((s: RawShot, source: 'camera' | 'library') => {
+    setShot({ ...s, source })
+    setStage('trim')
+  }, [])
 
   const retake = useCallback(() => {
-    retakenRef.current = true
+    setStage('camera')
     setShot(null)
   }, [])
 
-  // Hardware back: trim → camera, camera → home. Never exits the app.
+  // "Choose another": re-open the picker over the trim stage; cancelling it
+  // keeps the current photo — nothing is lost, nothing flashes.
+  const repick = useCallback(async () => {
+    if (pickingRef.current) return
+    pickingRef.current = true
+    try {
+      const s = await pickFromLibrary()
+      if (s) setShot({ ...s, source: 'library' })
+    } catch {
+      // picker unavailable — keep the current photo
+    } finally {
+      pickingRef.current = false
+    }
+  }, [])
+
+  // Back from the trim stage goes where the user actually came from:
+  // camera entry → the camera; gallery entry → Home (there is no camera behind).
+  const backFromTrim = useCallback(() => {
+    if (entryRef.current === 'camera') retake()
+    else onCloseRef.current()
+  }, [retake])
+
+  // Hardware back mirrors the visible back button. Never exits the app.
   useEffect(() => {
-    if (!open) return
+    if (!open || !mounted) return
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (shot) retake()
-      else onClose()
+      if (stage === 'trim') backFromTrim()
+      else onCloseRef.current()
       return true
     })
     return () => sub.remove()
-  }, [open, shot, retake, onClose])
+  }, [open, mounted, stage, backFromTrim])
 
   if (!mounted) return null
 
@@ -123,19 +179,20 @@ export default function CaptureScreen({
       ]}
     >
       <StatusBar style="light" />
-      <CrossFade dep={shot ? 'trim' : 'camera'} style={styles.flex}>
-        {shot ? (
-          <TrimStage shot={shot} onRetake={retake} onUsePhoto={onUsePhoto} />
-        ) : open === 'library' && !retakenRef.current ? (
-          // The system picker is on top — just hold the dark ground under it.
-          <View style={[styles.flex, styles.center]}>
-            <ActivityIndicator color={V.accent} />
-          </View>
+      <CrossFade dep={stage} style={styles.flex} scaleFrom={0.985}>
+        {stage === 'trim' && shot ? (
+          <TrimStage
+            shot={shot}
+            backIcon={entryRef.current === 'camera' ? 'arrow-left' : 'x'}
+            onBack={backFromTrim}
+            ghostLabel={shot.source === 'camera' ? t('crop.retake') : t('crop.chooseAnother')}
+            onGhost={shot.source === 'camera' ? retake : repick}
+            onUsePhoto={onUsePhoto}
+          />
         ) : (
           <CameraStage
-            active={!!open && !shot}
-            onShot={setShot}
-            onPick={(s) => setShot(s)}
+            onShot={(s) => showTrim(s, 'camera')}
+            onPick={(s) => showTrim(s, 'library')}
             onClose={onClose}
             onTypeInstead={onTypeInstead}
           />
@@ -148,13 +205,11 @@ export default function CaptureScreen({
 /* ------------------------------ camera stage ------------------------------ */
 
 function CameraStage({
-  active,
   onShot,
   onPick,
   onClose,
   onTypeInstead,
 }: {
-  active: boolean
   onShot: (s: RawShot) => void
   onPick: (s: RawShot) => void
   onClose: () => void
@@ -170,15 +225,15 @@ function CameraStage({
   const [busy, setBusy] = useState(false)
   const shutter = useRef(new Animated.Value(0)).current
 
-  // Ask once, the moment the visor opens — never in a loop. If it's refused,
-  // the panel below offers a manual retry (or Settings once it's "never again").
+  // Ask once, the moment the camera stage mounts — never in a loop. If it's
+  // refused, the panel below offers a manual retry (or Settings on "never").
   const askedRef = useRef(false)
   useEffect(() => {
-    if (active && perm && !perm.granted && perm.canAskAgain && !askedRef.current) {
+    if (perm && !perm.granted && perm.canAskAgain && !askedRef.current) {
       askedRef.current = true
       requestPerm()
     }
-  }, [active, perm, requestPerm])
+  }, [perm, requestPerm])
 
   const snap = useCallback(async () => {
     if (!ready || busy || !cam.current) return
@@ -318,11 +373,19 @@ function CameraStage({
 
 function TrimStage({
   shot,
-  onRetake,
+  backIcon,
+  onBack,
+  ghostLabel,
+  onGhost,
   onUsePhoto,
 }: {
   shot: RawShot
-  onRetake: () => void
+  /** 'arrow-left' when a camera sits behind this stage, 'x' when Home does. */
+  backIcon: 'arrow-left' | 'x'
+  onBack: () => void
+  /** "Refă" (retake) for camera shots, "Alege alta" (re-pick) for gallery picks. */
+  ghostLabel: string
+  onGhost: () => void
   onUsePhoto: (img: CapturedImage) => void
 }) {
   const insets = useSafeAreaInsets()
@@ -416,8 +479,14 @@ function TrimStage({
   return (
     <View style={styles.flex}>
       <View style={[styles.topBar, { paddingTop: insets.top + 6 }]}>
-        <Press onPress={onRetake} hitSlop={10} accessibilityRole="button" accessibilityLabel={t('crop.retake')} style={styles.chromeBtn}>
-          <Feather name="arrow-left" size={19} color={V.text} />
+        <Press
+          onPress={onBack}
+          hitSlop={10}
+          accessibilityRole="button"
+          accessibilityLabel={backIcon === 'x' ? t('a11y.close') : t('crop.retake')}
+          style={styles.chromeBtn}
+        >
+          <Feather name={backIcon} size={19} color={V.text} />
         </Press>
         <Txt size={11} color={V.soft} style={[styles.chromeTitle, { fontFamily: theme.font.mono }]}>
           {t('crop.title').toUpperCase()}
@@ -457,9 +526,9 @@ function TrimStage({
       </View>
 
       <View style={[styles.trimBar, { paddingBottom: insets.bottom + 14 }]}>
-        <Press onPress={onRetake} disabled={busy} containerStyle={styles.flexOne} style={[styles.trimBtn, styles.ghostBtn]}>
+        <Press onPress={onGhost} disabled={busy} containerStyle={styles.flexOne} style={[styles.trimBtn, styles.ghostBtn]}>
           <Txt size={14.5} weight="semibold" color={V.soft}>
-            {t('crop.retake')}
+            {ghostLabel}
           </Txt>
         </Press>
         <Press onPress={confirm} disabled={busy || !box} containerStyle={styles.flexTwo} style={[styles.trimBtn, styles.goBtn]}>

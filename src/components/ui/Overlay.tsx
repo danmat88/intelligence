@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Animated, BackHandler, Pressable, StyleSheet, View } from 'react-native'
+import { Animated, BackHandler, Keyboard, Pressable, StyleSheet, View } from 'react-native'
 
 /**
  * The app's own modal engine - no react-native Modal, no separate Android
@@ -24,6 +24,10 @@ export default function Overlay({
   const p = useRef(new Animated.Value(0)).current
 
   useEffect(() => {
+    // Keyboard rule: an overlay is a context switch — the keyboard never
+    // stays up across one, in either direction (covers "open settings with
+    // the keyboard up" and "keyboard lingering after the sheet closes").
+    Keyboard.dismiss()
     if (open) {
       setMounted(true)
       Animated.spring(p, { toValue: 1, useNativeDriver: true, damping: 20, stiffness: 260, mass: 0.9 }).start()

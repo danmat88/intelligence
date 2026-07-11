@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { FlatList, Pressable, ScrollView, StyleSheet, TextInput, useWindowDimensions, View } from 'react-native'
+import { FlatList, Keyboard, Pressable, ScrollView, StyleSheet, TextInput, useWindowDimensions, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
 import { useI18n } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import Overlay from '../components/ui/Overlay'
+import Press from '../components/ui/Press'
 import Txt from '../components/ui/Txt'
 import { subscribeProblems, removeProblem, type Problem } from '../solve/store'
 
@@ -19,6 +20,20 @@ function ago(ms: number, justNow: string, daySuffix: string): string {
   const d = h / 24
   if (d < 7) return `${Math.floor(d)}${daySuffix}`
   return new Date(ms).toLocaleDateString()
+}
+
+/** Live keyboard height, so the sheet can rise above it (Android events). */
+function useKeyboardHeight(): number {
+  const [h, setH] = useState(0)
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', (e) => setH(e.endCoordinates.height))
+    const hide = Keyboard.addListener('keyboardDidHide', () => setH(0))
+    return () => {
+      show.remove()
+      hide.remove()
+    }
+  }, [])
+  return h
 }
 
 /** Consecutive days (ending today or yesterday) with at least one solve. */
@@ -49,6 +64,7 @@ export default function HistorySheet({
   const c = theme.colors
   const insets = useSafeAreaInsets()
   const { height: winH } = useWindowDimensions()
+  const kb = useKeyboardHeight()
   const { user } = useAuth()
   const { t, lang } = useI18n()
   const [items, setItems] = useState<Problem[]>([])
@@ -83,8 +99,16 @@ export default function HistorySheet({
         style={[
           styles.sheet,
           // pixel maxHeight — a percentage here resolves against an
-          // undefined-height absolute parent and un-anchors the sheet
-          { backgroundColor: c.bgElevated, borderColor: c.border, paddingBottom: insets.bottom + 12, maxHeight: winH * 0.85 },
+          // undefined-height absolute parent and un-anchors the sheet.
+          // While the search keyboard is up, the whole sheet rises above it
+          // and shrinks to the space that remains — the list stays reachable.
+          {
+            backgroundColor: c.bgElevated,
+            borderColor: c.border,
+            paddingBottom: insets.bottom + 12,
+            marginBottom: Math.max(0, kb - insets.bottom),
+            maxHeight: Math.min(winH * 0.85, winH - kb - insets.top - 16),
+          },
         ]}
       >
         <View style={styles.grab} />
@@ -114,6 +138,7 @@ export default function HistorySheet({
                 placeholderTextColor={c.textFaint}
                 value={query}
                 onChangeText={setQuery}
+                returnKeyType="search"
                 maxFontSizeMultiplier={1.2}
               />
               {!!query && (
@@ -153,6 +178,7 @@ export default function HistorySheet({
               keyExtractor={(p) => p.id}
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
               contentContainerStyle={styles.listPad}
               ListEmptyComponent={
                 <Txt size={13} color={c.textFaint} style={styles.noMatch}>
@@ -160,15 +186,13 @@ export default function HistorySheet({
                 </Txt>
               }
               renderItem={({ item }) => (
-                <Pressable
+                <Press
                   onPress={() => {
                     onSelect(item)
                     onClose()
                   }}
-                  style={({ pressed }) => [
-                    styles.card,
-                    { backgroundColor: c.surface, borderColor: c.border, opacity: pressed ? 0.7 : 1 },
-                  ]}
+                  scaleTo={0.975}
+                  style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }]}
                 >
                   <View style={styles.flex}>
                     <Txt weight="semibold" size={14.5} numberOfLines={1} color={c.text}>
@@ -190,11 +214,11 @@ export default function HistorySheet({
                     hitSlop={10}
                     accessibilityRole="button"
                     accessibilityLabel={t('a11y.delete')}
-                    style={styles.del}
+                    style={({ pressed }) => [styles.del, { opacity: pressed ? 0.5 : 1 }]}
                   >
                     <Feather name="trash-2" size={16} color={c.textFaint} />
                   </Pressable>
-                </Pressable>
+                </Press>
               )}
             />
           </>
@@ -218,14 +242,13 @@ function TopicChip({
   onPress: () => void
 }) {
   return (
-    <Pressable
+    <Press
       onPress={onPress}
-      style={({ pressed }) => [
+      style={[
         styles.chip,
         {
           backgroundColor: active ? c.accent : c.surface,
           borderColor: active ? c.accent : c.border,
-          opacity: pressed ? 0.7 : 1,
         },
       ]}
     >
@@ -233,7 +256,7 @@ function TopicChip({
       <Txt size={12} weight="semibold" color={active ? c.onAccent : c.textMuted} style={styles.chipTxt}>
         {label}
       </Txt>
-    </Pressable>
+    </Press>
   )
 }
 

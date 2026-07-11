@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
-import { ActivityIndicator, Animated, Image, Pressable, ScrollView, Share, StyleSheet, TextInput, View } from 'react-native'
+import { ActivityIndicator, Animated, Image, Keyboard, Pressable, ScrollView, Share, StyleSheet, TextInput, View } from 'react-native'
 import * as Clipboard from 'expo-clipboard'
 import * as Haptics from 'expo-haptics'
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
@@ -320,6 +320,9 @@ export default function SolverScreen() {
     (raw: string) => {
       const text = raw.trim()
       if (!text || sending) return
+      // Sending = done typing: drop the keyboard so the solution gets the
+      // whole screen (the pending card and the answer land in full view).
+      Keyboard.dismiss()
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
       setInput('')
       const isFirst = threadRef.current.length === 0
@@ -334,12 +337,14 @@ export default function SolverScreen() {
   )
 
   const reset = useCallback(() => {
+    Keyboard.dismiss() // fresh problem, fresh screen — no keyboard left over the hero
     problemIdRef.current = null
     commit([])
   }, [commit])
 
   const loadProblem = useCallback(
     (p: Problem) => {
+      Keyboard.dismiss()
       problemIdRef.current = p.id
       commit(p.turns.map((t) => ({ id: uid(), role: t.role, text: t.text })))
       scrollDown()
@@ -350,6 +355,8 @@ export default function SolverScreen() {
   const handleChip = useCallback(
     (id: string) => {
       if (sending) return
+      // Chip taps start a new turn — same rule as sending: keyboard down.
+      Keyboard.dismiss()
       if (id === 'mistake') {
         // The saved problem is wrong input — remove it so history stays clean.
         if (user && problemIdRef.current) removeProblem(user.id, problemIdRef.current).catch(() => {})
@@ -479,11 +486,14 @@ export default function SolverScreen() {
 
       <KeyboardAvoidingView style={styles.flex} behavior="padding" keyboardVerticalOffset={-insets.bottom}>
         <View style={styles.column}>
+        {/* Hero ↔ thread swaps cross-fade — screens never hard-cut. */}
+        <CrossFade dep={empty ? 'hero' : 'thread'} style={styles.flex}>
         {empty ? (
           <ScrollView
             contentContainerStyle={styles.heroWrap}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
           >
             <Txt size={11} color={c.textFaint} style={[styles.kicker, { fontFamily: theme.font.mono }]}>
               {t('hero.kicker')}
@@ -536,6 +546,7 @@ export default function SolverScreen() {
             contentContainerStyle={styles.thread}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
             onContentSizeChange={scrollDown}
           >
             {thread.map((x) => (
@@ -543,6 +554,7 @@ export default function SolverScreen() {
             ))}
           </ScrollView>
         )}
+        </CrossFade>
 
         <View style={[styles.composerWrap, { paddingBottom: insets.bottom + 8 }]}>
           <SymbolBar onInsert={(s) => setInput((v) => v + s)} />

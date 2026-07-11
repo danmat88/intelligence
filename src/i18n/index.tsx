@@ -109,6 +109,7 @@ const STRINGS = {
     'capture.typeInstead': 'Type it instead',
     'crop.title': 'Select the problem',
     'crop.retake': 'Retake',
+    'crop.chooseAnother': 'Choose another',
     'crop.solve': 'Solve',
   },
   ro: {
@@ -206,6 +207,7 @@ const STRINGS = {
     'capture.typeInstead': 'Scrie în loc',
     'crop.title': 'Alege problema',
     'crop.retake': 'Refă',
+    'crop.chooseAnother': 'Alege alta',
     'crop.solve': 'Rezolvă',
   },
 } as const
