@@ -97,13 +97,36 @@ export default function HistorySheet({
   const { user } = useAuth()
   const { t, lang } = useI18n()
   const [items, setItems] = useState<Problem[]>([])
+  const [loaded, setLoaded] = useState(false)
+  const [settled, setSettled] = useState(false)
   const [query, setQuery] = useState('')
   const [topicFilter, setTopicFilter] = useState<string | null>(null)
 
+  // Sequenced flow: let the sheet LAND first (500ms slide), only then attach
+  // the Firestore listener and mount the list — heavy work never rides along
+  // with the entrance animation. Items stay cached, so reopening is instant.
   useEffect(() => {
-    if (!open || !user) return
-    return subscribeProblems(user.id, setItems)
-  }, [open, user])
+    if (!open) {
+      setSettled(false)
+      return
+    }
+    const id = setTimeout(() => setSettled(true), 540)
+    return () => clearTimeout(id)
+  }, [open])
+
+  useEffect(() => {
+    if (!open || !settled || !user) return
+    return subscribeProblems(user.id, (xs) => {
+      setItems(xs)
+      setLoaded(true)
+    })
+  }, [open, settled, user])
+
+  // Account switch (sign-out → fresh guest) — never show another uid's cache.
+  useEffect(() => {
+    setItems([])
+    setLoaded(false)
+  }, [user?.id])
 
   const streak = useMemo(() => computeStreak(items), [items])
   const topics = useMemo(() => {
@@ -157,7 +180,21 @@ export default function HistorySheet({
           </Press>
         </View>
 
-        {items.length === 0 ? (
+        {!loaded ? (
+          // Placeholder rows while the sheet settles and the first snapshot
+          // arrives — the list never mounts mid-slide.
+          <View style={styles.skelWrap}>
+            {[0, 1, 2, 3].map((i) => (
+              <View key={i} style={[styles.skelCard, { backgroundColor: c.surface, borderColor: c.border }]}>
+                <View style={[styles.skelIcon, { backgroundColor: c.surfaceAlt }]} />
+                <View style={styles.flex}>
+                  <View style={[styles.skelBar, { backgroundColor: c.surfaceAlt, width: '72%' }]} />
+                  <View style={[styles.skelBar, styles.skelBarSm, { backgroundColor: c.surfaceAlt, width: '38%' }]} />
+                </View>
+              </View>
+            ))}
+          </View>
+        ) : items.length === 0 ? (
           <View style={styles.empty}>
             <View style={[styles.emptyBadge, { backgroundColor: c.accentSoft }]}>
               <Feather name="inbox" size={24} color={c.accent} />
@@ -399,6 +436,11 @@ const styles = StyleSheet.create({
   sectionLabel: { letterSpacing: 1.1, marginBottom: 8, marginTop: 4, paddingHorizontal: 4 },
   noMatch: { textAlign: 'center', paddingVertical: 24 },
   card: { flexDirection: 'row', alignItems: 'center', gap: 11, borderWidth: 1, borderRadius: 16, padding: 13, marginBottom: 9 },
+  skelWrap: { paddingBottom: 8 },
+  skelCard: { flexDirection: 'row', alignItems: 'center', gap: 11, borderWidth: 1, borderRadius: 16, padding: 13, marginBottom: 9 },
+  skelIcon: { width: 36, height: 36, borderRadius: 12 },
+  skelBar: { height: 13, borderRadius: 7 },
+  skelBarSm: { height: 10, marginTop: 8 },
   cardIcon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   flex: { flex: 1 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },

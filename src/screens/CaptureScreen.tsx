@@ -9,9 +9,15 @@ import {
   Linking,
   PanResponder,
   StyleSheet,
-  useWindowDimensions,
   View,
 } from 'react-native'
+import RAnimated, {
+  Easing as REasing,
+  SlideInDown,
+  SlideOutDown,
+  withTiming,
+  type EntryAnimationsValues,
+} from 'react-native-reanimated'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import * as Haptics from 'expo-haptics'
 import { StatusBar } from 'expo-status-bar'
@@ -50,6 +56,18 @@ type Rect = { x: number; y: number; w: number; h: number; s: number }
 
 const MIN_BOX = 64 // dp — smallest the trim box can be pinched to
 
+/** House curve — decisive start, long soft landing. */
+const VISOR_EASE = REasing.bezier(0.22, 1, 0.36, 1)
+
+/** Guides rise onto the live feed the moment the camera wakes (UI thread). */
+function riseEnter(v: EntryAnimationsValues) {
+  'worklet'
+  return {
+    initialValues: { originY: v.targetOriginY + 26 },
+    animations: { originY: withTiming(v.targetOriginY, { duration: 480, easing: VISOR_EASE }) },
+  }
+}
+
 export default function CaptureScreen({
   open,
   onClose,
@@ -62,9 +80,13 @@ export default function CaptureScreen({
   onUsePhoto: (img: CapturedImage) => void
   onTypeInstead: () => void
 }) {
-  const { height: winH } = useWindowDimensions()
   const { t } = useI18n()
   const [mounted, setMounted] = useState(false)
+  // The camera hardware NEVER rides an animation: the dark visor slides up
+  // empty first (pure motion), the CameraView mounts only after it LANDS —
+  // like a lens opening. On close it powers down first, then the empty visor
+  // slides away. This is what killed the enter/exit freeze.
+  const [camLive, setCamLive] = useState(false)
   // The photo remembers where it came from — "back" and the retake button
   // must return the user THERE, never to a surface they never visited.
   const [shot, setShot] = useState<(RawShot & { source: 'camera' | 'library' }) | null>(null)
@@ -75,15 +97,9 @@ export default function CaptureScreen({
   // How the visor was ENTERED: from the camera there is a camera to go back
   // to; from the gallery there is only Home behind the trim stage.
   const entryRef = useRef<'camera' | 'library'>('camera')
-  const slide = useRef(new Animated.Value(0)).current
   const pickingRef = useRef(false)
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
-
-  const slideIn = useCallback(() => {
-    setMounted(true)
-    Animated.timing(slide, { toValue: 1, duration: 460, easing: Easing.bezier(0.22, 1, 0.36, 1), useNativeDriver: true }).start()
-  }, [slide])
 
   useEffect(() => {
     if (open === 'camera') {
@@ -91,7 +107,10 @@ export default function CaptureScreen({
       entryRef.current = 'camera'
       setShot(null)
       setStage('camera')
-      slideIn()
+      setMounted(true)
+      // Lens-opening flow: the visor lands (460ms), THEN the camera wakes.
+      const id = setTimeout(() => setCamLive(true), 540)
+      return () => clearTimeout(id)
     } else if (open === 'library') {
       // No visor yet: the system picker opens over Home. The visor only
       // appears if a photo actually comes back — sliding straight into the
@@ -105,7 +124,7 @@ export default function CaptureScreen({
             if (s) {
               setShot({ ...s, source: 'library' })
               setStage('trim')
-              slideIn()
+              setMounted(true)
             } else {
               onCloseRef.current()
             }
@@ -116,14 +135,18 @@ export default function CaptureScreen({
           })
       }
     } else {
-      // Slide out with the CURRENT stage frozen; reset only once hidden.
-      Animated.timing(slide, { toValue: 0, duration: 340, easing: Easing.in(Easing.cubic), useNativeDriver: true }).start(() => {
+      // Power the camera down FIRST, give teardown a beat, then let the
+      // empty visor slide away (the exiting animation freezes the subtree,
+      // so nothing can flash or re-render mid-flight).
+      setCamLive(false)
+      const id = setTimeout(() => {
         setMounted(false)
         setShot(null)
         setStage('camera')
-      })
+      }, 80)
+      return () => clearTimeout(id)
     }
-  }, [open, slide, slideIn])
+  }, [open])
 
   const showTrim = useCallback((s: RawShot, source: 'camera' | 'library') => {
     setShot({ ...s, source })
@@ -171,12 +194,10 @@ export default function CaptureScreen({
   if (!mounted) return null
 
   return (
-    <Animated.View
-      style={[
-        StyleSheet.absoluteFill,
-        styles.host,
-        { transform: [{ translateY: slide.interpolate({ inputRange: [0, 1], outputRange: [winH, 0] }) }] },
-      ]}
+    <RAnimated.View
+      entering={SlideInDown.duration(460).easing(VISOR_EASE)}
+      exiting={SlideOutDown.duration(380).easing(REasing.in(REasing.cubic))}
+      style={[StyleSheet.absoluteFill, styles.host]}
     >
       <StatusBar style="light" />
       <CrossFade dep={stage} style={styles.flex} axis="x">
@@ -191,6 +212,7 @@ export default function CaptureScreen({
           />
         ) : (
           <CameraStage
+            live={camLive}
             onShot={(s) => showTrim(s, 'camera')}
             onPick={(s) => showTrim(s, 'library')}
             onClose={onClose}
@@ -198,18 +220,21 @@ export default function CaptureScreen({
           />
         )}
       </CrossFade>
-    </Animated.View>
+    </RAnimated.View>
   )
 }
 
 /* ------------------------------ camera stage ------------------------------ */
 
 function CameraStage({
+  live,
   onShot,
   onPick,
   onClose,
   onTypeInstead,
 }: {
+  /** False while the visor is still travelling — the camera mounts on true. */
+  live: boolean
   onShot: (s: RawShot) => void
   onPick: (s: RawShot) => void
   onClose: () => void
@@ -225,15 +250,16 @@ function CameraStage({
   const [busy, setBusy] = useState(false)
   const shutter = useRef(new Animated.Value(0)).current
 
-  // Ask once, the moment the camera stage mounts — never in a loop. If it's
-  // refused, the panel below offers a manual retry (or Settings on "never").
+  // Ask once, after the visor has landed (the system dialog is heavy — it
+  // must never pop mid-slide). If it's refused, the panel below offers a
+  // manual retry (or Settings on "never").
   const askedRef = useRef(false)
   useEffect(() => {
-    if (perm && !perm.granted && perm.canAskAgain && !askedRef.current) {
+    if (live && perm && !perm.granted && perm.canAskAgain && !askedRef.current) {
       askedRef.current = true
       requestPerm()
     }
-  }, [perm, requestPerm])
+  }, [live, perm, requestPerm])
 
   const snap = useCallback(async () => {
     if (!ready || busy || !cam.current) return
@@ -289,7 +315,7 @@ function CameraStage({
       {/* viewfinder — contained with rounded corners, so it reads as Rezolvo's
           own surface rather than a fullscreen system camera */}
       <View style={styles.viewport}>
-        {perm?.granted ? (
+        {live && perm?.granted ? (
           <CameraView
             ref={cam}
             style={StyleSheet.absoluteFill}
@@ -298,7 +324,7 @@ function CameraStage({
             enableTorch={torch}
             onCameraReady={() => setReady(true)}
           />
-        ) : perm ? (
+        ) : live && perm ? (
           <View style={[styles.flex, styles.center, styles.deniedPad]}>
             <Feather name="camera-off" size={30} color={V.faint} />
             <Txt size={14} color={V.soft} style={styles.deniedTxt}>
@@ -314,28 +340,29 @@ function CameraStage({
             </Press>
           </View>
         ) : (
+          // Dark stage while the visor travels / the camera warms up.
           <View style={[styles.flex, styles.center]}>
             <ActivityIndicator color={V.accent} />
           </View>
         )}
 
-        {perm?.granted && (
-          <>
-            {/* guide frame */}
-            <View pointerEvents="none" style={styles.frame}>
+        {ready && (
+          // The guides rise onto the live feed the moment the camera wakes.
+          <RAnimated.View pointerEvents="none" entering={riseEnter} style={StyleSheet.absoluteFill}>
+            <View style={styles.frame}>
               <View style={[styles.corner, styles.cTL]} />
               <View style={[styles.corner, styles.cTR]} />
               <View style={[styles.corner, styles.cBL]} />
               <View style={[styles.corner, styles.cBR]} />
             </View>
-            <View pointerEvents="none" style={styles.hintWrap}>
+            <View style={styles.hintWrap}>
               <View style={styles.hintPill}>
                 <Txt size={12.5} weight="semibold" color={V.soft}>
                   {t('capture.hint')}
                 </Txt>
               </View>
             </View>
-          </>
+          </RAnimated.View>
         )}
       </View>
 

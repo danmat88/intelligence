@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
-import { ActivityIndicator, Animated, Easing, Image, Keyboard, Pressable, ScrollView, Share, StyleSheet, TextInput, View } from 'react-native'
+import { ActivityIndicator, Animated, Image, Keyboard, Pressable, ScrollView, Share, StyleSheet, TextInput, View } from 'react-native'
+import ReAnimated, { Easing as REasing, withTiming, type EntryAnimationsValues } from 'react-native-reanimated'
 import { LinearGradient } from 'expo-linear-gradient'
 import * as Clipboard from 'expo-clipboard'
 import * as Haptics from 'expo-haptics'
@@ -346,9 +347,13 @@ export default function SolverScreen() {
   const loadProblem = useCallback(
     (p: Problem) => {
       Keyboard.dismiss()
-      problemIdRef.current = p.id
-      commit(p.turns.map((t) => ({ id: uid(), role: t.role, text: t.text })))
-      scrollDown()
+      // Sequenced flow: the sheet slides out FIRST, the thread (with its
+      // WebViews) mounts after — never two heavy moments at once.
+      setTimeout(() => {
+        problemIdRef.current = p.id
+        commit(p.turns.map((t) => ({ id: uid(), role: t.role, text: t.text })))
+        scrollDown()
+      }, 380)
     },
     [commit, scrollDown],
   )
@@ -665,14 +670,6 @@ function Bubble({
   const { theme } = useTheme()
   const { t } = useI18n()
   const c = theme.colors
-  const anim = useRef(new Animated.Value(0)).current
-  useEffect(() => {
-    Animated.timing(anim, { toValue: 1, duration: 480, easing: Easing.bezier(0.22, 1, 0.36, 1), useNativeDriver: true }).start()
-  }, [anim])
-  // Pure slide up from behind the composer (the thread clips it) — no fade.
-  const wrap = {
-    transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [56, 0] }) }],
-  }
 
   let inner: ReactNode
   if (turn.role === 'user') {
@@ -753,7 +750,17 @@ function Bubble({
       </View>
     )
   }
-  return <Animated.View style={wrap}>{inner}</Animated.View>
+  // UI-thread entrance: the turn rises from behind the composer, fully opaque.
+  return <ReAnimated.View entering={bubbleEnter}>{inner}</ReAnimated.View>
+}
+
+const BUBBLE_EASE = REasing.bezier(0.22, 1, 0.36, 1)
+function bubbleEnter(v: EntryAnimationsValues) {
+  'worklet'
+  return {
+    initialValues: { originY: v.targetOriginY + 56 },
+    animations: { originY: withTiming(v.targetOriginY, { duration: 480, easing: BUBBLE_EASE }) },
+  }
 }
 
 // Elapsed-aware status while the model works: honest stages early on, and past
