@@ -13,7 +13,8 @@ import Txt from '../components/ui/Txt'
 import SolutionView from '../components/ui/SolutionView'
 import SymbolBar from '../components/ui/SymbolBar'
 import { captureFromCamera, captureFromLibrary } from '../solve/capture'
-import { solveImage, solveProblem, followUp } from '../solve/solve'
+import { solveImage, solveProblem, followUp, solveDeep, verifyAnswer } from '../solve/solve'
+import { getSolveJson, isStructuredSolution, withJsonFlags } from '../solve/verdict'
 import type { ChatTurn } from '../ai/types'
 import { useI18n, type StringKey } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
@@ -140,6 +141,8 @@ export default function SolverScreen() {
   const [sending, setSending] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
+  // Turn-ids whose answers are being machine-checked right now (badge pending).
+  const [verifyingMap, setVerifyingMap] = useState<Record<string, boolean>>({})
   const scrollRef = useRef<ScrollView>(null)
   const threadRef = useRef<Turn[]>([])
   const problemIdRef = useRef<string | null>(null)
@@ -209,8 +212,55 @@ export default function SolverScreen() {
     [user, t],
   )
 
+  // The correctness engine: machine-check the shown answer in the background;
+  // on a failed check, silently re-solve with the deep model and swap in the
+  // corrected solution. The "✓" badge only ever comes from a real code check.
+  const verifyFlow = useCallback(
+    async (id: string, problemText: string) => {
+      setVerifyingMap((m) => ({ ...m, [id]: true }))
+      const applyText = (text: string) => {
+        commit(threadRef.current.map((x) => (x.id === id ? { ...x, text } : x)))
+      }
+      try {
+        const turn = threadRef.current.find((x) => x.id === id)
+        if (!turn) return
+        const v = await verifyAnswer(problemText, turn.text)
+        if (v === 'correct') {
+          applyText(withJsonFlags(turn.text, { _verified: true }))
+        } else if (v === 'incorrect') {
+          const j = getSolveJson(turn.text)
+          const prob = String(j?.problem ?? '').trim() || problemText.trim()
+          if (j?._model !== 'deep' && prob) {
+            const deepRaw = await solveDeep(prob, langName)
+            const v2 = isStructuredSolution(deepRaw) ? await verifyAnswer(prob, deepRaw) : 'unverifiable'
+            applyText(
+              v2 === 'correct'
+                ? withJsonFlags(deepRaw, { _verified: true })
+                : v2 === 'incorrect'
+                  ? withJsonFlags(deepRaw, { _verified: false })
+                  : deepRaw,
+            )
+          } else {
+            applyText(withJsonFlags(turn.text, { _verified: false }))
+          }
+        }
+        // 'unverifiable' → no badge, no warning; the solution stands as-is.
+        persist(threadRef.current)
+      } catch {
+        // verification is best-effort — never disturb the shown solution
+      } finally {
+        setVerifyingMap((m) => {
+          const n = { ...m }
+          delete n[id]
+          return n
+        })
+      }
+    },
+    [commit, persist, langName],
+  )
+
   const run = useCallback(
-    async (userTurn: Turn, solver: (signal: AbortSignal) => Promise<string>) => {
+    async (userTurn: Turn, solver: (signal: AbortSignal) => Promise<string>, verifyProblem?: string) => {
       const asstId = uid()
       const base = threadRef.current
       const ctrl = new AbortController()
@@ -224,6 +274,8 @@ export default function SolverScreen() {
         const done: Turn[] = [...base, userTurn, { id: asstId, role: 'assistant', text }]
         commit(done)
         persist(done)
+        // First solves get the background correctness check (not follow-ups).
+        if (verifyProblem !== undefined && isStructuredSolution(text)) void verifyFlow(asstId, verifyProblem)
       } catch (e) {
         if (ctrl.signal.aborted) {
           // User cancelled — quietly drop the attempt, back to where they were.
@@ -237,7 +289,7 @@ export default function SolverScreen() {
         scrollDown()
       }
     },
-    [commit, persist, scrollDown, t],
+    [commit, persist, scrollDown, t, verifyFlow],
   )
 
   const cancelRun = useCallback(() => {
@@ -263,8 +315,10 @@ export default function SolverScreen() {
       setInput('')
       const isFirst = threadRef.current.length === 0
       const turns: ChatTurn[] = [...priorTurns(), { role: 'user', text }]
-      run({ id: uid(), role: 'user', text }, (sig) =>
-        isFirst ? solveProblem(text, langName, sig) : followUp(turns, langName, sig),
+      run(
+        { id: uid(), role: 'user', text },
+        (sig) => (isFirst ? solveProblem(text, langName, sig) : followUp(turns, langName, sig)),
+        isFirst ? text : undefined, // machine-check first solves only
       )
     },
     [sending, run, priorTurns, langName],
@@ -324,7 +378,8 @@ export default function SolverScreen() {
         // A photo is always a NEW problem — one thread per problem keeps the
         // model accurate and history clean, so leave the previous thread behind.
         if (threadRef.current.length > 0) reset()
-        run({ id: uid(), role: 'user', text: '', imageUri: img.uri }, (sig) => solveImage(img, langName, sig))
+        // '' → the verifier reads the problem from the solution's own restatement
+        run({ id: uid(), role: 'user', text: '', imageUri: img.uri }, (sig) => solveImage(img, langName, sig), '')
       } catch {
         commit([...threadRef.current, { id: uid(), role: 'assistant', text: t('err.camera'), error: true }])
       }
@@ -480,7 +535,7 @@ export default function SolverScreen() {
             onContentSizeChange={scrollDown}
           >
             {thread.map((x) => (
-              <Bubble key={x.id} turn={x} onChip={handleChip} onCancel={cancelRun} />
+              <Bubble key={x.id} turn={x} onChip={handleChip} onCancel={cancelRun} verifying={!!verifyingMap[x.id]} />
             ))}
           </ScrollView>
         )}
@@ -541,10 +596,12 @@ function Bubble({
   turn,
   onChip,
   onCancel,
+  verifying = false,
 }: {
   turn: Turn
   onChip?: (id: string) => void
   onCancel?: () => void
+  verifying?: boolean
 }) {
   const { theme } = useTheme()
   const { t } = useI18n()
@@ -590,12 +647,16 @@ function Bubble({
         <SolutionView
           content={turn.text}
           onChip={onChip}
+          verifying={verifying}
           labels={{
             solution: t('solution.label'),
             answer: t('solution.answer'),
             graph: t('solution.graph'),
             similar: t('solution.chip.similar'),
             mistake: t('solution.chip.mistake'),
+            verifying: t('solution.verifying'),
+            verified: t('solution.verified'),
+            unverified: t('solution.unverified'),
           }}
         />
         {!isErrorResult(turn.text) && (

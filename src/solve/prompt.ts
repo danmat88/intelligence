@@ -13,6 +13,7 @@ export const SOLVE_JSON_SYSTEM = `You are an expert, patient math tutor. A stude
 
 Shape:
 {
+  "problem": "<the problem itself, faithfully restated (LaTeX, NO $ delimiters) — exactly what is being asked>",
   "topic": "<2-3 word topic, e.g. Quadratics, Integration by parts>",
   "steps": [
     { "math": "<one line of LaTeX, NO $ delimiters>", "why": "<one short clause explaining this step>" }
@@ -36,3 +37,13 @@ export const FOLLOWUP_SYSTEM = `You are a patient math tutor continuing to help 
 
 /** Wrapped around the image so the model always gets a concrete instruction. */
 export const SOLVE_USER_PROMPT = 'Solve the math problem in this image.'
+
+/**
+ * The verifier: an independent checker armed with code execution. It must
+ * ACTUALLY RUN code (sympy) — no vibes — and emit a single machine-parsable
+ * verdict line. English throughout; the verdict never reaches the user as text.
+ */
+export const VERIFY_SYSTEM = `You are a rigorous math answer checker with a code execution tool. You receive a problem and a proposed final answer. Independently verify the answer by WRITING AND RUNNING code (prefer sympy): solve the problem in code yourself, or substitute the proposed answer back into the problem. Accept mathematically equivalent forms (0.5 = 1/2, factored vs expanded, different but valid constants +C — for indefinite integrals check by differentiating). If the problem cannot be checked with code (e.g. a proof or a drawing), say so. End your reply with exactly one line:
+VERDICT: CORRECT
+or VERDICT: INCORRECT
+or VERDICT: UNVERIFIABLE`

@@ -18,9 +18,12 @@ export type SolutionLabels = {
   graph: string
   similar: string
   mistake: string
+  verifying: string
+  verified: string
+  unverified: string
 }
 
-function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels) {
+function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels, verifying: boolean) {
   const sans = "system-ui,-apple-system,'Segoe UI',Roboto,sans-serif"
   const mono = "ui-monospace,'SF Mono','Cascadia Code',Menlo,monospace"
   const payload = JSON.stringify(content)
@@ -42,6 +45,11 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels) 
   .answer .tick svg{width:13px;height:13px;stroke:#fff;stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
   .answer .ak{display:block;font-family:${mono};font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:${c.success};font-weight:700;margin-bottom:2px}
   .answer .math{font-size:16px;color:${c.text}}
+  .vbadge{margin-left:auto;align-self:center;flex:0 0 auto;font-family:${mono};font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:${c.success};border:1px solid rgba(14,159,110,.45);border-radius:999px;padding:4px 9px;background:#fff}
+  .vrf{display:inline-flex;align-items:center;gap:6px;font-family:${mono};font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${c.textFaint};margin-bottom:13px}
+  .vrf .dot{width:6px;height:6px;border-radius:50%;background:${c.accent};animation:vpulse 1.1s ease-in-out infinite}
+  @keyframes vpulse{0%,100%{opacity:.25}50%{opacity:1}}
+  .vwarn{font-size:12.5px;color:#9a6700;background:#fff8e6;border:1px solid #f0d789;border-radius:12px;padding:9px 12px;margin:-5px 0 13px}
   .graph{border:1px solid ${c.border};border-radius:14px;background:${c.bg};padding:10px 12px 6px;margin:0 0 13px}
   .graph .glabel{font-family:${mono};font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:${c.textFaint};margin-bottom:5px}
   .graph svg{width:100%;height:auto;display:block;overflow:visible}
@@ -71,6 +79,7 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels) 
 <script>
   var RAW = ${payload};
   var L = ${L};
+  var VERIFYING = ${verifying ? 'true' : 'false'};
   function post(m){ try{ window.ReactNativeWebView && window.ReactNativeWebView.postMessage(m); }catch(e){} }
   function h(){ post('H:'+document.body.scrollHeight); }
   function chip(v){ post('C:'+v); }
@@ -135,6 +144,7 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels) 
       if(data && data.error){ el.innerHTML='<div class="errnote">'+esc(data.error)+'</div>'; h(); return; }
       if(data && (data.steps || data.answer)){
         var out='<div class="lbl">'+esc(L.solution)+'</div>';
+        if(VERIFYING){ out+='<div class="vrf"><span class="dot"></span>'+esc(L.verifying)+'</div>'; }
         (data.steps||[]).forEach(function(st,i){
           var n=(i+1<10?'0':'')+(i+1);
           out+='<div class="step" onclick="chip(\\'step:'+(i+1)+'\\')"><div class="no">'+n+'</div><div><div class="math">'+tex(st.math)+'</div>'+
@@ -142,7 +152,9 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels) 
         });
         if(data.answer){
           out+='<div class="answer"><div class="tick"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>'+
-               '<div><span class="ak">'+esc(L.answer)+'</span><span class="math">'+tex(data.answer)+'</span></div></div>';
+               '<div><span class="ak">'+esc(L.answer)+'</span><span class="math">'+tex(data.answer)+'</span></div>'+
+               (data._verified===true?'<span class="vbadge">✓ '+esc(L.verified)+'</span>':'')+'</div>';
+          if(data._verified===false){ out+='<div class="vwarn">'+esc(L.unverified)+'</div>'; }
         }
         if(data.quadratic && data.quadratic.length===3){ out+=plot(+data.quadratic[0],+data.quadratic[1],+data.quadratic[2]); }
         out+='<div class="chips"><button class="fu" onclick="chip(\\'similar\\')">'+esc(L.similar)+'</button>'+
@@ -177,17 +189,19 @@ export default function SolutionView({
   content,
   onChip,
   labels,
+  verifying = false,
 }: {
   content: string
   onChip?: (id: string) => void
   labels: SolutionLabels
+  verifying?: boolean
 }) {
   const { theme } = useTheme()
   const [height, setHeight] = useState(72)
   const html = useMemo(
-    () => buildHtml(content, theme.colors, labels),
+    () => buildHtml(content, theme.colors, labels, verifying),
     // labels change only with the app language — stringify keeps the dep stable
-    [content, theme.colors, JSON.stringify(labels)],
+    [content, theme.colors, JSON.stringify(labels), verifying],
   )
 
   return (

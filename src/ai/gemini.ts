@@ -71,6 +71,7 @@ export function createGeminiClient(config: GeminiConfig): AIClient {
       },
     }
     if (opts.system) body.systemInstruction = { parts: [{ text: opts.system }] }
+    if (opts.tools) body.tools = opts.tools
     return body
   }
 

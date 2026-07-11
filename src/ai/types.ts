@@ -15,6 +15,8 @@ export type GenerateOptions = {
   image?: { base64: string; mimeType: string }
   /** Force the response to be a single valid JSON object (structured solutions). */
   json?: boolean
+  /** Gemini tools payload (e.g. [{ code_execution: {} }] for the verifier). */
+  tools?: unknown
   /** Abort to stop generation early; streaming resolves with the partial text. */
   signal?: AbortSignal
   /** Per-call model override (must be on the server's whitelist in proxy mode). */

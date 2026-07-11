@@ -46,6 +46,9 @@ const STRINGS = {
     'solution.graph': 'See it — the curve meets the x-axis at your answers',
     'solution.chip.similar': 'Similar problem',
     'solution.chip.mistake': 'I typed it wrong',
+    'solution.verifying': 'Checking the answer with code…',
+    'solution.verified': 'Verified',
+    'solution.unverified': "Couldn't confirm this answer — double-check it.",
     // — actions
     'action.copy': 'Copy',
     'action.share': 'Share',
@@ -123,6 +126,9 @@ const STRINGS = {
     'solution.graph': 'Vezi — curba atinge axa x exact la răspunsurile tale',
     'solution.chip.similar': 'Problemă similară',
     'solution.chip.mistake': 'Am scris-o greșit',
+    'solution.verifying': 'Verific răspunsul cu cod…',
+    'solution.verified': 'Verificat',
+    'solution.unverified': 'Nu am putut confirma răspunsul — verifică-l și tu.',
     // — actions
     'action.copy': 'Copiază',
     'action.share': 'Trimite',

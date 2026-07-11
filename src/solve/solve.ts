@@ -1,7 +1,8 @@
 import { ai } from '../ai'
 import type { ChatTurn } from '../ai/types'
 import type { CapturedImage } from './capture'
-import { SOLVE_JSON_SYSTEM, FOLLOWUP_SYSTEM, SOLVE_USER_PROMPT } from './prompt'
+import { SOLVE_JSON_SYSTEM, FOLLOWUP_SYSTEM, SOLVE_USER_PROMPT, VERIFY_SYSTEM } from './prompt'
+import { getSolveJson, isHardProblem, parseVerdict, withJsonFlags, type Verdict } from './verdict'
 
 // Model routing, the way fast consumer math apps do it:
 //   FAST (flash-lite) answers everything the user sees — measured ~2s for a
@@ -17,17 +18,10 @@ const SOLVE = { json: true, temperature: 0.2, maxTokens: 4096 } as const
 
 /** A structured solve must contain parseable JSON — otherwise escalate. */
 function looksLikeValidSolve(raw: string): boolean {
-  const s = raw.indexOf('{')
-  const e = raw.lastIndexOf('}')
-  if (s < 0 || e <= s) return false
-  try {
-    JSON.parse(raw.slice(s, e + 1))
-    return true
-  } catch {
-    return false
-  }
+  return getSolveJson(raw) !== null
 }
 
+/** Try FAST, escalate to DEEP on failure; tag the result with who solved it. */
 async function withFallback(
   call: (model: string) => Promise<string>,
   valid: (out: string) => boolean,
@@ -36,46 +30,92 @@ async function withFallback(
   try {
     const out = await call(FAST)
     if (!valid(out)) throw new Error('fast model returned unusable output')
-    return out
+    return withJsonFlags(out, { _model: 'fast' })
   } catch (e) {
     if (signal?.aborted) throw e
-    return call(DEEP)
+    return withJsonFlags(await call(DEEP), { _model: 'deep' })
+  }
+}
+
+function solveCall(langName: string, signal?: AbortSignal, image?: CapturedImage) {
+  return async (model: string) => {
+    const { text } = await ai.generate(image ? SOLVE_USER_PROMPT : '', {
+      ...(image ? { image: { base64: image.base64, mimeType: image.mimeType } } : {}),
+      system: SOLVE_JSON_SYSTEM.replaceAll('{LANG}', langName),
+      model,
+      ...SOLVE,
+      signal,
+    })
+    return text.trim()
   }
 }
 
 /** First solve from a photo → structured JSON solution. */
 export async function solveImage(image: CapturedImage, langName: string, signal?: AbortSignal): Promise<string> {
-  return withFallback(
-    async (model) => {
-      const { text } = await ai.generate(SOLVE_USER_PROMPT, {
-        image: { base64: image.base64, mimeType: image.mimeType },
-        system: SOLVE_JSON_SYSTEM.replaceAll('{LANG}', langName),
-        model,
-        ...SOLVE,
-        signal,
-      })
-      return text.trim()
-    },
-    looksLikeValidSolve,
-    signal,
-  )
+  return withFallback(solveCall(langName, signal, image), looksLikeValidSolve, signal)
 }
 
 /** First solve from a typed problem → structured JSON solution. */
 export async function solveProblem(problem: string, langName: string, signal?: AbortSignal): Promise<string> {
-  return withFallback(
-    async (model) => {
-      const { text } = await ai.generate(problem, {
-        system: SOLVE_JSON_SYSTEM.replaceAll('{LANG}', langName),
-        model,
-        ...SOLVE,
-        signal,
-      })
-      return text.trim()
-    },
-    looksLikeValidSolve,
+  const call = async (model: string) => {
+    const { text } = await ai.generate(problem, {
+      system: SOLVE_JSON_SYSTEM.replaceAll('{LANG}', langName),
+      model,
+      ...SOLVE,
+      signal,
+    })
+    return text.trim()
+  }
+  // Proof-style problems skip the fast model entirely — it's weakest there and
+  // code verification can't grade a proof anyway.
+  if (isHardProblem(problem)) return withJsonFlags(await call(DEEP), { _model: 'deep' })
+  return withFallback(call, looksLikeValidSolve, signal)
+}
+
+/** Re-solve a problem statement with the DEEP model (verification escalation). */
+export async function solveDeep(problem: string, langName: string, signal?: AbortSignal): Promise<string> {
+  const { text } = await ai.generate(problem, {
+    system: SOLVE_JSON_SYSTEM.replaceAll('{LANG}', langName),
+    model: DEEP,
+    ...SOLVE,
     signal,
-  )
+  })
+  return withJsonFlags(text.trim(), { _model: 'deep' })
+}
+
+/**
+ * Verify a solution's final answer by making the model WRITE AND RUN CODE
+ * (sympy) against the problem. Returns 'unverifiable' on any doubt/failure —
+ * the badge only ever appears on a real, machine-checked pass.
+ */
+export async function verifyAnswer(problemText: string, solutionRaw: string, signal?: AbortSignal): Promise<Verdict> {
+  const j = getSolveJson(solutionRaw)
+  const problem = String(j?.problem ?? '').trim() || problemText.trim()
+  const answer = String(j?.answer ?? '').trim()
+  if (!problem || !answer) return 'unverifiable'
+
+  const ask = `Problem: ${problem}\nProposed final answer: ${answer}`
+  const call = async (model: string) => {
+    const { text } = await ai.generate(ask, {
+      system: VERIFY_SYSTEM,
+      model,
+      tools: [{ code_execution: {} }],
+      temperature: 0,
+      maxTokens: 2500,
+      signal,
+    })
+    return text
+  }
+  try {
+    return parseVerdict(await call(FAST))
+  } catch {
+    try {
+      if (signal?.aborted) return 'unverifiable'
+      return parseVerdict(await call(DEEP))
+    } catch {
+      return 'unverifiable'
+    }
+  }
 }
 
 /** A follow-up about the current problem → conversational Markdown + LaTeX. */
