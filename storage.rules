@@ -1,0 +1,15 @@
+rules_version = '2';
+
+// Problem photos: users/{uid}/images/{turnId}.jpg — owner-only, mirroring
+// the Firestore rules. Cap uploads at 2MB (the client sends ~150KB JPEGs).
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /users/{uid}/{allPaths=**} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if request.auth != null && request.auth.uid == uid
+                   && request.resource.size < 2 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}

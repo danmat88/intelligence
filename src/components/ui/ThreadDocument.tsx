@@ -30,6 +30,8 @@ export type DocTurn = {
 export type DocLabels = {
   problem: string
   photoProblem: string
+  readAs: string
+  fix: string
   copy: string
   share: string
   solution: string
@@ -81,6 +83,11 @@ body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-
 .prob .src{margin-left:auto;color:${c.textFaint};letter-spacing:.08em}
 .prob .ptx{font-size:19px;margin-top:8px;overflow-x:auto;overflow-y:hidden}
 .prob img{max-width:100%;border-radius:12px;margin-top:10px;display:block}
+/* the confirm-what-I-read loop: the problem as the AI understood it, typeset */
+.pread{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:11px}
+.pread .rl{font-family:'JB',monospace;font-weight:600;font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;color:${c.textFaint};flex:0 0 auto}
+.pread .rm{font-size:17px;overflow-x:auto;overflow-y:hidden;flex:1;min-width:60%}
+.pread .pfix{font-family:'IN';font-weight:600;font-size:11px;color:${c.accent};background:${c.accentSoft};border-radius:999px;padding:5px 11px;cursor:pointer;flex:0 0 auto}
 
 /* — solution: borderless panels breathing on the paper — */
 .sec{margin-top:16px}
@@ -169,7 +176,8 @@ body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-
 <script>
 var L=${L};
 var STATE={turns:[],verifying:{},cold:true,meta:null};
-var KNOWN={};        // turn-id -> signature already rendered
+var KNOWN={};        // block key -> signature already rendered
+var PHASE={};        // block key -> 'P' pending | 'E' error | 'C' content
 var ASKED={};        // step numbers asked about
 var wasVerified=false, everRendered=false;
 function post(m){ try{ window.ReactNativeWebView && window.ReactNativeWebView.postMessage(m); }catch(e){} }
@@ -179,6 +187,8 @@ function act(k,id){ post('A:'+k+':'+id); }
 function retry(){ post('R:'); }
 function pcancel(){ post('X:'); }
 function stepTap(el,n){ ASKED[n]=1; el.classList.add('asked'); chip('step:'+n); }
+var PREAD='';
+function pfix(){ if(PREAD) post('P:'+PREAD); }
 function esc(s){ var d=document.createElement('div'); d.textContent=s==null?'':String(s); return d.innerHTML; }
 function deTeX(s){
   return String(s==null?'':s)
@@ -308,17 +318,22 @@ function blocks(){
   if(STATE.meta){ out.push({key:'meta', sig:JSON.stringify(STATE.meta), html:function(){ return '<div class="meta"><span>'+esc(STATE.meta)+'</span></div>'; }}); }
   if(!t.length) return out;
   var first=t[0];
-  out.push({key:'prob:'+first.id, sig:first.text+(first.imageUri||''), html:function(){
-    var body=first.imageUri?'<img src="'+esc(first.imageUri)+'">':'<div class="ptx">'+esc(first.text||L.photoProblem)+'</div>';
-    return '<div class="prob"><span class="lbl">'+esc(L.problem)+'<span class="src">'+esc(first.imageUri?'FOTO':'SCRIS')+'</span></span>'+body+'</div>';
-  }});
   // first assistant turn = the solution section
   var si=-1;
   for(i=1;i<t.length;i++){ if(t[i].role==='assistant'){ si=i; break; } }
+  // The AI's restatement of the problem, typeset — the confirm-read loop.
+  var sdata=(si>=0 && !t[si].pending && !t[si].error)?parse(t[si].text):null;
+  var readProblem=(sdata && typeof sdata.problem==='string' && sdata.problem.trim())?sdata.problem.trim():null;
+  PREAD=readProblem||'';
+  out.push({key:'prob:'+first.id, sig:first.text+'|'+(first.imageUri||'')+'|'+(readProblem||''), html:function(){
+    var body=first.imageUri?'<img src="'+esc(first.imageUri)+'">':'<div class="ptx">'+esc(first.text||L.photoProblem)+'</div>';
+    var read=readProblem?('<div class="pread"><span class="rl">'+esc(L.readAs)+'</span><span class="rm">'+tex(readProblem)+'</span><span class="pfix" onclick="pfix()">'+esc(L.fix)+'</span></div>'):'';
+    return '<div class="prob"><span class="lbl">'+esc(L.problem)+'<span class="src">'+esc(first.imageUri?'FOTO':'SCRIS')+'</span></span>'+body+read+'</div>';
+  }});
   if(si>=0){
     var st=t[si];
     var v=STATE.verifying[st.id]||'';
-    out.push({key:'sol:'+st.id, sig:(st.pending?'P':st.error?'E':st.text)+'|'+v, turn:st, html:function(){
+    out.push({key:'sol:'+st.id, sig:(st.pending?'P':st.error?'E':st.text)+'|'+v, phase:st.pending?'P':(st.error?'E':'C'), turn:st, html:function(){
       if(st.pending) return '<div class="sec"><span class="lbl">'+esc(L.solution)+'</span>'+pendHtml()+'</div>';
       if(st.error) return '<div class="sec"><span class="lbl">'+esc(L.solution)+'</span><div class="errb"><div class="et">'+esc(st.text)+'</div><span class="retry" onclick="retry()">↻ '+esc(L.retry)+'</span></div></div>';
       return '<div class="sec"><span class="lbl">'+esc(L.solution)+'</span>'+solutionHtml(st, v, !STATE.cold && !KNOWN['sol:'+st.id])+'</div>';
@@ -330,8 +345,9 @@ function blocks(){
     if(u.role!=='user') continue;
     var a=(i+1<t.length && t[i+1].role==='assistant')?t[i+1]:null;
     var sig=u.text+'|'+(a?(a.pending?'P':a.error?'E':a.text):'-');
-    (function(u,a){
-      out.push({key:'qa:'+u.id, sig:sig, html:function(){
+    var phase=a?(a.pending?'P':(a.error?'E':'C')):'Q';
+    (function(u,a,phase){
+      out.push({key:'qa:'+u.id, sig:sig, phase:phase, html:function(){
         var inner='<div class="q">'+esc(L.you)+': '+esc(u.text)+'</div>';
         if(a){
           if(a.pending) inner+='<div class="a">'+pendHtml()+'</div>';
@@ -340,7 +356,7 @@ function blocks(){
         }
         return '<div class="qa">'+inner+'</div>';
       }});
-    })(u,a);
+    })(u,a,phase);
     if(a) i++;
   }
   return out;
@@ -374,8 +390,14 @@ function render(){
     } else if(KNOWN[b.key]!==b.sig){
       node.innerHTML=b.html();
       typeset(node);
+      // The ANSWER arriving (pending -> content/error) must bring itself into
+      // view — the reader asked for it. Minor patches (verify badge) don't move you.
+      if(PHASE[b.key]==='P' && b.phase && b.phase!=='P'){
+        requestAnimationFrame(function(){ node.scrollIntoView({behavior:'smooth',block:'start'}); });
+      }
     }
     KNOWN[b.key]=b.sig;
+    if(b.phase) PHASE[b.key]=b.phase;
     cursor=Array.prototype.indexOf.call(doc.children,node)+1;
   });
   everRendered=true;
@@ -407,6 +429,7 @@ export default function ThreadDocument({
   onRetry,
   onCancel,
   onAction,
+  onFixProblem,
 }: {
   turns: DocTurn[]
   verifying: Record<string, VerifyStage | 'check' | 'recheck'>
@@ -419,6 +442,8 @@ export default function ThreadDocument({
   onRetry?: () => void
   onCancel?: () => void
   onAction?: (kind: 'copy' | 'share', turnId: string) => void
+  /** "Fix it" on the read-back problem: restart with the corrected text. */
+  onFixProblem?: (problemLatex: string) => void
 }) {
   const { theme } = useTheme()
   const [assetBase, setAssetBase] = useState<string | null | undefined>(mathAssetsBase ?? undefined)
@@ -492,6 +517,7 @@ export default function ThreadDocument({
           if (v === 'verified' || v === 'unverified') onVerifyTap?.(v)
         } else if (d.startsWith('R:')) onRetry?.()
         else if (d.startsWith('X:')) onCancel?.()
+        else if (d.startsWith('P:')) onFixProblem?.(d.slice(2))
         else if (d.startsWith('A:')) {
           const rest = d.slice(2)
           const sep = rest.indexOf(':')

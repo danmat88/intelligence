@@ -68,6 +68,8 @@ const STRINGS = {
     'share.problem': 'Problem',
     'share.signature': 'Solved with Rezolvo',
     'doc.you': 'You',
+    'doc.readAs': 'Read as',
+    'doc.fix': 'Fix it',
     // — errors
     'err.network': "Couldn't reach the internet — check your connection and try again.",
     'err.busy': "I'm a bit busy right now — give it a moment and try again.",
@@ -199,6 +201,8 @@ const STRINGS = {
     'share.problem': 'Problema',
     'share.signature': 'Rezolvat cu Rezolvo',
     'doc.you': 'Tu',
+    'doc.readAs': 'Am citit',
+    'doc.fix': 'Corectează',
     // — errors
     'err.network': 'Nu am ajuns la internet — verifică conexiunea și încearcă din nou.',
     'err.busy': 'Sunt puțin ocupat acum — așteaptă un moment și încearcă iar.',

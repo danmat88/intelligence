@@ -20,12 +20,13 @@ import ThreadDocument, { type DocLabels } from '../components/ui/ThreadDocument'
 import SymbolBar from '../components/ui/SymbolBar'
 import type { CapturedImage } from '../solve/capture'
 import { solveImage, solveProblem, followUp, solveDeep, verifyAnswer } from '../solve/solve'
-import { solutionShareText } from '../solve/shareText'
+import { latexToPlain, solutionShareText } from '../solve/shareText'
 import { getSolveJson, isStructuredSolution, withJsonFlags } from '../solve/verdict'
 import type { ChatTurn } from '../ai/types'
 import { useI18n, type StringKey } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import { createProblem, updateProblemTurns, removeProblem, toStoredTurns, type Problem } from '../solve/store'
+import { uploadProblemImage, deleteProblemImages } from '../solve/imageStore'
 import SettingsModal from './SettingsModal'
 import HistorySheet from './HistorySheet'
 import CaptureScreen from './CaptureScreen'
@@ -34,7 +35,11 @@ type Turn = {
   id: string
   role: 'user' | 'assistant'
   text: string
+  /** Local file for the just-taken photo, or the cloud URL when loaded. */
   imageUri?: string
+  /** Firebase Storage object + tokened URL once the parallel upload lands. */
+  imagePath?: string
+  imageUrl?: string
   pending?: boolean
   error?: boolean
 }
@@ -129,6 +134,9 @@ export default function SolverScreen() {
   const coldDocRef = useRef(false)
   // The last request, kept so a failed turn can be retried without retyping.
   const lastReqRef = useRef<{ userTurn: Turn; solver: (s: AbortSignal) => Promise<string>; verifyProblem?: string } | null>(null)
+  // Cloud copies of problem photos, keyed by turn id (upload runs in
+  // parallel with the solve; persist() picks these up when they land).
+  const uploadsRef = useRef<Record<string, { path: string; url: string }>>({})
   // Chip bulletproofing: debounce accidental double-taps, and count how many
   // times each step was explained so re-taps escalate instead of repeating.
   const lastChipRef = useRef<{ id: string; at: number }>({ id: '', at: 0 })
@@ -198,9 +206,15 @@ export default function SolverScreen() {
       // Never save a non-math / unreadable result — it would just clutter history.
       const lastAsst = [...turns].reverse().find((t) => t.role === 'assistant')
       if (lastAsst && isErrorResult(lastAsst.text)) return
-      // Failed/pending turns are UI state, not part of the problem — drop them.
+      // Failed/pending turns are UI state, not part of the problem — drop
+      // them. Cloud photo references ride along once their upload landed.
       const stored = toStoredTurns(
-        turns.filter((x) => !x.pending && !x.error),
+        turns
+          .filter((x) => !x.pending && !x.error)
+          .map((x) => {
+            const up = uploadsRef.current[x.id]
+            return up ? { ...x, imagePath: up.path, imageUrl: up.url } : x
+          }),
         t('turn.photoProblem'),
       )
       if (stored.length === 0) return
@@ -378,7 +392,14 @@ export default function SolverScreen() {
       // one surface carrying its inert cards. WebViews light up on landing.
       setTimeout(() => {
         problemIdRef.current = p.id
-        const turns = p.turns.map((t) => ({ id: uid(), role: t.role, text: t.text }))
+        const turns = p.turns.map((t) => ({
+          id: uid(),
+          role: t.role,
+          text: t.text,
+          imageUri: t.imageUrl, // the cloud photo, straight into the document
+          imagePath: t.imagePath,
+          imageUrl: t.imageUrl,
+        }))
         // Reading mode: the document renders whole, no entrances, and opens
         // at the TOP — a problem reads from its title down.
         coldDocRef.current = true
@@ -406,8 +427,10 @@ export default function SolverScreen() {
       // Chip taps start a new turn — same rule as sending: keyboard down.
       Keyboard.dismiss()
       if (id === 'mistake') {
-        // The saved problem is wrong input — remove it so history stays clean.
+        // The saved problem is wrong input — remove it (and its cloud photo)
+        // so history stays clean.
         if (user && problemIdRef.current) removeProblem(user.id, problemIdRef.current).catch(() => {})
+        deleteProblemImages(threadRef.current.map((x) => x.imagePath ?? uploadsRef.current[x.id]?.path))
         reset()
         return
       }
@@ -459,10 +482,22 @@ export default function SolverScreen() {
       // A photo is always a NEW problem — one thread per problem keeps the
       // model accurate and history clean, so leave the previous thread behind.
       if (threadRef.current.length > 0) reset()
+      const turnId = uid()
+      // Cloud copy in PARALLEL with the solve — never blocks it. When it
+      // lands, the saved problem gets its image references; if it fails,
+      // the photo simply stays local-only for this session.
+      if (user) {
+        uploadProblemImage(user.id, turnId, img.uri)
+          .then((si) => {
+            uploadsRef.current[turnId] = si
+            persist(threadRef.current)
+          })
+          .catch(() => {})
+      }
       // '' → the verifier reads the problem from the solution's own restatement
-      run({ id: uid(), role: 'user', text: '', imageUri: img.uri }, (sig) => solveImage(img, langName, sig), '')
+      run({ id: turnId, role: 'user', text: '', imageUri: img.uri }, (sig) => solveImage(img, langName, sig), '')
     },
-    [run, reset, langName],
+    [run, reset, langName, user, persist],
   )
 
   const typeInstead = useCallback(() => {
@@ -470,6 +505,21 @@ export default function SolverScreen() {
     // focus once the visor has slid away, so the keyboard rises over Home
     setTimeout(() => inputRef.current?.focus(), 280)
   }, [])
+
+  // "Fix it" on the read-back problem: the read text was WRONG input, so the
+  // saved doc goes, the thread resets, and the composer opens pre-filled with
+  // the editable (plain-math) problem — fix one symbol and resend.
+  const handleFixProblem = useCallback(
+    (problemLatex: string) => {
+      if (sending) cancelRun()
+      if (user && problemIdRef.current) removeProblem(user.id, problemIdRef.current).catch(() => {})
+      deleteProblemImages(threadRef.current.map((x) => x.imagePath ?? uploadsRef.current[x.id]?.path))
+      reset()
+      setInput(latexToPlain(problemLatex))
+      setTimeout(() => inputRef.current?.focus(), 560) // after the push lands
+    },
+    [sending, cancelRun, user, reset],
+  )
 
   // Copy/Share fired from inside the document (per solution turn).
   const handleDocAction = useCallback(
@@ -496,6 +546,8 @@ export default function SolverScreen() {
     () => ({
       problem: t('share.problem'),
       photoProblem: t('turn.photoProblem'),
+      readAs: t('doc.readAs'),
+      fix: t('doc.fix'),
       copy: t('action.copy'),
       share: t('action.share'),
       solution: t('solution.label'),
@@ -690,6 +742,7 @@ export default function SolverScreen() {
             onRetry={retryLast}
             onCancel={cancelRun}
             onAction={handleDocAction}
+            onFixProblem={handleFixProblem}
           />
         )}
         </CrossFade>

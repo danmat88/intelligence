@@ -12,8 +12,9 @@ import {
   serverTimestamp,
 } from '@react-native-firebase/firestore'
 
-/** A saved turn — text only. We never persist local photo URIs (cost + privacy). */
-export type StoredTurn = { role: 'user' | 'assistant'; text: string }
+/** A saved turn. Photos live in Firebase Storage (owner-only): `imagePath`
+ *  is the storage object, `imageUrl` a tokened URL ready for <img src>. */
+export type StoredTurn = { role: 'user' | 'assistant'; text: string; imagePath?: string; imageUrl?: string }
 
 export type Problem = {
   id: string
@@ -35,14 +36,20 @@ function problemsCol(uid: string) {
   return collection(doc(getFirestore(), 'users', uid), 'problems')
 }
 
-/** Drop runtime-only fields (image URIs, pending/error) before persisting. */
+/** Drop runtime-only fields (local URIs, pending/error) before persisting;
+ *  cloud image references (path + tokened URL) ride along when present. */
 export function toStoredTurns(
-  turns: { role: 'user' | 'assistant'; text: string; imageUri?: string }[],
+  turns: { role: 'user' | 'assistant'; text: string; imageUri?: string; imagePath?: string; imageUrl?: string }[],
   photoLabel = 'Photo problem',
 ): StoredTurn[] {
   return turns
     .filter((t) => !!t.text || !!t.imageUri)
-    .map((t) => ({ role: t.role, text: t.text || photoLabel }))
+    .map((t) => ({
+      role: t.role,
+      text: t.text || photoLabel,
+      ...(t.imagePath ? { imagePath: t.imagePath } : null),
+      ...(t.imageUrl ? { imageUrl: t.imageUrl } : null),
+    }))
 }
 
 export async function createProblem(
