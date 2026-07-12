@@ -60,7 +60,7 @@
 - ⬜ Mod Practică (serii de probleme similare, nu doar chip-ul unu-la-unu)
 
 ### D. Creștere + retenție
-- ⬜ **Momente de celebrare**: sweep + haptic când răspunsul iese „✓ Verificat"
+- ✅ **Momente de celebrare**: povestea verificării într-un singur slot (pastilă „Se verifică…" → „Recalculez cu atenție…" la re-rezolvare → morph în badge + sweep de lumină o singură dată, doar live) + badge atingibil cu explainer-ul de încredere („verificare de mașină, nu părerea AI-ului")
 - ⬜ **Share ca imagine**: card de soluție brand-uit de aruncat în grupul clasei (viral loop; azi share-ul e text sec)
 - ⬜ Prompt de rating în Play după a N-a rezolvare verificată
 - ⬜ Onboarding scurt la prima deschidere (limbă, clasă, primul solve ghidat)
