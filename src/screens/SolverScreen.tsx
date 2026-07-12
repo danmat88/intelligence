@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ActivityIndicator, Animated, Image, Keyboard, Pressable, ScrollView, Share, StyleSheet, TextInput, View } from 'react-native'
 import ReAnimated, { Easing as REasing, withTiming, type EntryAnimationsValues } from 'react-native-reanimated'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -16,9 +16,11 @@ import { useToast } from '../components/ui/Toast'
 import Txt from '../components/ui/Txt'
 import InfoDialog from '../components/ui/InfoDialog'
 import SolutionView, { type VerifyStage } from '../components/ui/SolutionView'
+import ThreadDocument, { type DocLabels } from '../components/ui/ThreadDocument'
 import SymbolBar from '../components/ui/SymbolBar'
 import type { CapturedImage } from '../solve/capture'
 import { solveImage, solveProblem, followUp, solveDeep, verifyAnswer } from '../solve/solve'
+import { solutionShareText } from '../solve/shareText'
 import { getSolveJson, isStructuredSolution, withJsonFlags } from '../solve/verdict'
 import type { ChatTurn } from '../ai/types'
 import { useI18n, type StringKey } from '../i18n'
@@ -86,48 +88,9 @@ function friendlyError(e: unknown, t: T): string {
   return t('err.generic')
 }
 
-/** Readable-ify LaTeX for plain-text sharing (√ instead of \sqrt etc.). */
-function deTeXShare(s: string): string {
-  return s
-    .replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, '($1)/($2)')
-    .replace(/\\sqrt\{([^{}]*)\}/g, '√($1)')
-    .replace(/\\int/g, '∫')
-    .replace(/\\cdot/g, '·')
-    .replace(/\\times/g, '×')
-    .replace(/\\pi/g, 'π')
-    .replace(/\\theta/g, 'θ')
-    .replace(/\\leq?/g, '≤')
-    .replace(/\\geq?/g, '≥')
-    .replace(/\\neq?/g, '≠')
-    .replace(/\\pm/g, '±')
-    .replace(/\\infty/g, '∞')
-    .replace(/\\[a-zA-Z]+/g, (m) => m.slice(1))
-    .replace(/[{}]/g, '')
-}
-
-/** Flatten a structured solution (or follow-up) into shareable plain text. */
-function solutionText(raw: string): string {
-  try {
-    const s = raw.indexOf('{')
-    const e = raw.lastIndexOf('}')
-    if (s >= 0 && e > s) {
-      const j = JSON.parse(raw.slice(s, e + 1)) as {
-        error?: string
-        steps?: { math?: string; why?: string }[]
-        answer?: string
-      }
-      if (j.error) return j.error
-      const lines = (j.steps ?? []).map(
-        (st, i) => `${i + 1}. ${deTeXShare(st.math ?? '')}${st.why ? `  (${deTeXShare(st.why)})` : ''}`,
-      )
-      if (j.answer) lines.push(`\nAnswer: ${deTeXShare(j.answer)}`)
-      if (lines.length) return lines.join('\n')
-    }
-  } catch {
-    // not JSON — a follow-up in markdown
-  }
-  return raw
-}
+// LaTeX → readable plain text for Copy/Share lives in solve/shareText.ts
+// (real nested-brace conversion, unit-tested — the old regexes here produced
+// garbage on any nested structure).
 
 /**
  * The whole app for signed-in users: a conversational math solver. Send a
@@ -155,30 +118,24 @@ export default function SolverScreen() {
   const [verifyingMap, setVerifyingMap] = useState<Record<string, 'check' | 'recheck'>>({})
   // Trust explainer opened by tapping the ✓/! badge on an answer box.
   const [verifyInfo, setVerifyInfo] = useState<'verified' | 'unverified' | null>(null)
-  const scrollRef = useRef<ScrollView>(null)
   const inputRef = useRef<TextInput>(null)
   const threadRef = useRef<Turn[]>([])
   const problemIdRef = useRef<string | null>(null)
   const abortRef = useRef<AbortController | null>(null)
   const prevUidRef = useRef<string | undefined>(user?.id)
-  // Scroll intent, the chat-app contract (ChatGPT/WhatsApp behavior):
-  // 'follow'  — live turns pull the scroll (animated) to the newest message.
-  // 'anchor'  — history just opened: land at the BOTTOM instantly and stay
-  //             glued there while card heights settle above (content grows,
-  //             the visible edge never moves).
-  // 'none'    — the reader owns the scroll; nothing moves without them.
-  // Any user drag takes over (→ 'none'). History turns are also static:
-  // no entrances, cards land at full size.
-  const staticIdsRef = useRef<Set<string>>(new Set())
-  const scrollIntentRef = useRef<'follow' | 'anchor' | 'none'>('none')
+  // Whether the current document shows a LOADED conversation (renders all at
+  // once, no entrances) vs a live one (new blocks reveal). The page handles
+  // scroll (top for reading, follow for live) internally.
+  const coldDocRef = useRef(false)
   // The last request, kept so a failed turn can be retried without retyping.
   const lastReqRef = useRef<{ userTurn: Turn; solver: (s: AbortSignal) => Promise<string>; verifyProblem?: string } | null>(null)
+  // Chip bulletproofing: debounce accidental double-taps, and count how many
+  // times each step was explained so re-taps escalate instead of repeating.
+  const lastChipRef = useRef<{ id: string; at: number }>({ id: '', at: 0 })
+  const explainCountsRef = useRef<Record<string, number>>({})
   // Event-driven offline pill: raised by a network-classified failure,
   // cleared by the next successful answer.
   const [netDown, setNetDown] = useState(false)
-  // WebView hold-back for loaded cards while the covering push runs — the
-  // ghost boxes ride the slide, content lights up right at landing.
-  const mountDelayRef = useRef(0)
   // Context header for a problem opened from history (topic + date).
   const [problemMeta, setProblemMeta] = useState<{ topic: string | null; createdAt: number } | null>(null)
   // Identity of the conversation on screen. Changing it drives the
@@ -201,10 +158,6 @@ export default function SolverScreen() {
     if (authError && authError !== lastAuthErrRef.current) toast.show(authError, 'alert-triangle')
     lastAuthErrRef.current = authError
   }, [authError, toast])
-
-  const scrollDown = useCallback(() => {
-    requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: true }))
-  }, [])
 
   // Keep a ref mirror of the thread so async solves persist the right snapshot.
   const commit = useCallback((next: Turn[]) => {
@@ -231,8 +184,6 @@ export default function SolverScreen() {
       if (threadRef.current.length > 0) {
         setInput('')
         setProblemMeta(null)
-        staticIdsRef.current = new Set()
-        scrollIntentRef.current = 'none'
         setThreadKey(`live-${Date.now()}`)
         commit([])
       }
@@ -254,7 +205,8 @@ export default function SolverScreen() {
       )
       if (stored.length === 0) return
       const firstUser = turns.find((x) => x.role === 'user')
-      const title = (firstUser?.text?.trim() || t('turn.photoProblem')).slice(0, 90)
+      // Multi-line input must not produce multi-line history titles.
+      const title = (firstUser?.text ?? '').replace(/\s+/g, ' ').trim().slice(0, 90) || t('turn.photoProblem')
       const topic = extractTopic(turns)
       try {
         if (problemIdRef.current) await updateProblemTurns(user.id, problemIdRef.current, stored)
@@ -323,10 +275,9 @@ export default function SolverScreen() {
       const ctrl = new AbortController()
       abortRef.current = ctrl
       lastReqRef.current = { userTurn, solver, verifyProblem } // retry fuel
-      scrollIntentRef.current = 'follow' // live turns pull the scroll with them
+      coldDocRef.current = false // live turns reveal in the document
       commit([...base, userTurn, { id: asstId, role: 'assistant', text: '', pending: true }])
       setSending(true)
-      scrollDown()
       try {
         const text = await solver(ctrl.signal)
         if (ctrl.signal.aborted) return
@@ -334,12 +285,6 @@ export default function SolverScreen() {
         commit(done)
         persist(done)
         setNetDown(false) // an answer arrived — the network is clearly back
-        // One last follow puts the TOP of the fresh (still small) answer card
-        // in view; then the card grows DOWNWARD while you read — the scroll
-        // must never yank along with the growth.
-        setTimeout(() => {
-          scrollIntentRef.current = 'none'
-        }, 700)
         // First solves get the background correctness check (not follow-ups).
         if (verifyProblem !== undefined && isStructuredSolution(text)) void verifyFlow(asstId, verifyProblem)
       } catch (e) {
@@ -355,10 +300,9 @@ export default function SolverScreen() {
       } finally {
         if (abortRef.current === ctrl) abortRef.current = null
         setSending(false)
-        scrollDown()
       }
     },
-    [commit, persist, scrollDown, t, verifyFlow],
+    [commit, persist, t, verifyFlow],
   )
 
   const cancelRun = useCallback(() => {
@@ -381,13 +325,15 @@ export default function SolverScreen() {
     run(req.userTurn, req.solver, req.verifyProblem)
   }, [commit, run, sending])
 
-  const priorTurns = useCallback(
-    (): ChatTurn[] =>
-      threadRef.current
-        .filter((t) => !t.pending && !t.error)
-        .map((t) => ({ role: t.role, text: t.text || 'Here is my problem (in the image I sent).' })),
-    [],
-  )
+  const priorTurns = useCallback((): ChatTurn[] => {
+    const all = threadRef.current
+      .filter((t) => !t.pending && !t.error)
+      .map((t): ChatTurn => ({ role: t.role, text: t.text || 'Here is my problem (in the image I sent).' }))
+    // Long threads (many step explanations) must not bloat every follow-up:
+    // keep the anchor (problem + its solution) and only the recent exchange.
+    if (all.length <= 8) return all
+    return [...all.slice(0, 2), ...all.slice(-6)]
+  }, [])
 
   const sendText = useCallback(
     (raw: string) => {
@@ -413,8 +359,7 @@ export default function SolverScreen() {
     Keyboard.dismiss() // fresh problem, fresh screen — no keyboard left over the hero
     problemIdRef.current = null
     setProblemMeta(null)
-    staticIdsRef.current = new Set()
-    scrollIntentRef.current = 'none'
+    explainCountsRef.current = {}
     setThreadKey(`live-${Date.now()}`)
     commit([])
   }, [commit])
@@ -434,20 +379,13 @@ export default function SolverScreen() {
       setTimeout(() => {
         problemIdRef.current = p.id
         const turns = p.turns.map((t) => ({ id: uid(), role: t.role, text: t.text }))
-        // Reading mode: cards land at full size with no entrances, and the
-        // view opens ANCHORED at the bottom — the newest turn — like every
-        // chat app. The anchor holds while heights settle; a drag releases it.
-        staticIdsRef.current = new Set(turns.map((t) => t.id))
-        scrollIntentRef.current = 'anchor'
-        // A push always covers this swap — hold the WebViews until it lands.
-        mountDelayRef.current = 520
+        // Reading mode: the document renders whole, no entrances, and opens
+        // at the TOP — a problem reads from its title down.
+        coldDocRef.current = true
+        explainCountsRef.current = {} // fresh problem, fresh teaching history
         setProblemMeta({ topic: p.topic, createdAt: p.createdAt })
         setThreadKey(p.id)
         commit(turns)
-        // Deterministic landing: place the scroll at the bottom NOW — never
-        // rely on a size-change event that cached heights may not produce
-        // (that was the "problem B opens at problem A's scroll" bug).
-        requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: false }))
       }, 200)
     },
     [commit, sending, cancelRun],
@@ -455,7 +393,16 @@ export default function SolverScreen() {
 
   const handleChip = useCallback(
     (id: string) => {
-      if (sending) return
+      // No dead taps: busy means FEEDBACK, never silence.
+      if (sending) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
+        toast.show(t('busy.wait'), 'clock')
+        return
+      }
+      // Accidental double-taps fire twice from the WebView — debounce them.
+      const now = Date.now()
+      if (lastChipRef.current.id === id && now - lastChipRef.current.at < 900) return
+      lastChipRef.current = { id, at: now }
       // Chip taps start a new turn — same rule as sending: keyboard down.
       Keyboard.dismiss()
       if (id === 'mistake') {
@@ -466,12 +413,21 @@ export default function SolverScreen() {
       }
       if (id.startsWith('step:')) {
         const n = id.slice(5)
-        run({ id: uid(), role: 'user', text: t('turn.explainStep', { n }) }, (sig) =>
-          followUp(
-            [...priorTurns(), { role: 'user', text: `Explain step ${n} again, more simply — I don't get that move.` }],
-            langName,
-            sig,
-          ),
+        // A good teacher escalates, then CHANGES METHOD: 1st re-explain asks
+        // for "simpler", the 2nd for a completely different angle, and from
+        // the 3rd on we stop re-explaining and pivot to guided practice on
+        // an easier version of the same move — the user never hits a wall,
+        // they hit a better strategy.
+        const asked = (explainCountsRef.current[n] = (explainCountsRef.current[n] ?? 0) + 1)
+        const ask =
+          asked <= 1
+            ? `Explain step ${n} again, more simply — I don't get that move.`
+            : asked === 2
+              ? `You already explained step ${n} and I STILL don't get it. Explain it in a COMPLETELY different way than before — simplest possible words, and include a tiny concrete example with real numbers.`
+              : `The student has now heard two explanations of step ${n} and still doesn't get it. STOP re-explaining. Switch method like a good teacher: give ONE similar but noticeably EASIER mini-problem that isolates the same move, walk through it together in short encouraging lines, and END by connecting it back to step ${n} of the original problem.`
+        const label = asked >= 3 ? t('turn.practiceStep', { n }) : t('turn.explainStep', { n })
+        run({ id: uid(), role: 'user', text: label }, (sig) =>
+          followUp([...priorTurns(), { role: 'user', text: ask }], langName, sig),
         )
         return
       }
@@ -483,7 +439,7 @@ export default function SolverScreen() {
         ),
       )
     },
-    [sending, run, reset, priorTurns, user, t, langName],
+    [sending, run, reset, priorTurns, user, t, langName, toast],
   )
 
   // Open the in-app capture flow (Rezolvo's own camera + trim — never the
@@ -514,6 +470,51 @@ export default function SolverScreen() {
     // focus once the visor has slid away, so the keyboard rises over Home
     setTimeout(() => inputRef.current?.focus(), 280)
   }, [])
+
+  // Copy/Share fired from inside the document (per solution turn).
+  const handleDocAction = useCallback(
+    (kind: 'copy' | 'share', turnId: string) => {
+      const turn = threadRef.current.find((x) => x.id === turnId)
+      if (!turn) return
+      const text = solutionShareText(turn.text, {
+        problem: t('share.problem'),
+        answer: t('solution.answer'),
+        signature: t('share.signature'),
+      })
+      if (kind === 'copy') {
+        Clipboard.setStringAsync(text)
+        Haptics.selectionAsync().catch(() => {})
+        toast.show(t('action.copied'), 'check')
+      } else {
+        Share.share({ message: text })
+      }
+    },
+    [t, toast],
+  )
+
+  const docLabels: DocLabels = useMemo(
+    () => ({
+      problem: t('share.problem'),
+      photoProblem: t('turn.photoProblem'),
+      copy: t('action.copy'),
+      share: t('action.share'),
+      solution: t('solution.label'),
+      answer: t('solution.answer'),
+      graph: t('solution.graph'),
+      similar: t('solution.chip.similar'),
+      mistake: t('solution.chip.mistake'),
+      verifying: t('solution.verifying'),
+      reverifying: t('solution.reverifying'),
+      verified: t('solution.verified'),
+      unverified: t('solution.unverified'),
+      unverifiedPill: t('solution.unverified.pill'),
+      retry: t('err.retry'),
+      cancel: t('pending.cancel'),
+      you: t('doc.you'),
+      pending: [t('pending.1'), t('pending.2'), t('pending.3'), t('pending.4')],
+    }),
+    [t],
+  )
 
   return (
     <ScreenBackground>
@@ -668,46 +669,28 @@ export default function SolverScreen() {
             </View>
           </ScrollView>
         ) : (
-          <ScrollView
-            ref={scrollRef}
-            style={styles.flex}
-            contentContainerStyle={styles.thread}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="on-drag"
-            // 'follow' rides live turns (animated); 'anchor' keeps the bottom
-            // edge glued, instantly, while loaded cards settle their heights —
-            // the reader never sees the layout move. 'none' = hands off.
-            onContentSizeChange={() => {
-              if (scrollIntentRef.current === 'follow') scrollDown()
-              else if (scrollIntentRef.current === 'anchor') scrollRef.current?.scrollToEnd({ animated: false })
-            }}
-            // The reader's finger outranks every automatic scroll.
-            onScrollBeginDrag={() => {
-              scrollIntentRef.current = 'none'
-            }}
-          >
-            {problemMeta && (
-              <Txt size={10.5} color={c.textFaint} style={[styles.threadMeta, { fontFamily: theme.font.mono }]}>
-                {[problemMeta.topic?.toUpperCase(), new Date(problemMeta.createdAt).toLocaleDateString()]
-                  .filter(Boolean)
-                  .join('  ·  ')}
-              </Txt>
-            )}
-            {thread.map((x) => (
-              <Bubble
-                key={x.id}
-                turn={x}
-                animate={!staticIdsRef.current.has(x.id)}
-                mountDelay={staticIdsRef.current.has(x.id) ? mountDelayRef.current : 0}
-                onChip={handleChip}
-                onCancel={cancelRun}
-                onRetry={x.error ? retryLast : undefined}
-                onVerifyTap={setVerifyInfo}
-                verifying={verifyingMap[x.id] ?? false}
-              />
-            ))}
-          </ScrollView>
+          // The conversation as ONE living document (no bubbles): problem as
+          // the page title, solution as the body, follow-ups as annotations.
+          // Layout belongs entirely to the browser — the height-sync bug class
+          // cannot exist here.
+          <ThreadDocument
+            turns={thread}
+            verifying={verifyingMap}
+            cold={coldDocRef.current}
+            meta={
+              problemMeta
+                ? [problemMeta.topic?.toUpperCase(), new Date(problemMeta.createdAt).toLocaleDateString()]
+                    .filter(Boolean)
+                    .join('  ·  ')
+                : null
+            }
+            labels={docLabels}
+            onChip={handleChip}
+            onVerifyTap={setVerifyInfo}
+            onRetry={retryLast}
+            onCancel={cancelRun}
+            onAction={handleDocAction}
+          />
         )}
         </CrossFade>
 
@@ -826,6 +809,7 @@ function Bubble({
 }) {
   const { theme } = useTheme()
   const { t } = useI18n()
+  const toast = useToast()
   const c = theme.colors
 
   let inner: ReactNode
@@ -835,7 +819,8 @@ function Bubble({
         colors={theme.gradient.brand as [string, string]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={styles.userBubble}
+        // Photo-only bubbles wear the image edge-to-edge (thin gradient frame).
+        style={[styles.userBubble, !!turn.imageUri && !turn.text && styles.userBubblePhoto]}
       >
         {!!turn.imageUri && <Image source={{ uri: turn.imageUri }} style={styles.userImg} resizeMode="cover" />}
         {!!turn.text && (
@@ -894,27 +879,47 @@ function Bubble({
           }}
         />
         {!isErrorResult(turn.text) && (
-          <View style={[styles.asstActions, { borderColor: c.border }]}>
-            <Pressable
-              onPress={() => Clipboard.setStringAsync(solutionText(turn.text))}
+          <View style={styles.asstActions}>
+            <Press
+              onPress={() => {
+                Clipboard.setStringAsync(
+                  solutionShareText(turn.text, {
+                    problem: t('share.problem'),
+                    answer: t('solution.answer'),
+                    signature: t('share.signature'),
+                  }),
+                )
+                Haptics.selectionAsync().catch(() => {})
+                toast.show(t('action.copied'), 'check') // silent copy = broken copy
+              }}
               hitSlop={6}
-              style={({ pressed }) => [styles.actionBtn, { opacity: pressed ? 0.5 : 1 }]}
+              scaleTo={0.95}
+              style={[styles.actionBtn, { backgroundColor: c.surfaceAlt }]}
             >
-              <Feather name="copy" size={14} color={c.textMuted} />
+              <Feather name="copy" size={13} color={c.textMuted} />
               <Txt size={12.5} weight="semibold" color={c.textMuted}>
                 {t('action.copy')}
               </Txt>
-            </Pressable>
-            <Pressable
-              onPress={() => Share.share({ message: solutionText(turn.text) })}
+            </Press>
+            <Press
+              onPress={() =>
+                Share.share({
+                  message: solutionShareText(turn.text, {
+                    problem: t('share.problem'),
+                    answer: t('solution.answer'),
+                    signature: t('share.signature'),
+                  }),
+                })
+              }
               hitSlop={6}
-              style={({ pressed }) => [styles.actionBtn, { opacity: pressed ? 0.5 : 1 }]}
+              scaleTo={0.95}
+              style={[styles.actionBtn, { backgroundColor: c.surfaceAlt }]}
             >
-              <Feather name="share-2" size={14} color={c.textMuted} />
+              <Feather name="share-2" size={13} color={c.textMuted} />
               <Txt size={12.5} weight="semibold" color={c.textMuted}>
                 {t('action.share')}
               </Txt>
-            </Pressable>
+            </Press>
           </View>
         )}
       </View>
@@ -1093,7 +1098,22 @@ const styles = StyleSheet.create({
 
   // thread
   thread: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 16, gap: 14 },
-  threadMeta: { textAlign: 'center', letterSpacing: 1.1, paddingTop: 4, paddingBottom: 2 },
+  threadMetaWrap: { alignItems: 'center', paddingTop: 2, paddingBottom: 2 },
+  threadMetaPill: { borderWidth: 1, borderRadius: 999, paddingVertical: 5, paddingHorizontal: 13 },
+  jumpWrap: { position: 'absolute', right: 16, bottom: 14 },
+  jumpBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#1A1626',
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 5,
+  },
   userBubble: {
     alignSelf: 'flex-end',
     maxWidth: '82%',
@@ -1103,7 +1123,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     gap: 8,
   },
-  userImg: { width: 200, height: 150, borderRadius: 12 },
+  userBubblePhoto: { paddingVertical: 5, paddingHorizontal: 5 },
+  userImg: { width: 210, height: 156, borderRadius: 15 },
   asstCard: {
     alignSelf: 'stretch',
     borderWidth: 1,
@@ -1131,8 +1152,15 @@ const styles = StyleSheet.create({
   },
   pendingWrap: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   pendingRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 11 },
-  asstActions: { flexDirection: 'row', gap: 20, marginTop: 10, paddingTop: 11, borderTopWidth: 1 },
-  actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  asstActions: { flexDirection: 'row', gap: 8, marginTop: 12 },
+  actionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderRadius: 999,
+    paddingVertical: 7,
+    paddingHorizontal: 13,
+  },
 
   // composer
   composerWrap: { paddingHorizontal: 14, paddingTop: 6 },

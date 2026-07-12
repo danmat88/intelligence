@@ -55,17 +55,21 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels, 
   .step{display:grid;grid-template-columns:26px 1fr;gap:12px;padding:11px 8px;margin:0 -8px;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:14px}
   .step+.step{border-top:1px solid rgba(26,22,38,.06)}
   .step:active{background:${c.accentSoft}}
-  .step .no{width:26px;height:26px;border-radius:9px;background:${c.accentSoft};color:${c.accent};font-family:${mono};font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .step .no{width:26px;height:26px;border-radius:9px;background:${c.accentSoft};color:${c.accent};font-family:${mono};font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:background .25s,color .25s}
+  /* Steps you already asked about wear a filled tile — instant feedback on
+     tap, and orientation later ("which ones did I struggle with?"). */
+  .step.asked .no{background:${c.accent};color:#fff}
   .step .math{font-size:16px;color:${c.text};overflow-x:auto;overflow-y:hidden;padding-top:3px}
   .step .why{font-size:12.5px;color:${c.textMuted};margin-top:5px;line-height:1.45}
-  .answer{display:flex;align-items:center;gap:12px;margin:12px 0 14px;padding:14px 16px;border-radius:18px;background:${c.successSoft};border:1px solid rgba(14,159,110,.22);position:relative;overflow:hidden}
+  .answer{display:flex;align-items:center;gap:12px;margin:12px 0 0;padding:14px 16px;border-radius:18px;background:${c.successSoft};border:1px solid rgba(14,159,110,.22);position:relative;overflow:hidden}
   .answer .tick{width:26px;height:26px;border-radius:50%;background:${c.success};display:flex;align-items:center;justify-content:center;flex:0 0 auto;box-shadow:0 2px 8px rgba(14,159,110,.35)}
   .answer .tick svg{width:14px;height:14px;stroke:#fff;stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
   .answer .ak{display:block;font-family:${mono};font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:${c.success};font-weight:700;margin-bottom:3px}
   .answer .math{font-size:17.5px;color:${c.text};overflow-x:auto;overflow-y:hidden}
-  /* The verification STORY lives in one slot on the answer box: a quiet
-     pulsing pill while checking, morphing into the green badge on success. */
-  .vslot{margin-left:auto;align-self:center;flex:0 0 auto}
+  /* The verification STORY lives on its own FIXED-HEIGHT line under the
+     answer box: pill while checking, badge on success, amber on doubt —
+     every state occupies the same space, so the card NEVER shifts. */
+  .vline{height:26px;display:flex;align-items:center;justify-content:flex-end;margin:8px 2px 14px}
   .vstat{display:inline-flex;align-items:center;gap:6px;font-family:${mono};font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:${c.textFaint};background:#fff;border:1px solid ${c.border};border-radius:999px;padding:5px 10px}
   .vstat .dot{width:6px;height:6px;border-radius:50%;background:${c.accent};animation:vpulse 1.1s ease-in-out infinite}
   @keyframes vpulse{0%,100%{opacity:.25}50%{opacity:1}}
@@ -111,10 +115,21 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels, 
   // Celebration fires only on a LIVE transition to verified — never when a
   // stored solution re-renders already carrying its badge.
   var wasRendered = false, wasVerified = false;
+  // Which steps were asked about — survives re-renders (badge updates etc.).
+  var ASKED = {};
   function post(m){ try{ window.ReactNativeWebView && window.ReactNativeWebView.postMessage(m); }catch(e){} }
-  function h(){ post('H:'+document.body.scrollHeight); }
+  // Measure the CONTENT div, never body.scrollHeight: the body is floored at
+  // the viewport height, so on a growing container it reports the viewport
+  // back — which, with grow-only ratcheting on the native side, becomes a
+  // runaway feedback loop (the "card gets huge" bug).
+  function h(){
+    var el=document.getElementById('c');
+    var m=el?Math.ceil(el.getBoundingClientRect().height)+2:document.body.scrollHeight;
+    post('H:'+m);
+  }
   function chip(v){ post('C:'+v); }
   function vtap(v){ post('V:'+v); }
+  function stepTap(el,n){ ASKED[n]=1; el.classList.add('asked'); chip('step:'+n); }
   function esc(s){ var d=document.createElement('div'); d.textContent=s==null?'':String(s); return d.innerHTML; }
   // Prose fields must be plain text, but models occasionally leak TeX commands
   // into them — map the common ones to readable symbols, drop stray backslashes.
@@ -178,7 +193,7 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels, 
         var out='<div class="lbl">'+esc(L.solution)+'</div>';
         (data.steps||[]).forEach(function(st,i){
           var n=String(i+1);
-          out+='<div class="step" onclick="chip(\\'step:'+(i+1)+'\\')"><div class="no">'+n+'</div><div><div class="math">'+tex(st.math)+'</div>'+
+          out+='<div class="step'+(ASKED[n]?' asked':'')+'" onclick="stepTap(this,'+(i+1)+')"><div class="no">'+n+'</div><div><div class="math">'+tex(st.math)+'</div>'+
                (st.why?'<div class="why">'+esc(deTeX(st.why))+'</div>':'')+'</div></div>';
         });
         if(data.answer){
@@ -189,14 +204,15 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels, 
           var celebrate = wasRendered && !wasVerified && nowVerified;
           var vslot='';
           if(VERIFYING==='check'||VERIFYING==='recheck'){
-            vslot='<span class="vslot"><span class="vstat"><span class="dot"></span>'+esc(VERIFYING==='recheck'?L.reverifying:L.verifying)+'</span></span>';
+            vslot='<span class="vstat"><span class="dot"></span>'+esc(VERIFYING==='recheck'?L.reverifying:L.verifying)+'</span>';
           } else if(nowVerified){
-            vslot='<span class="vslot"><span class="vbadge" onclick="vtap(\\'verified\\')"><span class="chk">✓</span>'+esc(L.verified)+'</span></span>';
+            vslot='<span class="vbadge" onclick="vtap(\\'verified\\')"><span class="chk">✓</span>'+esc(L.verified)+'</span>';
           } else if(data._verified===false){
-            vslot='<span class="vslot"><span class="vwarnpill" onclick="vtap(\\'unverified\\')">!&nbsp;'+esc(L.unverifiedPill)+'</span></span>';
+            vslot='<span class="vwarnpill" onclick="vtap(\\'unverified\\')">!&nbsp;'+esc(L.unverifiedPill)+'</span>';
           }
           out+='<div class="answer'+(celebrate?' celebrate':'')+'"><div class="tick"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>'+
-               '<div><span class="ak">'+esc(L.answer)+'</span><span class="math">'+tex(data.answer)+'</span></div>'+vslot+'</div>';
+               '<div><span class="ak">'+esc(L.answer)+'</span><span class="math">'+tex(data.answer)+'</span></div></div>'+
+               '<div class="vline">'+vslot+'</div>';
           if(data._verified===false){ out+='<div class="vwarn">'+esc(L.unverified)+'</div>'; }
           wasVerified = nowVerified;
         }
@@ -230,7 +246,12 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels, 
   // (KaTeX is already warm, so there is no reload, no flash, no refetch).
   window.update = function(raw, verifying){ RAW = String(raw); VERIFYING = verifying ? String(verifying) : ''; render(); };
   window.addEventListener('load',render);
-  setTimeout(h,300); setTimeout(h,900); setTimeout(h,1600);
+  // Event-driven height reporting: observe the CONTENT box itself and the
+  // font pipeline — every real layout change reports, transient or final;
+  // the native side applies only the value that survives the quiet window.
+  try{ if(window.ResizeObserver){ new ResizeObserver(h).observe(document.getElementById('c')); } }catch(e){}
+  try{ if(document.fonts && document.fonts.ready){ document.fonts.ready.then(h); } }catch(e){}
+  setTimeout(h,400); setTimeout(h,1200);
 </script></body></html>`
 }
 
@@ -240,7 +261,8 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels, 
  * app restarts. Keyed by a hash of the content, capped, saved debounced.
  */
 const heightCache = new Map<string, number>()
-const CACHE_KEY = '@rezolvo.solHeights'
+// v2: v1 entries were poisoned by the body.scrollHeight runaway — abandon them.
+const CACHE_KEY = '@rezolvo.solHeights.v2'
 const CACHE_CAP = 300
 let saveTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -286,9 +308,9 @@ function estimateHeight(content: string): number {
       if (j.steps || j.answer) {
         const steps = Array.isArray(j.steps) ? j.steps.length : 0
         const whys = Array.isArray(j.steps) ? j.steps.filter((st) => st && st.why).length : 0
-        let h = 34 + steps * 44 + whys * 18 + (j.answer ? 82 : 0) + 40
+        let h = 34 + steps * 44 + whys * 18 + (j.answer ? 114 : 0) + 40
         if (Array.isArray(j.quadratic) && j.quadratic.length === 3) h += 150
-        return Math.min(540, Math.max(72, h))
+        return Math.min(600, Math.max(72, h))
       }
     }
   } catch {
@@ -330,10 +352,33 @@ export default function SolutionView({
   const { theme } = useTheme()
   const c = theme.colors
   const key = useMemo(() => contentKey(content), [content])
+  // Live answers start at the pending block's size (no downward dip when the
+  // spinner card becomes the solution card), then grow ONCE toward the
+  // estimate; the real measurement lands as a small ratcheted adjustment.
+  const LIVE_START = 118
   const height = useRef(
-    new Animated.Value(reveal ? 72 : (heightCache.get(key) ?? estimateHeight(content))),
+    new Animated.Value(reveal ? LIVE_START : (heightCache.get(key) ?? estimateHeight(content))),
   ).current
   const measuredRef = useRef(false)
+  const appliedRef = useRef(0) // last height actually applied
+  const settleRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingTargetRef = useRef(0)
+  const contentDirtyRef = useRef(false)
+  const [painted, setPainted] = useState(false)
+  const paintedRef = useRef(false)
+
+  useEffect(() => {
+    if (!reveal) return
+    const target = heightCache.get(key) ?? estimateHeight(content)
+    appliedRef.current = target
+    Animated.timing(height, {
+      toValue: target,
+      duration: 420,
+      easing: Easing.bezier(0.22, 1, 0.36, 1),
+      useNativeDriver: false,
+    }).start()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   // Hold the heavy WebView back only while a covering transition runs —
   // the box (already final-size) carries the layout meanwhile.
   const [webAlive, setWebAlive] = useState(reveal || mountDelay <= 0)
@@ -377,6 +422,9 @@ export default function SolutionView({
     if (!loadedRef.current) return
     const want = propsRef.current
     if (shownRef.current.content === want.content && shownRef.current.verifying === want.verifying) return
+    // A real content swap (deep re-solve) may legitimately resize either way;
+    // everything else is height-ratcheted so late reports can't jiggle.
+    if (shownRef.current.content !== want.content) contentDirtyRef.current = true
     shownRef.current = { ...want }
     webRef.current?.injectJavaScript(
       `window.update && window.update(${JSON.stringify(want.content)}, ${JSON.stringify(want.verifying || '')}); true;`,
@@ -384,19 +432,21 @@ export default function SolutionView({
   }
   useEffect(sync, [content, verifying])
 
-  if (!webAlive || assetBase === undefined) {
-    return (
-      <Animated.View style={{ height, overflow: 'hidden' }}>
-        <View style={[styles.ghostBar, { backgroundColor: c.surfaceAlt, width: '38%' }]} />
-        <View style={[styles.ghostBar, { backgroundColor: c.surfaceAlt, width: '86%' }]} />
-        <View style={[styles.ghostBar, { backgroundColor: c.surfaceAlt, width: '72%' }]} />
-        <View style={[styles.ghostBar, { backgroundColor: c.surfaceAlt, width: '64%' }]} />
-      </Animated.View>
-    )
-  }
+  // The ghost bars carry the box until the page actually PAINTS (not merely
+  // mounts) — a card is never visibly empty, and it never dips or double-jumps.
+  const webReady = webAlive && assetBase !== undefined
 
   return (
-    <Animated.View style={{ height }}>
+    <Animated.View style={{ height, overflow: 'hidden' }}>
+      {!painted && (
+        <View style={styles.ghostFill} pointerEvents="none">
+          <View style={[styles.ghostBar, { backgroundColor: c.surfaceAlt, width: '38%' }]} />
+          <View style={[styles.ghostBar, { backgroundColor: c.surfaceAlt, width: '86%' }]} />
+          <View style={[styles.ghostBar, { backgroundColor: c.surfaceAlt, width: '72%' }]} />
+          <View style={[styles.ghostBar, { backgroundColor: c.surfaceAlt, width: '64%' }]} />
+        </View>
+      )}
+      {webReady && (
       <WebView
         ref={webRef}
         originWhitelist={['*']}
@@ -418,19 +468,41 @@ export default function SolutionView({
           if (d.startsWith('H:')) {
             const n = Number(d.slice(2))
             if (n > 0) {
+              // STABILITY-BASED sizing — the lesson of every height bug so
+              // far: the page reports several TRANSIENT layouts (fallback
+              // fonts before KaTeX fonts load, mid-typeset states) before the
+              // real one. Never apply a transient: each report arms a short
+              // timer; a newer report replaces it; only the value that
+              // survives 160ms of quiet is applied — in EITHER direction,
+              // with a single calm animation. No ratchets, no feedback loops.
               const target = Math.ceil(n) + 6
-              rememberHeight(key, target)
-              if (!reveal && !measuredRef.current) {
-                height.setValue(target) // land at full size, no growth
-              } else {
-                Animated.timing(height, {
-                  toValue: target,
-                  duration: 400,
-                  easing: Easing.bezier(0.22, 1, 0.36, 1), // calm growth
-                  useNativeDriver: false, // height is a layout prop
-                }).start()
+              if (__DEV__) console.log(`[card ${key}] report ${target} (applied ${appliedRef.current})`)
+              pendingTargetRef.current = target
+              if (settleRef.current) clearTimeout(settleRef.current)
+              settleRef.current = setTimeout(() => {
+                const stable = pendingTargetRef.current
+                const dirty = contentDirtyRef.current
+                contentDirtyRef.current = false
+                if (Math.abs(stable - appliedRef.current) <= 2 && measuredRef.current) return
+                if (__DEV__) console.log(`[card ${key}] apply ${stable}${dirty ? ' (content swap)' : ''}`)
+                appliedRef.current = stable
+                rememberHeight(key, stable)
+                if (!reveal && !measuredRef.current) {
+                  height.setValue(stable) // history cards land silently
+                } else {
+                  Animated.timing(height, {
+                    toValue: stable,
+                    duration: 400,
+                    easing: Easing.bezier(0.22, 1, 0.36, 1),
+                    useNativeDriver: false, // height is a layout prop
+                  }).start()
+                }
+                measuredRef.current = true
+              }, 160)
+              if (!paintedRef.current) {
+                paintedRef.current = true
+                setPainted(true) // first paint — the ghost bars hand over
               }
-              measuredRef.current = true
             }
           } else if (d.startsWith('C:')) {
             onChip?.(d.slice(2))
@@ -440,11 +512,13 @@ export default function SolutionView({
           }
         }}
       />
+      )}
     </Animated.View>
   )
 }
 
 const styles = StyleSheet.create({
   web: { flex: 1, backgroundColor: 'transparent' },
+  ghostFill: { ...StyleSheet.absoluteFillObject, paddingTop: 2 },
   ghostBar: { height: 13, borderRadius: 7, marginBottom: 12 },
 })

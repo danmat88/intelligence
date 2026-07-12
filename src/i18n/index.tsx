@@ -40,6 +40,7 @@ const STRINGS = {
     'pending.cancel': 'Cancel',
     // — chips / turns
     'turn.explainStep': 'Explain step {n}',
+    'turn.practiceStep': "Let's practice step {n}",
     'turn.similar': 'A similar problem',
     'turn.photoProblem': 'Photo problem',
     // — solution card (rendered in the WebView)
@@ -62,7 +63,11 @@ const STRINGS = {
     'common.ok': 'Got it',
     // — actions
     'action.copy': 'Copy',
+    'action.copied': 'Copied',
     'action.share': 'Share',
+    'share.problem': 'Problem',
+    'share.signature': 'Solved with Rezolvo',
+    'doc.you': 'You',
     // — errors
     'err.network': "Couldn't reach the internet — check your connection and try again.",
     'err.busy': "I'm a bit busy right now — give it a moment and try again.",
@@ -72,6 +77,7 @@ const STRINGS = {
     'err.camera': 'Could not open the camera — check the permission in Settings.',
     'err.retry': 'Try again',
     'net.offline': 'No connection — check your internet',
+    'busy.wait': 'One at a time — waiting for the current answer…',
     // — auth feedback
     'auth.signedInAs': 'Signed in as {name}',
     'auth.signedOut': 'Signed out',
@@ -165,6 +171,7 @@ const STRINGS = {
     'pending.cancel': 'Anulează',
     // — chips / turns
     'turn.explainStep': 'Explică pasul {n}',
+    'turn.practiceStep': 'Hai să exersăm pasul {n}',
     'turn.similar': 'O problemă similară',
     'turn.photoProblem': 'Problemă din poză',
     // — solution card (rendered in the WebView)
@@ -187,7 +194,11 @@ const STRINGS = {
     'common.ok': 'Am înțeles',
     // — actions
     'action.copy': 'Copiază',
+    'action.copied': 'Copiat',
     'action.share': 'Trimite',
+    'share.problem': 'Problema',
+    'share.signature': 'Rezolvat cu Rezolvo',
+    'doc.you': 'Tu',
     // — errors
     'err.network': 'Nu am ajuns la internet — verifică conexiunea și încearcă din nou.',
     'err.busy': 'Sunt puțin ocupat acum — așteaptă un moment și încearcă iar.',
@@ -197,6 +208,7 @@ const STRINGS = {
     'err.camera': 'Nu am putut deschide camera — verifică permisiunea în Setări.',
     'err.retry': 'Încearcă din nou',
     'net.offline': 'Fără conexiune — verifică-ți internetul',
+    'busy.wait': 'Pe rând — aștept răspunsul curent…',
     // — auth feedback
     'auth.signedInAs': 'Conectat ca {name}',
     'auth.signedOut': 'Deconectat',

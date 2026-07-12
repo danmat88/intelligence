@@ -11,7 +11,7 @@ import * as FS from 'expo-file-system/legacy'
  * Bump the version segment when upgrading katex/marked so stale copies are
  * replaced.
  */
-const DIR_NAME = 'mathkit-katex01611/'
+const DIR_NAME = 'mathkit-v2/'
 
 // NOTE: bundled basenames must be unique IGNORING extension — Android release
 // builds flatten assets into res/raw by extension-less name, so katex.kcss +
@@ -41,6 +41,13 @@ const FILES: Record<string, number> = {
   'fonts/KaTeX_Size3-Regular.woff2': require('../../../assets/katex/fonts/KaTeX_Size3-Regular.woff2'),
   'fonts/KaTeX_Size4-Regular.woff2': require('../../../assets/katex/fonts/KaTeX_Size4-Regular.woff2'),
   'fonts/KaTeX_Typewriter-Regular.woff2': require('../../../assets/katex/fonts/KaTeX_Typewriter-Regular.woff2'),
+  // The app's own faces, so the thread document is typographically identical
+  // to the native chrome around it.
+  'fonts/SpaceGrotesk-Bold.ttf': require('@expo-google-fonts/space-grotesk/700Bold/SpaceGrotesk_700Bold.ttf'),
+  'fonts/Inter-Regular.ttf': require('@expo-google-fonts/inter/400Regular/Inter_400Regular.ttf'),
+  'fonts/Inter-Medium.ttf': require('@expo-google-fonts/inter/500Medium/Inter_500Medium.ttf'),
+  'fonts/Inter-SemiBold.ttf': require('@expo-google-fonts/inter/600SemiBold/Inter_600SemiBold.ttf'),
+  'fonts/JetBrainsMono-SemiBold.ttf': require('@expo-google-fonts/jetbrains-mono/600SemiBold/JetBrainsMono_600SemiBold.ttf'),
 }
 
 /** Resolved base dir once ready — lets components read it synchronously. */
