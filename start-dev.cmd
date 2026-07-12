@@ -8,12 +8,20 @@ echo   Starting Rezolvo dev environment
 echo  ============================================
 echo.
 
-REM 1) Open Metro in its own window (leave it running).
-start "Rezolvo Metro" cmd /k "cd /d C:\dev\intelligence && npm run dev:client"
+REM 1) Reuse a live Metro: if 8081 already answers, DON'T start a second one
+REM    (a second "expo start" hops to another port, and the dev client is
+REM    pinned to 8081 - nothing would connect).
+powershell -NoProfile -Command "try{ if((Invoke-WebRequest 'http://localhost:8081/status' -UseBasicParsing -TimeoutSec 2).StatusCode -eq 200){ exit 0 } }catch{}; exit 1"
+if %errorlevel%==0 (
+  echo  Metro already running on 8081 - reusing it.
+) else (
+  echo  Starting Metro...
+  start "Rezolvo Metro" cmd /k "cd /d C:\dev\intelligence && npm run dev:client"
 
-REM 2) Wait until Metro answers on 8081 (up to ~120s; cold start is slow).
-echo  Waiting for Metro to come up...
-powershell -NoProfile -Command "for($i=0;$i -lt 60;$i++){try{if((Invoke-WebRequest 'http://localhost:8081/status' -UseBasicParsing -TimeoutSec 2).StatusCode -eq 200){Write-Host '  Metro is up.' -ForegroundColor Green; exit 0}}catch{}; Start-Sleep -Seconds 2}; Write-Host '  Metro did not respond in time.' -ForegroundColor Yellow; exit 1"
+  REM 2) Wait until Metro answers on 8081 (up to ~120s; cold start is slow).
+  echo  Waiting for Metro to come up...
+  powershell -NoProfile -Command "for($i=0;$i -lt 60;$i++){try{if((Invoke-WebRequest 'http://localhost:8081/status' -UseBasicParsing -TimeoutSec 2).StatusCode -eq 200){Write-Host '  Metro is up.' -ForegroundColor Green; exit 0}}catch{}; Start-Sleep -Seconds 2}; Write-Host '  Metro did not respond in time.' -ForegroundColor Yellow; exit 1"
+)
 
 REM 3) Connect the phone (tunnel + launch the app).
 echo.
