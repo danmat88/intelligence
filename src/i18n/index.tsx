@@ -48,9 +48,18 @@ const STRINGS = {
     'solution.graph': 'See it — the curve meets the x-axis at your answers',
     'solution.chip.similar': 'Similar problem',
     'solution.chip.mistake': 'I typed it wrong',
-    'solution.verifying': 'Checking the answer with code…',
+    'solution.verifying': 'Checking…',
+    'solution.reverifying': 'Re-solving carefully…',
     'solution.verified': 'Verified',
     'solution.unverified': "Couldn't confirm this answer — double-check it.",
+    'solution.unverified.pill': 'Unconfirmed',
+    'verify.info.title.ok': 'Verified with code',
+    'verify.info.body.ok':
+      'Rezolvo ran the actual computation in code (Python) and the result matches the answer shown. This is a machine check — not just the AI being confident.',
+    'verify.info.title.warn': 'Not confirmed',
+    'verify.info.body.warn':
+      "The code check couldn't confirm this answer. It may still be right — but double-check it before relying on it.",
+    'common.ok': 'Got it',
     // — actions
     'action.copy': 'Copy',
     'action.share': 'Share',
@@ -164,9 +173,18 @@ const STRINGS = {
     'solution.graph': 'Vezi — curba atinge axa x exact la răspunsurile tale',
     'solution.chip.similar': 'Problemă similară',
     'solution.chip.mistake': 'Am scris-o greșit',
-    'solution.verifying': 'Verific răspunsul cu cod…',
+    'solution.verifying': 'Se verifică…',
+    'solution.reverifying': 'Recalculez cu atenție…',
     'solution.verified': 'Verificat',
     'solution.unverified': 'Nu am putut confirma răspunsul — verifică-l și tu.',
+    'solution.unverified.pill': 'Neconfirmat',
+    'verify.info.title.ok': 'Verificat cu cod',
+    'verify.info.body.ok':
+      'Rezolvo a rulat calculul efectiv în cod (Python), iar rezultatul coincide cu răspunsul afișat. E o verificare de mașină — nu doar părerea AI-ului.',
+    'verify.info.title.warn': 'Neconfirmat',
+    'verify.info.body.warn':
+      'Verificarea prin calcul nu a putut confirma răspunsul. Poate fi totuși corect — dar verifică-l și tu înainte să te bazezi pe el.',
+    'common.ok': 'Am înțeles',
     // — actions
     'action.copy': 'Copiază',
     'action.share': 'Trimite',

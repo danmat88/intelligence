@@ -21,11 +21,16 @@ export type SolutionLabels = {
   similar: string
   mistake: string
   verifying: string
+  reverifying: string
   verified: string
   unverified: string
+  unverifiedPill: string
 }
 
-function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels, verifying: boolean, local: boolean) {
+/** Verification stage shown on the answer box (the badge's future home). */
+export type VerifyStage = 'check' | 'recheck' | false
+
+function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels, verifying: VerifyStage, local: boolean) {
   const sans = "system-ui,-apple-system,'Segoe UI',Roboto,sans-serif"
   const mono = "ui-monospace,'SF Mono','Cascadia Code',Menlo,monospace"
   const payload = JSON.stringify(content)
@@ -53,16 +58,28 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels, 
   .step .no{width:26px;height:26px;border-radius:9px;background:${c.accentSoft};color:${c.accent};font-family:${mono};font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:1px}
   .step .math{font-size:16px;color:${c.text};overflow-x:auto;overflow-y:hidden;padding-top:3px}
   .step .why{font-size:12.5px;color:${c.textMuted};margin-top:5px;line-height:1.45}
-  .answer{display:flex;align-items:center;gap:12px;margin:12px 0 14px;padding:14px 16px;border-radius:18px;background:${c.successSoft};border:1px solid rgba(14,159,110,.22)}
+  .answer{display:flex;align-items:center;gap:12px;margin:12px 0 14px;padding:14px 16px;border-radius:18px;background:${c.successSoft};border:1px solid rgba(14,159,110,.22);position:relative;overflow:hidden}
   .answer .tick{width:26px;height:26px;border-radius:50%;background:${c.success};display:flex;align-items:center;justify-content:center;flex:0 0 auto;box-shadow:0 2px 8px rgba(14,159,110,.35)}
   .answer .tick svg{width:14px;height:14px;stroke:#fff;stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
   .answer .ak{display:block;font-family:${mono};font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:${c.success};font-weight:700;margin-bottom:3px}
   .answer .math{font-size:17.5px;color:${c.text};overflow-x:auto;overflow-y:hidden}
-  .vbadge{margin-left:auto;align-self:center;flex:0 0 auto;font-family:${mono};font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:#fff;background:${c.success};border-radius:999px;padding:5px 10px;box-shadow:0 2px 8px rgba(14,159,110,.3)}
-  .vrf{display:inline-flex;align-items:center;gap:6px;font-family:${mono};font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:${c.textFaint};margin-bottom:12px}
-  .vrf .dot{width:6px;height:6px;border-radius:50%;background:${c.accent};animation:vpulse 1.1s ease-in-out infinite}
+  /* The verification STORY lives in one slot on the answer box: a quiet
+     pulsing pill while checking, morphing into the green badge on success. */
+  .vslot{margin-left:auto;align-self:center;flex:0 0 auto}
+  .vstat{display:inline-flex;align-items:center;gap:6px;font-family:${mono};font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:${c.textFaint};background:#fff;border:1px solid ${c.border};border-radius:999px;padding:5px 10px}
+  .vstat .dot{width:6px;height:6px;border-radius:50%;background:${c.accent};animation:vpulse 1.1s ease-in-out infinite}
   @keyframes vpulse{0%,100%{opacity:.25}50%{opacity:1}}
+  .vbadge{display:inline-flex;align-items:center;gap:5px;font-family:${mono};font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:#fff;background:${c.success};border-radius:999px;padding:5px 10px;box-shadow:0 2px 8px rgba(14,159,110,.3);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .vwarnpill{display:inline-flex;align-items:center;gap:5px;font-family:${mono};font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:#9a6700;background:#fff8e6;border:1px solid #f0d789;border-radius:999px;padding:5px 10px;cursor:pointer;-webkit-tap-highlight-color:transparent}
   .vwarn{font-size:12.5px;color:#9a6700;background:#fff8e6;border:1px solid #f0d789;border-radius:14px;padding:10px 13px;margin:-5px 0 13px}
+  @media (prefers-reduced-motion:no-preference){
+    .vbadge .chk{display:inline-block;transform-origin:center;animation:chkpop .45s cubic-bezier(.22,1,.36,1)}
+    @keyframes chkpop{from{transform:scale(.3)}to{transform:scale(1)}}
+    /* One dignified light sweep across the answer box when verification
+       lands LIVE (never replayed on reopening history). */
+    .answer.celebrate::after{content:'';position:absolute;top:0;bottom:0;width:70px;left:-90px;transform:skewX(-12deg);background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.6),rgba(255,255,255,0));animation:sweep .7s ease-out 1}
+    @keyframes sweep{to{left:120%}}
+  }
   .graph{border:1px solid ${c.border};border-radius:18px;background:${c.bg};padding:12px 14px 8px;margin:0 0 14px}
   .graph .glabel{font-family:${mono};font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:${c.textFaint};margin-bottom:6px}
   .graph svg{width:100%;height:auto;display:block;overflow:visible}
@@ -90,10 +107,14 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels, 
 <script>
   var RAW = ${payload};
   var L = ${L};
-  var VERIFYING = ${verifying ? 'true' : 'false'};
+  var VERIFYING = ${JSON.stringify(verifying || '')};
+  // Celebration fires only on a LIVE transition to verified — never when a
+  // stored solution re-renders already carrying its badge.
+  var wasRendered = false, wasVerified = false;
   function post(m){ try{ window.ReactNativeWebView && window.ReactNativeWebView.postMessage(m); }catch(e){} }
   function h(){ post('H:'+document.body.scrollHeight); }
   function chip(v){ post('C:'+v); }
+  function vtap(v){ post('V:'+v); }
   function esc(s){ var d=document.createElement('div'); d.textContent=s==null?'':String(s); return d.innerHTML; }
   // Prose fields must be plain text, but models occasionally leak TeX commands
   // into them — map the common ones to readable symbols, drop stray backslashes.
@@ -155,18 +176,31 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels, 
       if(data && data.error){ el.innerHTML='<div class="errnote">'+esc(data.error)+'</div>'; h(); return; }
       if(data && (data.steps || data.answer)){
         var out='<div class="lbl">'+esc(L.solution)+'</div>';
-        if(VERIFYING){ out+='<div class="vrf"><span class="dot"></span>'+esc(L.verifying)+'</div>'; }
         (data.steps||[]).forEach(function(st,i){
           var n=String(i+1);
           out+='<div class="step" onclick="chip(\\'step:'+(i+1)+'\\')"><div class="no">'+n+'</div><div><div class="math">'+tex(st.math)+'</div>'+
                (st.why?'<div class="why">'+esc(deTeX(st.why))+'</div>':'')+'</div></div>';
         });
         if(data.answer){
-          out+='<div class="answer"><div class="tick"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>'+
-               '<div><span class="ak">'+esc(L.answer)+'</span><span class="math">'+tex(data.answer)+'</span></div>'+
-               (data._verified===true?'<span class="vbadge">✓ '+esc(L.verified)+'</span>':'')+'</div>';
+          // One slot on the answer box tells the whole verification story:
+          // pulsing "checking" pill -> (maybe "re-solving") -> green badge
+          // or amber pill. Space is reserved from the start, nothing jumps.
+          var nowVerified = data._verified===true;
+          var celebrate = wasRendered && !wasVerified && nowVerified;
+          var vslot='';
+          if(VERIFYING==='check'||VERIFYING==='recheck'){
+            vslot='<span class="vslot"><span class="vstat"><span class="dot"></span>'+esc(VERIFYING==='recheck'?L.reverifying:L.verifying)+'</span></span>';
+          } else if(nowVerified){
+            vslot='<span class="vslot"><span class="vbadge" onclick="vtap(\\'verified\\')"><span class="chk">✓</span>'+esc(L.verified)+'</span></span>';
+          } else if(data._verified===false){
+            vslot='<span class="vslot"><span class="vwarnpill" onclick="vtap(\\'unverified\\')">!&nbsp;'+esc(L.unverifiedPill)+'</span></span>';
+          }
+          out+='<div class="answer'+(celebrate?' celebrate':'')+'"><div class="tick"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>'+
+               '<div><span class="ak">'+esc(L.answer)+'</span><span class="math">'+tex(data.answer)+'</span></div>'+vslot+'</div>';
           if(data._verified===false){ out+='<div class="vwarn">'+esc(L.unverified)+'</div>'; }
+          wasVerified = nowVerified;
         }
+        wasRendered = true;
         if(data.quadratic && data.quadratic.length===3){ out+=plot(+data.quadratic[0],+data.quadratic[1],+data.quadratic[2]); }
         out+='<div class="chips"><button class="fu" onclick="chip(\\'similar\\')">'+esc(L.similar)+'</button>'+
              '<button class="fu" onclick="chip(\\'mistake\\')">'+esc(L.mistake)+'</button></div>';
@@ -194,7 +228,7 @@ function buildHtml(content: string, c: Theme['colors'], labels: SolutionLabels, 
   // Live update channel: the native side NEVER rebuilds this page — new
   // content / verify states are injected here and re-rendered in place
   // (KaTeX is already warm, so there is no reload, no flash, no refetch).
-  window.update = function(raw, verifying){ RAW = String(raw); VERIFYING = !!verifying; render(); };
+  window.update = function(raw, verifying){ RAW = String(raw); VERIFYING = verifying ? String(verifying) : ''; render(); };
   window.addEventListener('load',render);
   setTimeout(h,300); setTimeout(h,900); setTimeout(h,1600);
 </script></body></html>`
@@ -266,6 +300,7 @@ function estimateHeight(content: string): number {
 export default function SolutionView({
   content,
   onChip,
+  onVerifyTap,
   labels,
   reveal = true,
   mountDelay = 0,
@@ -273,6 +308,8 @@ export default function SolutionView({
 }: {
   content: string
   onChip?: (id: string) => void
+  /** Tap on the ✓/! badge — opens the trust explainer on the native side. */
+  onVerifyTap?: (state: 'verified' | 'unverified') => void
   labels: SolutionLabels
   /**
    * true (live answer): the card GROWS to its content — the growth IS the
@@ -288,7 +325,7 @@ export default function SolutionView({
    * problems has no transition to protect, so the WebView mounts instantly.
    */
   mountDelay?: number
-  verifying?: boolean
+  verifying?: VerifyStage
 }) {
   const { theme } = useTheme()
   const c = theme.colors
@@ -342,7 +379,7 @@ export default function SolutionView({
     if (shownRef.current.content === want.content && shownRef.current.verifying === want.verifying) return
     shownRef.current = { ...want }
     webRef.current?.injectJavaScript(
-      `window.update && window.update(${JSON.stringify(want.content)}, ${want.verifying ? 'true' : 'false'}); true;`,
+      `window.update && window.update(${JSON.stringify(want.content)}, ${JSON.stringify(want.verifying || '')}); true;`,
     )
   }
   useEffect(sync, [content, verifying])
@@ -397,6 +434,9 @@ export default function SolutionView({
             }
           } else if (d.startsWith('C:')) {
             onChip?.(d.slice(2))
+          } else if (d.startsWith('V:')) {
+            const v = d.slice(2)
+            if (v === 'verified' || v === 'unverified') onVerifyTap?.(v)
           }
         }}
       />

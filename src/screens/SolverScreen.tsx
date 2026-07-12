@@ -14,7 +14,8 @@ import Press from '../components/ui/Press'
 import ScreenBackground from '../components/ui/ScreenBackground'
 import { useToast } from '../components/ui/Toast'
 import Txt from '../components/ui/Txt'
-import SolutionView from '../components/ui/SolutionView'
+import InfoDialog from '../components/ui/InfoDialog'
+import SolutionView, { type VerifyStage } from '../components/ui/SolutionView'
 import SymbolBar from '../components/ui/SymbolBar'
 import type { CapturedImage } from '../solve/capture'
 import { solveImage, solveProblem, followUp, solveDeep, verifyAnswer } from '../solve/solve'
@@ -148,8 +149,12 @@ export default function SolverScreen() {
   const [historyOpen, setHistoryOpen] = useState(false)
   // The in-app capture flow (camera visor / gallery pick + trim).
   const [capture, setCapture] = useState<'camera' | 'library' | null>(null)
-  // Turn-ids whose answers are being machine-checked right now (badge pending).
-  const [verifyingMap, setVerifyingMap] = useState<Record<string, boolean>>({})
+  // Turn-ids being machine-checked right now, with their stage: 'check' =
+  // first pass, 'recheck' = the honest "re-solving carefully" beat while the
+  // deep model recomputes a failed answer.
+  const [verifyingMap, setVerifyingMap] = useState<Record<string, 'check' | 'recheck'>>({})
+  // Trust explainer opened by tapping the ✓/! badge on an answer box.
+  const [verifyInfo, setVerifyInfo] = useState<'verified' | 'unverified' | null>(null)
   const scrollRef = useRef<ScrollView>(null)
   const inputRef = useRef<TextInput>(null)
   const threadRef = useRef<Turn[]>([])
@@ -266,7 +271,7 @@ export default function SolverScreen() {
   // corrected solution. The "✓" badge only ever comes from a real code check.
   const verifyFlow = useCallback(
     async (id: string, problemText: string) => {
-      setVerifyingMap((m) => ({ ...m, [id]: true }))
+      setVerifyingMap((m) => ({ ...m, [id]: 'check' }))
       const applyText = (text: string) => {
         commit(threadRef.current.map((x) => (x.id === id ? { ...x, text } : x)))
       }
@@ -281,6 +286,8 @@ export default function SolverScreen() {
           const j = getSolveJson(turn.text)
           const prob = String(j?.problem ?? '').trim() || problemText.trim()
           if (j?._model !== 'deep' && prob) {
+            // Be honest about the extra work — the pill says "re-solving".
+            setVerifyingMap((m) => ({ ...m, [id]: 'recheck' }))
             const deepRaw = await solveDeep(prob, langName)
             const v2 = isStructuredSolution(deepRaw) ? await verifyAnswer(prob, deepRaw) : 'unverifiable'
             applyText(
@@ -696,7 +703,8 @@ export default function SolverScreen() {
                 onChip={handleChip}
                 onCancel={cancelRun}
                 onRetry={x.error ? retryLast : undefined}
-                verifying={!!verifyingMap[x.id]}
+                onVerifyTap={setVerifyInfo}
+                verifying={verifyingMap[x.id] ?? false}
               />
             ))}
           </ScrollView>
@@ -780,6 +788,15 @@ export default function SolverScreen() {
 
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <HistorySheet open={historyOpen} onClose={() => setHistoryOpen(false)} onSelect={loadProblem} />
+      {/* The trust pitch, told at the moment of trust: what "Verified" means. */}
+      <InfoDialog
+        open={verifyInfo !== null}
+        tone={verifyInfo === 'unverified' ? 'warning' : 'success'}
+        title={verifyInfo === 'unverified' ? t('verify.info.title.warn') : t('verify.info.title.ok')}
+        message={verifyInfo === 'unverified' ? t('verify.info.body.warn') : t('verify.info.body.ok')}
+        okLabel={t('common.ok')}
+        onClose={() => setVerifyInfo(null)}
+      />
       <CaptureScreen open={capture} onClose={() => setCapture(null)} onUsePhoto={solvePhoto} onTypeInstead={typeInstead} />
     </ScreenBackground>
   )
@@ -792,6 +809,7 @@ function Bubble({
   onChip,
   onCancel,
   onRetry,
+  onVerifyTap,
   verifying = false,
 }: {
   turn: Turn
@@ -803,7 +821,8 @@ function Bubble({
   onCancel?: () => void
   /** Present on error turns: re-run the failed request, nothing retyped. */
   onRetry?: () => void
-  verifying?: boolean
+  onVerifyTap?: (state: 'verified' | 'unverified') => void
+  verifying?: VerifyStage
 }) {
   const { theme } = useTheme()
   const { t } = useI18n()
@@ -857,6 +876,7 @@ function Bubble({
         <SolutionView
           content={turn.text}
           onChip={onChip}
+          onVerifyTap={onVerifyTap}
           reveal={animate}
           mountDelay={mountDelay}
           verifying={verifying}
@@ -867,8 +887,10 @@ function Bubble({
             similar: t('solution.chip.similar'),
             mistake: t('solution.chip.mistake'),
             verifying: t('solution.verifying'),
+            reverifying: t('solution.reverifying'),
             verified: t('solution.verified'),
             unverified: t('solution.unverified'),
+            unverifiedPill: t('solution.unverified.pill'),
           }}
         />
         {!isErrorResult(turn.text) && (
