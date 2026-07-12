@@ -61,6 +61,8 @@ const STRINGS = {
     'err.auth': 'Please sign in again, then retry.',
     'err.generic': 'Something went wrong solving that. Try again.',
     'err.camera': 'Could not open the camera — check the permission in Settings.',
+    'err.retry': 'Try again',
+    'net.offline': 'No connection — check your internet',
     // — auth feedback
     'auth.signedInAs': 'Signed in as {name}',
     'auth.signedOut': 'Signed out',
@@ -106,6 +108,7 @@ const STRINGS = {
     'settings.privacy': 'Privacy policy',
     'settings.terms': 'Terms of service',
     'a11y.send': 'Send',
+    'a11y.stop': 'Stop solving',
     'a11y.camera': 'Take a photo',
     'a11y.delete': 'Delete',
     'a11y.close': 'Close',
@@ -174,6 +177,8 @@ const STRINGS = {
     'err.auth': 'Conectează-te din nou, apoi reîncearcă.',
     'err.generic': 'Ceva n-a mers la rezolvare. Încearcă din nou.',
     'err.camera': 'Nu am putut deschide camera — verifică permisiunea în Setări.',
+    'err.retry': 'Încearcă din nou',
+    'net.offline': 'Fără conexiune — verifică-ți internetul',
     // — auth feedback
     'auth.signedInAs': 'Conectat ca {name}',
     'auth.signedOut': 'Deconectat',
@@ -219,6 +224,7 @@ const STRINGS = {
     'settings.privacy': 'Politica de confidențialitate',
     'settings.terms': 'Termeni și condiții',
     'a11y.send': 'Trimite',
+    'a11y.stop': 'Oprește rezolvarea',
     'a11y.camera': 'Fotografiază',
     'a11y.delete': 'Șterge',
     'a11y.close': 'Închide',

@@ -166,6 +166,11 @@ export default function SolverScreen() {
   // no entrances, cards land at full size.
   const staticIdsRef = useRef<Set<string>>(new Set())
   const scrollIntentRef = useRef<'follow' | 'anchor' | 'none'>('none')
+  // The last request, kept so a failed turn can be retried without retyping.
+  const lastReqRef = useRef<{ userTurn: Turn; solver: (s: AbortSignal) => Promise<string>; verifyProblem?: string } | null>(null)
+  // Event-driven offline pill: raised by a network-classified failure,
+  // cleared by the next successful answer.
+  const [netDown, setNetDown] = useState(false)
   // WebView hold-back for loaded cards while the covering push runs — the
   // ghost boxes ride the slide, content lights up right at landing.
   const mountDelayRef = useRef(0)
@@ -212,6 +217,12 @@ export default function SolverScreen() {
     if (prevUidRef.current !== user?.id) {
       prevUidRef.current = user?.id
       problemIdRef.current = null
+      // A solve in flight belongs to the OLD account — kill it, or its answer
+      // would commit into the fresh session.
+      abortRef.current?.abort()
+      abortRef.current = null
+      lastReqRef.current = null
+      setSending(false)
       if (threadRef.current.length > 0) {
         setInput('')
         setProblemMeta(null)
@@ -304,6 +315,7 @@ export default function SolverScreen() {
       const base = threadRef.current
       const ctrl = new AbortController()
       abortRef.current = ctrl
+      lastReqRef.current = { userTurn, solver, verifyProblem } // retry fuel
       scrollIntentRef.current = 'follow' // live turns pull the scroll with them
       commit([...base, userTurn, { id: asstId, role: 'assistant', text: '', pending: true }])
       setSending(true)
@@ -314,6 +326,7 @@ export default function SolverScreen() {
         const done: Turn[] = [...base, userTurn, { id: asstId, role: 'assistant', text }]
         commit(done)
         persist(done)
+        setNetDown(false) // an answer arrived — the network is clearly back
         // One last follow puts the TOP of the fresh (still small) answer card
         // in view; then the card grows DOWNWARD while you read — the scroll
         // must never yank along with the growth.
@@ -329,7 +342,9 @@ export default function SolverScreen() {
           return
         }
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {})
-        commit([...base, userTurn, { id: asstId, role: 'assistant', text: friendlyError(e, t), error: true }])
+        const msg = friendlyError(e, t)
+        if (msg === t('err.network')) setNetDown(true)
+        commit([...base, userTurn, { id: asstId, role: 'assistant', text: msg, error: true }])
       } finally {
         if (abortRef.current === ctrl) abortRef.current = null
         setSending(false)
@@ -343,9 +358,21 @@ export default function SolverScreen() {
     abortRef.current?.abort()
     // abort may not reject an in-flight fetch immediately on RN — clear the UI now
     const base = threadRef.current.filter((x) => !x.pending)
-    commit(base.length && base[base.length - 1].role === 'user' ? base.slice(0, -1) : base)
+    const lastUser = base.length && base[base.length - 1].role === 'user' ? base[base.length - 1] : null
+    commit(lastUser ? base.slice(0, -1) : base)
+    // Nothing is lost on Stop: the question returns to the composer.
+    if (lastUser?.text) setInput((v) => v || lastUser.text)
     setSending(false)
   }, [commit])
+
+  // Retry the failed request exactly as sent — never make the user retype.
+  const retryLast = useCallback(() => {
+    const req = lastReqRef.current
+    const last = threadRef.current[threadRef.current.length - 1]
+    if (!req || !last?.error || sending) return
+    commit(threadRef.current.filter((x) => !x.error && x.id !== req.userTurn.id))
+    run(req.userTurn, req.solver, req.verifyProblem)
+  }, [commit, run, sending])
 
   const priorTurns = useCallback(
     (): ChatTurn[] =>
@@ -390,6 +417,9 @@ export default function SolverScreen() {
       Keyboard.dismiss()
       // Tapping the conversation that is already open: the sheet just closes.
       if (problemIdRef.current === p.id && threadRef.current.length > 0) return
+      // A solve in flight belongs to the conversation being LEFT — cancel it,
+      // or its answer would overwrite the freshly loaded thread.
+      if (sending) cancelRun()
       Haptics.selectionAsync().catch(() => {})
       // Choreography: the sheet starts sliding away, and mid-exit the thread
       // PUSH begins — old conversation slides out, the new one slides in as
@@ -413,7 +443,7 @@ export default function SolverScreen() {
         requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: false }))
       }, 200)
     },
-    [commit],
+    [commit, sending, cancelRun],
   )
 
   const handleChip = useCallback(
@@ -665,6 +695,7 @@ export default function SolverScreen() {
                 mountDelay={staticIdsRef.current.has(x.id) ? mountDelayRef.current : 0}
                 onChip={handleChip}
                 onCancel={cancelRun}
+                onRetry={x.error ? retryLast : undefined}
                 verifying={!!verifyingMap[x.id]}
               />
             ))}
@@ -673,6 +704,14 @@ export default function SolverScreen() {
         </CrossFade>
 
         <View style={[styles.composerWrap, { paddingBottom: insets.bottom + 8 }]}>
+          {netDown && (
+            <ReAnimated.View entering={bubbleEnter} style={[styles.netBar, { backgroundColor: c.dangerSoft }]}>
+              <Feather name="wifi-off" size={13} color={c.danger} />
+              <Txt size={12} weight="semibold" color={c.danger}>
+                {t('net.offline')}
+              </Txt>
+            </ReAnimated.View>
+          )}
           <SymbolBar onInsert={(s) => setInput((v) => v + s)} />
           <View style={[styles.field, { backgroundColor: c.surface, borderColor: c.border }]}>
             <Press
@@ -694,15 +733,21 @@ export default function SolverScreen() {
               multiline
               maxFontSizeMultiplier={1.2}
             />
+            {/* Send morphs into STOP while solving — one control, two verbs
+                (the standard AI-app pattern; never a dead grey button). */}
             <Press
-              onPress={() => sendText(input)}
-              disabled={!input.trim() || sending}
+              onPress={() => (sending ? cancelRun() : sendText(input))}
+              disabled={!sending && !input.trim()}
               hitSlop={6}
               accessibilityRole="button"
-              accessibilityLabel={t('a11y.send')}
+              accessibilityLabel={sending ? t('a11y.stop') : t('a11y.send')}
               style={styles.sendBtn}
             >
-              {input.trim() && !sending ? (
+              {sending ? (
+                <View style={[styles.sendFill, { backgroundColor: c.text }]}>
+                  <View style={styles.stopSquare} />
+                </View>
+              ) : input.trim() ? (
                 <LinearGradient
                   colors={theme.gradient.brand as [string, string]}
                   start={{ x: 0, y: 0 }}
@@ -746,6 +791,7 @@ function Bubble({
   mountDelay = 0,
   onChip,
   onCancel,
+  onRetry,
   verifying = false,
 }: {
   turn: Turn
@@ -755,6 +801,8 @@ function Bubble({
   mountDelay?: number
   onChip?: (id: string) => void
   onCancel?: () => void
+  /** Present on error turns: re-run the failed request, nothing retyped. */
+  onRetry?: () => void
   verifying?: boolean
 }) {
   const { theme } = useTheme()
@@ -793,6 +841,14 @@ function Bubble({
             {turn.text}
           </Txt>
         </View>
+        {onRetry && (
+          <Press onPress={onRetry} scaleTo={0.96} style={[styles.retryBtn, { backgroundColor: c.accentSoft }]}>
+            <Feather name="rotate-ccw" size={13} color={c.accent} />
+            <Txt size={12.5} weight="semibold" color={c.accent}>
+              {t('err.retry')}
+            </Txt>
+          </Press>
+        )}
       </View>
     )
   } else {
@@ -1041,6 +1097,16 @@ const styles = StyleSheet.create({
   },
   errRow: { flexDirection: 'row', gap: 9, alignItems: 'flex-start' },
   errIcon: { marginTop: 2 },
+  retryBtn: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 11,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+  },
   pendingWrap: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   pendingRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 11 },
   asstActions: { flexDirection: 'row', gap: 20, marginTop: 10, paddingTop: 11, borderTopWidth: 1 },
@@ -1066,6 +1132,17 @@ const styles = StyleSheet.create({
   input: { flex: 1, fontSize: 15.5, fontFamily: 'Inter_400Regular', maxHeight: 120, paddingVertical: 8, paddingTop: 9 },
   sendBtn: { width: 40, height: 40, borderRadius: 20, overflow: 'hidden' },
   sendFill: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  stopSquare: { width: 11, height: 11, borderRadius: 2.5, backgroundColor: '#FFFFFF' },
+  netBar: {
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    paddingVertical: 7,
+    paddingHorizontal: 13,
+    borderRadius: 999,
+    marginBottom: 8,
+  },
   disc: { textAlign: 'center', marginTop: 7 },
 
   // pending skeleton
