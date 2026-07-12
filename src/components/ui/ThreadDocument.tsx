@@ -220,9 +220,24 @@ function isProse(s){
   return /[A-Za-zĂÂÎȘȚăâîșț][a-zăâîșț]{2,}\s+[A-Za-zĂÂÎȘȚăâîșț]{2,}/.test(s)
       || /(^|[^\\a-zA-Z])[A-Za-zĂÂÎȘȚăâîșț][a-zăâîșț]{3,}/.test(s);
 }
+// Prose that still carries LaTeX commands OUTSIDE its $...$ islands (the
+// exotic "x = 20 \\text{ mere}" shape) gets those commands cleaned into
+// readable symbols/words — the islands stay intact for real typesetting.
+function proseClean(s){
+  var parts=String(s).split(/(\\$[^$]*\\$)/);
+  for(var i=0;i<parts.length;i++){
+    if(parts[i].charAt(0)!=='$'){
+      parts[i]=parts[i]
+        .replace(/\\\\(?:text|textbf|textit|mathrm|mbox)\\s*\\{([^{}]*)\\}/g,'$1')
+        .replace(/\\\\frac\\s*\\{([^{}]*)\\}\\s*\\{([^{}]*)\\}/g,'($1)/($2)');
+      parts[i]=deTeX(parts[i]);
+    }
+  }
+  return parts.join('');
+}
 function smartTex(t){
   var s=String(t==null?'':t).trim();
-  return isProse(s)?esc(s):tex(s);
+  return isProse(s)?esc(proseClean(s)):tex(s);
 }
 function md(raw){
   var MATHS=[];
