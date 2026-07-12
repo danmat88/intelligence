@@ -40,6 +40,14 @@ export async function uploadProblemImage(uid: string, id: string, fileUri: strin
   if (!res.ok) throw new Error(`image upload failed: ${res.status}`)
   const meta = (await res.json()) as { downloadTokens?: string }
   if (!meta.downloadTokens) throw new Error('image upload returned no token')
+  // Problem photos are immutable (unique id) — mark them long-cacheable so
+  // the WebView's disk cache serves them INSTANTLY on every later open
+  // (Storage's default is max-age=0, which forces a refetch every time).
+  fetch(`${HOST}/${b}/o/${encodeURIComponent(path)}`, {
+    method: 'PATCH',
+    headers: { Authorization: await authHeader(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cacheControl: 'public, max-age=31536000, immutable' }),
+  }).catch(() => {})
   const url = `${HOST}/${b}/o/${encodeURIComponent(path)}?alt=media&token=${meta.downloadTokens}`
   return { path, url }
 }

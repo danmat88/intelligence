@@ -1,8 +1,9 @@
 import * as ImagePicker from 'expo-image-picker'
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator'
 
-/** A downscaled, base64-encoded photo ready to send to the vision model. */
-export type CapturedImage = { base64: string; mimeType: string; uri: string }
+/** A downscaled, base64-encoded photo ready to send to the vision model.
+ *  Dimensions ride along so the UI can reserve the exact box up front. */
+export type CapturedImage = { base64: string; mimeType: string; uri: string; width: number; height: number }
 
 /** A raw photo (camera shot or gallery pick) before the user trims it in-app. */
 export type RawShot = { uri: string; width: number; height: number }
@@ -21,7 +22,7 @@ export async function prepareImage(uri: string): Promise<CapturedImage> {
     format: SaveFormat.JPEG,
     base64: true,
   })
-  return { base64: out.base64 ?? '', mimeType: 'image/jpeg', uri: out.uri }
+  return { base64: out.base64 ?? '', mimeType: 'image/jpeg', uri: out.uri, width: out.width, height: out.height }
 }
 
 /**

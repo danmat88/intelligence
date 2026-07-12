@@ -40,6 +40,9 @@ type Turn = {
   /** Firebase Storage object + tokened URL once the parallel upload lands. */
   imagePath?: string
   imageUrl?: string
+  /** Photo dimensions, so the document reserves the exact box up front. */
+  imageW?: number
+  imageH?: number
   pending?: boolean
   error?: boolean
 }
@@ -399,6 +402,8 @@ export default function SolverScreen() {
           imageUri: t.imageUrl, // the cloud photo, straight into the document
           imagePath: t.imagePath,
           imageUrl: t.imageUrl,
+          imageW: t.imageW,
+          imageH: t.imageH,
         }))
         // Reading mode: the document renders whole, no entrances, and opens
         // at the TOP — a problem reads from its title down.
@@ -495,7 +500,11 @@ export default function SolverScreen() {
           .catch(() => {})
       }
       // '' → the verifier reads the problem from the solution's own restatement
-      run({ id: turnId, role: 'user', text: '', imageUri: img.uri }, (sig) => solveImage(img, langName, sig), '')
+      run(
+        { id: turnId, role: 'user', text: '', imageUri: img.uri, imageW: img.width, imageH: img.height },
+        (sig) => solveImage(img, langName, sig),
+        '',
+      )
     },
     [run, reset, langName, user, persist],
   )

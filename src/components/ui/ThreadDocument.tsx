@@ -23,6 +23,8 @@ export type DocTurn = {
   role: 'user' | 'assistant'
   text: string
   imageUri?: string
+  imageW?: number
+  imageH?: number
   pending?: boolean
   error?: boolean
 }
@@ -82,7 +84,12 @@ body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-
 .prob .lbl{color:${c.accent};display:flex;align-items:center;gap:8px}
 .prob .src{margin-left:auto;color:${c.textFaint};letter-spacing:.08em}
 .prob .ptx{font-size:19px;margin-top:8px;overflow-x:auto;overflow-y:hidden}
-.prob img{max-width:100%;border-radius:12px;margin-top:10px;display:block}
+/* The photo box is reserved at its EXACT aspect ratio before the image
+   loads — the layout is final from the first pixel, the photo materialises
+   into it (no push-down, no jump). */
+.imgbox{position:relative;border-radius:12px;overflow:hidden;margin-top:10px;background:${c.surfaceAlt}}
+.imgbox img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .18s ease}
+.imgbox img.ld{opacity:1}
 /* the confirm-what-I-read loop: the problem as the AI understood it, typeset */
 .pread{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:11px}
 .pread .rl{font-family:'JB',monospace;font-weight:600;font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;color:${c.textFaint};flex:0 0 auto}
@@ -326,7 +333,10 @@ function blocks(){
   var readProblem=(sdata && typeof sdata.problem==='string' && sdata.problem.trim())?sdata.problem.trim():null;
   PREAD=readProblem||'';
   out.push({key:'prob:'+first.id, sig:first.text+'|'+(first.imageUri||'')+'|'+(readProblem||''), html:function(){
-    var body=first.imageUri?'<img src="'+esc(first.imageUri)+'">':'<div class="ptx">'+esc(first.text||L.photoProblem)+'</div>';
+    var ar=(first.imageW&&first.imageH)?(first.imageW+'/'+first.imageH):'4/3';
+    var body=first.imageUri
+      ?'<div class="imgbox" style="aspect-ratio:'+ar+'"><img src="'+esc(first.imageUri)+'" onload="this.classList.add(\\'ld\\')"></div>'
+      :'<div class="ptx">'+esc(first.text||L.photoProblem)+'</div>';
     var read=readProblem?('<div class="pread"><span class="rl">'+esc(L.readAs)+'</span><span class="rm">'+tex(readProblem)+'</span><span class="pfix" onclick="pfix()">'+esc(L.fix)+'</span></div>'):'';
     return '<div class="prob"><span class="lbl">'+esc(L.problem)+'<span class="src">'+esc(first.imageUri?'FOTO':'SCRIS')+'</span></span>'+body+read+'</div>';
   }});
@@ -478,6 +488,8 @@ export default function ThreadDocument({
         role: t.role,
         text: t.text,
         imageUri: t.imageUri,
+        imageW: t.imageW,
+        imageH: t.imageH,
         pending: !!t.pending,
         error: !!t.error,
       })),

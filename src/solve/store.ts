@@ -13,8 +13,16 @@ import {
 } from '@react-native-firebase/firestore'
 
 /** A saved turn. Photos live in Firebase Storage (owner-only): `imagePath`
- *  is the storage object, `imageUrl` a tokened URL ready for <img src>. */
-export type StoredTurn = { role: 'user' | 'assistant'; text: string; imagePath?: string; imageUrl?: string }
+ *  is the storage object, `imageUrl` a tokened URL ready for <img src>;
+ *  dimensions let the UI reserve the exact image box before it loads. */
+export type StoredTurn = {
+  role: 'user' | 'assistant'
+  text: string
+  imagePath?: string
+  imageUrl?: string
+  imageW?: number
+  imageH?: number
+}
 
 export type Problem = {
   id: string
@@ -39,7 +47,15 @@ function problemsCol(uid: string) {
 /** Drop runtime-only fields (local URIs, pending/error) before persisting;
  *  cloud image references (path + tokened URL) ride along when present. */
 export function toStoredTurns(
-  turns: { role: 'user' | 'assistant'; text: string; imageUri?: string; imagePath?: string; imageUrl?: string }[],
+  turns: {
+    role: 'user' | 'assistant'
+    text: string
+    imageUri?: string
+    imagePath?: string
+    imageUrl?: string
+    imageW?: number
+    imageH?: number
+  }[],
   photoLabel = 'Photo problem',
 ): StoredTurn[] {
   return turns
@@ -49,6 +65,7 @@ export function toStoredTurns(
       text: t.text || photoLabel,
       ...(t.imagePath ? { imagePath: t.imagePath } : null),
       ...(t.imageUrl ? { imageUrl: t.imageUrl } : null),
+      ...(t.imageW && t.imageH ? { imageW: t.imageW, imageH: t.imageH } : null),
     }))
 }
 
