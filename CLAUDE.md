@@ -24,6 +24,10 @@ expects evidence, not assurances.
   WIPES** — re-apply after any prebuild:
   1. `android/app/build.gradle` → `android { externalNativeBuild { cmake { version "3.31.6" } } }`
   2. `android/gradle.properties` → `reactNativeArchitectures=arm64-v8a`
+  3. Splash is a BARE paper surface (no icon — the brand enters in the JS
+     beat): `res/values/styles.xml` → `windowSplashScreenAnimatedIcon` =
+     `@drawable/splashscreen_empty` (transparent shape; without it Android 12+
+     injects the launcher icon), colors in `res/values/colors.xml` = #F7F6F2.
   Also preserve `android/app/debug.keystore` (SHA-1 `5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25` is registered in Firebase).
   **Prefer avoiding prebuild:** for a new native module, `npx expo install` +
   hand-edit `android/app/src/main/AndroidManifest.xml` (autolinking does the rest)

@@ -13,9 +13,12 @@ import * as FS from 'expo-file-system/legacy'
  */
 const DIR_NAME = 'mathkit-katex01611/'
 
+// NOTE: bundled basenames must be unique IGNORING extension — Android release
+// builds flatten assets into res/raw by extension-less name, so katex.kcss +
+// katex.kjs would collide as "assets_katex_katex" (real failed build).
 const FILES: Record<string, number> = {
-  'katex.css': require('../../../assets/katex/katex.kcss'),
-  'katex.js': require('../../../assets/katex/katex.kjs'),
+  'katex.css': require('../../../assets/katex/katex-style.kcss'),
+  'katex.js': require('../../../assets/katex/katex-lib.kjs'),
   'auto-render.js': require('../../../assets/katex/auto-render.kjs'),
   'marked.js': require('../../../assets/katex/marked.kjs'),
   'fonts/KaTeX_AMS-Regular.woff2': require('../../../assets/katex/fonts/KaTeX_AMS-Regular.woff2'),
