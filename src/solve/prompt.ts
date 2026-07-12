@@ -13,7 +13,7 @@ export const SOLVE_JSON_SYSTEM = `You are an expert, patient math tutor. A stude
 
 Shape:
 {
-  "problem": "<the problem itself, faithfully restated (LaTeX, NO $ delimiters) — exactly what is being asked>",
+  "problem": "<the problem itself, faithfully restated — exactly what is being asked. WORD PROBLEMS stay plain prose with normal spaces; wrap ONLY the mathematical expressions inside in $...$. Pure equations may be bare LaTeX without $ delimiters>",
   "topic": "<2-3 word topic, e.g. Quadratics, Integration by parts>",
   "steps": [
     { "math": "<one line of LaTeX, NO $ delimiters>", "why": "<one short clause explaining this step>" }

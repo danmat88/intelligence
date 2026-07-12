@@ -210,6 +210,14 @@ function tex(t){
   var s=String(t==null?'':t).trim().replace(/^\\$+/,'').replace(/\\$+$/,'').trim();
   try{ return katex.renderToString(s,{throwOnError:false,displayMode:false}); }catch(e){ return esc(s); }
 }
+// The read-back problem can be a WORD PROBLEM (prose) or pure math. KaTeX's
+// math mode swallows spaces by definition, so prose must never go through it
+// whole: two consecutive words = natural language -> render as text (spaces
+// intact) and let renderMathInElement typeset only the $...$ islands inside.
+function smartProblem(s){
+  var prose=/[A-Za-zĂÂÎȘȚăâîșț][a-zăâîșț]{2,}\s+[A-Za-zĂÂÎȘȚăâîșț]{2,}/.test(s);
+  return prose?esc(s):tex(s);
+}
 function md(raw){
   var MATHS=[];
   function stash(m){ MATHS.push(m); return '§§'+(MATHS.length-1)+'§§'; }
@@ -337,7 +345,7 @@ function blocks(){
     var body=first.imageUri
       ?'<div class="imgbox" style="aspect-ratio:'+ar+'"><img src="'+esc(first.imageUri)+'" onload="this.classList.add(\\'ld\\')"></div>'
       :'<div class="ptx">'+esc(first.text||L.photoProblem)+'</div>';
-    var read=readProblem?('<div class="pread"><span class="rl">'+esc(L.readAs)+'</span><span class="rm">'+tex(readProblem)+'</span><span class="pfix" onclick="pfix()">'+esc(L.fix)+'</span></div>'):'';
+    var read=readProblem?('<div class="pread"><span class="rl">'+esc(L.readAs)+'</span><span class="rm">'+smartProblem(readProblem)+'</span><span class="pfix" onclick="pfix()">'+esc(L.fix)+'</span></div>'):'';
     return '<div class="prob"><span class="lbl">'+esc(L.problem)+'<span class="src">'+esc(first.imageUri?'FOTO':'SCRIS')+'</span></span>'+body+read+'</div>';
   }});
   if(si>=0){
