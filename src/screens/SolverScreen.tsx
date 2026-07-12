@@ -26,7 +26,7 @@ import type { ChatTurn } from '../ai/types'
 import { useI18n, type StringKey } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import { createProblem, updateProblemTurns, removeProblem, toStoredTurns, type Problem } from '../solve/store'
-import { uploadProblemImage, deleteProblemImages } from '../solve/imageStore'
+import { uploadProblemImage, deleteProblemImages, saveLocalCopy, resolveImageUri } from '../solve/imageStore'
 import SettingsModal from './SettingsModal'
 import HistorySheet from './HistorySheet'
 import CaptureScreen from './CaptureScreen'
@@ -393,18 +393,21 @@ export default function SolverScreen() {
       // Choreography: the sheet starts sliding away, and mid-exit the thread
       // PUSH begins — old conversation slides out, the new one slides in as
       // one surface carrying its inert cards. WebViews light up on landing.
-      setTimeout(() => {
+      setTimeout(async () => {
         problemIdRef.current = p.id
-        const turns = p.turns.map((t) => ({
-          id: uid(),
-          role: t.role,
-          text: t.text,
-          imageUri: t.imageUrl, // the cloud photo, straight into the document
-          imagePath: t.imagePath,
-          imageUrl: t.imageUrl,
-          imageW: t.imageW,
-          imageH: t.imageH,
-        }))
+        const turns = await Promise.all(
+          p.turns.map(async (t) => ({
+            id: uid(),
+            role: t.role,
+            text: t.text,
+            // LOCAL file when it exists (instant, offline); cloud otherwise.
+            imageUri: await resolveImageUri(t.imagePath, t.imageUrl),
+            imagePath: t.imagePath,
+            imageUrl: t.imageUrl,
+            imageW: t.imageW,
+            imageH: t.imageH,
+          })),
+        )
         // Reading mode: the document renders whole, no entrances, and opens
         // at the TOP — a problem reads from its title down.
         coldDocRef.current = true
@@ -488,6 +491,9 @@ export default function SolverScreen() {
       // model accurate and history clean, so leave the previous thread behind.
       if (threadRef.current.length > 0) reset()
       const turnId = uid()
+      // Permanent LOCAL copy first (the capture lives in purgeable cache):
+      // history opens on this device never touch the network for the photo.
+      saveLocalCopy(turnId, img.uri).catch(() => {})
       // Cloud copy in PARALLEL with the solve — never blocks it. When it
       // lands, the saved problem gets its image references; if it fails,
       // the photo simply stays local-only for this session.

@@ -1,5 +1,6 @@
 import { getApp } from '@react-native-firebase/app'
 import { getAuth, getIdToken } from '@react-native-firebase/auth'
+import * as FS from 'expo-file-system/legacy'
 
 /**
  * Problem photos in Firebase Storage — the same wire protocol the official
@@ -52,11 +53,49 @@ export async function uploadProblemImage(uid: string, id: string, fileUri: strin
   return { path, url }
 }
 
-/** Best-effort cleanup when a problem is deleted — never blocks anything. */
+/**
+ * LOCAL-FIRST display (the WhatsApp model): the photo was born on this
+ * device — showing it must never touch the network. A permanent local copy
+ * is written at solve time; history opens resolve to it instantly. The
+ * cloud copy exists for other devices/reinstalls, and a background download
+ * backfills the local copy the first time it's ever needed remotely.
+ */
+const LOCAL_DIR = FS.documentDirectory + 'problem-images/'
+
+/** Local file for a storage object — keyed by the storage filename, which is
+ *  stable across loads (turn ids regenerate, imagePath does not). */
+function localPathFor(imagePath: string): string {
+  return LOCAL_DIR + imagePath.split('/').pop()
+}
+
+/** Permanent on-device copy at solve time (the capture lives in purgeable cache). */
+export async function saveLocalCopy(turnId: string, fileUri: string): Promise<void> {
+  await FS.makeDirectoryAsync(LOCAL_DIR, { intermediates: true }).catch(() => {})
+  await FS.copyAsync({ from: fileUri, to: `${LOCAL_DIR}${turnId}.jpg` })
+}
+
+/** The URI history should DISPLAY: local file instantly when it exists;
+ *  otherwise the cloud URL now + a silent local backfill for next time. */
+export async function resolveImageUri(imagePath?: string, imageUrl?: string): Promise<string | undefined> {
+  if (imagePath) {
+    const lp = localPathFor(imagePath)
+    try {
+      const info = await FS.getInfoAsync(lp)
+      if (info.exists) return lp
+      if (imageUrl) FS.downloadAsync(imageUrl, lp).catch(() => {})
+    } catch {
+      // disk hiccup — fall through to the cloud URL
+    }
+  }
+  return imageUrl
+}
+
+/** Best-effort cleanup (cloud + local) when a problem is deleted. */
 export function deleteProblemImages(paths: (string | undefined)[]): void {
   const b = bucket()
   for (const p of paths) {
     if (!p) continue
+    FS.deleteAsync(localPathFor(p), { idempotent: true }).catch(() => {})
     authHeader()
       .then((auth) =>
         fetch(`${HOST}/${b}/o/${encodeURIComponent(p)}`, { method: 'DELETE', headers: { Authorization: auth } }),
