@@ -210,13 +210,19 @@ function tex(t){
   var s=String(t==null?'':t).trim().replace(/^\\$+/,'').replace(/\\$+$/,'').trim();
   try{ return katex.renderToString(s,{throwOnError:false,displayMode:false}); }catch(e){ return esc(s); }
 }
-// The read-back problem can be a WORD PROBLEM (prose) or pure math. KaTeX's
-// math mode swallows spaces by definition, so prose must never go through it
-// whole: two consecutive words = natural language -> render as text (spaces
-// intact) and let renderMathInElement typeset only the $...$ islands inside.
-function smartProblem(s){
-  var prose=/[A-Za-zĂÂÎȘȚăâîșț][a-zăâîșț]{2,}\s+[A-Za-zĂÂÎȘȚăâîșț]{2,}/.test(s);
-  return prose?esc(s):tex(s);
+// Any model field can be pure math OR carry natural language (word problems,
+// answers like "20 de mere"). KaTeX's math mode swallows spaces by
+// definition, so prose must never go through it whole. Prose test: two
+// consecutive words, OR any 4+ letter word that is NOT a LaTeX command
+// (\frac, \cdot... are preceded by a backslash and stay math). Prose renders
+// as text (spaces intact); only its $...$ islands get typeset afterwards.
+function isProse(s){
+  return /[A-Za-zĂÂÎȘȚăâîșț][a-zăâîșț]{2,}\s+[A-Za-zĂÂÎȘȚăâîșț]{2,}/.test(s)
+      || /(^|[^\\a-zA-Z])[A-Za-zĂÂÎȘȚăâîșț][a-zăâîșț]{3,}/.test(s);
+}
+function smartTex(t){
+  var s=String(t==null?'':t).trim();
+  return isProse(s)?esc(s):tex(s);
 }
 function md(raw){
   var MATHS=[];
@@ -298,7 +304,7 @@ function solutionHtml(turn, verifying, reveal){
   (data.steps||[]).forEach(function(st,i){
     var n=String(i+1);
     var dl=reveal?' style="animation-delay:'+(i*0.18)+'s"':'';
-    out+='<div class="step'+(ASKED[n]?' asked':'')+(reveal?' rise':'')+'"'+dl+' onclick="stepTap(this,'+(i+1)+')"><div class="no">'+n+'</div><div><div class="math">'+tex(st.math)+'</div>'+
+    out+='<div class="step'+(ASKED[n]?' asked':'')+(reveal?' rise':'')+'"'+dl+' onclick="stepTap(this,'+(i+1)+')"><div class="no">'+n+'</div><div><div class="math">'+smartTex(st.math)+'</div>'+
       (st.why?'<div class="why">'+esc(deTeX(st.why))+'</div>':'')+'</div></div>';
   });
   out+='</div>';
@@ -314,7 +320,7 @@ function solutionHtml(turn, verifying, reveal){
     }
     var adl=reveal?' style="animation-delay:'+(nsteps*0.18+0.15)+'s"':'';
     out+='<div class="ans'+(celebrate?' celebrate':'')+(reveal?' rise':'')+'"'+adl+'><span class="tick"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span>'+
-      '<div><span class="ak lbl">'+esc(L.answer)+'</span><span class="math">'+tex(data.answer)+'</span></div></div>'+
+      '<div><span class="ak lbl">'+esc(L.answer)+'</span><span class="math">'+smartTex(data.answer)+'</span></div></div>'+
       '<div class="vline">'+vslot+'</div>';
     if(data._verified===false){ out+='<div class="vwarn">'+esc(L.unverified)+'</div>'; }
   }
@@ -345,7 +351,7 @@ function blocks(){
     var body=first.imageUri
       ?'<div class="imgbox" style="aspect-ratio:'+ar+'"><img src="'+esc(first.imageUri)+'" onload="this.classList.add(\\'ld\\')"></div>'
       :'<div class="ptx">'+esc(first.text||L.photoProblem)+'</div>';
-    var read=readProblem?('<div class="pread"><span class="rl">'+esc(L.readAs)+'</span><span class="rm">'+smartProblem(readProblem)+'</span><span class="pfix" onclick="pfix()">'+esc(L.fix)+'</span></div>'):'';
+    var read=readProblem?('<div class="pread"><span class="rl">'+esc(L.readAs)+'</span><span class="rm">'+smartTex(readProblem)+'</span><span class="pfix" onclick="pfix()">'+esc(L.fix)+'</span></div>'):'';
     return '<div class="prob"><span class="lbl">'+esc(L.problem)+'<span class="src">'+esc(first.imageUri?'FOTO':'SCRIS')+'</span></span>'+body+read+'</div>';
   }});
   if(si>=0){
