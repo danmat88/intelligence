@@ -5,6 +5,7 @@ import { useTheme } from '../../theme/ThemeProvider'
 import type { Theme } from '../../theme/tokens'
 import { ensureMathAssets, mathAssetsBase } from './mathAssets'
 import type { VerifyStage } from './SolutionView'
+import { isMathInput, plainToLatex } from '../../solve/mathInput'
 
 /**
  * The conversation as ONE living document — not chat bubbles. The problem is
@@ -361,11 +362,14 @@ function blocks(){
   var sdata=(si>=0 && !t[si].pending && !t[si].error)?parse(t[si].text):null;
   var readProblem=(sdata && typeof sdata.problem==='string' && sdata.problem.trim())?sdata.problem.trim():null;
   PREAD=readProblem||'';
-  out.push({key:'prob:'+first.id, sig:first.text+'|'+(first.imageUri||'')+'|'+(readProblem||''), html:function(){
+  out.push({key:'prob:'+first.id, sig:first.text+'|'+(first.math||'')+'|'+(first.imageUri||'')+'|'+(readProblem||''), html:function(){
     var ar=(first.imageW&&first.imageH)?(first.imageW+'/'+first.imageH):'4/3';
+    // math = LaTeX of what the student typed (same converter as the composer
+    // preview) — typeset it. Word problems carry none: they stay prose.
+    var probBody=first.math?tex(first.math):esc(first.text||L.photoProblem);
     var body=first.imageUri
       ?'<div class="imgbox" style="aspect-ratio:'+ar+'"><img src="'+esc(first.imageUri)+'" onload="this.classList.add(\\'ld\\')"></div>'
-      :'<div class="ptx">'+esc(first.text||L.photoProblem)+'</div>';
+      :'<div class="ptx">'+probBody+'</div>';
     var read=readProblem?('<div class="pread"><span class="rl">'+esc(L.readAs)+'</span><span class="rm">'+smartTex(readProblem)+'</span><span class="pfix" onclick="pfix()">'+esc(L.fix)+'</span></div>'):'';
     return '<div class="prob"><span class="lbl">'+esc(L.problem)+'<span class="src">'+esc(first.imageUri?'FOTO':'SCRIS')+'</span></span>'+body+read+'</div>';
   }});
@@ -387,7 +391,7 @@ function blocks(){
     var phase=a?(a.pending?'P':(a.error?'E':'C')):'Q';
     (function(u,a,phase){
       out.push({key:'qa:'+u.id, sig:sig, phase:phase, html:function(){
-        var inner='<div class="q">'+esc(L.you)+': '+esc(u.text)+'</div>';
+        var inner='<div class="q">'+esc(L.you)+': '+(u.math?tex(u.math):esc(u.text))+'</div>';
         if(a){
           if(a.pending) inner+='<div class="a">'+pendHtml()+'</div>';
           else if(a.error) inner+='<div class="a"><div class="et" style="color:${c.danger}">'+esc(a.text)+'</div><span class="retry" onclick="retry()">↻ '+esc(L.retry)+'</span></div>';
@@ -516,6 +520,9 @@ export default function ThreadDocument({
         id: t.id,
         role: t.role,
         text: t.text,
+        // What the student typed, as real math — the SAME converter that
+        // drives the composer preview, so preview and header always agree.
+        math: t.role === 'user' && isMathInput(t.text) ? plainToLatex(t.text) : '',
         imageUri: t.imageUri,
         imageW: t.imageW,
         imageH: t.imageH,

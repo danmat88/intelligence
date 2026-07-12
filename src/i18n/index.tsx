@@ -31,6 +31,7 @@ const STRINGS = {
     'composer.placeholder.first': 'Type a problem…',
     'composer.placeholder.followup': 'Ask about this problem…',
     'composer.disclaimer': 'Verify important answers — AI can make mistakes.',
+    'composer.preview': "WHAT YOU'LL SEND",
     'composer.guestCta': 'Sign in to keep your work — it takes 5 seconds',
     // — pending stages
     'pending.1': 'Reading the problem…',
@@ -164,6 +165,7 @@ const STRINGS = {
     'composer.placeholder.first': 'Scrie o problemă…',
     'composer.placeholder.followup': 'Întreabă despre problema asta…',
     'composer.disclaimer': 'Verifică răspunsurile importante — AI-ul poate greși.',
+    'composer.preview': 'SE VA TRIMITE CA',
     'composer.guestCta': 'Conectează-te ca să-ți păstrezi munca — durează 5 secunde',
     // — pending stages
     'pending.1': 'Citesc problema…',

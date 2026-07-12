@@ -17,7 +17,9 @@ import Txt from '../components/ui/Txt'
 import InfoDialog from '../components/ui/InfoDialog'
 import SolutionView, { type VerifyStage } from '../components/ui/SolutionView'
 import ThreadDocument, { type DocLabels } from '../components/ui/ThreadDocument'
-import SymbolBar from '../components/ui/SymbolBar'
+import SymbolBar, { type MathKey } from '../components/ui/SymbolBar'
+import MathPreview from '../components/ui/MathPreview'
+import { isMathInput, plainToLatex } from '../solve/mathInput'
 import type { CapturedImage } from '../solve/capture'
 import { solveImage, solveProblem, followUp, solveDeep, verifyAnswer } from '../solve/solve'
 import { latexToPlain, solutionShareText } from '../solve/shareText'
@@ -147,6 +149,10 @@ export default function SolverScreen() {
   // Event-driven offline pill: raised by a network-classified failure,
   // cleared by the next successful answer.
   const [netDown, setNetDown] = useState(false)
+  // Caret position, so template keys can drop the cursor inside the structure
+  // they insert (tap "fraction" → caret lands in the numerator).
+  const selRef = useRef({ start: 0, end: 0 })
+  const [selection, setSelection] = useState<{ start: number; end: number } | undefined>(undefined)
   // Context header for a problem opened from history (topic + date).
   const [problemMeta, setProblemMeta] = useState<{ topic: string | null; createdAt: number } | null>(null)
   // Identity of the conversation on screen. Changing it drives the
@@ -521,6 +527,28 @@ export default function SolverScreen() {
     setTimeout(() => inputRef.current?.focus(), 280)
   }, [])
 
+  // A math key: splice its template in at the caret, then park the caret
+  // inside the structure (fraction → numerator, root → under the radical).
+  const insertKey = useCallback(
+    (k: MathKey) => {
+      setInput((prev) => {
+        const { start, end } = selRef.current
+        const s = Math.min(Math.max(0, start), prev.length)
+        const e = Math.min(Math.max(s, end), prev.length)
+        const next = prev.slice(0, s) + k.insert + prev.slice(e)
+        const caret = s + k.insert.length - k.back
+        selRef.current = { start: caret, end: caret }
+        setSelection({ start: caret, end: caret })
+        return next
+      })
+      inputRef.current?.focus()
+    },
+    [],
+  )
+
+  // Live preview: only for math-looking input (word problems stay prose).
+  const previewLatex = useMemo(() => (isMathInput(input) ? plainToLatex(input) : ''), [input])
+
   // "Fix it" on the read-back problem: the read text was WRONG input, so the
   // saved doc goes, the thread resets, and the composer opens pre-filled with
   // the editable (plain-math) problem — fix one symbol and resend.
@@ -771,7 +799,10 @@ export default function SolverScreen() {
               </Txt>
             </ReAnimated.View>
           )}
-          <SymbolBar onInsert={(s) => setInput((v) => v + s)} />
+          {/* What you'll send, typeset — the same converter that renders it
+              in the document, so the preview IS the result. */}
+          {!!previewLatex && <MathPreview latex={previewLatex} label={t('composer.preview')} />}
+          <SymbolBar onInsert={insertKey} />
           <View style={[styles.field, { backgroundColor: c.surface, borderColor: c.border }]}>
             <Press
               onPress={() => snap('camera')}
@@ -788,7 +819,14 @@ export default function SolverScreen() {
               placeholder={empty ? t('composer.placeholder.first') : t('composer.placeholder.followup')}
               placeholderTextColor={c.textFaint}
               value={input}
-              onChangeText={setInput}
+              onChangeText={(v) => {
+                setInput(v)
+                setSelection(undefined) // hand the caret back to the OS while typing
+              }}
+              selection={selection}
+              onSelectionChange={(e) => {
+                selRef.current = e.nativeEvent.selection
+              }}
               multiline
               maxFontSizeMultiplier={1.2}
             />

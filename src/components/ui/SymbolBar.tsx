@@ -1,31 +1,46 @@
-import { ScrollView, StyleSheet } from 'react-native'
+import { ScrollView, StyleSheet, View } from 'react-native'
 import { useTheme } from '../../theme/ThemeProvider'
 import Press from './Press'
 import Txt from './Txt'
 
-// Common math symbols. `label` is what the key shows; `insert` is what gets typed
-// (readable forms the model understands: ^2 for squared, √, π, etc.).
-const SYMBOLS: { label: string; insert: string }[] = [
-  { label: 'x', insert: 'x' },
-  { label: 'y', insert: 'y' },
-  { label: 'x²', insert: '^2' },
-  { label: 'xⁿ', insert: '^' },
-  { label: '√', insert: '√' },
-  { label: '÷', insert: '/' },
-  { label: 'π', insert: 'π' },
-  { label: 'θ', insert: 'θ' },
-  { label: '∫', insert: '∫' },
-  { label: 'Σ', insert: 'Σ' },
-  { label: '≤', insert: '≤' },
-  { label: '≥', insert: '≥' },
-  { label: '≠', insert: '≠' },
-  { label: '±', insert: '±' },
-  { label: '(', insert: '(' },
-  { label: ')', insert: ')' },
+/**
+ * The math key row. TEMPLATE keys (violet) insert a whole structure and park
+ * the caret inside it — tap "fraction" and you get `()/()` with the cursor in
+ * the numerator. Symbol keys insert a character. Everything the student types
+ * stays plain text (native keyboard, nothing to clip or break); the preview
+ * above the composer shows it typeset.
+ */
+
+export type MathKey = {
+  /** What gets typed. */
+  insert: string
+  /** How many characters to walk the caret BACK from the end of `insert`. */
+  back: number
+  /** True for structure keys — they wear the accent. */
+  tpl?: boolean
+}
+
+const KEYS: (MathKey & { label: string; sup?: string })[] = [
+  { label: '▯/▯', insert: '()/()', back: 4, tpl: true },
+  { label: '▯²', insert: '^2', back: 0, tpl: true },
+  { label: '▯ⁿ', insert: '^', back: 0, tpl: true },
+  { label: '√▯', insert: 'sqrt()', back: 1, tpl: true },
+  { label: '∛▯', insert: 'cbrt()', back: 1, tpl: true },
+  { label: '( )', insert: '()', back: 1, tpl: true },
+  { label: 'x', insert: 'x', back: 0 },
+  { label: 'y', insert: 'y', back: 0 },
+  { label: '∫', insert: '∫ ', back: 0 },
+  { label: 'Σ', insert: 'Σ', back: 0 },
+  { label: 'lim', insert: 'lim ', back: 0 },
+  { label: 'π', insert: 'π', back: 0 },
+  { label: 'θ', insert: 'θ', back: 0 },
+  { label: '≤', insert: '≤', back: 0 },
+  { label: '≥', insert: '≥', back: 0 },
+  { label: '≠', insert: '≠', back: 0 },
+  { label: '±', insert: '±', back: 0 },
 ]
 
-/** A horizontal strip of math symbols that insert into the composer. */
-export default function SymbolBar({ onInsert }: { onInsert: (s: string) => void }) {
+export default function SymbolBar({ onInsert }: { onInsert: (key: MathKey) => void }) {
   const { theme } = useTheme()
   const c = theme.colors
   return (
@@ -35,16 +50,28 @@ export default function SymbolBar({ onInsert }: { onInsert: (s: string) => void 
       keyboardShouldPersistTaps="always"
       contentContainerStyle={styles.row}
     >
-      {SYMBOLS.map((s) => (
+      {KEYS.map((k) => (
         <Press
-          key={s.label}
-          onPress={() => onInsert(s.insert)}
+          key={k.label}
+          onPress={() => onInsert(k)}
           scaleTo={0.88}
-          style={[styles.key, { backgroundColor: c.surface, borderColor: c.border }]}
+          style={[
+            styles.key,
+            k.tpl
+              ? { backgroundColor: c.accentSoft, borderColor: 'rgba(99,85,255,0.35)' }
+              : { backgroundColor: c.surface, borderColor: c.border },
+          ]}
         >
-          <Txt size={16} weight="medium" color={c.text}>
-            {s.label}
-          </Txt>
+          <View style={styles.center}>
+            <Txt
+              size={k.label.length > 2 ? 12.5 : 15.5}
+              weight={k.tpl ? 'semibold' : 'medium'}
+              color={k.tpl ? c.accent : c.text}
+              style={styles.glyph}
+            >
+              {k.label}
+            </Txt>
+          </View>
         </Press>
       ))}
     </ScrollView>
@@ -67,4 +94,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 1,
   },
+  center: { alignItems: 'center', justifyContent: 'center' },
+  glyph: { includeFontPadding: false },
 })
