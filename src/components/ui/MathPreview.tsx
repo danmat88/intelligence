@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { StyleSheet, View } from 'react-native'
+import { Linking, StyleSheet, View } from 'react-native'
 import { WebView } from 'react-native-webview'
 import { useTheme } from '../../theme/ThemeProvider'
 import Txt from './Txt'
@@ -30,7 +30,12 @@ export default function MathPreview({ latex, label }: { latex: string; label: st
   const html = useMemo(() => {
     const css = assetBase ? 'katex.css' : 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css'
     const js = assetBase ? 'katex.js' : 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js'
+    // Same lockdown as the thread document — no images, no network of its own.
+    const csp =
+      "default-src 'self' 'unsafe-inline' file: data: https://cdn.jsdelivr.net; " +
+      "img-src 'none'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
     return `<!doctype html><html><head>
+<meta http-equiv="Content-Security-Policy" content="${csp}">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <link rel="stylesheet" href="${css}">
 <style>
@@ -77,6 +82,15 @@ window.setLatex=function(v){
         allowFileAccessFromFileURLs
         allowingReadAccessToURL={assetBase ?? undefined}
         javaScriptEnabled
+        onShouldStartLoadWithRequest={(req) => {
+          const url = req.url
+          if (url.startsWith('file://') || url.startsWith('about:') || url.startsWith('data:')) return true
+          if (/^https?:/i.test(url)) {
+            Linking.openURL(url).catch(() => {})
+            return false
+          }
+          return false
+        }}
         onLoadEnd={() => {
           loadedRef.current = true
           push()

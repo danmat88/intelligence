@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { StyleSheet } from 'react-native'
+import { Linking, StyleSheet } from 'react-native'
 import { WebView } from 'react-native-webview'
 import { useTheme } from '../../theme/ThemeProvider'
 import type { Theme } from '../../theme/tokens'
@@ -72,7 +72,22 @@ function buildDocHtml(c: Theme['colors'], labels: DocLabels, local: boolean) {
 @font-face{font-family:'IN';font-weight:600;src:url('fonts/Inter-SemiBold.ttf')}
 @font-face{font-family:'JB';font-weight:600;src:url('fonts/JetBrainsMono-SemiBold.ttf')}`
     : ''
+  // The model's output renders in this page, so it is treated as HOSTILE input
+  // (a photo can carry a prompt-injection payload). Defense in depth:
+  //   1. md() strips dangerous link schemes + images (the real javascript: fix)
+  //   2. this CSP kills the remaining channels
+  //   3. onShouldStartLoadWithRequest stops the page navigating anywhere
+  // NOTE: script-src must stay 'unsafe-inline' — the page is built on inline
+  // onclick= handlers — which is exactly why CSP CANNOT block javascript: URIs
+  // here and md() has to. What CSP does lock down is `img-src` (no beacon
+  // images to arbitrary hosts) and `connect-src: none` (no exfiltration at
+  // all: the page never legitimately makes a request of its own).
+  const csp =
+    "default-src 'self' 'unsafe-inline' file: data: https://cdn.jsdelivr.net; " +
+    "img-src file: data: https://firebasestorage.googleapis.com; " +
+    "connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
   return `<!doctype html><html><head>
+<meta http-equiv="Content-Security-Policy" content="${csp}">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <link rel="stylesheet" href="${src.css}">
 <style>
@@ -199,7 +214,18 @@ function pcancel(){ post('X:'); }
 function stepTap(el,n){ ASKED[n]=1; el.classList.add('asked'); chip('step:'+n); }
 var PREAD='';
 function pfix(){ if(PREAD) post('P:'+PREAD); }
-function esc(s){ var d=document.createElement('div'); d.textContent=s==null?'':String(s); return d.innerHTML; }
+// textContent->innerHTML escapes < > & but NOT quotes, so also escape "/' —
+// then esc() is safe in ATTRIBUTE context too, not only between tags.
+function esc(s){ var d=document.createElement('div'); d.textContent=s==null?'':String(s); return d.innerHTML.replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+// marked turns MARKDOWN into live HTML — [x](javascript:...) and ![](http://evil)
+// sail past the <-escape. Sanitize marked's own (known, machine-generated)
+// output: neutralize any link whose scheme isn't http(s)/mailto, and drop
+// images outright (a math solution never needs a markdown image).
+function sanUrl(html){
+  return String(html).replace(/(<a\\s[^>]*?href=")([^"]*)"/gi,function(m,pre,url){
+    return /^(https?:|mailto:)/i.test(url.replace(/^\\s+/,''))?m:pre+'#"';
+  }).replace(/<img\\b[^>]*>/gi,'');
+}
 // Every symbol replace carries a (?![a-zA-Z]) guard — without it the short
 // forms eat the front of longer commands (\\le matched inside \\left -> "≤ft",
 // \\ne inside \\neg -> "≠g"). The catch-all keeps the word for the rest.
@@ -261,7 +287,7 @@ function md(raw){
   // Model text is DATA, never markup: neutralize raw HTML before markdown
   // parsing (marked passes tags through — this WebView has file access).
   prot=prot.replace(/</g,'&lt;');
-  var html=window.marked?marked.parse(prot):esc(prot);
+  var html=window.marked?sanUrl(marked.parse(prot)):esc(prot);
   return html.replace(/§§(\\d+)§§/g,function(_,i){ return esc(MATHS[+i]); });
 }
 function typeset(el){
@@ -566,6 +592,20 @@ export default function ThreadDocument({
       allowingReadAccessToURL={assetBase ?? undefined}
       showsVerticalScrollIndicator={false}
       javaScriptEnabled
+      // This surface is a RENDERER, never a browser: it must never navigate
+      // itself. The initial document + local assets are allowed; a tapped link
+      // (only ever from model output) opens in the SYSTEM browser instead of
+      // hijacking the solution view. Subresource loads (img/script/css) don't
+      // reach here — CSP governs those.
+      onShouldStartLoadWithRequest={(req) => {
+        const url = req.url
+        if (url.startsWith('file://') || url.startsWith('about:') || url.startsWith('data:')) return true
+        if (/^https?:/i.test(url)) {
+          Linking.openURL(url).catch(() => {})
+          return false
+        }
+        return false
+      }}
       onLoadEnd={() => {
         loadedRef.current = true
         sync()
