@@ -13,6 +13,7 @@ import {
 } from '@react-native-firebase/auth'
 import { collection, deleteDoc, doc, getDocs, getFirestore } from '@react-native-firebase/firestore'
 import { deleteAllUserImages } from '../solve/imageStore'
+import { fetchAllProblems, copyProblemsInto, type Problem } from '../solve/store'
 import {
   GoogleSignin,
   isErrorWithCode,
@@ -43,6 +44,10 @@ type AuthContextValue = {
   signOut: () => Promise<void>
   /** Permanently removes the account and every chat. Throws on failure. */
   deleteAccount: () => Promise<void>
+  /** How many guest problems were just carried into an existing account on
+   *  sign-in (null when nothing was carried). Cleared once surfaced. */
+  carried: number | null
+  clearCarried: () => void
 }
 
 // The OAuth 2.0 *Web* client ID (from google-services.json / Firebase console).
@@ -66,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [initializing, setInitializing] = useState(true)
   const [signingIn, setSigningIn] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [carried, setCarried] = useState<number | null>(null)
 
   // Professional consumer pattern: the app NEVER gates on sign-in. Whenever
   // there is no session (first launch, sign-out, account deletion), we silently
@@ -130,10 +136,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               await linkWithCredential(current, credential)
             } catch (linkErr) {
               const code = (linkErr as { code?: string }).code ?? ''
-              // This Google account already exists — switch to it instead
-              // (the guest scratch work stays behind on the orphaned uid).
               if (/credential-already-in-use|email-already-in-use/.test(code)) {
+                // This Google account already exists, so linking is impossible
+                // and we must SWITCH to it — which orphans the guest's uid.
+                // Their work must not die with it: read the guest tree while
+                // we are still that user, then copy it into the account we
+                // land in. Best-effort — never block the sign-in itself.
+                const guestUid = current.uid
+                let carry: Problem[] = []
+                try {
+                  carry = await fetchAllProblems(guestUid)
+                } catch {
+                  // unreadable (offline) — sign in anyway, nothing to carry
+                }
                 await signInWithCredential(getAuth(), credential)
+                const landed = getAuth().currentUser
+                if (landed && carry.length > 0 && landed.uid !== guestUid) {
+                  const n = await copyProblemsInto(landed.uid, carry).catch(() => 0)
+                  if (n > 0) setCarried(n)
+                }
               } else {
                 throw linkErr
               }
@@ -232,8 +253,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    return { user, initializing, signingIn, error, signIn, signInGuest, signOut, deleteAccount }
-  }, [user, initializing, signingIn, error])
+    return {
+      user,
+      initializing,
+      signingIn,
+      error,
+      signIn,
+      signInGuest,
+      signOut,
+      deleteAccount,
+      carried,
+      clearCarried: () => setCarried(null),
+    }
+  }, [user, initializing, signingIn, error, carried])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

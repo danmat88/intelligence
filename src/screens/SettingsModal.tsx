@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { ActivityIndicator, Image, Linking, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Feather } from '@expo/vector-icons'
+import { LinearGradient } from 'expo-linear-gradient'
 import { useTheme } from '../theme/ThemeProvider'
 import { useI18n } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
@@ -21,18 +22,23 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
   const { theme } = useTheme()
   const c = theme.colors
   const insets = useSafeAreaInsets()
-  const { user, signOut, deleteAccount } = useAuth()
+  const { user, signIn, signingIn, signOut, deleteAccount } = useAuth()
   const { t, lang, setLang } = useI18n()
   const toast = useToast()
   const [deleting, setDeleting] = useState(false)
   const [confirming, setConfirming] = useState(false)
 
   if (!user) return null
+  const isGuest = user.isAnonymous
 
   const doDelete = async () => {
     setDeleting(true)
     try {
-      await deleteAccount() // success -> auth gate returns to Welcome
+      await deleteAccount()
+      // Deletion signs the user out; the provider silently drops them into a
+      // FRESH guest session (no dead-end gate). Close the sheet and confirm.
+      onClose()
+      toast.show(t('settings.deleted'), 'check')
     } catch (e) {
       toast.show(e instanceof Error ? e.message : t('settings.deleteError'), 'alert-triangle')
     } finally {
@@ -61,24 +67,60 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
             </Press>
           </View>
 
-          {/* profile panel */}
-          <View style={[styles.profile, { backgroundColor: c.surface, borderColor: c.border }]}>
-            {user.photo ? (
-              <Image source={{ uri: user.photo }} style={styles.avatar} />
-            ) : (
-              <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: c.accentSoft }]}>
-                <Feather name="user" size={22} color={c.accent} />
+          {/* profile panel — for a guest this is the sign-in pitch instead */}
+          {isGuest ? (
+            <Press
+              onPress={() => {
+                onClose()
+                signIn()
+              }}
+              disabled={signingIn}
+              scaleTo={0.98}
+              style={styles.stretch}
+            >
+              <LinearGradient
+                colors={theme.gradient.brand as [string, string]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.guestCard}
+              >
+                <View style={styles.guestIcon}>
+                  {signingIn ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Feather name="log-in" size={20} color="#fff" />
+                  )}
+                </View>
+                <View style={styles.flex}>
+                  <Txt weight="bold" size={15.5} color="#fff">
+                    {t('settings.guest.title')}
+                  </Txt>
+                  <Txt size={12.5} color="rgba(255,255,255,0.82)" style={styles.guestSub}>
+                    {t('settings.guest.sub')}
+                  </Txt>
+                </View>
+                <Feather name="arrow-right" size={18} color="rgba(255,255,255,0.9)" />
+              </LinearGradient>
+            </Press>
+          ) : (
+            <View style={[styles.profile, { backgroundColor: c.surface, borderColor: c.border }]}>
+              {user.photo ? (
+                <Image source={{ uri: user.photo }} style={styles.avatar} />
+              ) : (
+                <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: c.accentSoft }]}>
+                  <Feather name="user" size={22} color={c.accent} />
+                </View>
+              )}
+              <View style={styles.flex}>
+                <Txt numberOfLines={1} weight="semibold" size={16}>
+                  {user.name ?? user.email}
+                </Txt>
+                <Txt numberOfLines={1} size={13} color={c.textFaint}>
+                  {user.email}
+                </Txt>
               </View>
-            )}
-            <View style={styles.flex}>
-              <Txt numberOfLines={1} weight="semibold" size={16}>
-                {user.name ?? user.email}
-              </Txt>
-              <Txt numberOfLines={1} size={13} color={c.textFaint}>
-                {user.email}
-              </Txt>
             </View>
-          </View>
+          )}
 
           <SectionLabel text={t('settings.section.prefs')} color={c.textFaint} monoStyle={mono} />
           <Group border={c.border} surface={c.surface}>
@@ -98,34 +140,40 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
             <Row icon="file-text" label={t('settings.terms')} onPress={() => Linking.openURL('https://rezolvo.web.app/terms')} c={c} />
           </Group>
 
-          <SectionLabel text={t('settings.section.account')} color={c.textFaint} monoStyle={mono} />
-          <Group border={c.border} surface={c.surface}>
-            <Row
-              icon="log-out"
-              label={t('settings.signOut')}
-              onPress={() => {
-                onClose()
-                signOut().then(() => toast.show(t('auth.signedOut')))
-              }}
-              c={c}
-            />
-            <Separator color={c.border} />
-            <Press onPress={() => setConfirming(true)} disabled={deleting} scaleTo={0.98} style={[styles.row, deleting && styles.dim]}>
-              <View style={[styles.rowIcon, { backgroundColor: c.dangerSoft }]}>
-                {deleting ? (
-                  <ActivityIndicator size="small" color={c.danger} />
-                ) : (
-                  <Feather name="trash-2" size={16} color={c.danger} />
-                )}
-              </View>
-              <Txt size={15} weight="medium" color={c.danger} style={styles.flex}>
-                {deleting ? t('settings.deleting') : t('settings.delete')}
+          {/* Account actions only make sense for a real (signed-in) account:
+              a guest has no Google identity to sign out of or reauth-delete. */}
+          {!isGuest && (
+            <>
+              <SectionLabel text={t('settings.section.account')} color={c.textFaint} monoStyle={mono} />
+              <Group border={c.border} surface={c.surface}>
+                <Row
+                  icon="log-out"
+                  label={t('settings.signOut')}
+                  onPress={() => {
+                    onClose()
+                    signOut().then(() => toast.show(t('auth.signedOut')))
+                  }}
+                  c={c}
+                />
+                <Separator color={c.border} />
+                <Press onPress={() => setConfirming(true)} disabled={deleting} scaleTo={0.98} style={[styles.row, deleting && styles.dim]}>
+                  <View style={[styles.rowIcon, { backgroundColor: c.dangerSoft }]}>
+                    {deleting ? (
+                      <ActivityIndicator size="small" color={c.danger} />
+                    ) : (
+                      <Feather name="trash-2" size={16} color={c.danger} />
+                    )}
+                  </View>
+                  <Txt size={15} weight="medium" color={c.danger} style={styles.flex}>
+                    {deleting ? t('settings.deleting') : t('settings.delete')}
+                  </Txt>
+                </Press>
+              </Group>
+              <Txt size={11.5} color={c.textFaint} style={styles.note}>
+                {t('settings.deleteNote')}
               </Txt>
-            </Press>
-          </Group>
-          <Txt size={11.5} color={c.textFaint} style={styles.note}>
-            {t('settings.deleteNote')}
-          </Txt>
+            </>
+          )}
         </View>
       </Overlay>
 
@@ -211,6 +259,24 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 6,
   },
+  stretch: { alignSelf: 'stretch' },
+  guestCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 6,
+  },
+  guestIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.18)',
+  },
+  guestSub: { marginTop: 2 },
   avatar: { width: 46, height: 46, borderRadius: 23 },
   avatarFallback: { alignItems: 'center', justifyContent: 'center' },
   sectionLabel: { letterSpacing: 1.1, marginTop: 14, marginBottom: 7, paddingHorizontal: 6 },

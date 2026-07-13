@@ -92,7 +92,7 @@ export default function SolverScreen() {
   const { theme } = useTheme()
   const c = theme.colors
   const insets = useSafeAreaInsets()
-  const { user, signIn, signingIn, error: authError } = useAuth()
+  const { user, signIn, signingIn, error: authError, carried, clearCarried } = useAuth()
   const { t, langName } = useI18n()
   const toast = useToast()
   const [thread, setThread] = useState<Turn[]>([])
@@ -157,6 +157,14 @@ export default function SolverScreen() {
     if (authError && authError !== lastAuthErrRef.current) toast.show(authError, 'alert-triangle')
     lastAuthErrRef.current = authError
   }, [authError, toast])
+  // Signed into an existing account and the guest's work was carried over —
+  // say so, or it looks like the previous problems vanished.
+  useEffect(() => {
+    if (carried && carried > 0) {
+      toast.show(t('auth.carried', { n: carried }), 'download-cloud')
+      clearCarried()
+    }
+  }, [carried, clearCarried, toast, t])
 
   // Keep a ref mirror of the thread so async solves persist the right snapshot.
   const commit = useCallback((next: Turn[]) => {
@@ -220,7 +228,7 @@ export default function SolverScreen() {
       }
       const topic = extractTopic(turns)
       try {
-        if (problemIdRef.current) await updateProblemTurns(user.id, problemIdRef.current, stored)
+        if (problemIdRef.current) await updateProblemTurns(user.id, problemIdRef.current, stored, title, topic)
         else problemIdRef.current = await createProblem(user.id, title, topic, stored, { photo: isPhoto })
       } catch {
         // ignore — persistence is best-effort
@@ -656,19 +664,20 @@ export default function SolverScreen() {
               never resizes the row and neighbours never move. */}
           <CrossFade dep={user?.isAnonymous ? 'guest' : 'account'} style={styles.accountSlot}>
             {user?.isAnonymous ? (
-              // Guest: circular log-in button (same size as the avatar it becomes).
+              // Guest: the slot opens Settings (sign-in card + language + legal
+              // live there), accent-ringed so it still invites a tap. One-tap
+              // sign-in stays available from the composer CTA below.
               <Press
-                onPress={signIn}
-                disabled={signingIn}
+                onPress={() => setSettingsOpen(true)}
                 hitSlop={8}
                 accessibilityRole="button"
-                accessibilityLabel={t('auth.signIn')}
+                accessibilityLabel={t('settings.title')}
                 style={[styles.iconBtn, { backgroundColor: c.accentSoft, borderColor: c.accent }]}
               >
                 {signingIn ? (
                   <ActivityIndicator size="small" color={c.accent} />
                 ) : (
-                  <Feather name="log-in" size={17} color={c.accent} />
+                  <Feather name="user" size={17} color={c.accent} />
                 )}
               </Press>
             ) : (

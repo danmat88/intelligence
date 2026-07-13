@@ -85,6 +85,7 @@ const STRINGS = {
     'auth.signedInAs': 'Signed in as {name}',
     'auth.signedOut': 'Signed out',
     'auth.signIn': 'Sign in',
+    'auth.carried': 'Your saved work came along ({n})',
     // — welcome (offline fallback gate)
     'welcome.tagline': 'Snap any math problem — solved and explained, step by step.',
     'welcome.google': 'Continue with Google',
@@ -108,6 +109,9 @@ const STRINGS = {
     'history.undo': 'Undo',
     // — settings
     'settings.title': 'Settings',
+    'settings.guest.title': 'Sign in to save your work',
+    'settings.guest.sub': 'Keep your solved problems across devices — 5 seconds with Google.',
+    'settings.deleted': 'Account deleted',
     'settings.section.prefs': 'Preferences',
     'settings.section.legal': 'Legal',
     'settings.section.account': 'Account',
@@ -219,6 +223,7 @@ const STRINGS = {
     'auth.signedInAs': 'Conectat ca {name}',
     'auth.signedOut': 'Deconectat',
     'auth.signIn': 'Conectare',
+    'auth.carried': 'Ți-am adus munca salvată ({n})',
     // — welcome (offline fallback gate)
     'welcome.tagline': 'Fotografiază orice problemă de mate — rezolvată și explicată pas cu pas.',
     'welcome.google': 'Continuă cu Google',
@@ -242,6 +247,9 @@ const STRINGS = {
     'history.undo': 'Anulează',
     // — settings
     'settings.title': 'Setări',
+    'settings.guest.title': 'Conectează-te ca să-ți salvezi munca',
+    'settings.guest.sub': 'Păstrează-ți problemele rezolvate pe toate dispozitivele — 5 secunde cu Google.',
+    'settings.deleted': 'Cont șters',
     'settings.section.prefs': 'Preferințe',
     'settings.section.legal': 'Legal',
     'settings.section.account': 'Cont',

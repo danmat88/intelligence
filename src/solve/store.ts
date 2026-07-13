@@ -5,6 +5,7 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
+  getDocs,
   onSnapshot,
   query,
   orderBy,
@@ -93,12 +94,65 @@ export async function createProblem(
   return ref.id
 }
 
-export async function updateProblemTurns(uid: string, id: string, turns: StoredTurn[]): Promise<void> {
-  await updateDoc(doc(problemsCol(uid), id), { turns })
+/** Update the saved problem. Title/topic ride along because the doc is often
+ *  CREATED before the solution exists (photo upload finishing first races the
+ *  solve) — the placeholder title and null topic must heal on the next save. */
+export async function updateProblemTurns(
+  uid: string,
+  id: string,
+  turns: StoredTurn[],
+  title?: string,
+  topic?: string | null,
+): Promise<void> {
+  await updateDoc(doc(problemsCol(uid), id), {
+    turns,
+    ...(title ? { title } : null),
+    ...(topic !== undefined ? { topic } : null),
+  })
 }
 
 export async function removeProblem(uid: string, id: string): Promise<void> {
   await deleteDoc(doc(problemsCol(uid), id))
+}
+
+/** One-shot read of a user's problems. Used to CARRY A GUEST'S WORK OVER when
+ *  their Google account already exists: linking is impossible there, so we
+ *  must read the guest's tree while still signed in as the guest, then write
+ *  it into the account we switch to. */
+export async function fetchAllProblems(uid: string): Promise<Problem[]> {
+  const snap = await getDocs(query(problemsCol(uid), orderBy('createdAt', 'desc'), limit(60)))
+  return snap.docs.map((d) => {
+    const data = d.data() as {
+      title?: string
+      topic?: string | null
+      turns?: StoredTurn[]
+      photo?: boolean
+      createdAt?: { toMillis?: () => number }
+    }
+    return {
+      id: d.id,
+      title: data.title ?? 'Problem',
+      topic: data.topic ?? null,
+      turns: Array.isArray(data.turns) ? data.turns : [],
+      photo: data.photo,
+      createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : Date.now(),
+    }
+  })
+}
+
+/** Copy problems into `uid`, preserving their original dates. Best-effort:
+ *  a failed copy must never block the sign-in that triggered it. */
+export async function copyProblemsInto(uid: string, items: Problem[]): Promise<number> {
+  let copied = 0
+  for (const p of items) {
+    try {
+      await createProblem(uid, p.title, p.topic, p.turns, { photo: p.photo, createdAt: p.createdAt })
+      copied++
+    } catch {
+      // skip this one — the rest still make it
+    }
+  }
+  return copied
 }
 
 /** Live list of the user's problems, newest first. Returns an unsubscribe fn. */
