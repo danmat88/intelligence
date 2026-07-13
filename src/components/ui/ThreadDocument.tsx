@@ -257,10 +257,20 @@ function isProse(s){
   return /[A-Za-zĂÂÎȘȚăâîșț][a-zăâîșț]{2,}\\s+[A-Za-zĂÂÎȘȚăâîșț]{2,}/.test(s)
       || /(^|[^\\\\a-zA-Z])[A-Za-zĂÂÎȘȚăâîșț][a-zăâîșț]{3,}/.test(s);
 }
+// Rescue bare inline math the model forgot to $…$-wrap (e.g. "f(x) = x^2"):
+// a SPACE-FREE run carrying a ^/_ superscript is unambiguously math and would
+// otherwise render as a literal caret. MIRROR of autowrapInlineMath() in
+// solve/mathText.ts (the tested copy) — keep the two in sync.
+function autowrapMath(t){
+  return String(t).split(/(\\$[^$]*\\$)/).map(function(p,i){
+    return i%2===1?p:p.replace(/[A-Za-z0-9)\\]}]+(?:[_^](?:\\{[^{}]*\\}|[A-Za-z0-9]+))+/g,function(m){return '$'+m+'$';});
+  }).join('');
+}
 // Prose that still carries LaTeX commands OUTSIDE its $...$ islands (the
 // exotic "x = 20 \\text{ mere}" shape) gets those commands cleaned into
 // readable symbols/words — the islands stay intact for real typesetting.
 function proseClean(s){
+  s=autowrapMath(s); // rescue bare x^2 etc. into $…$ BEFORE the cleanup below
   var parts=String(s).split(/(\\$[^$]*\\$)/);
   for(var i=0;i<parts.length;i++){
     if(parts[i].charAt(0)!=='$'){
@@ -404,8 +414,9 @@ function blocks(){
   out.push({key:'prob:'+first.id, sig:first.text+'|'+(first.math||'')+'|'+(first.imageUri||'')+'|'+(readProblem||''), html:function(){
     var ar=(first.imageW&&first.imageH)?(first.imageW+'/'+first.imageH):'4/3';
     // math = LaTeX of what the student typed (same converter as the composer
-    // preview) — typeset it. Word problems carry none: they stay prose.
-    var probBody=first.math?tex(first.math):esc(first.text||L.photoProblem);
+    // preview) — typeset it. Worded input goes through smartTex so its inline
+    // math (e.g. a typed "x^2") typesets like the rest instead of a raw caret.
+    var probBody=first.math?tex(first.math):smartTex(first.text||L.photoProblem);
     var body=first.imageUri
       ?'<div class="imgbox" style="aspect-ratio:'+ar+'"><img src="'+esc(first.imageUri)+'" onload="this.classList.add(\\'ld\\')"></div>'
       :'<div class="ptx">'+probBody+'</div>';
@@ -542,7 +553,8 @@ export default function ThreadDocument({
 
   const html = useMemo(
     () => buildDocHtml(theme.colors, labels, !!assetBase),
-    // labels are language-stable; the doc shell never rebuilds mid-conversation
+    // A language switch changes `labels`, which rebuilds this html and RELOADS
+    // the page — onLoadEnd then re-pushes the thread into the fresh document.
     [theme.colors, JSON.stringify(labels), assetBase],
   )
 
@@ -607,7 +619,12 @@ export default function ThreadDocument({
         return false
       }}
       onLoadEnd={() => {
+        // A (re)load — including the page rebuild a LANGUAGE switch triggers —
+        // lands on an EMPTY document. The cached "already shown" payload is now
+        // stale, so clear it or sync() would skip the re-push and the problem
+        // would show blank after switching language.
         loadedRef.current = true
+        shownRef.current = ''
         sync()
       }}
       onMessage={(e) => {
