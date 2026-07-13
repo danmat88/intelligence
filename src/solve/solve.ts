@@ -21,19 +21,27 @@ function looksLikeValidSolve(raw: string): boolean {
   return getSolveJson(raw) !== null
 }
 
-/** Try FAST, escalate to DEEP on failure; tag the result with who solved it. */
+/** Try FAST, escalate to DEEP on failure; tag the result with who solved it.
+ *  `tagJson` is for structured solves only — follow-ups are PROSE, and
+ *  re-serializing a prose reply that happens to contain a JSON object would
+ *  throw away everything around it. */
 async function withFallback(
   call: (model: string) => Promise<string>,
   valid: (out: string) => boolean,
   signal?: AbortSignal,
+  tagJson = true,
 ): Promise<string> {
   try {
     const out = await call(FAST)
     if (!valid(out)) throw new Error('fast model returned unusable output')
-    return withJsonFlags(out, { _model: 'fast' })
+    return tagJson ? withJsonFlags(out, { _model: 'fast' }) : out
   } catch (e) {
     if (signal?.aborted) throw e
-    return withJsonFlags(await call(DEEP), { _model: 'deep' })
+    // The safety net gets held to the same standard: broken output from DEEP
+    // must surface as a retryable error, never render as a raw text blob.
+    const out = await call(DEEP)
+    if (!valid(out)) throw new Error('deep model returned unusable output')
+    return tagJson ? withJsonFlags(out, { _model: 'deep' }) : out
   }
 }
 
@@ -133,5 +141,6 @@ export async function followUp(turns: ChatTurn[], langName: string, signal?: Abo
     },
     (out) => out.length > 0,
     signal,
+    false, // prose reply — never rewrite it through the JSON tagger
   )
 }

@@ -12,6 +12,7 @@ import {
   updateProfile,
 } from '@react-native-firebase/auth'
 import { collection, deleteDoc, doc, getDocs, getFirestore } from '@react-native-firebase/firestore'
+import { deleteAllUserImages } from '../solve/imageStore'
 import {
   GoogleSignin,
   isErrorWithCode,
@@ -214,8 +215,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { idToken, accessToken } = await GoogleSignin.getTokens()
       await reauthenticateWithCredential(fbUser, GoogleAuthProvider.credential(idToken, accessToken))
 
-      // Play policy: deleting the account must delete the data. Wipe every
-      // saved problem, then the user doc.
+      // Play policy: deleting the account must delete the data — ALL of it:
+      // the problem photos in Storage (and their local copies), every saved
+      // problem, then the user doc. Photos first, while the token still works.
+      await deleteAllUserImages(fbUser.uid)
       const db = getFirestore()
       const problems = await getDocs(collection(doc(db, 'users', fbUser.uid), 'problems'))
       await Promise.all(problems.docs.map((p) => deleteDoc(p.ref)))

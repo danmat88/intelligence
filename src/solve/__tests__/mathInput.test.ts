@@ -22,6 +22,18 @@ describe('looksLikeProse / isMathInput', () => {
   })
 })
 
+describe('plainToLatex — functions without a KaTeX command', () => {
+  it('abs and lcm stay plain (KaTeX has no \\abs or \\lcm — they render as errors)', () => {
+    expect(plainToLatex('abs(x-2)')).not.toContain('\\abs')
+    expect(plainToLatex('lcm(4,6)')).not.toContain('\\lcm')
+  })
+
+  it('real operators still get their command', () => {
+    expect(plainToLatex('sin(x)')).toContain('\\sin')
+    expect(plainToLatex('gcd(4,6)')).toContain('\\gcd')
+  })
+})
+
 describe('plainToLatex — fractions', () => {
   it('simple fraction', () => {
     expect(plainToLatex('1/2')).toBe('\\frac{1}{2}')

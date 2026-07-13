@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { ActivityIndicator, Animated, Image, Keyboard, Pressable, ScrollView, Share, StyleSheet, TextInput, View } from 'react-native'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ActivityIndicator, Image, Keyboard, Pressable, ScrollView, Share, StyleSheet, TextInput, View } from 'react-native'
 import ReAnimated, { Easing as REasing, withTiming, type EntryAnimationsValues } from 'react-native-reanimated'
 import { LinearGradient } from 'expo-linear-gradient'
 import * as Clipboard from 'expo-clipboard'
@@ -15,7 +15,6 @@ import ScreenBackground from '../components/ui/ScreenBackground'
 import { useToast } from '../components/ui/Toast'
 import Txt from '../components/ui/Txt'
 import InfoDialog from '../components/ui/InfoDialog'
-import SolutionView, { type VerifyStage } from '../components/ui/SolutionView'
 import ThreadDocument, { type DocLabels } from '../components/ui/ThreadDocument'
 import SymbolBar, { type MathKey } from '../components/ui/SymbolBar'
 import MathPreview from '../components/ui/MathPreview'
@@ -23,7 +22,7 @@ import { isMathInput, plainToLatex } from '../solve/mathInput'
 import type { CapturedImage } from '../solve/capture'
 import { solveImage, solveProblem, followUp, solveDeep, verifyAnswer } from '../solve/solve'
 import { latexToPlain, solutionShareText } from '../solve/shareText'
-import { getSolveJson, isStructuredSolution, withJsonFlags } from '../solve/verdict'
+import { getSolveJson, isHardProblem, isStructuredSolution, withJsonFlags } from '../solve/verdict'
 import type { ChatTurn } from '../ai/types'
 import { useI18n, type StringKey } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
@@ -55,33 +54,14 @@ const uid = () => `${Date.now()}_${counter++}`
 /** Pull the topic label out of a structured (JSON) solution, if present. */
 function extractTopic(thread: { role: string; text: string }[]): string | null {
   const a = thread.find((t) => t.role === 'assistant' && t.text)
-  if (!a) return null
-  try {
-    const s = a.text.indexOf('{')
-    const e = a.text.lastIndexOf('}')
-    if (s >= 0 && e > s) {
-      const j = JSON.parse(a.text.slice(s, e + 1)) as { topic?: unknown }
-      return typeof j.topic === 'string' ? j.topic : null
-    }
-  } catch {
-    // not JSON (a follow-up) — no topic
-  }
-  return null
+  const topic = a ? getSolveJson(a.text)?.topic : null
+  return typeof topic === 'string' ? topic : null
 }
 
-/** True if a solve response is the {"error": ...} shape (non-math / unreadable). */
-function isErrorResult(text: string): boolean {
-  try {
-    const s = text.indexOf('{')
-    const e = text.lastIndexOf('}')
-    if (s >= 0 && e > s) {
-      const j = JSON.parse(text.slice(s, e + 1)) as { error?: unknown }
-      return typeof j.error === 'string'
-    }
-  } catch {
-    // not JSON
-  }
-  return false
+/** The message of a {"error": ...} solve response (non-math / unreadable), or null. */
+function errorResultMessage(text: string): string | null {
+  const err = getSolveJson(text)?.error
+  return typeof err === 'string' ? err : null
 }
 
 type T = (key: StringKey, vars?: Record<string, string | number>) => string
@@ -132,6 +112,8 @@ export default function SolverScreen() {
   const threadRef = useRef<Turn[]>([])
   const problemIdRef = useRef<string | null>(null)
   const abortRef = useRef<AbortController | null>(null)
+  // The background verification's own kill switch — separate from the solve's.
+  const verifyAbortRef = useRef<AbortController | null>(null)
   const prevUidRef = useRef<string | undefined>(user?.id)
   // Whether the current document shows a LOADED conversation (renders all at
   // once, no entrances) vs a live one (new blocks reveal). The page handles
@@ -192,10 +174,11 @@ export default function SolverScreen() {
     if (prevUidRef.current !== user?.id) {
       prevUidRef.current = user?.id
       problemIdRef.current = null
-      // A solve in flight belongs to the OLD account — kill it, or its answer
-      // would commit into the fresh session.
+      // A solve (or verification) in flight belongs to the OLD account —
+      // kill it, or its answer would commit into the fresh session.
       abortRef.current?.abort()
       abortRef.current = null
+      verifyAbortRef.current?.abort()
       lastReqRef.current = null
       setSending(false)
       if (threadRef.current.length > 0) {
@@ -212,9 +195,6 @@ export default function SolverScreen() {
   const persist = useCallback(
     async (turns: Turn[]) => {
       if (!user) return
-      // Never save a non-math / unreadable result — it would just clutter history.
-      const lastAsst = [...turns].reverse().find((t) => t.role === 'assistant')
-      if (lastAsst && isErrorResult(lastAsst.text)) return
       // Failed/pending turns are UI state, not part of the problem — drop
       // them. Cloud photo references ride along once their upload landed.
       const stored = toStoredTurns(
@@ -228,12 +208,20 @@ export default function SolverScreen() {
       )
       if (stored.length === 0) return
       const firstUser = turns.find((x) => x.role === 'user')
+      const isPhoto = !!firstUser?.imageUri || !!firstUser?.imagePath
       // Multi-line input must not produce multi-line history titles.
-      const title = (firstUser?.text ?? '').replace(/\s+/g, ' ').trim().slice(0, 90) || t('turn.photoProblem')
+      let title = (firstUser?.text ?? '').replace(/\s+/g, ' ').trim().slice(0, 90)
+      if (!title) {
+        // Photo problems: the AI's restatement is the real, searchable title —
+        // not the generic "Photo problem" label.
+        const firstAsst = turns.find((x) => x.role === 'assistant' && !x.pending && !x.error)
+        const restated = String(getSolveJson(firstAsst?.text ?? '')?.problem ?? '')
+        title = latexToPlain(restated).replace(/\s+/g, ' ').trim().slice(0, 90) || t('turn.photoProblem')
+      }
       const topic = extractTopic(turns)
       try {
         if (problemIdRef.current) await updateProblemTurns(user.id, problemIdRef.current, stored)
-        else problemIdRef.current = await createProblem(user.id, title, topic, stored)
+        else problemIdRef.current = await createProblem(user.id, title, topic, stored, { photo: isPhoto })
       } catch {
         // ignore — persistence is best-effort
       }
@@ -246,25 +234,37 @@ export default function SolverScreen() {
   // corrected solution. The "✓" badge only ever comes from a real code check.
   const verifyFlow = useCallback(
     async (id: string, problemText: string) => {
+      const turn = threadRef.current.find((x) => x.id === id)
+      if (!turn) return
+      const restated = String(getSolveJson(turn.text)?.problem ?? '').trim() || problemText.trim()
+      // A proof can't be graded by running code — the check would only ever
+      // come back 'unverifiable'. Skip the wasted call (covers photos too,
+      // via the restatement).
+      if (isHardProblem(restated)) return
+      // Abortable: reset / loading another problem / account switch kills a
+      // stale verification instead of letting it burn quota in the dark.
+      const ctrl = new AbortController()
+      verifyAbortRef.current?.abort()
+      verifyAbortRef.current = ctrl
       setVerifyingMap((m) => ({ ...m, [id]: 'check' }))
       const applyText = (text: string) => {
         commit(threadRef.current.map((x) => (x.id === id ? { ...x, text } : x)))
       }
       try {
-        const turn = threadRef.current.find((x) => x.id === id)
-        if (!turn) return
-        const v = await verifyAnswer(problemText, turn.text)
+        const v = await verifyAnswer(problemText, turn.text, ctrl.signal)
+        if (ctrl.signal.aborted) return
         if (v === 'correct') {
           applyText(withJsonFlags(turn.text, { _verified: true }))
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {})
         } else if (v === 'incorrect') {
           const j = getSolveJson(turn.text)
-          const prob = String(j?.problem ?? '').trim() || problemText.trim()
-          if (j?._model !== 'deep' && prob) {
+          if (j?._model !== 'deep' && restated) {
             // Be honest about the extra work — the pill says "re-solving".
             setVerifyingMap((m) => ({ ...m, [id]: 'recheck' }))
-            const deepRaw = await solveDeep(prob, langName)
-            const v2 = isStructuredSolution(deepRaw) ? await verifyAnswer(prob, deepRaw) : 'unverifiable'
+            const deepRaw = await solveDeep(restated, langName, ctrl.signal)
+            if (ctrl.signal.aborted) return
+            const v2 = isStructuredSolution(deepRaw) ? await verifyAnswer(restated, deepRaw, ctrl.signal) : 'unverifiable'
+            if (ctrl.signal.aborted) return
             applyText(
               v2 === 'correct'
                 ? withJsonFlags(deepRaw, { _verified: true })
@@ -281,6 +281,7 @@ export default function SolverScreen() {
       } catch {
         // verification is best-effort — never disturb the shown solution
       } finally {
+        if (verifyAbortRef.current === ctrl) verifyAbortRef.current = null
         setVerifyingMap((m) => {
           const n = { ...m }
           delete n[id]
@@ -304,10 +305,18 @@ export default function SolverScreen() {
       try {
         const text = await solver(ctrl.signal)
         if (ctrl.signal.aborted) return
+        setNetDown(false) // an answer arrived — the network is clearly back
+        // The {"error":...} shape (unreadable photo / not math) is a FAILED
+        // attempt, not a solution: show it as an error turn so Retry appears,
+        // and never persist or verify it.
+        const errMsg = errorResultMessage(text)
+        if (errMsg) {
+          commit([...base, userTurn, { id: asstId, role: 'assistant', text: errMsg, error: true }])
+          return
+        }
         const done: Turn[] = [...base, userTurn, { id: asstId, role: 'assistant', text }]
         commit(done)
         persist(done)
-        setNetDown(false) // an answer arrived — the network is clearly back
         // First solves get the background correctness check (not follow-ups).
         if (verifyProblem !== undefined && isStructuredSolution(text)) void verifyFlow(asstId, verifyProblem)
       } catch (e) {
@@ -380,6 +389,7 @@ export default function SolverScreen() {
 
   const reset = useCallback(() => {
     Keyboard.dismiss() // fresh problem, fresh screen — no keyboard left over the hero
+    verifyAbortRef.current?.abort() // a verification of the old thread is moot now
     problemIdRef.current = null
     setProblemMeta(null)
     explainCountsRef.current = {}
@@ -393,8 +403,10 @@ export default function SolverScreen() {
       // Tapping the conversation that is already open: the sheet just closes.
       if (problemIdRef.current === p.id && threadRef.current.length > 0) return
       // A solve in flight belongs to the conversation being LEFT — cancel it,
-      // or its answer would overwrite the freshly loaded thread.
+      // or its answer would overwrite the freshly loaded thread. Same for a
+      // background verification of the old thread.
       if (sending) cancelRun()
+      verifyAbortRef.current?.abort()
       Haptics.selectionAsync().catch(() => {})
       // Choreography: the sheet starts sliding away, and mid-exit the thread
       // PUSH begins — old conversation slides out, the new one slides in as
@@ -876,7 +888,16 @@ export default function SolverScreen() {
       </KeyboardAvoidingView>
 
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
-      <HistorySheet open={historyOpen} onClose={() => setHistoryOpen(false)} onSelect={loadProblem} />
+      <HistorySheet
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        onSelect={loadProblem}
+        // The open problem was deleted from history: unlink its stale id, or
+        // every later persist would silently write into a dead document.
+        onDeleted={(id) => {
+          if (problemIdRef.current === id) problemIdRef.current = null
+        }}
+      />
       {/* The trust pitch, told at the moment of trust: what "Verified" means. */}
       <InfoDialog
         open={verifyInfo !== null}
@@ -891,151 +912,6 @@ export default function SolverScreen() {
   )
 }
 
-function Bubble({
-  turn,
-  animate = true,
-  mountDelay = 0,
-  onChip,
-  onCancel,
-  onRetry,
-  onVerifyTap,
-  verifying = false,
-}: {
-  turn: Turn
-  /** False for history-loaded turns: no entrance, cards land at full size. */
-  animate?: boolean
-  /** WebView hold-back for loaded turns (covers the hero→thread push only). */
-  mountDelay?: number
-  onChip?: (id: string) => void
-  onCancel?: () => void
-  /** Present on error turns: re-run the failed request, nothing retyped. */
-  onRetry?: () => void
-  onVerifyTap?: (state: 'verified' | 'unverified') => void
-  verifying?: VerifyStage
-}) {
-  const { theme } = useTheme()
-  const { t } = useI18n()
-  const toast = useToast()
-  const c = theme.colors
-
-  let inner: ReactNode
-  if (turn.role === 'user') {
-    inner = (
-      <LinearGradient
-        colors={theme.gradient.brand as [string, string]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        // Photo-only bubbles wear the image edge-to-edge (thin gradient frame).
-        style={[styles.userBubble, !!turn.imageUri && !turn.text && styles.userBubblePhoto]}
-      >
-        {!!turn.imageUri && <Image source={{ uri: turn.imageUri }} style={styles.userImg} resizeMode="cover" />}
-        {!!turn.text && (
-          <Txt size={15} color={c.onAccent}>
-            {turn.text}
-          </Txt>
-        )}
-      </LinearGradient>
-    )
-  } else if (turn.pending) {
-    inner = (
-      <View style={[styles.asstCard, { backgroundColor: c.surface, borderColor: c.border }]}>
-        <PendingRow onCancel={onCancel} />
-      </View>
-    )
-  } else if (turn.error) {
-    inner = (
-      <View style={[styles.asstCard, { backgroundColor: c.surface, borderColor: c.danger }]}>
-        <View style={styles.errRow}>
-          <Feather name="alert-circle" size={16} color={c.danger} style={styles.errIcon} />
-          <Txt size={14} color={c.danger} style={styles.flex}>
-            {turn.text}
-          </Txt>
-        </View>
-        {onRetry && (
-          <Press onPress={onRetry} scaleTo={0.96} style={[styles.retryBtn, { backgroundColor: c.accentSoft }]}>
-            <Feather name="rotate-ccw" size={13} color={c.accent} />
-            <Txt size={12.5} weight="semibold" color={c.accent}>
-              {t('err.retry')}
-            </Txt>
-          </Press>
-        )}
-      </View>
-    )
-  } else {
-    inner = (
-      <View style={[styles.asstCard, { backgroundColor: c.surface, borderColor: c.border }]}>
-        <SolutionView
-          content={turn.text}
-          onChip={onChip}
-          onVerifyTap={onVerifyTap}
-          reveal={animate}
-          mountDelay={mountDelay}
-          verifying={verifying}
-          labels={{
-            solution: t('solution.label'),
-            answer: t('solution.answer'),
-            graph: t('solution.graph'),
-            similar: t('solution.chip.similar'),
-            mistake: t('solution.chip.mistake'),
-            verifying: t('solution.verifying'),
-            reverifying: t('solution.reverifying'),
-            verified: t('solution.verified'),
-            unverified: t('solution.unverified'),
-            unverifiedPill: t('solution.unverified.pill'),
-          }}
-        />
-        {!isErrorResult(turn.text) && (
-          <View style={styles.asstActions}>
-            <Press
-              onPress={() => {
-                Clipboard.setStringAsync(
-                  solutionShareText(turn.text, {
-                    problem: t('share.problem'),
-                    answer: t('solution.answer'),
-                    signature: t('share.signature'),
-                  }),
-                )
-                Haptics.selectionAsync().catch(() => {})
-                toast.show(t('action.copied'), 'check') // silent copy = broken copy
-              }}
-              hitSlop={6}
-              scaleTo={0.95}
-              style={[styles.actionBtn, { backgroundColor: c.surfaceAlt }]}
-            >
-              <Feather name="copy" size={13} color={c.textMuted} />
-              <Txt size={12.5} weight="semibold" color={c.textMuted}>
-                {t('action.copy')}
-              </Txt>
-            </Press>
-            <Press
-              onPress={() =>
-                Share.share({
-                  message: solutionShareText(turn.text, {
-                    problem: t('share.problem'),
-                    answer: t('solution.answer'),
-                    signature: t('share.signature'),
-                  }),
-                })
-              }
-              hitSlop={6}
-              scaleTo={0.95}
-              style={[styles.actionBtn, { backgroundColor: c.surfaceAlt }]}
-            >
-              <Feather name="share-2" size={13} color={c.textMuted} />
-              <Txt size={12.5} weight="semibold" color={c.textMuted}>
-                {t('action.share')}
-              </Txt>
-            </Press>
-          </View>
-        )}
-      </View>
-    )
-  }
-  // UI-thread entrance: a live turn rises from behind the composer, fully
-  // opaque; loaded history lands already in place.
-  return <ReAnimated.View entering={animate ? bubbleEnter : undefined}>{inner}</ReAnimated.View>
-}
-
 const BUBBLE_EASE = REasing.bezier(0.22, 1, 0.36, 1)
 function bubbleEnter(v: EntryAnimationsValues) {
   'worklet'
@@ -1043,69 +919,6 @@ function bubbleEnter(v: EntryAnimationsValues) {
     initialValues: { originY: v.targetOriginY + 56 },
     animations: { originY: withTiming(v.targetOriginY, { duration: 480, easing: BUBBLE_EASE }) },
   }
-}
-
-// Elapsed-aware status while the model works: honest stages early on, and past
-// ~20s an explicit "this one is tougher" so a long solve reads as intentional
-// effort, not a hang — plus a cancel escape hatch.
-function PendingRow({ onCancel }: { onCancel?: () => void }) {
-  const { theme } = useTheme()
-  const { t } = useI18n()
-  const c = theme.colors
-  const [elapsed, setElapsed] = useState(0)
-  useEffect(() => {
-    const started = Date.now()
-    const id = setInterval(() => setElapsed(Date.now() - started), 1000)
-    return () => clearInterval(id)
-  }, [])
-  const label =
-    elapsed < 4000 ? t('pending.1') : elapsed < 10000 ? t('pending.2') : elapsed < 22000 ? t('pending.3') : t('pending.4')
-  return (
-    <View>
-      <View style={styles.pendingWrap}>
-        <View style={styles.pendingRow}>
-          <ActivityIndicator color={c.accent} />
-          <Txt size={13.5} color={c.textMuted} style={styles.flex}>
-            {label}
-          </Txt>
-        </View>
-        {onCancel && elapsed >= 5000 && (
-          <Pressable onPress={onCancel} hitSlop={8} style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}>
-            <Txt size={12.5} weight="semibold" color={c.textFaint}>
-              {t('pending.cancel')}
-            </Txt>
-          </Pressable>
-        )}
-      </View>
-      <SkeletonSteps />
-    </View>
-  )
-}
-
-/** Ghost of the incoming solution — pulsing step lines + an answer block. The
- *  longest moment in the app should look like work happening, not a stall. */
-function SkeletonSteps() {
-  const { theme } = useTheme()
-  const c = theme.colors
-  const pulse = useRef(new Animated.Value(0.35)).current
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse, { toValue: 0.85, duration: 650, useNativeDriver: true }),
-        Animated.timing(pulse, { toValue: 0.35, duration: 650, useNativeDriver: true }),
-      ]),
-    )
-    loop.start()
-    return () => loop.stop()
-  }, [pulse])
-  return (
-    <Animated.View style={[styles.skel, { opacity: pulse }]}>
-      <View style={[styles.skelBar, { width: '86%', backgroundColor: c.surfaceAlt }]} />
-      <View style={[styles.skelBar, { width: '70%', backgroundColor: c.surfaceAlt }]} />
-      <View style={[styles.skelBar, { width: '55%', backgroundColor: c.surfaceAlt }]} />
-      <View style={[styles.skelAnswer, { backgroundColor: c.successSoft }]} />
-    </Animated.View>
-  )
 }
 
 const styles = StyleSheet.create({
@@ -1202,72 +1015,6 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
 
-  // thread
-  thread: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 16, gap: 14 },
-  threadMetaWrap: { alignItems: 'center', paddingTop: 2, paddingBottom: 2 },
-  threadMetaPill: { borderWidth: 1, borderRadius: 999, paddingVertical: 5, paddingHorizontal: 13 },
-  jumpWrap: { position: 'absolute', right: 16, bottom: 14 },
-  jumpBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#1A1626',
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 5,
-  },
-  userBubble: {
-    alignSelf: 'flex-end',
-    maxWidth: '82%',
-    borderRadius: 20,
-    borderBottomRightRadius: 6,
-    paddingVertical: 11,
-    paddingHorizontal: 15,
-    gap: 8,
-  },
-  userBubblePhoto: { paddingVertical: 5, paddingHorizontal: 5 },
-  userImg: { width: 210, height: 156, borderRadius: 15 },
-  asstCard: {
-    alignSelf: 'stretch',
-    borderWidth: 1,
-    borderRadius: 20,
-    borderBottomLeftRadius: 6,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    shadowColor: '#1A1626',
-    shadowOpacity: 0.05,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 2,
-  },
-  errRow: { flexDirection: 'row', gap: 9, alignItems: 'flex-start' },
-  errIcon: { marginTop: 2 },
-  retryBtn: {
-    alignSelf: 'flex-start',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 11,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 999,
-  },
-  pendingWrap: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  pendingRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 11 },
-  asstActions: { flexDirection: 'row', gap: 8, marginTop: 12 },
-  actionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    borderRadius: 999,
-    paddingVertical: 7,
-    paddingHorizontal: 13,
-  },
-
   // composer
   composerWrap: { paddingHorizontal: 14, paddingTop: 6 },
   field: {
@@ -1300,9 +1047,4 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   disc: { textAlign: 'center', marginTop: 7 },
-
-  // pending skeleton
-  skel: { marginTop: 13, gap: 9 },
-  skelBar: { height: 13, borderRadius: 7 },
-  skelAnswer: { height: 30, width: '46%', borderRadius: 10, marginTop: 4 },
 })

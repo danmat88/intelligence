@@ -30,6 +30,8 @@ export type Problem = {
   topic: string | null
   turns: StoredTurn[]
   createdAt: number
+  /** True when the problem arrived as a photo (drives the history tile icon). */
+  photo?: boolean
 }
 
 /**
@@ -74,8 +76,20 @@ export async function createProblem(
   title: string,
   topic: string | null,
   turns: StoredTurn[],
+  opts?: {
+    photo?: boolean
+    /** Restore with the ORIGINAL date (undo after delete) instead of "now" —
+     *  otherwise last week's problem resurrects under "Today" and fakes the streak. */
+    createdAt?: number
+  },
 ): Promise<string> {
-  const ref = await addDoc(problemsCol(uid), { title, topic, turns, createdAt: serverTimestamp() })
+  const ref = await addDoc(problemsCol(uid), {
+    title,
+    topic,
+    turns,
+    photo: opts?.photo ?? false,
+    createdAt: opts?.createdAt ? new Date(opts.createdAt) : serverTimestamp(),
+  })
   return ref.id
 }
 
@@ -99,6 +113,7 @@ export function subscribeProblems(uid: string, cb: (items: Problem[]) => void): 
             title?: string
             topic?: string | null
             turns?: StoredTurn[]
+            photo?: boolean
             createdAt?: { toMillis?: () => number }
           }
           return {
@@ -106,6 +121,7 @@ export function subscribeProblems(uid: string, cb: (items: Problem[]) => void): 
             title: data.title ?? 'Problem',
             topic: data.topic ?? null,
             turns: Array.isArray(data.turns) ? data.turns : [],
+            photo: data.photo,
             createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : Date.now(),
           }
         }),

@@ -227,9 +227,14 @@ const SYMBOLS: [RegExp, string][] = [
   [/→/g, ' \\to '], [/⇒/g, ' \\Rightarrow '],
 ]
 
+/** Names that must NOT become backslash commands: sqrt/cbrt are handled
+ *  structurally by conv(), and KaTeX has no \abs or \lcm — emitting them
+ *  renders as red error text. They stay plain identifiers instead. */
+const NO_COMMAND = new Set(['sqrt', 'cbrt', 'abs', 'lcm'])
+
 /** Bare function names become LaTeX operators (upright, spaced correctly). */
 function functions(src: string): string {
-  return src.replace(new RegExp(`\\b(${FUNCS.filter((f) => f !== 'sqrt' && f !== 'cbrt').join('|')})\\b`, 'g'), '\\$1')
+  return src.replace(new RegExp(`\\b(${FUNCS.filter((f) => !NO_COMMAND.has(f)).join('|')})\\b`, 'g'), '\\$1')
 }
 
 /** Plain typed math → LaTeX. */

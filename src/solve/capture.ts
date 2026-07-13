@@ -13,11 +13,19 @@ export type CropBox = { x: number; y: number; width: number; height: number }
 
 /**
  * Downscale + recompress before sending. Raw phone photos are multi-MB and
- * blow past the AI proxy's 1MB request cap; 1024px wide JPEG at 0.7 quality is
+ * blow past the AI proxy's 1MB request cap; ~1024px JPEG at 0.7 quality is
  * plenty for the model to read a problem and keeps us well under the limit.
+ * The clamp is on the LONG side (a tall narrow crop resized by width alone
+ * kept its full height), and images already small are never upscaled —
+ * that adds bytes without adding information.
  */
-export async function prepareImage(uri: string): Promise<CapturedImage> {
-  const out = await manipulateAsync(uri, [{ resize: { width: 1024 } }], {
+export async function prepareImage(uri: string, width?: number, height?: number): Promise<CapturedImage> {
+  const long = Math.max(width ?? 0, height ?? 0)
+  const resize =
+    long > 0 && long <= 1024
+      ? [] // already small enough — recompress only
+      : [(width ?? 0) >= (height ?? 0) ? { resize: { width: 1024 } } : { resize: { height: 1024 } }]
+  const out = await manipulateAsync(uri, resize, {
     compress: 0.7,
     format: SaveFormat.JPEG,
     base64: true,
@@ -38,7 +46,7 @@ export async function cropAndPrepare(shot: RawShot, box: CropBox): Promise<Captu
   const cut = await manipulateAsync(shot.uri, [{ crop: { originX: x, originY: y, width, height } }], {
     format: SaveFormat.JPEG,
   })
-  return prepareImage(cut.uri)
+  return prepareImage(cut.uri, cut.width, cut.height)
 }
 
 /** Pick a photo from the library, untouched — the in-app crop stage trims it. */

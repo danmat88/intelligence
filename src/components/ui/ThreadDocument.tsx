@@ -4,8 +4,10 @@ import { WebView } from 'react-native-webview'
 import { useTheme } from '../../theme/ThemeProvider'
 import type { Theme } from '../../theme/tokens'
 import { ensureMathAssets, mathAssetsBase } from './mathAssets'
-import type { VerifyStage } from './SolutionView'
 import { isMathInput, plainToLatex } from '../../solve/mathInput'
+
+/** Verification stage shown on the answer box. */
+export type VerifyStage = 'check' | 'recheck' | false
 
 /**
  * The conversation as ONE living document — not chat bubbles. The problem is
@@ -198,13 +200,16 @@ function stepTap(el,n){ ASKED[n]=1; el.classList.add('asked'); chip('step:'+n); 
 var PREAD='';
 function pfix(){ if(PREAD) post('P:'+PREAD); }
 function esc(s){ var d=document.createElement('div'); d.textContent=s==null?'':String(s); return d.innerHTML; }
+// Every symbol replace carries a (?![a-zA-Z]) guard — without it the short
+// forms eat the front of longer commands (\\le matched inside \\left -> "≤ft",
+// \\ne inside \\neg -> "≠g"). The catch-all keeps the word for the rest.
 function deTeX(s){
   return String(s==null?'':s)
-    .replace(/\\\\int/g,'∫').replace(/\\\\cdot/g,'·').replace(/\\\\times/g,'×')
-    .replace(/\\\\sqrt/g,'√').replace(/\\\\pi/g,'π').replace(/\\\\theta/g,'θ')
-    .replace(/\\\\leq?/g,'≤').replace(/\\\\geq?/g,'≥').replace(/\\\\neq?/g,'≠')
-    .replace(/\\\\pm/g,'±').replace(/\\\\infty/g,'∞')
-    .replace(/\\\\(?:Rightarrow|implies)/g,'⇒').replace(/\\\\(?:to|rightarrow)/g,'→')
+    .replace(/\\\\int(?![a-zA-Z])/g,'∫').replace(/\\\\cdot(?![a-zA-Z])/g,'·').replace(/\\\\times(?![a-zA-Z])/g,'×')
+    .replace(/\\\\sqrt(?![a-zA-Z])/g,'√').replace(/\\\\pi(?![a-zA-Z])/g,'π').replace(/\\\\theta(?![a-zA-Z])/g,'θ')
+    .replace(/\\\\leq?(?![a-zA-Z])/g,'≤').replace(/\\\\geq?(?![a-zA-Z])/g,'≥').replace(/\\\\neq?(?![a-zA-Z])/g,'≠')
+    .replace(/\\\\pm(?![a-zA-Z])/g,'±').replace(/\\\\infty(?![a-zA-Z])/g,'∞')
+    .replace(/\\\\(?:Rightarrow|implies)(?![a-zA-Z])/g,'⇒').replace(/\\\\(?:to|rightarrow)(?![a-zA-Z])/g,'→')
     .replace(/\\\\([a-zA-Z]+)/g,'$1').replace(/[{}]/g,'');
 }
 function tex(t){
@@ -253,6 +258,9 @@ function md(raw){
     .replace(/\\\\\\[[\\s\\S]+?\\\\\\]/g,stash)
     .replace(/\\\\\\([\\s\\S]+?\\\\\\)/g,stash)
     .replace(/\\$(?!\\s)[^$\\n]+?(?<!\\s)\\$/g,stash);
+  // Model text is DATA, never markup: neutralize raw HTML before markdown
+  // parsing (marked passes tags through — this WebView has file access).
+  prot=prot.replace(/</g,'&lt;');
   var html=window.marked?marked.parse(prot):esc(prot);
   return html.replace(/§§(\\d+)§§/g,function(_,i){ return esc(MATHS[+i]); });
 }

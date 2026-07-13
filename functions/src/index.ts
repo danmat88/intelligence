@@ -38,7 +38,11 @@ const GOOGLE_BASE = 'https://generativelanguage.googleapis.com/v1beta'
 // tighter ceiling: fresh anonymous uids are free to mint, so their allowance
 // must be small enough that farming them is pointless.
 const RATE_LIMIT = 20 // requests / window, signed-in users
-const RATE_LIMIT_GUEST = 5 // requests / window, anonymous guests
+// One user-visible solve can legitimately spend up to ~7 requests (solve
+// FAST+DEEP, verify FAST+DEEP, deep re-solve, re-verify) — the guest ceiling
+// must clear a single worst-case flow, or a guest's FIRST hard problem eats
+// the whole window and the next tap shows "busy".
+const RATE_LIMIT_GUEST = 10 // requests / window, anonymous guests
 const RATE_WINDOW_MS = 60_000 // per minute
 
 async function underRateLimit(uid: string, limit: number): Promise<boolean> {
@@ -106,29 +110,45 @@ export const gemini = onRequest(
       tools?: unknown
     }
     const gen = body.generationConfig ?? {}
+    // generationConfig is WHITELISTED field by field — spreading the client's
+    // object verbatim would forward cost multipliers we never clamp
+    // (candidateCount: 8 = 8x the output bill on one request).
+    const generationConfig: Record<string, unknown> = {
+      maxOutputTokens: Math.min(Number(gen.maxOutputTokens) || 2048, 4096),
+    }
+    if (typeof gen.temperature === 'number') generationConfig.temperature = gen.temperature
+    if (typeof gen.responseMimeType === 'string') generationConfig.responseMimeType = gen.responseMimeType
+    // The only tool the app ever asks for is code execution (the verifier);
+    // anything else a tampered client smuggles in is dropped.
+    const wantsCodeExecution =
+      Array.isArray(body.tools) && body.tools.some((t) => t && typeof t === 'object' && 'code_execution' in t)
     const payload = {
       contents: body.contents,
       systemInstruction: body.systemInstruction,
-      // Forward tools (e.g. code execution) when the app asks for exact computation.
-      ...(body.tools ? { tools: body.tools } : {}),
-      generationConfig: {
-        ...gen,
-        maxOutputTokens: Math.min(Number(gen.maxOutputTokens) || 2048, 4096),
-      },
+      ...(wantsCodeExecution ? { tools: [{ code_execution: {} }] } : {}),
+      generationConfig,
     }
 
     const requested = /\/models\/([^:]+):/.exec(req.path)?.[1]
     const model = requested && ALLOWED_MODELS.has(requested) ? requested : DEFAULT_MODEL
 
     const streaming = req.path.includes(':streamGenerateContent')
-    const upstream = await fetch(
-      `${GOOGLE_BASE}/models/${model}:${streaming ? 'streamGenerateContent?alt=sse' : 'generateContent'}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY.value() },
-        body: JSON.stringify(payload),
-      },
-    )
+    let upstream: Response
+    try {
+      upstream = await fetch(
+        `${GOOGLE_BASE}/models/${model}:${streaming ? 'streamGenerateContent?alt=sse' : 'generateContent'}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY.value() },
+          body: JSON.stringify(payload),
+        },
+      )
+    } catch {
+      // Network failure toward Google: a clean 502 the app can classify,
+      // not an unhandled rejection that crashes into a bare 500.
+      res.status(502).json({ error: 'AI upstream unreachable - please retry.' })
+      return
+    }
 
     res.status(upstream.status)
     res.set('Content-Type', upstream.headers.get('content-type') ?? 'application/json')

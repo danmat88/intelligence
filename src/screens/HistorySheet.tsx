@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Keyboard, Pressable, ScrollView, StyleSheet, TextInput, useWindowDimensions, View } from 'react-native'
 import RAnimated, { Easing as REasing, LinearTransition, SlideOutLeft } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -12,6 +12,7 @@ import Press from '../components/ui/Press'
 import { useToast } from '../components/ui/Toast'
 import Txt from '../components/ui/Txt'
 import { subscribeProblems, removeProblem, createProblem, type Problem } from '../solve/store'
+import { deleteProblemImages } from '../solve/imageStore'
 
 function ago(ms: number, justNow: string, daySuffix: string): string {
   const s = Math.max(0, (Date.now() - ms) / 1000)
@@ -58,8 +59,10 @@ function cleanTitle(title: string): string {
   return title.replace(/^\s*📷\s*/, '')
 }
 
-/** Photo problems get a camera tile; typed ones a pencil tile. */
+/** Photo problems get a camera tile; typed ones a pencil tile. New docs carry
+ *  a real `photo` flag; the title heuristic only covers legacy docs. */
 function isPhotoProblem(p: Problem): boolean {
+  if (typeof p.photo === 'boolean') return p.photo
   return /📷/.test(p.title) || /^(Photo problem|Problemă din poză)$/.test(cleanTitle(p.title))
 }
 
@@ -94,10 +97,13 @@ export default function HistorySheet({
   open,
   onClose,
   onSelect,
+  onDeleted,
 }: {
   open: boolean
   onClose: () => void
   onSelect: (p: Problem) => void
+  /** Fired on delete so the solver can unlink an open problem's stale id. */
+  onDeleted?: (id: string) => void
 }) {
   const { theme } = useTheme()
   const c = theme.colors
@@ -170,19 +176,34 @@ export default function HistorySheet({
 
   // Delete = optimistic + reversible: the row slides out, an Undo toast
   // brings the problem back with one tap. No confirm dialog friction.
+  // The photos are deleted DEFERRED (after the undo window closes) — an
+  // undone problem needs its images, an abandoned delete must not leak them.
+  const pendingImageDeletes = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
   const onDelete = useCallback(
     (item: Problem) => {
       if (!user) return
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
       removeProblem(user.id, item.id).catch(() => {})
+      onDeleted?.(item.id)
+      pendingImageDeletes.current[item.id] = setTimeout(() => {
+        delete pendingImageDeletes.current[item.id]
+        deleteProblemImages(item.turns.map((x) => x.imagePath))
+      }, 6000) // just past the 5s actionable-toast window
       toast.show(t('history.deleted'), 'trash-2', {
         label: t('history.undo'),
         onPress: () => {
-          createProblem(user.id, cleanTitle(item.title), item.topic, item.turns).catch(() => {})
+          const timer = pendingImageDeletes.current[item.id]
+          if (timer) clearTimeout(timer)
+          delete pendingImageDeletes.current[item.id]
+          // Restored, not re-created: original date, original photo-ness.
+          createProblem(user.id, cleanTitle(item.title), item.topic, item.turns, {
+            photo: isPhotoProblem(item),
+            createdAt: item.createdAt,
+          }).catch(() => {})
         },
       })
     },
-    [user, toast, t],
+    [user, toast, t, onDeleted],
   )
 
   const mono = { fontFamily: theme.font.mono }

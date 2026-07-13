@@ -46,7 +46,7 @@ SplashScreen.setOptions({ fade: true, duration: 300 })
 const BOOT_BG = '#F7F6F2' // matches the paper background
 
 export default function App() {
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
     Inter_600SemiBold,
@@ -71,7 +71,9 @@ export default function App() {
             <I18nProvider>
               <ToastProvider>
                 <AuthProvider>
-                  <Root fontsLoaded={fontsLoaded} />
+                  {/* A font failure must DEGRADE (system faces), never hold the
+                      splash forever — ready would otherwise stay false. */}
+                  <Root fontsLoaded={fontsLoaded || !!fontError} />
                 </AuthProvider>
               </ToastProvider>
             </I18nProvider>

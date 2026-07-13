@@ -92,7 +92,12 @@ export async function resolveImageUri(imagePath?: string, imageUrl?: string): Pr
 
 /** Best-effort cleanup (cloud + local) when a problem is deleted. */
 export function deleteProblemImages(paths: (string | undefined)[]): void {
-  const b = bucket()
+  let b: string
+  try {
+    b = bucket()
+  } catch {
+    return // no bucket configured — nothing was ever uploaded
+  }
   for (const p of paths) {
     if (!p) continue
     FS.deleteAsync(localPathFor(p), { idempotent: true }).catch(() => {})
@@ -102,4 +107,36 @@ export function deleteProblemImages(paths: (string | undefined)[]): void {
       )
       .catch(() => {})
   }
+}
+
+/**
+ * Account deletion: EVERY photo the account ever uploaded must go with it
+ * (the Play data-deletion promise covers Storage, not just Firestore).
+ * Lists users/{uid}/images/ via the same v0 REST protocol and deletes each
+ * object, then wipes the on-device copies. MUST run while the user is still
+ * signed in — after auth deletion there is no token to authorize any of it.
+ * Throws on listing failure so the caller can refuse to half-delete.
+ */
+export async function deleteAllUserImages(uid: string): Promise<void> {
+  const b = bucket()
+  const auth = await authHeader()
+  const names: string[] = []
+  let pageToken: string | undefined
+  do {
+    const q = `prefix=${encodeURIComponent(`users/${uid}/images/`)}${pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : ''}`
+    const res = await fetch(`${HOST}/${b}/o?${q}`, { headers: { Authorization: auth } })
+    if (!res.ok) throw new Error(`image listing failed: ${res.status}`)
+    const data = (await res.json()) as { items?: { name: string }[]; nextPageToken?: string }
+    for (const it of data.items ?? []) names.push(it.name)
+    pageToken = data.nextPageToken
+  } while (pageToken)
+  await Promise.all(
+    names.map((n) =>
+      fetch(`${HOST}/${b}/o/${encodeURIComponent(n)}`, { method: 'DELETE', headers: { Authorization: auth } }).catch(
+        () => {},
+      ),
+    ),
+  )
+  // the device copies belong to the deleted account too
+  await FS.deleteAsync(LOCAL_DIR, { idempotent: true }).catch(() => {})
 }
