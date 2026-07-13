@@ -48,5 +48,8 @@ jobs:
           distribution: temurin
           java-version: '17'
       - run: npm ci
-      - run: npm install -g firebase-tools
+      # Pin firebase-tools: 15+ requires Java 21, so unpinned `latest` broke CI
+      # against the Java 17 above. 14.18.0 is the version verified locally with
+      # Java 17 (14 rules tests green). Bump the CLI and the JDK together.
+      - run: npm install -g firebase-tools@14.18.0
       - run: npm run test:rules
