@@ -4,7 +4,8 @@
 
 Snap/type a math problem → step-by-step typeset solution, machine-verified.
 One thread per problem, saved history. Product plan: `docs/PLAN.md` ·
-Live status + remaining steps: `docs/ROADMAP.md`.
+Live status + full phase plan (foundation → Play Store): `docs/plan.html`
+(the single roadmap — edit it, then republish to keep the artifact link).
 
 **This folder (`C:\dev\intelligence`) is the ONE true working copy** — edit and
 build here. The old checkout at `C:\Users\coste\OneDrive\Desktop\intelligence`
