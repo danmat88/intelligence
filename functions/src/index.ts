@@ -2,7 +2,7 @@ import { onRequest } from 'firebase-functions/v2/https'
 import { defineSecret } from 'firebase-functions/params'
 import { initializeApp } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
-import { getFirestore } from 'firebase-admin/firestore'
+import { getFirestore, Timestamp } from 'firebase-admin/firestore'
 
 initializeApp()
 
@@ -51,7 +51,10 @@ async function underRateLimit(uid: string, limit: number): Promise<boolean> {
     const now = Date.now()
     const data = (await tx.get(ref)).data() as { windowStart: number; count: number } | undefined
     if (!data || now - data.windowStart >= RATE_WINDOW_MS) {
-      tx.set(ref, { windowStart: now, count: 1 })
+      // expiresAt drives Firestore's TTL garbage collection: every throwaway
+      // anonymous uid leaves a window doc here, and TTL deletes it a day
+      // after the user's last activity — the collection stops growing forever.
+      tx.set(ref, { windowStart: now, count: 1, expiresAt: Timestamp.fromMillis(now + 24 * 3600 * 1000) })
       return true
     }
     if (data.count >= limit) return false
