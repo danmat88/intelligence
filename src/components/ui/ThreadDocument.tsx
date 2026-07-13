@@ -218,8 +218,13 @@ function tex(t){
 // (\frac, \cdot... are preceded by a backslash and stay math). Prose renders
 // as text (spaces intact); only its $...$ islands get typeset afterwards.
 function isProse(s){
-  return /[A-Za-zĂÂÎȘȚăâîșț][a-zăâîșț]{2,}\s+[A-Za-zĂÂÎȘȚăâîșț]{2,}/.test(s)
-      || /(^|[^\\a-zA-Z])[A-Za-zĂÂÎȘȚăâîșț][a-zăâîșț]{3,}/.test(s);
+  // NOTE the quadruple backslash: this string is a TS template literal, so
+  // \\\\ collapses to \\ in the page, which the regex reads as ONE literal
+  // backslash. With only \\ here it collapsed to \a ("the letter a") and
+  // LaTeX commands (\\frac, \\sqrt, \\Delta) counted as 4+ letter WORDS —
+  // every step with a command was misrouted to prose and shown unrendered.
+  return /[A-Za-zĂÂÎȘȚăâîșț][a-zăâîșț]{2,}\\s+[A-Za-zĂÂÎȘȚăâîșț]{2,}/.test(s)
+      || /(^|[^\\\\a-zA-Z])[A-Za-zĂÂÎȘȚăâîșț][a-zăâîșț]{3,}/.test(s);
 }
 // Prose that still carries LaTeX commands OUTSIDE its $...$ islands (the
 // exotic "x = 20 \\text{ mere}" shape) gets those commands cleaned into
