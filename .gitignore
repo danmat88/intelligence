@@ -44,3 +44,8 @@ yarn-error.*
 /ios
 /android
 .firebase/
+
+# firebase emulator artifacts
+firestore-debug.log
+firebase-debug.log
+ui-debug.log

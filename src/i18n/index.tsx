@@ -86,6 +86,7 @@ const STRINGS = {
     'auth.signedOut': 'Signed out',
     'auth.signIn': 'Sign in',
     'auth.carried': 'Your saved work came along ({n})',
+    'auth.migrateBlocked': "Couldn't bring your work into that account — check your connection and try again.",
     // — welcome (offline fallback gate)
     'welcome.tagline': 'Snap any math problem — solved and explained, step by step.',
     'welcome.google': 'Continue with Google',
@@ -224,6 +225,7 @@ const STRINGS = {
     'auth.signedOut': 'Deconectat',
     'auth.signIn': 'Conectare',
     'auth.carried': 'Ți-am adus munca salvată ({n})',
+    'auth.migrateBlocked': 'Nu ți-am putut muta munca în acel cont — verifică internetul și încearcă din nou.',
     // — welcome (offline fallback gate)
     'welcome.tagline': 'Fotografiază orice problemă de mate — rezolvată și explicată pas cu pas.',
     'welcome.google': 'Continuă cu Google',

@@ -68,12 +68,26 @@ expects evidence, not assurances.
   rises above the keyboard (`useKeyboardHeight` + capped maxHeight).
 - **Auth** (`src/auth/AuthProvider.tsx`): gateless — silent `signInAnonymously`
   whenever session is null; Google sign-in LINKS the anonymous account (same uid,
-  work carries over) with fallback to `signInWithCredential` on
-  credential-already-in-use; manual profile backfill + `setUser` push (linking
-  fires no onAuthStateChanged). WelcomeScreen = offline-only fallback.
+  work carries over). If the Google account ALREADY exists
+  (credential-already-in-use), the guest's tree is migrated SERVER-SIDE first
+  (`accountApi.migrateGuestWork` → `account` fn: docs + photos moved, guest
+  tree+auth user deleted) and only a successful move lets `signInWithCredential`
+  switch — on failure the user STAYS a guest, nothing lost (block-the-switch
+  contract, Dan's decision 2026-07-13). Account deletion = client reauth (fresh
+  auth_time ≤5min) → server-side wipe. Manual profile backfill + `setUser` push
+  (linking fires no onAuthStateChanged). WelcomeScreen = offline-only fallback.
 - **Data** (`src/solve/store.ts`): `users/{uid}/problems/{id}` docs (title, topic,
-  turns, createdAt). **Gotcha:** RNFirebase modular `collection()` must be
-  parented on a DocumentReference (`doc(db,'users',uid)`), never a collection.
+  turns, createdAt). Persistence is IDEMPOTENT: `newProblemId()` claims the id
+  synchronously, `writeProblem()` is setDoc-merge — parallel saves (photo upload
+  vs solve finishing) can't duplicate docs; undo-restore reuses the original id.
+  Firestore rules SCHEMA-VALIDATE writes (key whitelist, types, size caps;
+  only `users/{uid}/problems` is client-writable) — `npm run test:rules` runs
+  14 emulator tests against them (also in CI). **Gotcha:** RNFirebase modular
+  `collection()` must be parented on a DocumentReference (`doc(db,'users',uid)`),
+  never a collection.
+- **Telemetry** (`src/lib/report.ts`): `reportNonFatal(e, context)` → Crashlytics
+  non-fatal + breadcrumb. Every background catch (persist, upload, verify,
+  migrate, history subscribe) reports — background failures are never invisible.
 - **i18n** (`src/i18n/index.tsx`): RO default + EN, `t(key,{vars})`, persisted
   `@rezolvo.lang`; `langName` is injected into solve prompts so the AI answers in
   the app language.
@@ -93,21 +107,30 @@ expects evidence, not assurances.
   entrance CSS); presses scale 0.96 depth-only (`Press`, stays fast — feedback,
   not transition).
 
-## Deployed state (2026-07-11)
+## Deployed state (2026-07-13)
 
 - Firebase project `gen-lang-client-0286445774`; Android app "Rezolvo"
   `com.rezolvo.app` (`google-services.json` in repo root, NOT gitignored).
-  Firestore rules: `users/{uid}/{document=**}` owner-only.
-- Cloud Function `gemini` (europe-west1, Node 22 gen2):
-  `https://gemini-rgb3szbt2a-ew.a.run.app` — verifies Firebase ID token, model
-  whitelist `gemini-flash-latest|gemini-flash-lite-latest|gemini-pro-latest`,
-  forwards `tools`, clamps maxOutputTokens ≤ 4096, rate limit 20/min (users) vs
-  5/min (anonymous). Secret `GEMINI_API_KEY` in Secret Manager. The raw Gemini
-  key lives ONLY in local `.env` as dev fallback — it must never ship in builds.
+  Firestore rules: only `users/{uid}/problems/{id}` is client-touchable,
+  owner-only + schema-validated; everything else is Admin-SDK territory.
+- Cloud Functions (europe-west1, Node 22 gen2, `functions/src/` split per surface):
+  - `gemini` → `https://gemini-rgb3szbt2a-ew.a.run.app` — verifies Firebase ID
+    token, model whitelist `gemini-flash-latest|gemini-flash-lite-latest|
+    gemini-pro-latest`, forwards `tools`, clamps maxOutputTokens ≤ 4096, rate
+    limit 20/min (users) vs 10/min (anonymous). Secret `GEMINI_API_KEY` in
+    Secret Manager; the raw key lives ONLY in local `.env` as dev fallback.
+  - `account` → `https://account-rgb3szbt2a-ew.a.run.app` — POST `/migrate`
+    (guest token + Google idToken verified against the web client id →
+    Admin-SDK moves docs+photos into the existing account, deletes the guest)
+    and POST `/delete` (recent-auth enforced; wipes Storage + Firestore +
+    auth user). Rate limit 5/min.
+  - `purgeStaleGuests` — scheduled weekly (Sun 04:00 Europe/Bucharest):
+    anonymous accounts inactive 90 days are deleted with all their data.
 - Hosting: site `rezolvo` → https://rezolvo.web.app (`web/` folder) — bilingual
   privacy/terms/delete-account + landing. Contact: mathosting@gmail.com.
 - EAS project `intelligence` (owner `matdan88-studio`); env for preview+production:
-  `EXPO_PUBLIC_AI_PROXY_URL`, `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`,
-  `EXPO_PUBLIC_GEMINI_MODEL`. firebase CLI logged in as mathosting@gmail.com.
+  `EXPO_PUBLIC_AI_PROXY_URL`, `EXPO_PUBLIC_ACCOUNT_API_URL`,
+  `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`, `EXPO_PUBLIC_GEMINI_MODEL`.
+  firebase CLI logged in as mathosting@gmail.com.
 - Launcher icon/splash still show the OLD "Intelligence" mark — Rezolvo logo is
   an open roadmap item.

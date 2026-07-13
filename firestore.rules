@@ -1,9 +1,30 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Each user can only touch their own tree; everything else is denied.
-    match /users/{uid}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // request.resource.data is the POST-write document (merged on update),
+    // so optional fields are validated whenever they end up present at all.
+    // Rules can't loop over the turns, but the shape, field types, sizes and
+    // key whitelist are all enforced — a tampered client can't stuff foreign
+    // fields or megabyte titles into the tree.
+    function validProblem(d) {
+      return d.keys().hasOnly(['title', 'topic', 'turns', 'photo', 'createdAt'])
+        && d.title is string && d.title.size() <= 200
+        && (d.topic == null || (d.topic is string && d.topic.size() <= 80))
+        && d.turns is list && d.turns.size() <= 40
+        && (!('photo' in d) || d.photo is bool)
+        && (!('createdAt' in d) || d.createdAt is timestamp);
+    }
+
+    // The ONLY thing a client may touch: its own problems, in the app's exact
+    // document shape. The user doc, any other subcollection, and everything
+    // at the root (rate_limits) are server territory (Admin SDK only).
+    match /users/{uid}/problems/{pid} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid) && validProblem(request.resource.data);
     }
   }
 }

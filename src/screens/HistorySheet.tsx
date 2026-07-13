@@ -11,8 +11,9 @@ import Overlay from '../components/ui/Overlay'
 import Press from '../components/ui/Press'
 import { useToast } from '../components/ui/Toast'
 import Txt from '../components/ui/Txt'
-import { subscribeProblems, removeProblem, createProblem, type Problem } from '../solve/store'
+import { subscribeProblems, removeProblem, writeProblem, type Problem } from '../solve/store'
 import { deleteProblemImages } from '../solve/imageStore'
+import { reportNonFatal } from '../lib/report'
 
 function ago(ms: number, justNow: string, daySuffix: string): string {
   const s = Math.max(0, (Date.now() - ms) / 1000)
@@ -195,11 +196,14 @@ export default function HistorySheet({
           const timer = pendingImageDeletes.current[item.id]
           if (timer) clearTimeout(timer)
           delete pendingImageDeletes.current[item.id]
-          // Restored, not re-created: original date, original photo-ness.
-          createProblem(user.id, cleanTitle(item.title), item.topic, item.turns, {
-            photo: isPhotoProblem(item),
-            createdAt: item.createdAt,
-          }).catch(() => {})
+          // Restored, not re-created: SAME id, original date, original
+          // photo-ness — undo genuinely puts the document back.
+          writeProblem(
+            user.id,
+            item.id,
+            { title: cleanTitle(item.title), topic: item.topic, turns: item.turns, photo: isPhotoProblem(item) },
+            item.createdAt,
+          ).catch((e) => reportNonFatal(e, 'undo-restore'))
         },
       })
     },

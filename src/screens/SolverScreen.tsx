@@ -26,7 +26,8 @@ import { getSolveJson, isHardProblem, isStructuredSolution, withJsonFlags } from
 import type { ChatTurn } from '../ai/types'
 import { useI18n, type StringKey } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
-import { createProblem, updateProblemTurns, removeProblem, toStoredTurns, type Problem } from '../solve/store'
+import { newProblemId, writeProblem, removeProblem, toStoredTurns, type Problem } from '../solve/store'
+import { reportNonFatal } from '../lib/report'
 import { uploadProblemImage, deleteProblemImages, saveLocalCopy, resolveImageUri } from '../solve/imageStore'
 import SettingsModal from './SettingsModal'
 import HistorySheet from './HistorySheet'
@@ -228,10 +229,19 @@ export default function SolverScreen() {
       }
       const topic = extractTopic(turns)
       try {
-        if (problemIdRef.current) await updateProblemTurns(user.id, problemIdRef.current, stored, title, topic)
-        else problemIdRef.current = await createProblem(user.id, title, topic, stored, { photo: isPhoto })
-      } catch {
-        // ignore — persistence is best-effort
+        // The id is claimed SYNCHRONOUSLY before any await, so concurrent
+        // saves (photo upload landing vs solve finishing) write the same doc —
+        // the duplicate-create race cannot exist. Only the claimer stamps
+        // createdAt; every save after that is a pure merge.
+        let createdAt: 'now' | undefined
+        if (!problemIdRef.current) {
+          problemIdRef.current = newProblemId(user.id)
+          createdAt = 'now'
+        }
+        await writeProblem(user.id, problemIdRef.current, { title, topic, turns: stored, photo: isPhoto }, createdAt)
+      } catch (e) {
+        // persistence is best-effort for the UX, but never invisible
+        reportNonFatal(e, 'persist')
       }
     },
     [user, t],
@@ -286,8 +296,9 @@ export default function SolverScreen() {
         }
         // 'unverifiable' → no badge, no warning; the solution stands as-is.
         persist(threadRef.current)
-      } catch {
+      } catch (e) {
         // verification is best-effort — never disturb the shown solution
+        if (!ctrl.signal.aborted) reportNonFatal(e, 'verify')
       } finally {
         if (verifyAbortRef.current === ctrl) verifyAbortRef.current = null
         setVerifyingMap((m) => {
@@ -529,7 +540,7 @@ export default function SolverScreen() {
             uploadsRef.current[turnId] = si
             persist(threadRef.current)
           })
-          .catch(() => {})
+          .catch((e) => reportNonFatal(e, 'photo-upload'))
       }
       // '' → the verifier reads the problem from the solution's own restatement
       run(

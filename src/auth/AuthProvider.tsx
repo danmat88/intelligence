@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import {
   getAuth,
+  getIdToken,
   GoogleAuthProvider,
   linkWithCredential,
   onAuthStateChanged,
@@ -11,9 +12,10 @@ import {
   signOut as firebaseSignOut,
   updateProfile,
 } from '@react-native-firebase/auth'
-import { collection, deleteDoc, doc, getDocs, getFirestore } from '@react-native-firebase/firestore'
-import { deleteAllUserImages } from '../solve/imageStore'
-import { fetchAllProblems, copyProblemsInto, type Problem } from '../solve/store'
+import { clearLocalImages } from '../solve/imageStore'
+import { migrateGuestWork, deleteAccountOnServer } from './accountApi'
+import { reportNonFatal } from '../lib/report'
+import { useI18n } from '../i18n'
 import {
   GoogleSignin,
   isErrorWithCode,
@@ -67,6 +69,7 @@ function toAuthUser(u: {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const { t } = useI18n()
   const [user, setUser] = useState<AuthUser | null>(null)
   const [initializing, setInitializing] = useState(true)
   const [signingIn, setSigningIn] = useState(false)
@@ -138,23 +141,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               const code = (linkErr as { code?: string }).code ?? ''
               if (/credential-already-in-use|email-already-in-use/.test(code)) {
                 // This Google account already exists, so linking is impossible
-                // and we must SWITCH to it — which orphans the guest's uid.
-                // Their work must not die with it: read the guest tree while
-                // we are still that user, then copy it into the account we
-                // land in. Best-effort — never block the sign-in itself.
-                const guestUid = current.uid
-                let carry: Problem[] = []
+                // and we must SWITCH to it. The guest's work is moved
+                // SERVER-SIDE first (docs + photos, guest tree deleted), and
+                // only a successful move lets the switch happen: on failure
+                // the user STAYS a guest with everything intact and simply
+                // retries online — nothing is ever silently lost.
+                let moved = 0
                 try {
-                  carry = await fetchAllProblems(guestUid)
-                } catch {
-                  // unreadable (offline) — sign in anyway, nothing to carry
+                  const guestToken = await getIdToken(current)
+                  moved = await migrateGuestWork(guestToken, idToken)
+                } catch (migErr) {
+                  reportNonFatal(migErr, 'migrate-guest')
+                  setError(t('auth.migrateBlocked'))
+                  return
                 }
                 await signInWithCredential(getAuth(), credential)
-                const landed = getAuth().currentUser
-                if (landed && carry.length > 0 && landed.uid !== guestUid) {
-                  const n = await copyProblemsInto(landed.uid, carry).catch(() => 0)
-                  if (n > 0) setCarried(n)
-                }
+                if (moved > 0) setCarried(moved)
               } else {
                 throw linkErr
               }
@@ -225,8 +227,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const fbUser = getAuth().currentUser
       if (!fbUser) return
 
-      // Firebase demands a recent login for destructive operations - get a
-      // fresh Google credential (silently when possible) and re-authenticate.
+      // Destruction demands proof of recent presence: get a fresh Google
+      // credential (silently when possible), re-authenticate, then force-mint
+      // an ID token so it carries the new auth_time — the server rejects
+      // deletion on sign-ins older than 5 minutes.
       try {
         await GoogleSignin.signInSilently()
       } catch {
@@ -235,22 +239,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       const { idToken, accessToken } = await GoogleSignin.getTokens()
       await reauthenticateWithCredential(fbUser, GoogleAuthProvider.credential(idToken, accessToken))
+      const freshToken = await getIdToken(fbUser, true)
 
-      // Play policy: deleting the account must delete the data — ALL of it:
-      // the problem photos in Storage (and their local copies), every saved
-      // problem, then the user doc. Photos first, while the token still works.
-      await deleteAllUserImages(fbUser.uid)
-      const db = getFirestore()
-      const problems = await getDocs(collection(doc(db, 'users', fbUser.uid), 'problems'))
-      await Promise.all(problems.docs.map((p) => deleteDoc(p.ref)))
-      await deleteDoc(doc(db, 'users', fbUser.uid)).catch(() => {}) // in case a user doc ever exists
+      // The server (Admin SDK) wipes EVERYTHING in one place — Storage,
+      // Firestore, the auth user — including photos that were migrated in
+      // from a guest session. That's the Play data-deletion promise kept.
+      await deleteAccountOnServer(freshToken)
 
-      await fbUser.delete() // also signs out -> onAuthStateChanged clears `user`
+      // The account is gone server-side; drop every local trace and session.
+      await clearLocalImages()
       try {
         await GoogleSignin.signOut()
       } catch {
         // Google-side session cleanup is best-effort
       }
+      // Local session only — the user record is already deleted. Signing out
+      // fires onAuthStateChanged(null) -> a fresh guest session attaches.
+      await firebaseSignOut(getAuth()).catch(() => {})
     }
 
     return {
@@ -265,7 +270,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       carried,
       clearCarried: () => setCarried(null),
     }
-  }, [user, initializing, signingIn, error, carried])
+  }, [user, initializing, signingIn, error, carried, t])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

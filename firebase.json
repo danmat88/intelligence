@@ -18,5 +18,9 @@
     "public": "web",
     "cleanUrls": true,
     "ignore": ["firebase.json", "**/.*"]
+  },
+  "emulators": {
+    "firestore": { "port": 8080 },
+    "ui": { "enabled": false }
   }
 }
