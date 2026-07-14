@@ -19,7 +19,7 @@ Shape:
     { "math": "<one line of LaTeX, NO $ delimiters>", "why": "<one short clause explaining this step>" }
   ],
   "answer": "<final answer as LaTeX, NO $ delimiters>",
-  "plot": { "fn": "<function of x as a PLAIN expression>", "roots": [ { "x": <number>, "label": "<short label>" } ] }
+  "plot": { "curves": [ { "fn": "<function of x, PLAIN expression>" } ], "roots": [ { "x": <number>, "label": "<label>" } ], "points": [ { "x": <number>, "y": <number>, "label": "<label>" } ] }
 }
 
 Rules:
@@ -27,7 +27,10 @@ Rules:
 - The "why" field is PLAIN PROSE ONLY — absolutely no LaTeX, no backslash commands, no formulas. If the reason mentions math, write it in words ("integration by parts", "the quadratic formula"). Every formula belongs in "math", never in "why".
 - Each step is one clear move; "why" is a short clause, not a paragraph. Aim for 2-6 steps.
 - Be precise with arithmetic; double-check every number before stating it.
-- Include "plot" ONLY when the problem is about a single-variable function of x that a graph genuinely clarifies (quadratics/parabolas, inequalities, curve/function analysis, trig, calculus). "fn" is a PLAIN expression in x — NO LaTeX, NO $, NO \\\\frac (write "(a)/(b)"), NO braces: use ^ for powers and * or juxtaposition for products (e.g. "2x^2+5x-3", "sin(x)", "x^3-3x", "exp(x)-3"). "roots" lists the real x-intercepts (where the curve meets the x-axis) with a short human label like "1/2", "√3", "π"; use [] if there are none. OMIT "plot" entirely for arithmetic, pure algebra manipulation, geometry, word problems without a plottable function, proofs — most problems have NO plot.
+- Include "plot" ONLY when a graph of single-variable functions genuinely clarifies the problem (parabolas, inequalities, curve/function analysis, trig, calculus, or solving an equation graphically). Each entry in "curves" is one function; "fn" is a PLAIN expression in x — NO LaTeX, NO $, NO \\\\frac (write "(a)/(b)"), NO braces: use ^ for powers and * or juxtaposition for products (e.g. "2x^2+5x-3", "sin(x)", "x^3-3x", "exp(x)-3").
+  · For ONE function: put it as the single curve; list its real x-intercepts in "roots" (label like "1/2", "√3", "π"), omit "points".
+  · For a SYSTEM of functions, or solving f(x)=g(x) GRAPHICALLY: put EACH side as a curve in "curves" (e.g. y=x² and y=x+2 → two curves), and list the intersection point(s) in "points" as {x, y, label} (e.g. {"x":2,"y":4,"label":"(2, 4)"}); omit "roots".
+  OMIT "plot" entirely for arithmetic, pure algebra manipulation, geometry, word problems without a plottable function, proofs — most problems have NO plot.
 - NEVER invent, guess or "reconstruct" a problem. If the input is unreadable, too dark/blurry, empty, or not a math problem, return exactly {"error":"<short reason>"} — solving a problem that is not actually there is the worst possible failure.
 - Output JSON only. No prose, no markdown fences.
 - LANGUAGE: write every human-readable string ("topic", each "why", "error") in {LANG}. Keep the math itself as LaTeX.`

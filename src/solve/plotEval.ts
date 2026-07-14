@@ -10,13 +10,14 @@
  */
 
 export type PlotPayload = {
-  /** Continuous pieces of the curve — split at discontinuities (1/x, tan) so
-   *  the WebView never draws a false vertical line across an asymptote. */
-  segments: [number, number][][]
-  /** x-intercepts to mark on the axis, with a display label. */
-  roots: { x: number; label: string }[]
+  /** One or more curves (a system draws several). Each is split into continuous
+   *  segments at discontinuities (1/x, tan) so no false vertical line is drawn. */
+  curves: { segments: [number, number][][] }[]
+  /** Points to mark: x-intercepts (y=0) for a single function, or intersections
+   *  (x, y) for a system — each with a display label. */
+  marks: { x: number; y: number; label: string }[]
   /** The robust display window on y: blow-ups near poles are clipped out so the
-   *  curve's body stays visible (a function with no asymptote is shown in full). */
+   *  curves' body stays visible (a function with no asymptote is shown in full). */
   yMin: number
   yMax: number
 }
@@ -141,37 +142,62 @@ function fmt(n: number): string {
   return String(Number(n.toFixed(2)))
 }
 
-function normRoots(raw: unknown): { x: number; label: string }[] {
-  if (!Array.isArray(raw)) return []
-  const out: { x: number; label: string }[] = []
-  for (const r of raw) {
-    if (typeof r === 'number' && isFinite(r)) out.push({ x: r, label: fmt(r) })
-    else if (r && typeof r === 'object') {
-      const x = Number((r as { x?: unknown }).x)
-      if (isFinite(x)) {
-        const lbl = (r as { label?: unknown }).label
-        out.push({ x, label: typeof lbl === 'string' && lbl ? lbl : fmt(x) })
+type Mark = { x: number; y: number; label: string }
+
+/** Normalize the model's marks: `roots` are x-intercepts (drawn at y=0),
+ *  `points` are intersections (x, y given). */
+function normMarks(roots: unknown, points: unknown): Mark[] {
+  const out: Mark[] = []
+  if (Array.isArray(roots)) {
+    for (const r of roots) {
+      if (typeof r === 'number' && isFinite(r)) out.push({ x: r, y: 0, label: fmt(r) })
+      else if (r && typeof r === 'object') {
+        const x = Number((r as { x?: unknown }).x)
+        if (isFinite(x)) {
+          const lbl = (r as { label?: unknown }).label
+          out.push({ x, y: 0, label: typeof lbl === 'string' && lbl ? lbl : fmt(x) })
+        }
       }
     }
   }
-  return out.slice(0, 6)
+  if (Array.isArray(points)) {
+    for (const p of points) {
+      if (p && typeof p === 'object') {
+        const x = Number((p as { x?: unknown }).x), y = Number((p as { y?: unknown }).y)
+        if (isFinite(x) && isFinite(y)) {
+          const lbl = (p as { label?: unknown }).label
+          out.push({ x, y, label: typeof lbl === 'string' ? lbl : '' })
+        }
+      }
+    }
+  }
+  return out.slice(0, 8)
 }
 
 /**
- * Build the drawable plot from a solve JSON object. Accepts the general
- * `plot: {fn, roots?, domain?}` shape or the legacy `quadratic: [a,b,c]`.
- * Returns null when there's nothing plottable or the function can't compile.
+ * Build the drawable plot from a solve JSON object. Accepts a single function
+ * (`plot:{fn, roots?}`), a system (`plot:{curves:[{fn}], points?}`) or the
+ * legacy `quadratic:[a,b,c]`. Returns null when nothing plottable compiles.
  */
 export function buildPlotPayload(j: Record<string, unknown> | null | undefined): PlotPayload | null {
   if (!j) return null
-  let fn: Fn | null = null
-  let roots: { x: number; label: string }[] = []
+  let fnStrs: string[] = []
+  let marks: Mark[] = []
   let domain: [number, number] | null = null
 
-  const plot = j.plot as { fn?: unknown; roots?: unknown; domain?: unknown } | undefined
-  if (plot && typeof plot.fn === 'string') {
-    fn = compile(plot.fn)
-    roots = normRoots(plot.roots)
+  const plot = j.plot as
+    | { fn?: unknown; curves?: unknown; roots?: unknown; points?: unknown; domain?: unknown }
+    | undefined
+  if (plot && (Array.isArray(plot.curves) || typeof plot.fn === 'string')) {
+    if (Array.isArray(plot.curves)) {
+      fnStrs = plot.curves
+        .map((c) => (c && typeof (c as { fn?: unknown }).fn === 'string' ? ((c as { fn: string }).fn) : ''))
+        .filter(Boolean)
+        .slice(0, 3)
+    } else if (typeof plot.fn === 'string') {
+      fnStrs = [plot.fn]
+    }
+    marks = normMarks(plot.roots, plot.points)
     if (Array.isArray(plot.domain) && plot.domain.length === 2) {
       const a = Number(plot.domain[0]), b = Number(plot.domain[1])
       if (isFinite(a) && isFinite(b) && b > a) domain = [a, b]
@@ -179,26 +205,24 @@ export function buildPlotPayload(j: Record<string, unknown> | null | undefined):
   } else if (Array.isArray(j.quadratic) && j.quadratic.length === 3) {
     const a = Number(j.quadratic[0]), b = Number(j.quadratic[1]), c = Number(j.quadratic[2])
     if (isFinite(a) && a !== 0 && isFinite(b) && isFinite(c)) {
-      fn = (x) => a * x * x + b * x + c
+      fnStrs = [`${a}*x^2+${b}*x+${c}`]
       const disc = b * b - 4 * a * c
       if (disc >= 0) {
         const sq = Math.sqrt(disc)
-        roots = [{ x: (-b - sq) / (2 * a), label: '' }, { x: (-b + sq) / (2 * a), label: '' }].map((r) => ({
-          x: r.x,
-          label: fmt(r.x),
-        }))
+        marks = [(-b - sq) / (2 * a), (-b + sq) / (2 * a)].map((x) => ({ x, y: 0, label: fmt(x) }))
       }
     }
   }
-  if (!fn) return null
+  const fns = fnStrs.map(compile).filter((f): f is Fn => !!f)
+  if (!fns.length) return null
 
-  // Domain: given, else centered on the roots, else a sensible default.
+  // Domain: given, else centered on the marks, else a sensible default.
   let xmin: number, xmax: number
   if (domain) {
     ;[xmin, xmax] = domain
-  } else if (roots.length) {
-    const rs = roots.map((r) => r.x)
-    const lo = Math.min(...rs), hi = Math.max(...rs)
+  } else if (marks.length) {
+    const xs = marks.map((m) => m.x)
+    const lo = Math.min(...xs), hi = Math.max(...xs)
     const pad = Math.max(1.6, (hi - lo) * 0.45)
     xmin = lo - pad
     xmax = hi + pad
@@ -208,49 +232,61 @@ export function buildPlotPayload(j: Record<string, unknown> | null | undefined):
   }
 
   const N = 160
-  const raw: [number, number][] = []
-  for (let k = 0; k <= N; k++) {
-    const x = xmin + ((xmax - xmin) * k) / N
-    const y = fn(x)
-    if (isFinite(y)) raw.push([x, y])
-  }
-  if (raw.length < 4) return null
+  const rawCurves: [number, number][][] = fns.map((fn) => {
+    const pts: [number, number][] = []
+    for (let k = 0; k <= N; k++) {
+      const x = xmin + ((xmax - xmin) * k) / N
+      const y = fn(x)
+      if (isFinite(y)) pts.push([x, y])
+    }
+    return pts
+  })
+  const allY = rawCurves.flat().map((p) => p[1])
+  if (allY.length < 4) return null
 
-  // Robust y-window: clip pole blow-ups so the curve's BODY stays visible. Use
-  // ~3× the 90th-percentile magnitude as the cap — a function with no asymptote
-  // (real range < cap) is shown in full, so normal curves are unaffected.
-  const ys = raw.map((p) => p[1])
-  const absSorted = ys.map(Math.abs).sort((a, b) => a - b)
+  // Robust y-window across ALL curves + marks: clip pole blow-ups so the body
+  // stays visible (a system of well-behaved curves is shown in full).
+  const winY = allY.concat(marks.map((m) => m.y))
+  const absSorted = winY.map(Math.abs).sort((a, b) => a - b)
   const p90 = absSorted[Math.floor(0.9 * (absSorted.length - 1))] || 1
   const cap = Math.max(p90 * 3, 1e-9)
-  let yMax = Math.min(Math.max(...ys), cap)
-  let yMin = Math.max(Math.min(...ys), -cap)
+  let yMax = Math.min(Math.max(...winY), cap)
+  let yMin = Math.max(Math.min(...winY), -cap)
   if (yMax - yMin < 1e-6) yMax = yMin + 1
-  if (yMin > 0) yMin = -0.2 * yMax // keep the x-axis in view
+  if (yMin > 0) yMin = -0.2 * yMax
   if (yMax < 0) yMax = -0.2 * yMin
   const padY = (yMax - yMin) * 0.12
   yMin -= padY
   yMax += padY
   const range = yMax - yMin
-
-  // Split into continuous segments: a jump wider than the whole window is an
-  // asymptote (1/x, tan), not a segment to connect. The steep-but-continuous
-  // approach to the pole stays in-segment (and draws off-card, clipped).
-  const segsRaw: [number, number][][] = []
-  let cur: [number, number][] = []
-  for (const p of raw) {
-    if (cur.length && Math.abs(p[1] - cur[cur.length - 1][1]) > 1.8 * range) {
-      segsRaw.push(cur)
-      cur = []
-    }
-    cur.push(p)
-  }
-  if (cur.length) segsRaw.push(cur)
   const round = (v: number) => Number(v.toFixed(4))
-  const segments = segsRaw
-    .filter((s) => s.length >= 2)
-    .map((s) => s.map((p): [number, number] => [round(p[0]), round(p[1])]))
-  if (!segments.length) return null
 
-  return { segments, roots, yMin: round(yMin), yMax: round(yMax) }
+  // Split each curve into continuous segments (break at asymptotes).
+  const curves = rawCurves
+    .map((raw) => {
+      const segsRaw: [number, number][][] = []
+      let cur: [number, number][] = []
+      for (const p of raw) {
+        if (cur.length && Math.abs(p[1] - cur[cur.length - 1][1]) > 1.8 * range) {
+          segsRaw.push(cur)
+          cur = []
+        }
+        cur.push(p)
+      }
+      if (cur.length) segsRaw.push(cur)
+      return {
+        segments: segsRaw
+          .filter((s) => s.length >= 2)
+          .map((s) => s.map((p): [number, number] => [round(p[0]), round(p[1])])),
+      }
+    })
+    .filter((c) => c.segments.length)
+  if (!curves.length) return null
+
+  return {
+    curves,
+    marks: marks.map((m) => ({ x: round(m.x), y: round(m.y), label: m.label })),
+    yMin: round(yMin),
+    yMax: round(yMax),
+  }
 }

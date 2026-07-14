@@ -802,7 +802,7 @@ export default function SolverScreen() {
               {t('hero.examples')}
             </Txt>
             <View style={styles.examples}>
-              {['2x² + 5x − 3 = 0', '∫ x·eˣ dx', t('hero.example.derivative')].map((ex) => (
+              {['2x² + 5x − 3 = 0', 'x² = x + 2', '∫ x·eˣ dx', t('hero.example.derivative')].map((ex) => (
                 <Press key={ex} onPress={() => sendText(ex)} style={[styles.chip, { backgroundColor: c.surface, borderColor: c.border }]}>
                   <Txt size={12.5} color={c.textMuted} style={{ fontFamily: theme.font.mono }}>
                     {ex}
