@@ -13,11 +13,14 @@ import { definitiveVerdict, getSolveJson, isHardProblem, withJsonFlags, type Che
 // model produces; the math itself stays LaTeX.
 const FAST = 'gemini-flash-lite-latest'
 const DEEP = 'gemini-pro-latest'
-// The checker is NEVER flash-lite: grading an answer is harder than emitting
-// one, and the weakest model produces both false CORRECTs (badge on a wrong
-// answer) and false INCORRECTs (wasted deep re-solves). Verify starts on flash
-// and escalates to the deep model.
-const VERIFY_MODEL = 'gemini-flash-latest'
+// Verify starts fast and escalates to the deep model. Honesty comes from
+// REQUIRING code execution (definitiveVerdict), not from model IQ — a running
+// sympy result is authoritative, so flash-lite (~6s, verified running correct
+// code) is a fine first checker and escalates to pro (~9s) when it isn't
+// code-backed-definitive. NB: the plain `flash` alias is avoided on purpose —
+// measured ~45s per verify (it currently thinks enormously); this is exactly
+// the "-latest aliases drift" risk the pinning item tracks.
+const VERIFY_MODEL = FAST
 
 const SOLVE = { json: true, temperature: 0.2, maxTokens: 4096 } as const
 
