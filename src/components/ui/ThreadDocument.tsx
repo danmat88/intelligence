@@ -8,6 +8,7 @@ import { isMathInput, plainToLatex } from '../../solve/mathInput'
 import { getSolveJson } from '../../solve/verdict'
 import { buildPlotPayload } from '../../solve/plotEval'
 import { buildFigure } from '../../solve/figureBuild'
+import { buildNumberLine } from '../../solve/numberLine'
 
 /** Verification stage shown on the answer box. */
 export type VerifyStage = 'check' | 'recheck' | false
@@ -46,6 +47,7 @@ export type DocLabels = {
   answer: string
   graph: string
   figure: string
+  numberline: string
   similar: string
   mistake: string
   verifying: string
@@ -158,6 +160,14 @@ body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-
 .fig-v{fill:${c.accent}}
 .fig-vl{font-family:'SG',sans-serif;font-weight:700;font-size:12px;fill:${c.text}}
 .fig-sl{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:11.5px;fill:${c.textMuted}}
+.nl-axis{stroke:${c.textMuted};stroke-width:1.4;fill:none}
+.nl-tick{stroke:${c.textFaint};stroke-width:1}
+.nl-lbl{font-family:'JB',monospace;font-size:8px;fill:${c.textFaint}}
+.nl-seg{stroke:#0E9F6E;stroke-width:3.6;stroke-linecap:round}
+.nl-arrow{fill:none;stroke:#0E9F6E;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.nl-closed{fill:#0E9F6E;stroke:#fff;stroke-width:1.5}
+.nl-open{fill:#fff;stroke:#0E9F6E;stroke-width:2.2}
+.nl-plbl{font-family:Georgia,serif;font-style:italic;font-size:11px;fill:#0E9F6E}
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
 .fu{font-family:'IN';font-weight:600;font-size:12.5px;color:${c.accent};border:none;background:${c.accentSoft};border-radius:12px;padding:10px 15px;cursor:pointer}
 .fu.alt{color:${c.textMuted};background:${c.surfaceAlt}}
@@ -249,7 +259,7 @@ function deTeX(s){
     .replace(/\\\\int(?![a-zA-Z])/g,'∫').replace(/\\\\cdot(?![a-zA-Z])/g,'·').replace(/\\\\times(?![a-zA-Z])/g,'×')
     .replace(/\\\\sqrt(?![a-zA-Z])/g,'√').replace(/\\\\pi(?![a-zA-Z])/g,'π').replace(/\\\\theta(?![a-zA-Z])/g,'θ')
     .replace(/\\\\leq?(?![a-zA-Z])/g,'≤').replace(/\\\\geq?(?![a-zA-Z])/g,'≥').replace(/\\\\neq?(?![a-zA-Z])/g,'≠')
-    .replace(/\\\\pm(?![a-zA-Z])/g,'±').replace(/\\\\infty(?![a-zA-Z])/g,'∞')
+    .replace(/\\\\pm(?![a-zA-Z])/g,'±').replace(/\\\\infty(?![a-zA-Z])/g,'∞').replace(/\\\\approx(?![a-zA-Z])/g,'≈')
     .replace(/\\\\(?:Rightarrow|implies)(?![a-zA-Z])/g,'⇒').replace(/\\\\(?:to|rightarrow)(?![a-zA-Z])/g,'→')
     .replace(/\\\\([a-zA-Z]+)/g,'$1').replace(/[{}]/g,'');
 }
@@ -281,17 +291,40 @@ function autowrapMath(t){
     return i%2===1?p:p.replace(/[A-Za-z0-9)\\]}]+(?:[_^](?:\\{[^{}]*\\}|[A-Za-z0-9]+))+/g,function(m){return '$'+m+'$';});
   }).join('');
 }
+// Read one balanced {...} group starting at str[i]==='{'; returns [inner, end]
+// or null. Needed because \\frac numerators nest (\\sqrt{2}, subscripts) and a
+// flat [^{}]* regex can't span them — the exact bug that made \\frac{...}{...}
+// collapse to a literal "frac". Mirror of shareText.ts convertStructures.
+function brace(str,i){ var d=0; for(var j=i;j<str.length;j++){ var ch=str.charAt(j);
+  if(ch==='{')d++; else if(ch==='}'){ d--; if(d===0) return [str.slice(i+1,j),j+1]; } } return null; }
+// Rewrite every \\frac{num}{den} → (num)/(den) with balanced braces, inside-out
+// (the guard loop handles \\frac nested in a numerator). Run BEFORE islanding so
+// subscripts inside num/den survive intact and can still be typeset.
+function defrac(s){
+  for(var g=0;g<40;g++){ var out='',i=0,ch=false;
+    while(i<s.length){
+      if(s.slice(i,i+5)==='\\\\frac'){ var k=i+5; while(s.charAt(k)===' ')k++;
+        if(s.charAt(k)==='{'){ var a=brace(s,k);
+          if(a){ var m=a[1]; while(s.charAt(m)===' ')m++;
+            if(s.charAt(m)==='{'){ var b=brace(s,m);
+              if(b){ out+='('+a[0]+')/('+b[0]+')'; i=b[1]; ch=true; continue; } } } } }
+      out+=s.charAt(i); i++;
+    }
+    s=out; if(!ch) break;
+  }
+  return s;
+}
 // Prose that still carries LaTeX commands OUTSIDE its $...$ islands (the
 // exotic "x = 20 \\text{ mere}" shape) gets those commands cleaned into
 // readable symbols/words — the islands stay intact for real typesetting.
 function proseClean(s){
+  s=defrac(s);       // fractions first (balanced braces) — before islanding
   s=autowrapMath(s); // rescue bare x^2 etc. into $…$ BEFORE the cleanup below
   var parts=String(s).split(/(\\$[^$]*\\$)/);
   for(var i=0;i<parts.length;i++){
     if(parts[i].charAt(0)!=='$'){
       parts[i]=parts[i]
-        .replace(/\\\\(?:text|textbf|textit|mathrm|mbox)\\s*\\{([^{}]*)\\}/g,'$1')
-        .replace(/\\\\frac\\s*\\{([^{}]*)\\}\\s*\\{([^{}]*)\\}/g,'($1)/($2)');
+        .replace(/\\\\(?:text|textbf|textit|mathrm|mbox)\\s*\\{([^{}]*)\\}/g,'$1');
       parts[i]=deTeX(parts[i]);
     }
   }
@@ -300,6 +333,18 @@ function proseClean(s){
 function smartTex(t){
   var s=String(t==null?'':t).trim();
   return isProse(s)?esc(proseClean(s)):tex(s);
+}
+// The ROBUST renderer for model text that mixes prose and math (the answer):
+// keep every $…$ island verbatim so KaTeX auto-render (typeset) types it — ANY
+// LaTeX construct renders, garbage is impossible. Prose between islands is
+// escaped + cleaned. Un-delimited text degrades gracefully (never to a literal
+// "\frac"): pure math → KaTeX, prose → cleaned. This is why the answer can be
+// "redacted perfectly no matter what it is".
+function renderMixed(t){
+  var s=String(t==null?'':t).trim();
+  if(!s) return '';
+  if(s.indexOf('$')<0) return isProse(s)?esc(proseClean(s)):tex(s);
+  return s.split(/(\\$[^$]*\\$)/).map(function(p,i){ return i%2===1?p:esc(proseClean(p)); }).join('');
 }
 function md(raw){
   var MATHS=[];
@@ -410,6 +455,30 @@ function drawFigure(F){
     return '<div class="graph"><div class="glabel">'+esc(L.figure)+'</div><svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">'+out+'</svg></div>';
   }catch(e){ return ''; }
 }
+// Number line for 1D solution sets: axis + ticks, thick segments for the
+// solution intervals (open/closed endpoints, arrows for infinity), and points.
+function drawNumberLine(N){
+  try{
+    var min=N&&N.min, max=N&&N.max; if(!(max>min)) return '';
+    var W=320,H=64,PAD=22,AY=30;
+    function px(x){ return PAD+(x-min)/(max-min)*(W-2*PAD); }
+    var out='<line class="nl-axis" x1="'+(PAD-6)+'" y1="'+AY+'" x2="'+(W-4)+'" y2="'+AY+'"/>';
+    out+='<polyline class="nl-axis" points="'+(W-10)+','+(AY-3)+' '+(W-4)+','+AY+' '+(W-10)+','+(AY+3)+'"/>';
+    out+='<polyline class="nl-axis" points="'+(PAD)+','+(AY-3)+' '+(PAD-6)+','+AY+' '+(PAD)+','+(AY+3)+'"/>';
+    (N.ticks||[]).forEach(function(t){ var X=px(t); out+='<line class="nl-tick" x1="'+X.toFixed(1)+'" y1="'+(AY-3)+'" x2="'+X.toFixed(1)+'" y2="'+(AY+3)+'"/>';
+      out+='<text class="nl-lbl" x="'+X.toFixed(1)+'" y="'+(AY+16)+'" text-anchor="middle">'+esc(String(t))+'</text>'; });
+    (N.intervals||[]).forEach(function(iv){ var xa=px(iv.a), xb=px(iv.b);
+      out+='<line class="nl-seg" x1="'+xa.toFixed(1)+'" y1="'+AY+'" x2="'+xb.toFixed(1)+'" y2="'+AY+'"/>';
+      if(iv.rayA) out+='<polyline class="nl-arrow" points="'+(xa+6).toFixed(1)+','+(AY-4)+' '+xa.toFixed(1)+','+AY+' '+(xa+6).toFixed(1)+','+(AY+4)+'"/>';
+      else out+='<circle class="'+(iv.openA?'nl-open':'nl-closed')+'" cx="'+xa.toFixed(1)+'" cy="'+AY+'" r="4.5"/>';
+      if(iv.rayB) out+='<polyline class="nl-arrow" points="'+(xb-6).toFixed(1)+','+(AY-4)+' '+xb.toFixed(1)+','+AY+' '+(xb-6).toFixed(1)+','+(AY+4)+'"/>';
+      else out+='<circle class="'+(iv.openB?'nl-open':'nl-closed')+'" cx="'+xb.toFixed(1)+'" cy="'+AY+'" r="4.5"/>';
+    });
+    (N.points||[]).forEach(function(p){ var X=px(p.x); out+='<circle class="nl-closed" cx="'+X.toFixed(1)+'" cy="'+AY+'" r="4"/>';
+      if(p.label) out+='<text class="nl-plbl" x="'+X.toFixed(1)+'" y="'+(AY-9)+'" text-anchor="middle">'+esc(p.label)+'</text>'; });
+    return '<div class="graph"><div class="glabel">'+esc(L.numberline)+'</div><svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">'+out+'</svg></div>';
+  }catch(e){ return ''; }
+}
 var icons={
   copy:'<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>',
   share:'<svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>'
@@ -445,7 +514,7 @@ function solutionHtml(turn, verifying, reveal){
   (data.steps||[]).forEach(function(st,i){
     var n=String(i+1);
     var dl=reveal?' style="animation-delay:'+(i*0.18)+'s"':'';
-    out+='<div class="step'+(ASKED[n]?' asked':'')+(reveal?' rise':'')+'"'+dl+' onclick="stepTap(this,'+(i+1)+')"><div class="no">'+n+'</div><div><div class="math">'+smartTex(st.math)+'</div>'+
+    out+='<div class="step'+(ASKED[n]?' asked':'')+(reveal?' rise':'')+'"'+dl+' onclick="stepTap(this,'+(i+1)+')"><div class="no">'+n+'</div><div><div class="math">'+tex(st.math)+'</div>'+
       (st.why?'<div class="why">'+esc(deTeX(st.why))+'</div>':'')+'</div></div>';
   });
   out+='</div>';
@@ -463,11 +532,12 @@ function solutionHtml(turn, verifying, reveal){
     }
     var adl=reveal?' style="animation-delay:'+(nsteps*0.18+0.15)+'s"':'';
     out+='<div class="ans'+(isVerified?' verified':'')+(celebrate?' celebrate':'')+(reveal?' rise':'')+'"'+adl+'><span class="tick"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span>'+
-      '<div><span class="ak lbl">'+esc(L.answer)+'</span><span class="math">'+smartTex(data.answer)+'</span></div></div>'+
+      '<div><span class="ak lbl">'+esc(L.answer)+'</span><span class="math">'+renderMixed(data.answer)+'</span></div></div>'+
       '<div class="vline">'+vslot+'</div>';
   }
   if(turn.plot){ out+=drawPlot(turn.plot); }
   if(turn.figure){ out+=drawFigure(turn.figure); }
+  if(turn.numberline){ out+=drawNumberLine(turn.numberline); }
   out+='<div class="chips"><button class="fu" onclick="chip(\\'similar\\')">'+esc(L.similar)+'</button>'+
        '<button class="fu alt" onclick="chip(\\'mistake\\')">'+esc(L.mistake)+'</button></div>';
   out+='<div class="acts"><span class="act" onclick="act(\\'copy\\',\\''+turn.id+'\\')">'+icons.copy+esc(L.copy)+'</span>'+
@@ -663,6 +733,10 @@ export default function ThreadDocument({
         figure:
           t.role === 'assistant' && !t.pending && !t.error
             ? buildFigure(getSolveJson(t.text)?.figure as Record<string, unknown> | undefined)
+            : undefined,
+        numberline:
+          t.role === 'assistant' && !t.pending && !t.error
+            ? buildNumberLine(getSolveJson(t.text)?.numberline as Record<string, unknown> | undefined)
             : undefined,
       })),
       verifying: s.verifying,

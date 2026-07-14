@@ -39,6 +39,26 @@ export function isHardProblem(text: string): boolean {
   return /demonstr|ar[ăa]ta[țt]i\s+c[ăa]|prove\b|show\s+that|induc[țt]ie|induction/i.test(text)
 }
 
+/**
+ * A proof we genuinely CANNOT grade by running code, so verification is skipped:
+ * universally quantified ("for all n"), induction, or carrying no concrete
+ * number to check. A "prove/show that <specific value>" problem is NOT abstract —
+ * its target is a checkable numeric fact (and the target is a free ground truth),
+ * so those DO get verified. Deliberately conservative: when unsure, verify (a
+ * wasted UNVERIFIABLE check is cheap; letting a wrong numeric answer stand is not).
+ */
+export function isAbstractProof(text: string): boolean {
+  if (!isHardProblem(text)) return false
+  const t = String(text ?? '')
+  // Universally quantified / by induction → not a single value to check.
+  if (/\b(for\s+all|for\s+every|for\s+each|orice|oricare|fiecare|induc[țt]ie|induction)\b|∀/i.test(t)) return true
+  // Classic non-numeric proofs (irrationality) — a stray digit like "√2" doesn't
+  // make them checkable.
+  if (/ira[țt]ional|irrational/i.test(t)) return true
+  // No concrete number anywhere → nothing for code to evaluate.
+  return !/\d/.test(t)
+}
+
 /** Parse the {...} JSON object out of a solve response (returns null if none). */
 export function getSolveJson(raw: string): Record<string, unknown> | null {
   const s = raw.indexOf('{')

@@ -21,8 +21,9 @@ import MathPreview from '../components/ui/MathPreview'
 import { isMathInput, plainToLatex } from '../solve/mathInput'
 import type { CapturedImage } from '../solve/capture'
 import { solveImage, solveProblem, followUp, solveDeep, verifyAnswer } from '../solve/solve'
+import { CORRECTION_HINT } from '../solve/prompt'
 import { latexToPlain, solutionShareText } from '../solve/shareText'
-import { getSolveJson, isHardProblem, isStructuredSolution, withJsonFlags } from '../solve/verdict'
+import { getSolveJson, isAbstractProof, isStructuredSolution, withJsonFlags } from '../solve/verdict'
 import type { ChatTurn } from '../ai/types'
 import { useI18n, type StringKey } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
@@ -260,10 +261,10 @@ export default function SolverScreen() {
       const turn = threadRef.current.find((x) => x.id === id)
       if (!turn) return
       const restated = String(getSolveJson(turn.text)?.problem ?? '').trim() || problemText.trim()
-      // A proof can't be graded by running code — the check would only ever
-      // come back 'unverifiable'. Skip the wasted call (covers photos too,
-      // via the restatement).
-      if (isHardProblem(restated)) return
+      // Skip ONLY genuinely un-gradable proofs (irrationality, "for all n",
+      // no concrete number). A "prove that AD = 20" problem is verifiable — its
+      // target is a free ground-truth checksum — so it now goes through.
+      if (isAbstractProof(restated)) return
       // Abortable: reset / loading another problem / account switch kills a
       // stale verification instead of letting it burn quota in the dark.
       const ctrl = new AbortController()
@@ -280,19 +281,21 @@ export default function SolverScreen() {
           applyText(withJsonFlags(turn.text, { _verified: true }))
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {})
         } else if (v === 'incorrect') {
-          const j = getSolveJson(turn.text)
-          if (j?._model !== 'deep' && (restated || image)) {
+          // RE-SOLVE FROM THE ORIGINAL INPUT, never the model's restatement:
+          // if the first pass misread the source, re-solving its (wrong) text
+          // just reconfirms the wrong problem. Photos re-read the image; typed
+          // problems re-read the user's raw text. The CORRECTION_HINT tells the
+          // deep model it failed a check, so it re-reads the givens instead of
+          // repeating the misread — worth one shot even if it was already deep.
+          const source = problemText.trim()
+          if (image || source) {
             // Be honest about the extra work — the pill says "re-solving".
             setVerifyingMap((m) => ({ ...m, [id]: 'recheck' }))
-            // Photo problems RE-READ THE IMAGE, not the model's restatement:
-            // if the first pass misread the photo, re-solving the (wrong) text
-            // would just confirm the wrong problem. Typed problems re-solve the
-            // text as before.
             const deepRaw = image
               ? await solveImage(image, langName, ctrl.signal)
-              : await solveDeep(restated, langName, ctrl.signal)
+              : await solveDeep(source, langName, ctrl.signal, CORRECTION_HINT)
             if (ctrl.signal.aborted) return
-            const v2 = isStructuredSolution(deepRaw) ? await verifyAnswer(restated, deepRaw, ctrl.signal) : 'unverifiable'
+            const v2 = isStructuredSolution(deepRaw) ? await verifyAnswer(source || restated, deepRaw, ctrl.signal) : 'unverifiable'
             if (ctrl.signal.aborted) return
             // Only ever earn a VERIFIED (green) badge — never a scary
             // "unconfirmed" warning we can't back. If the strong re-solve
@@ -300,7 +303,7 @@ export default function SolverScreen() {
             // NO badge (calm, honest silence) — never a false alarm.
             if (v2 === 'correct') applyText(withJsonFlags(deepRaw, { _verified: true }))
           }
-          // else: already the deep model / nothing better to try → stays neutral.
+          // else: nothing better to try (photoless empty source) → stays neutral.
         }
         // 'incorrect' without a verified fix, and 'unverifiable' → no badge, no
         // warning; the answer stands calm (the badge is EARNED, never faked).
@@ -646,6 +649,7 @@ export default function SolverScreen() {
       answer: t('solution.answer'),
       graph: t('solution.graph'),
       figure: t('solution.figure'),
+      numberline: t('solution.numberline'),
       similar: t('solution.chip.similar'),
       mistake: t('solution.chip.mistake'),
       verifying: t('solution.verifying'),
@@ -807,6 +811,7 @@ export default function SolverScreen() {
                 '2x² + 5x − 3 = 0',
                 'x² = x + 2',
                 'x² − 4 > 0',
+                '|x − 3| ≤ 2',
                 'Triunghi dreptunghic cu catetele 6 și 8',
                 'Aria cercului cu raza 5',
                 'Triunghi cu laturile 5, 6, 7',

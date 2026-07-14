@@ -91,9 +91,11 @@ export async function solveProblem(problem: string, langName: string, signal?: A
   return withFallback(call, looksLikeValidSolve, signal)
 }
 
-/** Re-solve a problem statement with the DEEP model (verification escalation). */
-export async function solveDeep(problem: string, langName: string, signal?: AbortSignal): Promise<string> {
-  const { text } = await ai.generate(problem, {
+/** Re-solve a problem statement with the DEEP model (verification escalation).
+ *  `hint` (e.g. CORRECTION_HINT) is appended so a re-solve after a failed check
+ *  knows to re-read the givens instead of repeating the same misread. */
+export async function solveDeep(problem: string, langName: string, signal?: AbortSignal, hint?: string): Promise<string> {
+  const { text } = await ai.generate(hint ? problem + hint : problem, {
     system: SOLVE_JSON_SYSTEM.replaceAll('{LANG}', langName),
     model: DEEP,
     ...SOLVE,

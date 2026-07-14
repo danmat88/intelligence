@@ -2,6 +2,7 @@ import {
   parseVerdict,
   definitiveVerdict,
   isHardProblem,
+  isAbstractProof,
   getSolveJson,
   isStructuredSolution,
   withJsonFlags,
@@ -58,6 +59,23 @@ describe('isHardProblem', () => {
   it('leaves computational problems on the fast path', () => {
     expect(isHardProblem('2x^2 + 5x - 3 = 0')).toBe(false)
     expect(isHardProblem('Calculează integrala lui x·e^x')).toBe(false)
+  })
+})
+
+describe('isAbstractProof — the verification-skip gate', () => {
+  it('SKIPS genuinely un-gradable proofs (no concrete target)', () => {
+    expect(isAbstractProof('Arătați că √2 este irațional')).toBe(true) // "√2" has no plain digit
+    expect(isAbstractProof('Demonstrați că suma a două numere pare este pară')).toBe(true) // no digits
+    expect(isAbstractProof('Prove that n^2 >= n for all n >= 1')).toBe(true) // universally quantified
+    expect(isAbstractProof('Show by induction that 2^n > n')).toBe(true)
+  })
+  it('VERIFIES a "prove that <specific value>" problem — the target is checkable', () => {
+    expect(isAbstractProof('Demonstrați că distanța de la A la D este 20 km și aria ADC este 25% din ABCD')).toBe(false)
+    expect(isAbstractProof('Show that the area of the triangle is 24')).toBe(false)
+  })
+  it('is false for anything that is not a proof at all', () => {
+    expect(isAbstractProof('2x^2 + 5x - 3 = 0')).toBe(false)
+    expect(isAbstractProof('Aria cercului cu raza 5')).toBe(false)
   })
 })
 
