@@ -294,18 +294,16 @@ export default function SolverScreen() {
             if (ctrl.signal.aborted) return
             const v2 = isStructuredSolution(deepRaw) ? await verifyAnswer(restated, deepRaw, ctrl.signal) : 'unverifiable'
             if (ctrl.signal.aborted) return
-            applyText(
-              v2 === 'correct'
-                ? withJsonFlags(deepRaw, { _verified: true })
-                : v2 === 'incorrect'
-                  ? withJsonFlags(deepRaw, { _verified: false })
-                  : deepRaw,
-            )
-          } else {
-            applyText(withJsonFlags(turn.text, { _verified: false }))
+            // Only ever earn a VERIFIED (green) badge — never a scary
+            // "unconfirmed" warning we can't back. If the strong re-solve
+            // verifies, swap it in green. Otherwise leave the answer as-is with
+            // NO badge (calm, honest silence) — never a false alarm.
+            if (v2 === 'correct') applyText(withJsonFlags(deepRaw, { _verified: true }))
           }
+          // else: already the deep model / nothing better to try → stays neutral.
         }
-        // 'unverifiable' → no badge, no warning; the solution stands as-is.
+        // 'incorrect' without a verified fix, and 'unverifiable' → no badge, no
+        // warning; the answer stands calm (the badge is EARNED, never faked).
         persist(threadRef.current)
       } catch (e) {
         // verification is best-effort — never disturb the shown solution

@@ -124,12 +124,18 @@ body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-
 .step.asked .no{background:${c.accent};color:#fff}
 .step .math{font-size:16.5px;overflow-x:auto;overflow-y:hidden;padding-top:2px}
 .step .why{font-size:12px;color:${c.textMuted};margin-top:5px;line-height:1.5}
-.ans{display:flex;gap:12px;align-items:center;background:linear-gradient(135deg,#0E9F6E,#0B8259);border-radius:18px;padding:15px 16px;margin-top:10px;box-shadow:0 10px 26px rgba(14,159,110,.28);position:relative;overflow:hidden}
-.ans .tick{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+/* — answer box: CALM by default (variant A — paper + a blurple accent edge).
+   Green is EARNED: only a code-verified answer turns green (.ans.verified),
+   with the tick + light sweep. Never a triumphant green on an unchecked answer. */
+.ans{display:flex;gap:12px;align-items:center;background:${c.surface};border:1px solid ${c.border};border-left:3px solid ${c.accent};border-radius:18px;padding:15px 16px;margin-top:10px;position:relative;overflow:hidden}
+.ans .tick{display:none;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.22);align-items:center;justify-content:center;flex:0 0 auto}
 .ans .tick svg{width:14px;height:14px;stroke:#fff;stroke-width:2.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
-.ans .ak{display:block;color:rgba(255,255,255,.75)}
-.ans .math{color:#fff;font-size:18px;margin-top:2px;overflow-x:auto;overflow-y:hidden}
-.ans .katex{color:#fff}
+.ans .ak{display:block;color:${c.textFaint}}
+.ans .math{color:${c.text};font-size:18px;margin-top:2px;overflow-x:auto;overflow-y:hidden}
+.ans.verified{background:linear-gradient(135deg,#0E9F6E,#0B8259);border:1px solid transparent;box-shadow:0 10px 26px rgba(14,159,110,.28)}
+.ans.verified .tick{display:flex}
+.ans.verified .ak{color:rgba(255,255,255,.75)}
+.ans.verified .math,.ans.verified .katex{color:#fff}
 .vline{height:26px;display:flex;align-items:center;justify-content:flex-end;margin:9px 2px 0}
 .vstat{display:inline-flex;align-items:center;gap:6px;font-family:'JB',monospace;font-weight:600;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:${c.textFaint};background:#fff;border:1px solid rgba(26,22,38,.1);border-radius:999px;padding:5px 10px}
 .vstat .dot{width:6px;height:6px;border-radius:50%;background:${c.accent};animation:vpulse 1.1s ease-in-out infinite}
@@ -375,19 +381,20 @@ function solutionHtml(turn, verifying, reveal){
   out+='</div>';
   var nsteps=(data.steps||[]).length;
   if(data.answer){
+    var verifyingNow=(verifying==='check'||verifying==='recheck');
+    // Green is EARNED: only a confirmed answer (not still checking) goes green.
+    // Everything else stays CALM — no badge, never a false "unconfirmed" warning.
+    var isVerified=nowVerified && !verifyingNow;
     var vslot='';
-    if(verifying==='check'||verifying==='recheck'){
+    if(verifyingNow){
       vslot='<span class="vstat"><span class="dot"></span>'+esc(verifying==='recheck'?L.reverifying:L.verifying)+'</span>';
-    } else if(nowVerified){
+    } else if(isVerified){
       vslot='<span class="vbadge" onclick="vtap(\\'verified\\')"><span class="chk">✓</span>'+esc(L.verified)+'</span>';
-    } else if(data._verified===false){
-      vslot='<span class="vwarnpill" onclick="vtap(\\'unverified\\')">!&nbsp;'+esc(L.unverifiedPill)+'</span>';
     }
     var adl=reveal?' style="animation-delay:'+(nsteps*0.18+0.15)+'s"':'';
-    out+='<div class="ans'+(celebrate?' celebrate':'')+(reveal?' rise':'')+'"'+adl+'><span class="tick"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span>'+
+    out+='<div class="ans'+(isVerified?' verified':'')+(celebrate?' celebrate':'')+(reveal?' rise':'')+'"'+adl+'><span class="tick"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span>'+
       '<div><span class="ak lbl">'+esc(L.answer)+'</span><span class="math">'+smartTex(data.answer)+'</span></div></div>'+
       '<div class="vline">'+vslot+'</div>';
-    if(data._verified===false){ out+='<div class="vwarn">'+esc(L.unverified)+'</div>'; }
   }
   if(data.quadratic && data.quadratic.length===3){ out+=plot(+data.quadratic[0],+data.quadratic[1],+data.quadratic[2]); }
   out+='<div class="chips"><button class="fu" onclick="chip(\\'similar\\')">'+esc(L.similar)+'</button>'+
