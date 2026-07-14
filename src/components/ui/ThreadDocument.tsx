@@ -5,6 +5,8 @@ import { useTheme } from '../../theme/ThemeProvider'
 import type { Theme } from '../../theme/tokens'
 import { ensureMathAssets, mathAssetsBase } from './mathAssets'
 import { isMathInput, plainToLatex } from '../../solve/mathInput'
+import { getSolveJson } from '../../solve/verdict'
+import { buildPlotPayload } from '../../solve/plotEval'
 
 /** Verification stage shown on the answer box. */
 export type VerifyStage = 'check' | 'recheck' | false
@@ -139,12 +141,14 @@ body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-
 .vstat .dot{width:6px;height:6px;border-radius:50%;background:${c.accent};animation:vpulse 1.1s ease-in-out infinite}
 @keyframes vpulse{0%,100%{opacity:.25}50%{opacity:1}}
 .vbadge{display:inline-flex;align-items:center;gap:5px;font-family:'JB',monospace;font-weight:600;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#0E9F6E;background:#fff;border-radius:999px;padding:5px 11px;box-shadow:0 2px 10px rgba(14,159,110,.3);cursor:pointer}
-.graph{border:1px solid rgba(26,22,38,.09);border-radius:16px;background:#fff;padding:12px 14px 8px;margin-top:12px}
-.graph .glabel{font-family:'JB',monospace;font-weight:600;font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:${c.textFaint};margin-bottom:6px}
+.graph{border:1px solid ${c.border};border-radius:16px;background:#fff;padding:14px 14px 10px;margin-top:12px}
+.graph .glabel{font-family:'JB',monospace;font-weight:600;font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:${c.textFaint};margin-bottom:8px}
 .graph svg{width:100%;height:auto;display:block;overflow:visible}
-.axis{stroke:rgba(26,22,38,.18);stroke-width:1.3}
-.parabola{stroke:${c.accent};stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
-.root{fill:#0E9F6E}
+.grid-l{stroke:rgba(26,22,38,.05);stroke-width:1}
+.axis{stroke:rgba(26,22,38,.2);stroke-width:1.4;fill:none}
+.curve{fill:none;stroke:url(#cg);stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+.root{fill:#0E9F6E;stroke:#fff;stroke-width:2.5}
+.rootlbl{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:12.5px;fill:#0E9F6E}
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
 .fu{font-family:'IN';font-weight:600;font-size:12.5px;color:${c.accent};border:none;background:${c.accentSoft};border-radius:12px;padding:10px 15px;cursor:pointer}
 .fu.alt{color:${c.textMuted};background:${c.surfaceAlt}}
@@ -310,30 +314,40 @@ function parse(raw){
   if(s>=0&&e>s){ try{ return JSON.parse(raw.slice(s,e+1)); }catch(_){} }
   return null;
 }
-function plot(a,b,c){
-  if(!a) return '';
+// Draw a function graph from a pre-sampled payload {points:[[x,y]..], roots}.
+// The sampling/parsing happened NATIVE-side (tested plotEval) — here we only
+// map points to pixels and build SVG: grid, axes, gradient curve, area, roots.
+function niceStep(raw){ var p=Math.pow(10,Math.floor(Math.log(raw)/Math.LN10)); var f=raw/p; var n=f<1.5?1:f<3.5?2:f<7.5?5:10; return n*p; }
+function drawPlot(P){
   try{
-    var disc=b*b-4*a*c, vx=-b/(2*a);
-    var reach=disc>=0?Math.sqrt(disc)/Math.abs(a):2;
-    var span=Math.max(2.2,reach+2), xmin=vx-span, xmax=vx+span;
-    function y(x){return a*x*x+b*x+c;}
-    var W=272,H=116,pad=14,N=44,ys=[];
-    for(var i=0;i<=N;i++){ ys.push(y(xmin+(xmax-xmin)*i/N)); }
+    var pts=P&&P.points; if(!pts||pts.length<2) return '';
+    var W=320,H=190,PAD=22;
+    var xmin=pts[0][0], xmax=pts[pts.length-1][0];
+    var ys=pts.map(function(p){return p[1];});
     var ymin=Math.min.apply(null,ys), ymax=Math.max.apply(null,ys);
-    if(ymin===ymax){ymax=ymin+1;}
-    function px(x){return pad+(x-xmin)/(xmax-xmin)*(W-2*pad);}
-    function py(v){return 8+(ymax-v)/(ymax-ymin)*(H-22);}
-    var ay=Math.max(8,Math.min(H-8,py(0))), x0=px(0), d='';
-    for(var j=0;j<=N;j++){ var xx=xmin+(xmax-xmin)*j/N; d+=(j?'L':'M')+px(xx).toFixed(1)+' '+py(y(xx)).toFixed(1)+' '; }
-    var roots='';
-    if(disc>=0){
-      var r1=(-b-Math.sqrt(disc))/(2*a), r2=(-b+Math.sqrt(disc))/(2*a);
-      [r1,r2].forEach(function(r){ roots+='<circle class="root" cx="'+px(r).toFixed(1)+'" cy="'+ay.toFixed(1)+'" r="4"/>'; });
-    }
-    var yaxis=(x0>=pad&&x0<=W-pad)?'<line class="axis" x1="'+x0.toFixed(1)+'" y1="6" x2="'+x0.toFixed(1)+'" y2="'+(H-6)+'" opacity="0.4"/>':'';
-    return '<div class="graph"><div class="glabel">'+esc(L.graph)+'</div><svg viewBox="0 0 '+W+' '+H+'">'+yaxis+
-      '<line class="axis" x1="8" y1="'+ay.toFixed(1)+'" x2="'+(W-8)+'" y2="'+ay.toFixed(1)+'"/>'+
-      '<path class="parabola" d="'+d+'"/>'+roots+'</svg></div>';
+    if(ymax-ymin<0.001) ymax=ymin+1;
+    var yp=(ymax-ymin)*0.16; ymin-=yp; ymax+=yp;
+    if(ymin>0) ymin=-0.3*ymax; if(ymax<0) ymax=-0.3*ymin;
+    function px(x){ return PAD+(x-xmin)/(xmax-xmin)*(W-2*PAD); }
+    function py(y){ return 10+(ymax-y)/(ymax-ymin)*(H-24); }
+    var y0=py(0), x0=px(0), g='';
+    var stepx=niceStep((xmax-xmin)/6), stepy=niceStep((ymax-ymin)/5), gx, gy;
+    for(gx=Math.ceil(xmin/stepx)*stepx; gx<=xmax; gx+=stepx){ var X=px(gx); g+='<line class="grid-l" x1="'+X.toFixed(1)+'" y1="8" x2="'+X.toFixed(1)+'" y2="'+(H-10)+'"/>'; }
+    for(gy=Math.ceil(ymin/stepy)*stepy; gy<=ymax; gy+=stepy){ var Y=py(gy); g+='<line class="grid-l" x1="'+(PAD-6)+'" y1="'+Y.toFixed(1)+'" x2="'+(W-6)+'" y2="'+Y.toFixed(1)+'"/>'; }
+    g+='<line class="axis" x1="'+(PAD-6)+'" y1="'+y0.toFixed(1)+'" x2="'+(W-4)+'" y2="'+y0.toFixed(1)+'"/>';
+    g+='<polyline class="axis" points="'+(W-10)+','+(y0-3).toFixed(1)+' '+(W-4)+','+y0.toFixed(1)+' '+(W-10)+','+(y0+3).toFixed(1)+'"/>';
+    if(x0>=PAD-6 && x0<=W-6){ g+='<line class="axis" x1="'+x0.toFixed(1)+'" y1="6" x2="'+x0.toFixed(1)+'" y2="'+(H-8)+'"/>'; g+='<polyline class="axis" points="'+(x0-3).toFixed(1)+',12 '+x0.toFixed(1)+',6 '+(x0+3).toFixed(1)+',12"/>'; }
+    var d='M '+px(pts[0][0]).toFixed(1)+' '+py(pts[0][1]).toFixed(1), i2;
+    for(i2=1;i2<pts.length;i2++){ d+=' L '+px(pts[i2][0]).toFixed(1)+' '+py(pts[i2][1]).toFixed(1); }
+    var area=d+' L '+px(pts[pts.length-1][0]).toFixed(1)+' '+y0.toFixed(1)+' L '+px(pts[0][0]).toFixed(1)+' '+y0.toFixed(1)+' Z';
+    var rt='';
+    (P.roots||[]).forEach(function(r){ if(r.x<xmin||r.x>xmax) return; var cx=px(r.x), cy=py(0);
+      rt+='<circle class="root" cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="4.5"/>';
+      if(r.label) rt+='<text class="rootlbl" x="'+cx.toFixed(1)+'" y="'+(cy+18).toFixed(1)+'" text-anchor="middle">'+esc(r.label)+'</text>';
+    });
+    var defs='<defs><linearGradient id="cg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7A5CFF"/><stop offset="1" stop-color="#4F33EA"/></linearGradient>'+
+      '<linearGradient id="fillg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(99,85,255,0.13)"/><stop offset="1" stop-color="rgba(99,85,255,0)"/></linearGradient></defs>';
+    return '<div class="graph"><div class="glabel">'+esc(L.graph)+'</div><svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">'+defs+g+'<path d="'+area+'" fill="url(#fillg)" stroke="none"/><path class="curve" d="'+d+'"/>'+rt+'</svg></div>';
   }catch(e){ return ''; }
 }
 var icons={
@@ -392,7 +406,7 @@ function solutionHtml(turn, verifying, reveal){
       '<div><span class="ak lbl">'+esc(L.answer)+'</span><span class="math">'+smartTex(data.answer)+'</span></div></div>'+
       '<div class="vline">'+vslot+'</div>';
   }
-  if(data.quadratic && data.quadratic.length===3){ out+=plot(+data.quadratic[0],+data.quadratic[1],+data.quadratic[2]); }
+  if(turn.plot){ out+=drawPlot(turn.plot); }
   out+='<div class="chips"><button class="fu" onclick="chip(\\'similar\\')">'+esc(L.similar)+'</button>'+
        '<button class="fu alt" onclick="chip(\\'mistake\\')">'+esc(L.mistake)+'</button></div>';
   out+='<div class="acts"><span class="act" onclick="act(\\'copy\\',\\''+turn.id+'\\')">'+icons.copy+esc(L.copy)+'</span>'+
@@ -582,6 +596,9 @@ export default function ThreadDocument({
         imageH: t.imageH,
         pending: !!t.pending,
         error: !!t.error,
+        // Graph payload sampled HERE (tested plotEval) so the WebView only
+        // draws — from `plot:{fn,roots}` or the legacy `quadratic:[a,b,c]`.
+        plot: t.role === 'assistant' && !t.pending && !t.error ? buildPlotPayload(getSolveJson(t.text)) : undefined,
       })),
       verifying: s.verifying,
       cold: s.cold,

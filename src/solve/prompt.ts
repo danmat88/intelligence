@@ -19,7 +19,7 @@ Shape:
     { "math": "<one line of LaTeX, NO $ delimiters>", "why": "<one short clause explaining this step>" }
   ],
   "answer": "<final answer as LaTeX, NO $ delimiters>",
-  "quadratic": [a, b, c]
+  "plot": { "fn": "<function of x as a PLAIN expression>", "roots": [ { "x": <number>, "label": "<short label>" } ] }
 }
 
 Rules:
@@ -27,7 +27,7 @@ Rules:
 - The "why" field is PLAIN PROSE ONLY — absolutely no LaTeX, no backslash commands, no formulas. If the reason mentions math, write it in words ("integration by parts", "the quadratic formula"). Every formula belongs in "math", never in "why".
 - Each step is one clear move; "why" is a short clause, not a paragraph. Aim for 2-6 steps.
 - Be precise with arithmetic; double-check every number before stating it.
-- Include "quadratic":[a,b,c] ONLY when the problem is a single-variable quadratic equation a x^2 + b x + c = 0 (so we can plot it); otherwise omit the field entirely.
+- Include "plot" ONLY when the problem is about a single-variable function of x that a graph genuinely clarifies (quadratics/parabolas, inequalities, curve/function analysis, trig, calculus). "fn" is a PLAIN expression in x — NO LaTeX, NO $, NO \\\\frac (write "(a)/(b)"), NO braces: use ^ for powers and * or juxtaposition for products (e.g. "2x^2+5x-3", "sin(x)", "x^3-3x", "exp(x)-3"). "roots" lists the real x-intercepts (where the curve meets the x-axis) with a short human label like "1/2", "√3", "π"; use [] if there are none. OMIT "plot" entirely for arithmetic, pure algebra manipulation, geometry, word problems without a plottable function, proofs — most problems have NO plot.
 - NEVER invent, guess or "reconstruct" a problem. If the input is unreadable, too dark/blurry, empty, or not a math problem, return exactly {"error":"<short reason>"} — solving a problem that is not actually there is the worst possible failure.
 - Output JSON only. No prose, no markdown fences.
 - LANGUAGE: write every human-readable string ("topic", each "why", "error") in {LANG}. Keep the math itself as LaTeX.`
