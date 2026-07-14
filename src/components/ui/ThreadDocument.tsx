@@ -47,8 +47,6 @@ export type DocLabels = {
   verifying: string
   reverifying: string
   verified: string
-  unverified: string
-  unverifiedPill: string
   retry: string
   cancel: string
   you: string
@@ -141,8 +139,6 @@ body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-
 .vstat .dot{width:6px;height:6px;border-radius:50%;background:${c.accent};animation:vpulse 1.1s ease-in-out infinite}
 @keyframes vpulse{0%,100%{opacity:.25}50%{opacity:1}}
 .vbadge{display:inline-flex;align-items:center;gap:5px;font-family:'JB',monospace;font-weight:600;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#0E9F6E;background:#fff;border-radius:999px;padding:5px 11px;box-shadow:0 2px 10px rgba(14,159,110,.3);cursor:pointer}
-.vwarnpill{display:inline-flex;align-items:center;gap:5px;font-family:'JB',monospace;font-weight:600;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#9a6700;background:#fff8e6;border:1px solid #f0d789;border-radius:999px;padding:5px 10px;cursor:pointer}
-.vwarn{font-size:12.5px;color:#9a6700;background:#fff8e6;border:1px solid #f0d789;border-radius:14px;padding:10px 13px;margin-top:8px}
 .graph{border:1px solid rgba(26,22,38,.09);border-radius:16px;background:#fff;padding:12px 14px 8px;margin-top:12px}
 .graph .glabel{font-family:'JB',monospace;font-weight:600;font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:${c.textFaint};margin-bottom:6px}
 .graph svg{width:100%;height:auto;display:block;overflow:visible}
@@ -538,7 +534,7 @@ export default function ThreadDocument({
   meta: string | null
   labels: DocLabels
   onChip?: (id: string) => void
-  onVerifyTap?: (v: 'verified' | 'unverified') => void
+  onVerifyTap?: () => void
   onRetry?: () => void
   onCancel?: () => void
   onAction?: (kind: 'copy' | 'share', turnId: string) => void
@@ -638,8 +634,7 @@ export default function ThreadDocument({
         const d = e.nativeEvent.data
         if (d.startsWith('C:')) onChip?.(d.slice(2))
         else if (d.startsWith('V:')) {
-          const v = d.slice(2)
-          if (v === 'verified' || v === 'unverified') onVerifyTap?.(v)
+          if (d.slice(2) === 'verified') onVerifyTap?.()
         } else if (d.startsWith('R:')) onRetry?.()
         else if (d.startsWith('X:')) onCancel?.()
         else if (d.startsWith('P:')) onFixProblem?.(d.slice(2))

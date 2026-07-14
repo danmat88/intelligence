@@ -108,7 +108,7 @@ export default function SolverScreen() {
   // deep model recomputes a failed answer.
   const [verifyingMap, setVerifyingMap] = useState<Record<string, 'check' | 'recheck'>>({})
   // Trust explainer opened by tapping the ✓/! badge on an answer box.
-  const [verifyInfo, setVerifyInfo] = useState<'verified' | 'unverified' | null>(null)
+  const [verifyInfo, setVerifyInfo] = useState(false)
   const inputRef = useRef<TextInput>(null)
   const threadRef = useRef<Turn[]>([])
   const problemIdRef = useRef<string | null>(null)
@@ -650,8 +650,6 @@ export default function SolverScreen() {
       verifying: t('solution.verifying'),
       reverifying: t('solution.reverifying'),
       verified: t('solution.verified'),
-      unverified: t('solution.unverified'),
-      unverifiedPill: t('solution.unverified.pill'),
       retry: t('err.retry'),
       cancel: t('pending.cancel'),
       you: t('doc.you'),
@@ -831,7 +829,7 @@ export default function SolverScreen() {
             }
             labels={docLabels}
             onChip={handleChip}
-            onVerifyTap={setVerifyInfo}
+            onVerifyTap={() => setVerifyInfo(true)}
             onRetry={retryLast}
             onCancel={cancelRun}
             onAction={handleDocAction}
@@ -938,12 +936,12 @@ export default function SolverScreen() {
       />
       {/* The trust pitch, told at the moment of trust: what "Verified" means. */}
       <InfoDialog
-        open={verifyInfo !== null}
-        tone={verifyInfo === 'unverified' ? 'warning' : 'success'}
-        title={verifyInfo === 'unverified' ? t('verify.info.title.warn') : t('verify.info.title.ok')}
-        message={verifyInfo === 'unverified' ? t('verify.info.body.warn') : t('verify.info.body.ok')}
+        open={verifyInfo}
+        tone="success"
+        title={t('verify.info.title.ok')}
+        message={t('verify.info.body.ok')}
         okLabel={t('common.ok')}
-        onClose={() => setVerifyInfo(null)}
+        onClose={() => setVerifyInfo(false)}
       />
       <CaptureScreen open={capture} onClose={() => setCapture(null)} onUsePhoto={solvePhoto} onTypeInstead={typeInstead} />
     </ScreenBackground>
