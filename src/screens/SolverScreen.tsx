@@ -121,7 +121,12 @@ export default function SolverScreen() {
   // scroll (top for reading, follow for live) internally.
   const coldDocRef = useRef(false)
   // The last request, kept so a failed turn can be retried without retyping.
-  const lastReqRef = useRef<{ userTurn: Turn; solver: (s: AbortSignal) => Promise<string>; verifyProblem?: string } | null>(null)
+  const lastReqRef = useRef<{
+    userTurn: Turn
+    solver: (s: AbortSignal) => Promise<string>
+    verifyProblem?: string
+    verifyImage?: CapturedImage
+  } | null>(null)
   // Cloud copies of problem photos, keyed by turn id (upload runs in
   // parallel with the solve; persist() picks these up when they land).
   const uploadsRef = useRef<Record<string, { path: string; url: string }>>({})
@@ -251,7 +256,7 @@ export default function SolverScreen() {
   // on a failed check, silently re-solve with the deep model and swap in the
   // corrected solution. The "✓" badge only ever comes from a real code check.
   const verifyFlow = useCallback(
-    async (id: string, problemText: string) => {
+    async (id: string, problemText: string, image?: CapturedImage) => {
       const turn = threadRef.current.find((x) => x.id === id)
       if (!turn) return
       const restated = String(getSolveJson(turn.text)?.problem ?? '').trim() || problemText.trim()
@@ -276,10 +281,16 @@ export default function SolverScreen() {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {})
         } else if (v === 'incorrect') {
           const j = getSolveJson(turn.text)
-          if (j?._model !== 'deep' && restated) {
+          if (j?._model !== 'deep' && (restated || image)) {
             // Be honest about the extra work — the pill says "re-solving".
             setVerifyingMap((m) => ({ ...m, [id]: 'recheck' }))
-            const deepRaw = await solveDeep(restated, langName, ctrl.signal)
+            // Photo problems RE-READ THE IMAGE, not the model's restatement:
+            // if the first pass misread the photo, re-solving the (wrong) text
+            // would just confirm the wrong problem. Typed problems re-solve the
+            // text as before.
+            const deepRaw = image
+              ? await solveImage(image, langName, ctrl.signal)
+              : await solveDeep(restated, langName, ctrl.signal)
             if (ctrl.signal.aborted) return
             const v2 = isStructuredSolution(deepRaw) ? await verifyAnswer(restated, deepRaw, ctrl.signal) : 'unverifiable'
             if (ctrl.signal.aborted) return
@@ -312,12 +323,17 @@ export default function SolverScreen() {
   )
 
   const run = useCallback(
-    async (userTurn: Turn, solver: (signal: AbortSignal) => Promise<string>, verifyProblem?: string) => {
+    async (
+      userTurn: Turn,
+      solver: (signal: AbortSignal) => Promise<string>,
+      verifyProblem?: string,
+      verifyImage?: CapturedImage,
+    ) => {
       const asstId = uid()
       const base = threadRef.current
       const ctrl = new AbortController()
       abortRef.current = ctrl
-      lastReqRef.current = { userTurn, solver, verifyProblem } // retry fuel
+      lastReqRef.current = { userTurn, solver, verifyProblem, verifyImage } // retry fuel
       coldDocRef.current = false // live turns reveal in the document
       commit([...base, userTurn, { id: asstId, role: 'assistant', text: '', pending: true }])
       setSending(true)
@@ -337,7 +353,8 @@ export default function SolverScreen() {
         commit(done)
         persist(done)
         // First solves get the background correctness check (not follow-ups).
-        if (verifyProblem !== undefined && isStructuredSolution(text)) void verifyFlow(asstId, verifyProblem)
+        // The image rides along so a photo's deep re-solve re-reads the photo.
+        if (verifyProblem !== undefined && isStructuredSolution(text)) void verifyFlow(asstId, verifyProblem, verifyImage)
       } catch (e) {
         if (ctrl.signal.aborted) {
           // User cancelled — quietly drop the attempt, back to where they were.
@@ -373,7 +390,7 @@ export default function SolverScreen() {
     const last = threadRef.current[threadRef.current.length - 1]
     if (!req || !last?.error || sending) return
     commit(threadRef.current.filter((x) => !x.error && x.id !== req.userTurn.id))
-    run(req.userTurn, req.solver, req.verifyProblem)
+    run(req.userTurn, req.solver, req.verifyProblem, req.verifyImage)
   }, [commit, run, sending])
 
   const priorTurns = useCallback((): ChatTurn[] => {
@@ -542,11 +559,14 @@ export default function SolverScreen() {
           })
           .catch((e) => reportNonFatal(e, 'photo-upload'))
       }
-      // '' → the verifier reads the problem from the solution's own restatement
+      // '' → the verifier reads the problem from the solution's own restatement;
+      // `img` rides along so a failed check re-solves by RE-READING THE PHOTO,
+      // never the (possibly misread) restatement.
       run(
         { id: turnId, role: 'user', text: '', imageUri: img.uri, imageW: img.width, imageH: img.height },
         (sig) => solveImage(img, langName, sig),
         '',
+        img,
       )
     },
     [run, reset, langName, user, persist],

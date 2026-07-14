@@ -27,6 +27,13 @@ export type AIResult = {
   text: string
   /** Round-trip latency in milliseconds — handy for showing real numbers. */
   ms: number
+  /** Verifier only: true when the model actually RAN code (a code-execution
+   *  result came back OK). The "Verified" badge must never trust a verdict the
+   *  checker produced without executing anything. */
+  codeExecuted?: boolean
+  /** True when the reply was cut off at the token ceiling (finishReason
+   *  MAX_TOKENS) — a verdict line after the cut is missing, not absent. */
+  truncated?: boolean
 }
 
 export type ChatRole = 'user' | 'assistant'

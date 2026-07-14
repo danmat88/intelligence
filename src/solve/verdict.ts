@@ -14,6 +14,23 @@ export function parseVerdict(text: string): Verdict {
   return 'unverifiable'
 }
 
+/** One run of the checker: its reply plus the two facts that decide whether we
+ *  can trust it — did it actually RUN code, and was the reply cut off. */
+export type CheckerReply = { text: string; codeExecuted: boolean; truncated: boolean }
+
+/**
+ * The trustworthy verdict from one checker run, or null when the caller must
+ * ESCALATE (to the deep model). A verdict counts ONLY when the checker really
+ * executed code and the reply wasn't truncated — so a CORRECT/INCORRECT "from
+ * vibes" (no code ran), a missing verdict line, or a cut-off reply all return
+ * null. This is what stops the badge from ever appearing on an unchecked claim.
+ */
+export function definitiveVerdict(r: CheckerReply): 'correct' | 'incorrect' | null {
+  if (r.truncated || !r.codeExecuted) return null
+  const v = parseVerdict(r.text)
+  return v === 'correct' || v === 'incorrect' ? v : null
+}
+
 /**
  * Problems the fast model is genuinely weak at (proof-style work) go straight
  * to the deep model — verification can't grade a proof anyway.

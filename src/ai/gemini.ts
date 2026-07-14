@@ -17,7 +17,14 @@ type GeminiConfig = {
   baseUrl?: string
 }
 
-type Part = { text?: string; inlineData?: { mimeType: string; data: string } }
+type Part = {
+  text?: string
+  inlineData?: { mimeType: string; data: string }
+  // Present when the model uses the code-execution tool (the verifier): the
+  // code it wrote, and the result of actually running it.
+  executableCode?: { language?: string; code?: string }
+  codeExecutionResult?: { outcome?: string; output?: string }
+}
 type Content = { role: 'user' | 'model'; parts: Part[] }
 
 /** Extract the text carried by the given complete SSE `data:` lines. Exported for tests. */
@@ -101,9 +108,16 @@ export function createGeminiClient(config: GeminiConfig): AIClient {
         signal: opts.signal,
       })
       if (res.ok) {
-        const data = (await res.json()) as { candidates?: { content?: { parts?: { text?: string }[] } }[] }
-        const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text).filter(Boolean).join('') ?? ''
-        return { text, ms: Date.now() - t0 }
+        const data = (await res.json()) as {
+          candidates?: { content?: { parts?: Part[] }; finishReason?: string }[]
+        }
+        const cand = data.candidates?.[0]
+        const parts = cand?.content?.parts ?? []
+        const text = parts.map((p) => p.text).filter(Boolean).join('')
+        // Proof the checker actually executed code (not just claimed a verdict).
+        const codeExecuted = parts.some((p) => p.codeExecutionResult?.outcome === 'OUTCOME_OK')
+        const truncated = cand?.finishReason === 'MAX_TOKENS'
+        return { text, ms: Date.now() - t0, codeExecuted, truncated }
       }
       const failedFast = Date.now() - tReq < 8000
       const retryable = (res.status === 429 || res.status === 503) && failedFast && attempt < 2

@@ -1,4 +1,11 @@
-import { parseVerdict, isHardProblem, getSolveJson, isStructuredSolution, withJsonFlags } from '../verdict'
+import {
+  parseVerdict,
+  definitiveVerdict,
+  isHardProblem,
+  getSolveJson,
+  isStructuredSolution,
+  withJsonFlags,
+} from '../verdict'
 
 describe('parseVerdict', () => {
   it('reads each verdict', () => {
@@ -13,6 +20,31 @@ describe('parseVerdict', () => {
   it('defaults to unverifiable on garbage or empty', () => {
     expect(parseVerdict('the model rambled with no verdict')).toBe('unverifiable')
     expect(parseVerdict('')).toBe('unverifiable')
+  })
+})
+
+describe('definitiveVerdict — the badge-honesty gate', () => {
+  it('trusts a CORRECT/INCORRECT only when code actually ran', () => {
+    expect(definitiveVerdict({ text: 'VERDICT: CORRECT', codeExecuted: true, truncated: false })).toBe('correct')
+    expect(definitiveVerdict({ text: 'VERDICT: INCORRECT', codeExecuted: true, truncated: false })).toBe('incorrect')
+  })
+
+  it('REJECTS a verdict the checker produced without running code (vibes) → escalate', () => {
+    // This is the core failure the engine used to have: a badge on an unchecked claim.
+    expect(definitiveVerdict({ text: 'VERDICT: CORRECT', codeExecuted: false, truncated: false })).toBeNull()
+    expect(definitiveVerdict({ text: 'VERDICT: INCORRECT', codeExecuted: false, truncated: false })).toBeNull()
+  })
+
+  it('REJECTS a truncated reply even if code ran and a verdict is present', () => {
+    expect(definitiveVerdict({ text: 'VERDICT: CORRECT', codeExecuted: true, truncated: true })).toBeNull()
+  })
+
+  it('REJECTS a missing verdict line (rambled, no VERDICT) → escalate', () => {
+    expect(definitiveVerdict({ text: 'I ran some code but forgot to conclude', codeExecuted: true, truncated: false })).toBeNull()
+  })
+
+  it('treats an explicit UNVERIFIABLE as inconclusive → escalate', () => {
+    expect(definitiveVerdict({ text: 'VERDICT: UNVERIFIABLE', codeExecuted: true, truncated: false })).toBeNull()
   })
 })
 

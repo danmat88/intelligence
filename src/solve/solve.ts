@@ -2,7 +2,7 @@ import { ai } from '../ai'
 import type { ChatTurn } from '../ai/types'
 import type { CapturedImage } from './capture'
 import { SOLVE_JSON_SYSTEM, FOLLOWUP_SYSTEM, SOLVE_USER_PROMPT, VERIFY_SYSTEM } from './prompt'
-import { getSolveJson, isHardProblem, parseVerdict, withJsonFlags, type Verdict } from './verdict'
+import { definitiveVerdict, getSolveJson, isHardProblem, withJsonFlags, type CheckerReply, type Verdict } from './verdict'
 
 // Model routing, the way fast consumer math apps do it:
 //   FAST (flash-lite) answers everything the user sees — measured ~2s for a
@@ -13,6 +13,11 @@ import { getSolveJson, isHardProblem, parseVerdict, withJsonFlags, type Verdict 
 // model produces; the math itself stays LaTeX.
 const FAST = 'gemini-flash-lite-latest'
 const DEEP = 'gemini-pro-latest'
+// The checker is NEVER flash-lite: grading an answer is harder than emitting
+// one, and the weakest model produces both false CORRECTs (badge on a wrong
+// answer) and false INCORRECTs (wasted deep re-solves). Verify starts on flash
+// and escalates to the deep model.
+const VERIFY_MODEL = 'gemini-flash-latest'
 
 const SOLVE = { json: true, temperature: 0.2, maxTokens: 4096 } as const
 
@@ -103,26 +108,33 @@ export async function verifyAnswer(problemText: string, solutionRaw: string, sig
   if (!problem || !answer) return 'unverifiable'
 
   const ask = `Problem: ${problem}\nProposed final answer: ${answer}`
-  const call = async (model: string) => {
-    const { text } = await ai.generate(ask, {
+  const runChecker = async (model: string): Promise<CheckerReply> => {
+    const { text, codeExecuted, truncated } = await ai.generate(ask, {
       system: VERIFY_SYSTEM,
       model,
       tools: [{ code_execution: {} }],
       temperature: 0,
-      maxTokens: 2500,
+      // Generous budget: the -latest models think by default, and a verdict
+      // truncated mid-reply used to vanish as a silent "unverifiable".
+      maxTokens: 4096,
       signal,
     })
-    return text
+    return { text, codeExecuted: !!codeExecuted, truncated: !!truncated }
   }
+
   try {
-    return parseVerdict(await call(FAST))
+    // Trust a verdict only when the checker actually RAN code and wasn't cut
+    // off. A CORRECT-from-vibes, a missing verdict, or a truncated reply are
+    // all inconclusive on flash → escalate ONCE to the deep model. Only if the
+    // deep model is also inconclusive does the answer stay unverified.
+    const first = await runChecker(VERIFY_MODEL)
+    const d1 = definitiveVerdict(first)
+    if (d1) return d1
+    if (signal?.aborted) return 'unverifiable'
+    const second = await runChecker(DEEP)
+    return definitiveVerdict(second) ?? 'unverifiable'
   } catch {
-    try {
-      if (signal?.aborted) return 'unverifiable'
-      return parseVerdict(await call(DEEP))
-    } catch {
-      return 'unverifiable'
-    }
+    return 'unverifiable'
   }
 }
 
