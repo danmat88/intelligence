@@ -185,14 +185,14 @@
     <p class="lede">Fundația și profesionalizarea sunt livrate și verificate pe telefon. Mai sunt 6 faze până în magazin. Statusul de mai jos e onest: ce e gata, ce urmează, și ce blochează lansarea.</p>
 
     <div class="tiles">
-      <div class="tile"><span class="lbl">Faze livrate</span><span class="val accent">2 / 8</span><span class="sub">Fundație + Profesionalizare</span></div>
-      <div class="tile"><span class="lbl">Acum lucrăm la</span><span class="val">Faza 2</span><span class="sub">Motorul de încredere</span></div>
+      <div class="tile"><span class="lbl">Faze livrate</span><span class="val accent">3 / 8</span><span class="sub">Fundație · Profesionalizare · Încredere</span></div>
+      <div class="tile"><span class="lbl">Acum lucrăm la</span><span class="val">Faza 3</span><span class="sub">Vizual &amp; geometrie</span></div>
       <div class="tile"><span class="lbl">Blocante de lansare</span><span class="val warn">2</span><span class="sub">Freemium · Logo</span></div>
       <div class="tile"><span class="lbl">Build de producție</span><span class="val">~1 aug</span><span class="sub">când revine cota EAS</span></div>
     </div>
 
     <div class="rail" aria-hidden="true">
-      <i class="done"></i><i class="done"></i><i class="next"></i><i></i><i></i><i></i><i></i><i></i>
+      <i class="done"></i><i class="done"></i><i class="done"></i><i class="next"></i><i></i><i></i><i></i><i></i>
     </div>
 
     <div class="legend">
@@ -243,33 +243,33 @@
   </article>
 
   <!-- PHASE 2 -->
-  <article class="phase next">
+  <article class="phase done">
     <div class="phead">
-      <div class="pbadge">2</div>
+      <div class="pbadge"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <div class="pt">
         <div class="ptitle">Motorul de încredere</div>
-        <div class="pmeta"><span class="chip c-next">Următorul</span><span class="effort">TypeScript pur · fără build nativ · testabil imediat</span></div>
+        <div class="pmeta"><span class="chip c-done">Livrat</span><span class="effort">74 teste · presupunerea de cod validată pe API-ul real</span></div>
       </div>
     </div>
     <ul class="checks">
-      <li class="n"><span class="ic"></span><span class="tx"><strong>Dovadă că verificatorul chiar rulează cod</strong> — citim părțile code-execution, nu doar textul; badge doar cu rezultat real</span></li>
-      <li class="n"><span class="ic"></span><span class="tx"><strong>Verificator = flash</strong>, nu flash-lite (cel mai slab model nu mai dă notă)</span></li>
-      <li class="n"><span class="ic"></span><span class="tx"><strong>Escaladare reală</strong> la modelul mare când verdictul lipsește (azi calea e cod mort)</span></li>
-      <li class="n"><span class="ic"></span><span class="tx"><strong>Pozele se re-verifică pe imagine</strong>, nu pe reformularea modelului</span></li>
-      <li class="n"><span class="ic"></span><span class="tx"><strong>Tratare MAX_TOKENS</strong> — trunchierea nu mai devine „neverificabil" în tăcere</span></li>
-      <li class="n"><span class="ic"></span><span class="tx"><strong>„Confirmă ce am citit"</strong> — elevul confirmă problema citită înainte ca badge-ul să conteze</span></li>
-      <li class="n"><span class="ic"></span><span class="tx"><strong>Fixăm versiunile de model</strong> (fără alias „-latest" care se schimbă sub noi)</span></li>
+      <li class="d"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span><span class="tx"><strong>Dovadă că verificatorul chiar rulează cod</strong> — citim părțile code-execution; badge doar cu rezultat `OUTCOME_OK`</span></li>
+      <li class="d"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span><span class="tx"><strong>Verificator = flash</strong>, nu flash-lite; escaladează la pro</span></li>
+      <li class="d"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span><span class="tx"><strong>Escaladare reală</strong> — `definitiveVerdict` acceptă doar verdict susținut de cod; altfel modelul mare, apoi „neverificabil"</span></li>
+      <li class="d"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span><span class="tx"><strong>Pozele se re-verifică pe imagine</strong>, nu pe reformulare</span></li>
+      <li class="d"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span><span class="tx"><strong>Tratare MAX_TOKENS</strong> — buget 4096, trunchierea escaladează, nu tace</span></li>
+      <li class="d"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span><span class="tx"><strong>„Confirmă ce am citit"</strong> — linia „AM CITIT" + „Corectează" lasă elevul să prindă o citire greșită</span></li>
+      <li class="t"><span class="ic"></span><span class="tx"><strong>Fixăm versiunile de model</strong> <span class="tag">rămas</span> — nevoie de ID-uri exacte confirmate (un ID greșit strică rezolvările)</span></li>
     </ul>
-    <p class="note"><strong>De ce acum:</strong> badge-ul „Verificat" e promisiunea centrală a produsului. Azi poate minți. E și cel mai ieftin de reparat — cod pur, fără telefon nou.</p>
+    <p class="note"><strong>Livrat:</strong> badge-ul „Verificat" nu mai poate minți și nu mai dispare în tăcere. Rămâne o singură piesă de călit — fixarea versiunilor de model, de făcut deliberat când confirmăm ID-urile.</p>
   </article>
 
   <!-- PHASE 3 -->
-  <article class="phase todo">
+  <article class="phase next">
     <div class="phead">
       <div class="pbadge">3</div>
       <div class="pt">
         <div class="ptitle">Vizual &amp; geometrie</div>
-        <div class="pmeta"><span class="chip c-todo">De făcut</span><span class="effort">diferențiator · două niveluri</span></div>
+        <div class="pmeta"><span class="chip c-next">Următorul</span><span class="effort">diferențiator · două niveluri</span></div>
       </div>
     </div>
     <ul class="checks">
