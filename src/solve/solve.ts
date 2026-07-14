@@ -11,15 +11,18 @@ import { definitiveVerdict, getSolveJson, isHardProblem, withJsonFlags, type Che
 //   slightly slower solve. DEEP is also the future premium/verification engine.
 // `langName` ("Romanian"/"English") localizes every human-readable string the
 // model produces; the math itself stays LaTeX.
-const FAST = 'gemini-flash-lite-latest'
-const DEEP = 'gemini-pro-latest'
+// PINNED to exact GA ids, not `-latest` aliases: the aliases hot-swap silently,
+// and one such swap put verification on Gemini 3.5 Flash (~45s/check). Measured
+// July 2026: 3.1 flash-lite ~1.6s solve / ~6-10s verify, 3.1 pro ~8s. 3.5 Flash
+// is a latency trap on code-execution tasks (~30s even at minimal thinking), so
+// it is deliberately NOT used. Revisit when 3.1 pro leaves preview.
+const FAST = 'gemini-3.1-flash-lite'
+const DEEP = 'gemini-3.1-pro-preview'
 // Verify starts fast and escalates to the deep model. Honesty comes from
 // REQUIRING code execution (definitiveVerdict), not from model IQ — a running
-// sympy result is authoritative, so flash-lite (~6s, verified running correct
-// code) is a fine first checker and escalates to pro (~9s) when it isn't
-// code-backed-definitive. NB: the plain `flash` alias is avoided on purpose —
-// measured ~45s per verify (it currently thinks enormously); this is exactly
-// the "-latest aliases drift" risk the pinning item tracks.
+// sympy result is authoritative, so flash-lite is a fine first checker (with
+// minimal thinking: the code decides, not rumination — ~6s vs ~10s) and
+// escalates to pro when the result isn't code-backed-definitive.
 const VERIFY_MODEL = FAST
 
 const SOLVE = { json: true, temperature: 0.2, maxTokens: 4096 } as const
@@ -111,14 +114,15 @@ export async function verifyAnswer(problemText: string, solutionRaw: string, sig
   if (!problem || !answer) return 'unverifiable'
 
   const ask = `Problem: ${problem}\nProposed final answer: ${answer}`
-  const runChecker = async (model: string): Promise<CheckerReply> => {
+  const runChecker = async (model: string, thinkingLevel?: 'minimal'): Promise<CheckerReply> => {
     const { text, codeExecuted, truncated } = await ai.generate(ask, {
       system: VERIFY_SYSTEM,
       model,
       tools: [{ code_execution: {} }],
       temperature: 0,
-      // Generous budget: the -latest models think by default, and a verdict
-      // truncated mid-reply used to vanish as a silent "unverifiable".
+      thinkingLevel,
+      // Generous budget: a verdict truncated mid-reply used to vanish as a
+      // silent "unverifiable" (now caught by `truncated`).
       maxTokens: 4096,
       signal,
     })
@@ -128,9 +132,10 @@ export async function verifyAnswer(problemText: string, solutionRaw: string, sig
   try {
     // Trust a verdict only when the checker actually RAN code and wasn't cut
     // off. A CORRECT-from-vibes, a missing verdict, or a truncated reply are
-    // all inconclusive on flash → escalate ONCE to the deep model. Only if the
-    // deep model is also inconclusive does the answer stay unverified.
-    const first = await runChecker(VERIFY_MODEL)
+    // all inconclusive on flash-lite → escalate ONCE to the deep model. Only if
+    // the deep model is also inconclusive does the answer stay unverified.
+    // flash-lite runs with minimal thinking (fast); pro escalation uses its default.
+    const first = await runChecker(VERIFY_MODEL, 'minimal')
     const d1 = definitiveVerdict(first)
     if (d1) return d1
     if (signal?.aborted) return 'unverifiable'

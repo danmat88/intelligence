@@ -17,6 +17,11 @@ export type GenerateOptions = {
   json?: boolean
   /** Gemini tools payload (e.g. [{ code_execution: {} }] for the verifier). */
   tools?: unknown
+  /** Gemini 3.x thinking control (sent as generationConfig.thinkingConfig.
+   *  thinkingLevel). 'minimal' keeps the verifier fast — the sandboxed code is
+   *  the authority, so the model shouldn't ruminate. Omit for the model default.
+   *  NB: 'high' truncates JSON solves — never set it on a structured solve. */
+  thinkingLevel?: 'minimal' | 'low' | 'medium' | 'high'
   /** Abort to stop generation early; streaming resolves with the partial text. */
   signal?: AbortSignal
   /** Per-call model override (must be on the server's whitelist in proxy mode). */

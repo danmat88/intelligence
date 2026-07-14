@@ -45,15 +45,25 @@ expects evidence, not assurances.
 
 ## Architecture
 
-- **Solve stack** (`src/solve/`): `solve.ts` routes FAST=`gemini-flash-lite-latest`
-  (~2s) → DEEP=`gemini-pro-latest` (fallback on failure/broken JSON, direct for
-  proofs, escalation when verification fails). `verifyAnswer` runs the model with
-  `tools:[{code_execution:{}}]` (sympy) → `VERDICT: CORRECT|INCORRECT|UNVERIFIABLE`
-  → `_verified` badge / silent deep re-solve. `verdict.ts` = pure helpers (tested).
+- **Solve stack** (`src/solve/`): `solve.ts` routes FAST=`gemini-3.1-flash-lite`
+  (~2s) → DEEP=`gemini-3.1-pro-preview` (fallback on failure/broken JSON, direct
+  for proofs, escalation when verification fails). Model ids are PINNED, not
+  `-latest` — an alias hot-swapped verify onto Gemini 3.5 Flash (~45s/check);
+  3.5 Flash is a latency trap on code tasks and is avoided. `verifyAnswer` is the
+  HONEST badge engine: runs the checker with `tools:[{code_execution:{}}]` (sympy)
+  and `thinkingLevel:'minimal'` (fast; code is the authority), then
+  `verdict.ts::definitiveVerdict` trusts a verdict ONLY if code actually ran
+  (`codeExecutionResult.outcome==='OUTCOME_OK'`) and the reply wasn't truncated
+  (`finishReason MAX_TOKENS`); otherwise it escalates once to DEEP, else
+  `unverifiable`. Photo re-solves re-read the IMAGE, not the restatement. `_verified`
+  badge / silent deep re-solve; `verdict.ts` = pure helpers (tested).
   `prompt.ts`: structured-JSON solve prompt (steps+answer+problem restatement,
   `{LANG}` placeholder) — **never invent a problem from an unreadable image**
-  (anti-hallucination rule, device-verified). NO `thinkingConfig` ever (Gemini 3.x
-  rejects it). `capture.ts`: clamped crop + 1024px/0.7 JPEG downscale (proxy 1MB cap).
+  (anti-hallucination rule, device-verified). Thinking control IS available:
+  the NESTED `generationConfig.thinkingConfig.thinkingLevel` (minimal|low|medium|
+  high) works on 3.x; the FLAT `thinkingLevel` and 2.5's `thinkingBudget` 400.
+  Never pass `high` with a JSON solve — it truncates the JSON.
+  `capture.ts`: clamped crop + 1024px/0.7 JPEG downscale (proxy 1MB cap).
 - **Capture** (`src/screens/CaptureScreen.tsx`): in-app dark "visor" (expo-camera
   CameraView, autofocus on) + trim stage with corner-drag crop. Origin-aware nav:
   camera entry → back=arrow to camera, "Refă"; gallery entry → picker opens OVER
@@ -116,10 +126,12 @@ expects evidence, not assurances.
   owner-only + schema-validated; everything else is Admin-SDK territory.
 - Cloud Functions (europe-west1, Node 22 gen2, `functions/src/` split per surface):
   - `gemini` → `https://gemini-rgb3szbt2a-ew.a.run.app` — verifies Firebase ID
-    token, model whitelist `gemini-flash-latest|gemini-flash-lite-latest|
-    gemini-pro-latest`, forwards `tools`, clamps maxOutputTokens ≤ 4096, rate
-    limit 20/min (users) vs 10/min (anonymous). Secret `GEMINI_API_KEY` in
+    token, model whitelist `gemini-3.1-flash-lite|gemini-3.1-pro-preview` (+ the
+    old `-latest` aliases, kept so shipped builds keep working), forwards `tools`
+    and a validated `thinkingConfig.thinkingLevel`, clamps maxOutputTokens ≤ 4096,
+    rate limit 20/min (users) vs 10/min (anonymous). Secret `GEMINI_API_KEY` in
     Secret Manager; the raw key lives ONLY in local `.env` as dev fallback.
+    Whitelist is ADDITIVE — deploy proxy BEFORE shipping an APK that sends new ids.
   - `account` → `https://account-rgb3szbt2a-ew.a.run.app` — POST `/migrate`
     (guest token + Google idToken verified against the web client id →
     Admin-SDK moves docs+photos into the existing account, deletes the guest)

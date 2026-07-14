@@ -70,10 +70,10 @@ export function createGeminiClient(config: GeminiConfig): AIClient {
       generationConfig: {
         maxOutputTokens: opts.maxTokens ?? 2048,
         temperature: opts.temperature ?? 0.7,
-        // No thinkingConfig on purpose: the -latest aliases can point at model
-        // generations with different thinking APIs (2.5 uses thinkingBudget,
-        // 3.x uses thinkingLevel) and an unknown field 400s the request. Every
-        // current model thinks by default — exactly what a math app wants.
+        // Gemini 3.x thinking control is the NESTED shape thinkingConfig.
+        // thinkingLevel (the flat `thinkingLevel` or 2.5's thinkingBudget 400).
+        // Omitted → model default. Never pass 'high' with json — it truncates.
+        ...(opts.thinkingLevel ? { thinkingConfig: { thinkingLevel: opts.thinkingLevel } } : {}),
         ...(opts.json ? { responseMimeType: 'application/json' } : {}),
       },
     }

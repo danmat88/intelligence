@@ -22,10 +22,15 @@ const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY')
 const DEFAULT_MODEL = process.env.GEMINI_MODEL ?? 'gemini-flash-latest'
 const ALLOWED_MODELS = new Set([
   DEFAULT_MODEL,
+  // Pinned GA ids the app now uses.
+  'gemini-3.1-flash-lite',
+  'gemini-3.1-pro-preview',
+  // `-latest` aliases kept so already-shipped builds keep working.
   'gemini-flash-latest',
   'gemini-flash-lite-latest',
   'gemini-pro-latest',
 ])
+const THINKING_LEVELS = new Set(['minimal', 'low', 'medium', 'high'])
 const GOOGLE_BASE = 'https://generativelanguage.googleapis.com/v1beta'
 
 export const gemini = onRequest(
@@ -87,6 +92,13 @@ export const gemini = onRequest(
     }
     if (typeof gen.temperature === 'number') generationConfig.temperature = gen.temperature
     if (typeof gen.responseMimeType === 'string') generationConfig.responseMimeType = gen.responseMimeType
+    // Thinking control (Gemini 3.x): forward ONLY a valid nested
+    // thinkingConfig.thinkingLevel and nothing else on that object — a tampered
+    // client can't smuggle other fields through it.
+    const tc = gen.thinkingConfig as { thinkingLevel?: unknown } | undefined
+    if (tc && typeof tc === 'object' && typeof tc.thinkingLevel === 'string' && THINKING_LEVELS.has(tc.thinkingLevel)) {
+      generationConfig.thinkingConfig = { thinkingLevel: tc.thinkingLevel }
+    }
     // The only tool the app ever asks for is code execution (the verifier);
     // anything else a tampered client smuggles in is dropped.
     const wantsCodeExecution =
