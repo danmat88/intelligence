@@ -645,6 +645,7 @@ export default function SolverScreen() {
       solution: t('solution.label'),
       answer: t('solution.answer'),
       graph: t('solution.graph'),
+      figure: t('solution.figure'),
       similar: t('solution.chip.similar'),
       mistake: t('solution.chip.mistake'),
       verifying: t('solution.verifying'),
@@ -802,7 +803,16 @@ export default function SolverScreen() {
               {t('hero.examples')}
             </Txt>
             <View style={styles.examples}>
-              {['2x² + 5x − 3 = 0', 'x² = x + 2', 'x² − 4 > 0', '∫ x·eˣ dx', t('hero.example.derivative')].map((ex) => (
+              {[
+                '2x² + 5x − 3 = 0',
+                'x² = x + 2',
+                'x² − 4 > 0',
+                'Triunghi dreptunghic cu catetele 6 și 8',
+                'Aria cercului cu raza 5',
+                'Triunghi cu laturile 5, 6, 7',
+                '∫ x·eˣ dx',
+                t('hero.example.derivative'),
+              ].map((ex) => (
                 <Press key={ex} onPress={() => sendText(ex)} style={[styles.chip, { backgroundColor: c.surface, borderColor: c.border }]}>
                   <Txt size={12.5} color={c.textMuted} style={{ fontFamily: theme.font.mono }}>
                     {ex}

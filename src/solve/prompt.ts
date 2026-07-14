@@ -19,7 +19,8 @@ Shape:
     { "math": "<one line of LaTeX, NO $ delimiters>", "why": "<one short clause explaining this step>" }
   ],
   "answer": "<final answer as LaTeX, NO $ delimiters>",
-  "plot": { "curves": [ { "fn": "<function of x, PLAIN expression>" } ], "roots": [ { "x": <number>, "label": "<label>" } ], "points": [ { "x": <number>, "y": <number>, "label": "<label>" } ], "solution": [ [<x_lo>, <x_hi>] ] }
+  "plot": { "curves": [ { "fn": "<function of x, PLAIN expression>" } ], "roots": [ { "x": <number>, "label": "<label>" } ], "points": [ { "x": <number>, "y": <number>, "label": "<label>" } ], "solution": [ [<x_lo>, <x_hi>] ] },
+  "figure": { "type": "<right_triangle|triangle|circle|rectangle|square|trapezoid>", ...measurements..., "labels": [ "A", "B", "C" ] }
 }
 
 Rules:
@@ -32,6 +33,9 @@ Rules:
   · For a SYSTEM of functions, or solving f(x)=g(x) GRAPHICALLY: put EACH side as a curve in "curves" (e.g. y=x² and y=x+2 → two curves), and list the intersection point(s) in "points" as {x, y, label} (e.g. {"x":2,"y":4,"label":"(2, 4)"}); omit "roots".
   · For an INEQUALITY (f(x)>0, x²≤4, ...): put the function as one curve, its zeros in "roots", and the SOLUTION SET as x-intervals in "solution" — e.g. x²-4>0 → "solution":[[-100,-2],[2,100]]; use a large number like ±100 for an unbounded side (it is clamped to the view). Omit "solution" when the problem is not an inequality.
   OMIT "plot" entirely for arithmetic, pure algebra manipulation, geometry, word problems without a plottable function, proofs — most problems have NO plot.
+- Include "figure" ONLY for a plane-geometry problem where a diagram helps, when you can describe the shape by its MEASUREMENTS (never coordinates). Pick the "type" and give only its fields:
+  · right_triangle → "legs":[p,q]   · triangle → "sides":[AB,BC,CA]   · circle → "radius":r   · rectangle → "width",​"height"   · square → "side"   · trapezoid → "bases":[bottom,top],"height":h (right trapezoid).
+  Optional "labels" names the vertices (["A","B","C"]) and "sideLabels" overrides the side texts. The app computes the coordinates itself, so give real numbers that satisfy the shape. OMIT "figure" when there is no shape, when the numbers are unknown/symbolic, or when a photo already shows the figure clearly.
 - NEVER invent, guess or "reconstruct" a problem. If the input is unreadable, too dark/blurry, empty, or not a math problem, return exactly {"error":"<short reason>"} — solving a problem that is not actually there is the worst possible failure.
 - Output JSON only. No prose, no markdown fences.
 - LANGUAGE: write every human-readable string ("topic", each "why", "error") in {LANG}. Keep the math itself as LaTeX.`

@@ -7,6 +7,7 @@ import { ensureMathAssets, mathAssetsBase } from './mathAssets'
 import { isMathInput, plainToLatex } from '../../solve/mathInput'
 import { getSolveJson } from '../../solve/verdict'
 import { buildPlotPayload } from '../../solve/plotEval'
+import { buildFigure } from '../../solve/figureBuild'
 
 /** Verification stage shown on the answer box. */
 export type VerifyStage = 'check' | 'recheck' | false
@@ -44,6 +45,7 @@ export type DocLabels = {
   solution: string
   answer: string
   graph: string
+  figure: string
   similar: string
   mistake: string
   verifying: string
@@ -150,6 +152,12 @@ body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-
 .root{fill:#0E9F6E;stroke:#fff;stroke-width:2.5}
 .rootlbl{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:12.5px;fill:#0E9F6E}
 .band{fill:rgba(14,159,110,.13);stroke:none}
+.fig-c{fill:none;stroke:${c.accent};stroke-width:2.4}
+.fig-s{stroke:${c.accent};stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.fig-r{fill:none;stroke:${c.accent};stroke-width:1.5;opacity:.65}
+.fig-v{fill:${c.accent}}
+.fig-vl{font-family:'SG',sans-serif;font-weight:700;font-size:12px;fill:${c.text}}
+.fig-sl{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:11.5px;fill:${c.textMuted}}
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
 .fu{font-family:'IN';font-weight:600;font-size:12.5px;color:${c.accent};border:none;background:${c.accentSoft};border-radius:12px;padding:10px 15px;cursor:pointer}
 .fu.alt{color:${c.textMuted};background:${c.surfaceAlt}}
@@ -367,6 +375,41 @@ function drawPlot(P){
     return '<div class="graph"><div class="glabel">'+esc(L.graph)+'</div><svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">'+defs+g+'<g clip-path="url(#pc)">'+body+'</g>'+rt+'</svg></div>';
   }catch(e){ return ''; }
 }
+// Geometry figure: coordinates computed native-side (figureBuild); here we fit
+// the primitives into the card and stroke them (segments, circles, vertices,
+// side labels, right-angle marks).
+function drawFigure(F){
+  try{
+    var pts=F&&F.pts; if(!pts||!pts.length) return '';
+    var W=300,H=200,PAD=36, i;
+    var minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+    for(i=0;i<pts.length;i++){ var p=pts[i]; if(p.x<minX)minX=p.x; if(p.x>maxX)maxX=p.x; if(p.y<minY)minY=p.y; if(p.y>maxY)maxY=p.y; }
+    (F.circles||[]).forEach(function(c){ minX=Math.min(minX,c.cx-c.r); maxX=Math.max(maxX,c.cx+c.r); minY=Math.min(minY,c.cy-c.r); maxY=Math.max(maxY,c.cy+c.r); });
+    var bw=(maxX-minX)||1, bh=(maxY-minY)||1;
+    var scale=Math.min((W-2*PAD)/bw,(H-2*PAD)/bh);
+    var ox=(W-bw*scale)/2 - minX*scale, oy=(H-bh*scale)/2 - minY*scale;
+    function mx(x){ return ox + x*scale; }
+    function my(y){ return H - (oy + y*scale); } // flip y (math up = screen up)
+    var ctx=0,cty=0; for(i=0;i<pts.length;i++){ ctx+=pts[i].x; cty+=pts[i].y; } ctx/=pts.length; cty/=pts.length;
+    var out='';
+    (F.circles||[]).forEach(function(c){ out+='<circle class="fig-c" cx="'+mx(c.cx).toFixed(1)+'" cy="'+my(c.cy).toFixed(1)+'" r="'+(c.r*scale).toFixed(1)+'"/>'; });
+    (F.segs||[]).forEach(function(s){ var a=pts[s[0]],b=pts[s[1]]; if(!a||!b) return; out+='<line class="fig-s" x1="'+mx(a.x).toFixed(1)+'" y1="'+my(a.y).toFixed(1)+'" x2="'+mx(b.x).toFixed(1)+'" y2="'+my(b.y).toFixed(1)+'"/>'; });
+    (F.rights||[]).forEach(function(r){ var s2=11, cx=mx(r.x), cy=my(r.y);
+      var a1x=r.ax*s2, a1y=-r.ay*s2, b1x=r.bx*s2, b1y=-r.by*s2;
+      out+='<path class="fig-r" d="M '+(cx+a1x).toFixed(1)+' '+(cy+a1y).toFixed(1)+' L '+(cx+a1x+b1x).toFixed(1)+' '+(cy+a1y+b1y).toFixed(1)+' L '+(cx+b1x).toFixed(1)+' '+(cy+b1y).toFixed(1)+'"/>';
+    });
+    pts.forEach(function(p){ if(!p.name) return; var vx=mx(p.x),vy=my(p.y);
+      out+='<circle class="fig-v" cx="'+vx.toFixed(1)+'" cy="'+vy.toFixed(1)+'" r="2.6"/>';
+      var dx=p.x-ctx, dy=p.y-cty, dl=Math.hypot(dx,dy)||1;
+      out+='<text class="fig-vl" x="'+(vx+dx/dl*14).toFixed(1)+'" y="'+(vy-dy/dl*14+4).toFixed(1)+'" text-anchor="middle">'+esc(p.name)+'</text>';
+    });
+    (F.sideLabels||[]).forEach(function(l){ var lx=mx(l.x),ly=my(l.y);
+      var dx=l.x-ctx, dy=l.y-cty, dl=Math.hypot(dx,dy)||1;
+      out+='<text class="fig-sl" x="'+(lx+dx/dl*12).toFixed(1)+'" y="'+(ly-dy/dl*12+4).toFixed(1)+'" text-anchor="middle">'+esc(l.text)+'</text>';
+    });
+    return '<div class="graph"><div class="glabel">'+esc(L.figure)+'</div><svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">'+out+'</svg></div>';
+  }catch(e){ return ''; }
+}
 var icons={
   copy:'<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>',
   share:'<svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>'
@@ -424,6 +467,7 @@ function solutionHtml(turn, verifying, reveal){
       '<div class="vline">'+vslot+'</div>';
   }
   if(turn.plot){ out+=drawPlot(turn.plot); }
+  if(turn.figure){ out+=drawFigure(turn.figure); }
   out+='<div class="chips"><button class="fu" onclick="chip(\\'similar\\')">'+esc(L.similar)+'</button>'+
        '<button class="fu alt" onclick="chip(\\'mistake\\')">'+esc(L.mistake)+'</button></div>';
   out+='<div class="acts"><span class="act" onclick="act(\\'copy\\',\\''+turn.id+'\\')">'+icons.copy+esc(L.copy)+'</span>'+
@@ -613,9 +657,13 @@ export default function ThreadDocument({
         imageH: t.imageH,
         pending: !!t.pending,
         error: !!t.error,
-        // Graph payload sampled HERE (tested plotEval) so the WebView only
-        // draws — from `plot:{fn,roots}` or the legacy `quadratic:[a,b,c]`.
+        // Graph + figure payloads computed HERE (tested plotEval/figureBuild)
+        // so the WebView only draws — never parses or positions.
         plot: t.role === 'assistant' && !t.pending && !t.error ? buildPlotPayload(getSolveJson(t.text)) : undefined,
+        figure:
+          t.role === 'assistant' && !t.pending && !t.error
+            ? buildFigure(getSolveJson(t.text)?.figure as Record<string, unknown> | undefined)
+            : undefined,
       })),
       verifying: s.verifying,
       cold: s.cold,
