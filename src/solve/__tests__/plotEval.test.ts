@@ -95,6 +95,22 @@ describe('buildPlotPayload', () => {
     expect(seg[seg.length - 1][0]).toBeGreaterThan(2)
   })
 
+  it('shades solution bands for an inequality (clamped to the view)', () => {
+    const p = buildPlotPayload({ plot: { fn: 'x^2-4', roots: [{ x: -2, label: '−2' }, { x: 2, label: '2' }], solution: [[-100, -2], [2, 100]] } })
+    expect(p).not.toBeNull()
+    expect(p!.bands.length).toBe(2)
+    // unbounded ends are clamped into the visible domain (not ±100)
+    expect(p!.bands[0][0]).toBeGreaterThan(-100)
+    expect(p!.bands[0][1]).toBeCloseTo(-2)
+    expect(p!.bands[1][0]).toBeCloseTo(2)
+    expect(p!.bands[1][1]).toBeLessThan(100)
+  })
+
+  it('has empty bands when not an inequality', () => {
+    const p = buildPlotPayload({ plot: { fn: 'x^2', roots: [{ x: 0, label: '0' }] } })
+    expect(p!.bands).toEqual([])
+  })
+
   it('splits an asymptote (1/x) into separate segments — no false vertical line', () => {
     const p = buildPlotPayload({ plot: { fn: '1/x', domain: [-6, 6] } })
     expect(p).not.toBeNull()

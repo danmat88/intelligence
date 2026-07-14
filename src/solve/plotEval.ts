@@ -16,6 +16,9 @@ export type PlotPayload = {
   /** Points to mark: x-intercepts (y=0) for a single function, or intersections
    *  (x, y) for a system — each with a display label. */
   marks: { x: number; y: number; label: string }[]
+  /** Solution intervals to highlight on the x-axis (inequalities), clamped to
+   *  the visible range. Empty for everything that isn't an inequality. */
+  bands: [number, number][]
   /** The robust display window on y: blow-ups near poles are clipped out so the
    *  curves' body stays visible (a function with no asymptote is shown in full). */
   yMin: number
@@ -174,6 +177,21 @@ function normMarks(roots: unknown, points: unknown): Mark[] {
   return out.slice(0, 8)
 }
 
+/** Solution intervals for an inequality, clamped to the visible [xmin,xmax].
+ *  The model may use big numbers for ±infinity — the clamp handles it. */
+function normBands(raw: unknown, xmin: number, xmax: number): [number, number][] {
+  if (!Array.isArray(raw)) return []
+  const out: [number, number][] = []
+  for (const iv of raw) {
+    if (!Array.isArray(iv) || iv.length !== 2) continue
+    const a = Number(iv[0]), b = Number(iv[1])
+    if (!isFinite(a) || !isFinite(b)) continue
+    const lo = Math.max(xmin, Math.min(a, b)), hi = Math.min(xmax, Math.max(a, b))
+    if (hi > lo) out.push([lo, hi])
+  }
+  return out.slice(0, 6)
+}
+
 /**
  * Build the drawable plot from a solve JSON object. Accepts a single function
  * (`plot:{fn, roots?}`), a system (`plot:{curves:[{fn}], points?}`) or the
@@ -184,11 +202,13 @@ export function buildPlotPayload(j: Record<string, unknown> | null | undefined):
   let fnStrs: string[] = []
   let marks: Mark[] = []
   let domain: [number, number] | null = null
+  let solutionRaw: unknown = null
 
   const plot = j.plot as
-    | { fn?: unknown; curves?: unknown; roots?: unknown; points?: unknown; domain?: unknown }
+    | { fn?: unknown; curves?: unknown; roots?: unknown; points?: unknown; domain?: unknown; solution?: unknown }
     | undefined
   if (plot && (Array.isArray(plot.curves) || typeof plot.fn === 'string')) {
+    solutionRaw = plot.solution
     if (Array.isArray(plot.curves)) {
       fnStrs = plot.curves
         .map((c) => (c && typeof (c as { fn?: unknown }).fn === 'string' ? ((c as { fn: string }).fn) : ''))
@@ -286,6 +306,7 @@ export function buildPlotPayload(j: Record<string, unknown> | null | undefined):
   return {
     curves,
     marks: marks.map((m) => ({ x: round(m.x), y: round(m.y), label: m.label })),
+    bands: normBands(solutionRaw, xmin, xmax).map((b): [number, number] => [round(b[0]), round(b[1])]),
     yMin: round(yMin),
     yMax: round(yMax),
   }

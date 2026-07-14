@@ -19,7 +19,7 @@ Shape:
     { "math": "<one line of LaTeX, NO $ delimiters>", "why": "<one short clause explaining this step>" }
   ],
   "answer": "<final answer as LaTeX, NO $ delimiters>",
-  "plot": { "curves": [ { "fn": "<function of x, PLAIN expression>" } ], "roots": [ { "x": <number>, "label": "<label>" } ], "points": [ { "x": <number>, "y": <number>, "label": "<label>" } ] }
+  "plot": { "curves": [ { "fn": "<function of x, PLAIN expression>" } ], "roots": [ { "x": <number>, "label": "<label>" } ], "points": [ { "x": <number>, "y": <number>, "label": "<label>" } ], "solution": [ [<x_lo>, <x_hi>] ] }
 }
 
 Rules:
@@ -30,6 +30,7 @@ Rules:
 - Include "plot" ONLY when a graph of single-variable functions genuinely clarifies the problem (parabolas, inequalities, curve/function analysis, trig, calculus, or solving an equation graphically). Each entry in "curves" is one function; "fn" is a PLAIN expression in x — NO LaTeX, NO $, NO \\\\frac (write "(a)/(b)"), NO braces: use ^ for powers and * or juxtaposition for products (e.g. "2x^2+5x-3", "sin(x)", "x^3-3x", "exp(x)-3").
   · For ONE function: put it as the single curve; list its real x-intercepts in "roots" (label like "1/2", "√3", "π"), omit "points".
   · For a SYSTEM of functions, or solving f(x)=g(x) GRAPHICALLY: put EACH side as a curve in "curves" (e.g. y=x² and y=x+2 → two curves), and list the intersection point(s) in "points" as {x, y, label} (e.g. {"x":2,"y":4,"label":"(2, 4)"}); omit "roots".
+  · For an INEQUALITY (f(x)>0, x²≤4, ...): put the function as one curve, its zeros in "roots", and the SOLUTION SET as x-intervals in "solution" — e.g. x²-4>0 → "solution":[[-100,-2],[2,100]]; use a large number like ±100 for an unbounded side (it is clamped to the view). Omit "solution" when the problem is not an inequality.
   OMIT "plot" entirely for arithmetic, pure algebra manipulation, geometry, word problems without a plottable function, proofs — most problems have NO plot.
 - NEVER invent, guess or "reconstruct" a problem. If the input is unreadable, too dark/blurry, empty, or not a math problem, return exactly {"error":"<short reason>"} — solving a problem that is not actually there is the worst possible failure.
 - Output JSON only. No prose, no markdown fences.

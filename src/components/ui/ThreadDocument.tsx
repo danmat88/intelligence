@@ -149,6 +149,7 @@ body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-
 .curve{fill:none;stroke:url(#cg);stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
 .root{fill:#0E9F6E;stroke:#fff;stroke-width:2.5}
 .rootlbl{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:12.5px;fill:#0E9F6E}
+.band{fill:rgba(14,159,110,.13);stroke:none}
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
 .fu{font-family:'IN';font-weight:600;font-size:12.5px;color:${c.accent};border:none;background:${c.accentSoft};border-radius:12px;padding:10px 15px;cursor:pointer}
 .fu.alt{color:${c.textMuted};background:${c.surfaceAlt}}
@@ -334,11 +335,14 @@ function drawPlot(P){
     var stepx=niceStep((xmax-xmin)/6), stepy=niceStep((ymax-ymin)/5), gx, gy;
     for(gx=Math.ceil(xmin/stepx)*stepx; gx<=xmax; gx+=stepx){ var X=px(gx); g+='<line class="grid-l" x1="'+X.toFixed(1)+'" y1="8" x2="'+X.toFixed(1)+'" y2="'+(H-10)+'"/>'; }
     for(gy=Math.ceil(ymin/stepy)*stepy; gy<=ymax; gy+=stepy){ var Y=py(gy); g+='<line class="grid-l" x1="'+(PAD-6)+'" y1="'+Y.toFixed(1)+'" x2="'+(W-6)+'" y2="'+Y.toFixed(1)+'"/>'; }
+    // Solution bands (inequalities): soft highlight over the answer x-intervals.
+    (P.bands||[]).forEach(function(b){ var bx=px(b[0]), bw=px(b[1])-px(b[0]); if(bw>0.5) g+='<rect class="band" x="'+bx.toFixed(1)+'" y="8" width="'+bw.toFixed(1)+'" height="'+(H-18)+'"/>'; });
     g+='<line class="axis" x1="'+(PAD-6)+'" y1="'+y0.toFixed(1)+'" x2="'+(W-4)+'" y2="'+y0.toFixed(1)+'"/>';
     g+='<polyline class="axis" points="'+(W-10)+','+(y0-3).toFixed(1)+' '+(W-4)+','+y0.toFixed(1)+' '+(W-10)+','+(y0+3).toFixed(1)+'"/>';
     if(x0>=PAD-6 && x0<=W-6){ g+='<line class="axis" x1="'+x0.toFixed(1)+'" y1="6" x2="'+x0.toFixed(1)+'" y2="'+(H-8)+'"/>'; g+='<polyline class="axis" points="'+(x0-3).toFixed(1)+',12 '+x0.toFixed(1)+',6 '+(x0+3).toFixed(1)+',12"/>'; }
-    // Each curve in its own colour; area fill only for a single continuous curve.
-    var single=(cvs.length===1 && cvs[0].segments.length===1);
+    // Each curve in its own colour; area fill only for a single continuous curve
+    // with no solution bands (the bands are the highlight there).
+    var single=(cvs.length===1 && cvs[0].segments.length===1 && !(P.bands&&P.bands.length));
     var body='';
     for(ci=0;ci<cvs.length;ci++){
       var col=CURVE_COLORS[ci%CURVE_COLORS.length], segsC=cvs[ci].segments;
