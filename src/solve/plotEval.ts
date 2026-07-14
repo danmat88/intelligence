@@ -10,10 +10,15 @@
  */
 
 export type PlotPayload = {
-  /** Sampled [x,y] pairs across the domain (non-finite points dropped). */
-  points: [number, number][]
+  /** Continuous pieces of the curve — split at discontinuities (1/x, tan) so
+   *  the WebView never draws a false vertical line across an asymptote. */
+  segments: [number, number][][]
   /** x-intercepts to mark on the axis, with a display label. */
   roots: { x: number; label: string }[]
+  /** The robust display window on y: blow-ups near poles are clipped out so the
+   *  curve's body stays visible (a function with no asymptote is shown in full). */
+  yMin: number
+  yMax: number
 }
 
 type Fn = (x: number) => number
@@ -202,13 +207,50 @@ export function buildPlotPayload(j: Record<string, unknown> | null | undefined):
     xmax = 6
   }
 
-  const N = 120
-  const points: [number, number][] = []
+  const N = 160
+  const raw: [number, number][] = []
   for (let k = 0; k <= N; k++) {
     const x = xmin + ((xmax - xmin) * k) / N
     const y = fn(x)
-    if (isFinite(y)) points.push([Number(x.toFixed(4)), Number(y.toFixed(4))])
+    if (isFinite(y)) raw.push([x, y])
   }
-  if (points.length < 4) return null
-  return { points, roots }
+  if (raw.length < 4) return null
+
+  // Robust y-window: clip pole blow-ups so the curve's BODY stays visible. Use
+  // ~3× the 90th-percentile magnitude as the cap — a function with no asymptote
+  // (real range < cap) is shown in full, so normal curves are unaffected.
+  const ys = raw.map((p) => p[1])
+  const absSorted = ys.map(Math.abs).sort((a, b) => a - b)
+  const p90 = absSorted[Math.floor(0.9 * (absSorted.length - 1))] || 1
+  const cap = Math.max(p90 * 3, 1e-9)
+  let yMax = Math.min(Math.max(...ys), cap)
+  let yMin = Math.max(Math.min(...ys), -cap)
+  if (yMax - yMin < 1e-6) yMax = yMin + 1
+  if (yMin > 0) yMin = -0.2 * yMax // keep the x-axis in view
+  if (yMax < 0) yMax = -0.2 * yMin
+  const padY = (yMax - yMin) * 0.12
+  yMin -= padY
+  yMax += padY
+  const range = yMax - yMin
+
+  // Split into continuous segments: a jump wider than the whole window is an
+  // asymptote (1/x, tan), not a segment to connect. The steep-but-continuous
+  // approach to the pole stays in-segment (and draws off-card, clipped).
+  const segsRaw: [number, number][][] = []
+  let cur: [number, number][] = []
+  for (const p of raw) {
+    if (cur.length && Math.abs(p[1] - cur[cur.length - 1][1]) > 1.8 * range) {
+      segsRaw.push(cur)
+      cur = []
+    }
+    cur.push(p)
+  }
+  if (cur.length) segsRaw.push(cur)
+  const round = (v: number) => Number(v.toFixed(4))
+  const segments = segsRaw
+    .filter((s) => s.length >= 2)
+    .map((s) => s.map((p): [number, number] => [round(p[0]), round(p[1])]))
+  if (!segments.length) return null
+
+  return { segments, roots, yMin: round(yMin), yMax: round(yMax) }
 }

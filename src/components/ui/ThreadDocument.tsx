@@ -320,14 +320,12 @@ function parse(raw){
 function niceStep(raw){ var p=Math.pow(10,Math.floor(Math.log(raw)/Math.LN10)); var f=raw/p; var n=f<1.5?1:f<3.5?2:f<7.5?5:10; return n*p; }
 function drawPlot(P){
   try{
-    var pts=P&&P.points; if(!pts||pts.length<2) return '';
+    var segs=P&&P.segments; if(!segs||!segs.length) return '';
     var W=320,H=190,PAD=22;
-    var xmin=pts[0][0], xmax=pts[pts.length-1][0];
-    var ys=pts.map(function(p){return p[1];});
-    var ymin=Math.min.apply(null,ys), ymax=Math.max.apply(null,ys);
-    if(ymax-ymin<0.001) ymax=ymin+1;
-    var yp=(ymax-ymin)*0.16; ymin-=yp; ymax+=yp;
-    if(ymin>0) ymin=-0.3*ymax; if(ymax<0) ymax=-0.3*ymin;
+    var last=segs[segs.length-1];
+    var xmin=segs[0][0][0], xmax=last[last.length-1][0];
+    var ymin=P.yMin, ymax=P.yMax;
+    if(!(ymax>ymin)) ymax=ymin+1;
     function px(x){ return PAD+(x-xmin)/(xmax-xmin)*(W-2*PAD); }
     function py(y){ return 10+(ymax-y)/(ymax-ymin)*(H-24); }
     var y0=py(0), x0=px(0), g='';
@@ -337,17 +335,27 @@ function drawPlot(P){
     g+='<line class="axis" x1="'+(PAD-6)+'" y1="'+y0.toFixed(1)+'" x2="'+(W-4)+'" y2="'+y0.toFixed(1)+'"/>';
     g+='<polyline class="axis" points="'+(W-10)+','+(y0-3).toFixed(1)+' '+(W-4)+','+y0.toFixed(1)+' '+(W-10)+','+(y0+3).toFixed(1)+'"/>';
     if(x0>=PAD-6 && x0<=W-6){ g+='<line class="axis" x1="'+x0.toFixed(1)+'" y1="6" x2="'+x0.toFixed(1)+'" y2="'+(H-8)+'"/>'; g+='<polyline class="axis" points="'+(x0-3).toFixed(1)+',12 '+x0.toFixed(1)+',6 '+(x0+3).toFixed(1)+',12"/>'; }
-    var d='M '+px(pts[0][0]).toFixed(1)+' '+py(pts[0][1]).toFixed(1), i2;
-    for(i2=1;i2<pts.length;i2++){ d+=' L '+px(pts[i2][0]).toFixed(1)+' '+py(pts[i2][1]).toFixed(1); }
-    var area=d+' L '+px(pts[pts.length-1][0]).toFixed(1)+' '+y0.toFixed(1)+' L '+px(pts[0][0]).toFixed(1)+' '+y0.toFixed(1)+' Z';
+    // One path per continuous segment (breaks at asymptotes). Area fill only
+    // for a single continuous curve — near a pole it would look wrong.
+    var curves='', area='', si, k;
+    for(si=0;si<segs.length;si++){
+      var seg=segs[si]; if(seg.length<2) continue;
+      var d='M '+px(seg[0][0]).toFixed(1)+' '+py(seg[0][1]).toFixed(1);
+      for(k=1;k<seg.length;k++){ d+=' L '+px(seg[k][0]).toFixed(1)+' '+py(seg[k][1]).toFixed(1); }
+      curves+='<path class="curve" d="'+d+'"/>';
+      if(segs.length===1){ area='<path d="'+d+' L '+px(seg[seg.length-1][0]).toFixed(1)+' '+y0.toFixed(1)+' L '+px(seg[0][0]).toFixed(1)+' '+y0.toFixed(1)+' Z" fill="url(#fillg)" stroke="none"/>'; }
+    }
     var rt='';
     (P.roots||[]).forEach(function(r){ if(r.x<xmin||r.x>xmax) return; var cx=px(r.x), cy=py(0);
       rt+='<circle class="root" cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="4.5"/>';
       if(r.label) rt+='<text class="rootlbl" x="'+cx.toFixed(1)+'" y="'+(cy+18).toFixed(1)+'" text-anchor="middle">'+esc(r.label)+'</text>';
     });
     var defs='<defs><linearGradient id="cg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7A5CFF"/><stop offset="1" stop-color="#4F33EA"/></linearGradient>'+
-      '<linearGradient id="fillg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(99,85,255,0.13)"/><stop offset="1" stop-color="rgba(99,85,255,0)"/></linearGradient></defs>';
-    return '<div class="graph"><div class="glabel">'+esc(L.graph)+'</div><svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">'+defs+g+'<path d="'+area+'" fill="url(#fillg)" stroke="none"/><path class="curve" d="'+d+'"/>'+rt+'</svg></div>';
+      '<linearGradient id="fillg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(99,85,255,0.13)"/><stop offset="1" stop-color="rgba(99,85,255,0)"/></linearGradient>'+
+      '<clipPath id="pc"><rect x="0" y="0" width="'+W+'" height="'+H+'"/></clipPath></defs>';
+    // Clip the curve/area to the card so an asymptote shooting off-screen is
+    // trimmed at the edge; grid, axes and root labels stay outside the clip.
+    return '<div class="graph"><div class="glabel">'+esc(L.graph)+'</div><svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">'+defs+g+'<g clip-path="url(#pc)">'+area+curves+'</g>'+rt+'</svg></div>';
   }catch(e){ return ''; }
 }
 var icons={

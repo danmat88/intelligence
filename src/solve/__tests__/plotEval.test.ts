@@ -70,21 +70,33 @@ describe('compile — safe expression parser', () => {
 })
 
 describe('buildPlotPayload', () => {
-  it('builds points + roots from a plot spec', () => {
+  it('builds segments + roots from a plot spec', () => {
     const p = buildPlotPayload({ plot: { fn: '2x^2+5x-3', roots: [{ x: 0.5, label: '½' }, { x: -3, label: '−3' }] } })
     expect(p).not.toBeNull()
-    expect(p!.points.length).toBeGreaterThan(50)
+    expect(p!.segments.length).toBe(1) // continuous → one segment
+    expect(p!.segments[0].length).toBeGreaterThan(50)
+    expect(p!.yMin).toBeLessThan(p!.yMax)
     expect(p!.roots).toEqual([{ x: 0.5, label: '½' }, { x: -3, label: '−3' }])
-    // a sampled point actually lies on the parabola (points rounded to 4dp)
-    const [x, y] = p!.points[10]
+    // a sampled point actually lies on the parabola (rounded to 4dp)
+    const [x, y] = p!.segments[0][10]
     expect(Math.abs(y - (2 * x * x + 5 * x - 3))).toBeLessThan(0.01)
+  })
+
+  it('splits an asymptote (1/x) into separate segments — no false vertical line', () => {
+    const p = buildPlotPayload({ plot: { fn: '1/x', domain: [-6, 6] } })
+    expect(p).not.toBeNull()
+    expect(p!.segments.length).toBeGreaterThanOrEqual(2) // broken at the pole
+    // the robust window clips the blow-ups so the body is visible
+    expect(p!.yMax).toBeLessThan(12)
+    expect(p!.yMin).toBeGreaterThan(-12)
   })
 
   it('accepts plain-number roots and a given domain', () => {
     const p = buildPlotPayload({ plot: { fn: 'x', roots: [0], domain: [-2, 2] } })
     expect(p!.roots).toEqual([{ x: 0, label: '0' }])
-    expect(p!.points[0][0]).toBeCloseTo(-2)
-    expect(p!.points[p!.points.length - 1][0]).toBeCloseTo(2)
+    const seg = p!.segments[0]
+    expect(seg[0][0]).toBeCloseTo(-2)
+    expect(seg[seg.length - 1][0]).toBeCloseTo(2)
   })
 
   it('supports the legacy quadratic:[a,b,c] shape', () => {
