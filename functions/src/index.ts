@@ -7,3 +7,4 @@ initializeApp()
 export { gemini } from './gemini'
 export { account } from './account'
 export { purgeStaleGuests } from './purge'
+export { revenuecat } from './revenuecat'

@@ -1,5 +1,6 @@
 import { ai } from '../ai'
 import type { ChatTurn } from '../ai/types'
+import { DailyLimitError } from '../ai/limits'
 import type { CapturedImage } from './capture'
 import { SOLVE_JSON_SYSTEM, FOLLOWUP_SYSTEM, SOLVE_USER_PROMPT, VERIFY_SYSTEM } from './prompt'
 import { definitiveVerdict, getSolveJson, isHardProblem, withJsonFlags, type CheckerReply, type Verdict } from './verdict'
@@ -48,6 +49,9 @@ async function withFallback(
     return tagJson ? withJsonFlags(out, { _model: 'fast' }) : out
   } catch (e) {
     if (signal?.aborted) throw e
+    // Over the daily cap: escalating to DEEP would just hit the same wall
+    // (and waste a request) — surface the limit to the UI immediately.
+    if (e instanceof DailyLimitError) throw e
     // The safety net gets held to the same standard: broken output from DEEP
     // must surface as a retryable error, never render as a raw text blob.
     const out = await call(DEEP)
@@ -56,13 +60,18 @@ async function withFallback(
   }
 }
 
-function solveCall(langName: string, signal?: AbortSignal, image?: CapturedImage) {
+// Every solve-path request carries purpose=solve + the problem's stable id, so
+// the proxy's daily cap charges ONE slot per problem no matter how many
+// requests the flow fans into (escalation, correction re-solve, retry).
+function solveCall(langName: string, signal?: AbortSignal, image?: CapturedImage, problemId?: string) {
   return async (model: string) => {
     const { text } = await ai.generate(image ? SOLVE_USER_PROMPT : '', {
       ...(image ? { image: { base64: image.base64, mimeType: image.mimeType } } : {}),
       system: SOLVE_JSON_SYSTEM.replaceAll('{LANG}', langName),
       model,
       ...SOLVE,
+      purpose: 'solve',
+      problemId,
       signal,
     })
     return text.trim()
@@ -70,17 +79,19 @@ function solveCall(langName: string, signal?: AbortSignal, image?: CapturedImage
 }
 
 /** First solve from a photo → structured JSON solution. */
-export async function solveImage(image: CapturedImage, langName: string, signal?: AbortSignal): Promise<string> {
-  return withFallback(solveCall(langName, signal, image), looksLikeValidSolve, signal)
+export async function solveImage(image: CapturedImage, langName: string, signal?: AbortSignal, problemId?: string): Promise<string> {
+  return withFallback(solveCall(langName, signal, image, problemId), looksLikeValidSolve, signal)
 }
 
 /** First solve from a typed problem → structured JSON solution. */
-export async function solveProblem(problem: string, langName: string, signal?: AbortSignal): Promise<string> {
+export async function solveProblem(problem: string, langName: string, signal?: AbortSignal, problemId?: string): Promise<string> {
   const call = async (model: string) => {
     const { text } = await ai.generate(problem, {
       system: SOLVE_JSON_SYSTEM.replaceAll('{LANG}', langName),
       model,
       ...SOLVE,
+      purpose: 'solve',
+      problemId,
       signal,
     })
     return text.trim()
@@ -94,11 +105,19 @@ export async function solveProblem(problem: string, langName: string, signal?: A
 /** Re-solve a problem statement with the DEEP model (verification escalation).
  *  `hint` (e.g. CORRECTION_HINT) is appended so a re-solve after a failed check
  *  knows to re-read the givens instead of repeating the same misread. */
-export async function solveDeep(problem: string, langName: string, signal?: AbortSignal, hint?: string): Promise<string> {
+export async function solveDeep(
+  problem: string,
+  langName: string,
+  signal?: AbortSignal,
+  hint?: string,
+  problemId?: string,
+): Promise<string> {
   const { text } = await ai.generate(hint ? problem + hint : problem, {
     system: SOLVE_JSON_SYSTEM.replaceAll('{LANG}', langName),
     model: DEEP,
     ...SOLVE,
+    purpose: 'solve',
+    problemId,
     signal,
   })
   return withJsonFlags(text.trim(), { _model: 'deep' })
@@ -122,6 +141,7 @@ export async function verifyAnswer(problemText: string, solutionRaw: string, sig
       model,
       tools: [{ code_execution: {} }],
       temperature: 0,
+      purpose: 'verify', // rides on an already-charged problem — never counted
       thinkingLevel,
       // Generous budget: a verdict truncated mid-reply used to vanish as a
       // silent "unverifiable" (now caught by `truncated`).
@@ -148,8 +168,10 @@ export async function verifyAnswer(problemText: string, solutionRaw: string, sig
   }
 }
 
-/** A follow-up about the current problem → conversational Markdown + LaTeX. */
-export async function followUp(turns: ChatTurn[], langName: string, signal?: AbortSignal): Promise<string> {
+/** A follow-up about the current problem → conversational Markdown + LaTeX.
+ *  Carries the problem's id: follow-ups are metered per problem per day
+ *  (generous — 10 — but bounded, so chat can't become an unmetered solver). */
+export async function followUp(turns: ChatTurn[], langName: string, signal?: AbortSignal, problemId?: string): Promise<string> {
   return withFallback(
     async (model) => {
       const { text } = await ai.chat(turns, {
@@ -157,6 +179,8 @@ export async function followUp(turns: ChatTurn[], langName: string, signal?: Abo
         model,
         temperature: 0.4,
         maxTokens: 1500,
+        purpose: 'followup',
+        problemId,
         signal,
       })
       return text.trim()

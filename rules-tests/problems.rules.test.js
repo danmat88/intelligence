@@ -121,6 +121,25 @@ describe('everything outside problems is server territory', () => {
     await assertFails(setDoc(doc(me.firestore(), 'users', OWNER), { any: 'thing' }))
   })
 
+  test('the user doc (tier) is readable by its owner only — and still never writable', async () => {
+    // Seed a tier the way the RevenueCat webhook does (Admin SDK bypasses rules).
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'users', OWNER), { tier: 'premium' })
+    })
+    const me = env.authenticatedContext(OWNER)
+    await assertSucceeds(getDoc(doc(me.firestore(), 'users', OWNER)))
+    // Self-promotion to premium must be impossible from a client.
+    await assertFails(setDoc(doc(me.firestore(), 'users', OWNER), { tier: 'premium' }, { merge: true }))
+    const them = env.authenticatedContext(STRANGER)
+    await assertFails(getDoc(doc(them.firestore(), 'users', OWNER)))
+  })
+
+  test('daily_solves is invisible to clients', async () => {
+    const me = env.authenticatedContext(OWNER)
+    await assertFails(getDoc(doc(me.firestore(), 'daily_solves', OWNER)))
+    await assertFails(setDoc(doc(me.firestore(), 'daily_solves', OWNER), { problems: [] }))
+  })
+
   test('arbitrary subcollections are not writable', async () => {
     const me = env.authenticatedContext(OWNER)
     await assertFails(setDoc(doc(me.firestore(), 'users', OWNER, 'secrets', 's1'), { any: 'thing' }))

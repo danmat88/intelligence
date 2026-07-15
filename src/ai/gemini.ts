@@ -1,4 +1,5 @@
 import type { AIClient, AIResult, ChatTurn, GenerateOptions } from './types'
+import { DailyLimitError, parseDailyLimit } from './limits'
 
 /**
  * Gemini implementation of {@link AIClient}, talking straight to the REST API.
@@ -12,6 +13,9 @@ type GeminiConfig = {
   apiKey?: string
   /** Proxy mode: returns the signed-in user's token, sent as a Bearer header. */
   getAuthToken?: () => Promise<string | null>
+  /** Proxy mode: per-install id — the proxy keys the GUEST daily cap on it,
+   *  so signing out (fresh anonymous uid) can't reset the free allowance. */
+  getDeviceId?: () => Promise<string | null>
   model: string
   /** Override for a server proxy in production (defaults to Google's API). */
   baseUrl?: string
@@ -54,7 +58,10 @@ export function createGeminiClient(config: GeminiConfig): AIClient {
     if (config.getAuthToken) {
       const token = await config.getAuthToken()
       if (!token) throw new Error('Not signed in. Please sign in and try again.')
-      return { Authorization: `Bearer ${token}` }
+      const h: Record<string, string> = { Authorization: `Bearer ${token}` }
+      const device = await config.getDeviceId?.().catch(() => null)
+      if (device) h['X-Rezolvo-Device'] = device
+      return h
     }
     if (!config.apiKey) {
       throw new Error(
@@ -62,6 +69,16 @@ export function createGeminiClient(config: GeminiConfig): AIClient {
       )
     }
     return { 'x-goog-api-key': config.apiKey }
+  }
+
+  /** Freemium metering headers — only meaningful to OUR proxy (it counts
+   *  purpose=solve against the daily cap); never sent direct-to-Google. */
+  function meterHeaders(opts: GenerateOptions): Record<string, string> {
+    if (!config.getAuthToken) return {}
+    const h: Record<string, string> = {}
+    if (opts.purpose) h['X-Rezolvo-Purpose'] = opts.purpose
+    if (opts.problemId) h['X-Rezolvo-Problem'] = opts.problemId
+    return h
   }
 
   function buildBody(contents: Content[], opts: GenerateOptions): Record<string, unknown> {
@@ -91,7 +108,7 @@ export function createGeminiClient(config: GeminiConfig): AIClient {
 
   async function run(contents: Content[], opts: GenerateOptions): Promise<AIResult> {
     // Credentials go in headers (not the URL) so they stay out of logs.
-    const headers = await authHeaders()
+    const headers = { ...(await authHeaders()), ...meterHeaders(opts) }
     const body = JSON.stringify(buildBody(contents, opts))
     const url = `${base}/models/${opts.model ?? config.model}:generateContent`
     const t0 = Date.now()
@@ -120,9 +137,16 @@ export function createGeminiClient(config: GeminiConfig): AIClient {
         return { text, ms: Date.now() - t0, codeExecuted, truncated }
       }
       const failedFast = Date.now() - tReq < 8000
+      const detail = await res.text().catch(() => '')
+      // A DAILY_LIMIT 429 is a decision, not congestion: retrying is pointless
+      // (tomorrow or Premium changes it, another attempt doesn't) — surface it
+      // as its own error type so the UI opens the upsell instead of "busy".
+      if (res.status === 429) {
+        const limitInfo = parseDailyLimit(detail)
+        if (limitInfo) throw new DailyLimitError(limitInfo)
+      }
       const retryable = (res.status === 429 || res.status === 503) && failedFast && attempt < 2
       if (!retryable || opts.signal?.aborted) {
-        const detail = await res.text().catch(() => '')
         throw new Error(`Gemini ${res.status}: ${detail || res.statusText}`)
       }
       await new Promise((r) => setTimeout(r, 1200 * (attempt + 1)))
@@ -145,7 +169,7 @@ export function createGeminiClient(config: GeminiConfig): AIClient {
      * stream in React Native / Expo Go. `onToken` fires with each new delta.
      */
     async stream(turns, onToken, opts = {}) {
-      const headers = await authHeaders()
+      const headers = { ...(await authHeaders()), ...meterHeaders(opts) }
       return new Promise<AIResult>((resolve, reject) => {
         const xhr = new XMLHttpRequest()
         xhr.open('POST', `${base}/models/${opts.model ?? config.model}:streamGenerateContent?alt=sse`)
@@ -183,7 +207,8 @@ export function createGeminiClient(config: GeminiConfig): AIClient {
             } else if (opts.signal?.aborted) {
               resolve({ text: delivered, ms: Date.now() - t0 })
             } else {
-              reject(new Error(`Gemini ${xhr.status}: ${xhr.responseText || 'stream error'}`))
+              const limitInfo = xhr.status === 429 ? parseDailyLimit(xhr.responseText) : null
+              reject(limitInfo ? new DailyLimitError(limitInfo) : new Error(`Gemini ${xhr.status}: ${xhr.responseText || 'stream error'}`))
             }
           }
         }

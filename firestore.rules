@@ -21,10 +21,19 @@ service cloud.firestore {
 
     // The ONLY thing a client may touch: its own problems, in the app's exact
     // document shape. The user doc, any other subcollection, and everything
-    // at the root (rate_limits) are server territory (Admin SDK only).
+    // at the root (rate_limits, daily_solves) are server territory (Admin SDK
+    // only).
     match /users/{uid}/problems/{pid} {
       allow read, delete: if isOwner(uid);
       allow create, update: if isOwner(uid) && validProblem(request.resource.data);
+    }
+
+    // The user doc carries the premium entitlement (tier/premiumUntil),
+    // written ONLY by the RevenueCat webhook / Admin SDK. The owner may READ
+    // it (the app shows premium state live) but never write — a hacked client
+    // can't self-promote to premium.
+    match /users/{uid} {
+      allow read: if isOwner(uid);
     }
   }
 }

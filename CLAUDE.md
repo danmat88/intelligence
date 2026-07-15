@@ -64,6 +64,20 @@ expects evidence, not assurances.
   high) works on 3.x; the FLAT `thinkingLevel` and 2.5's `thinkingBudget` 400.
   Never pass `high` with a JSON solve — it truncates the JSON.
   `capture.ts`: clamped crop + 1024px/0.7 JPEG downscale (proxy 1MB cap).
+- **Freemium metering** (LIVE on the proxy since 2026-07-15; no blur ever —
+  quantity-only caps): every AI request carries `X-Rezolvo-Purpose`
+  (solve|verify|followup) + `X-Rezolvo-Problem` (stable per-problem id, so the
+  solve fan-out charges ONE slot) + `X-Rezolvo-Device` (install id from
+  `src/lib/installId.ts`). Server counts in `daily_solves/*` (reset midnight
+  Bucharest): solves 2/day guest (keyed per INSTALL — sign-out mints fresh
+  uids, so uid-keying would be an infinite loop) · 5/day signed-in (keyed per
+  uid) · unlimited premium (`users/{uid}.tier`, written ONLY by the
+  `revenuecat` webhook/Admin SDK); followups 10/problem/day free. Over-cap →
+  429 `DAILY_LIMIT`/`CHAT_LIMIT` (`src/ai/limits.ts`) → LimitSheet upsell →
+  PaywallSheet (billing stub `src/billing/purchases.ts`, flips live per
+  `docs/LAUNCH-CHECKLIST.md`). Verify is never metered. Prompt changes MUST
+  keep `npm run eval:prompts` at 20/20 (real-model contract test: problems
+  solve, non-problems get `{"error"}` — never invented "0=0" filler).
 - **Capture** (`src/screens/CaptureScreen.tsx`): in-app dark "visor" (expo-camera
   CameraView, autofocus on) + trim stage with corner-drag crop. Origin-aware nav:
   camera entry → back=arrow to camera, "Refă"; gallery entry → picker opens OVER

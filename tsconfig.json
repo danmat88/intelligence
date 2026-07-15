@@ -3,5 +3,7 @@
   "compilerOptions": {
     "strict": true
   },
-  "exclude": ["functions"]
+  // scripts/ runs directly under node --strip-types (imports need the .ts
+  // extension there, which app tsc rejects) — it is not app code.
+  "exclude": ["functions", "scripts"]
 }

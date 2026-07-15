@@ -61,7 +61,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "jest",
-    "test:rules": "firebase emulators:exec --only firestore --project demo-rezolvo \"jest --config jest.rules.config.js\""
+    "test:rules": "firebase emulators:exec --only firestore --project demo-rezolvo \"jest --config jest.rules.config.js\"",
+    "eval:prompts": "node scripts/evalPrompts.ts"
   },
   "jest": {
     "preset": "jest-expo",

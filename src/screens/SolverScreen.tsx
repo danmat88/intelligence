@@ -25,6 +25,7 @@ import { CORRECTION_HINT } from '../solve/prompt'
 import { latexToPlain, solutionShareText } from '../solve/shareText'
 import { getSolveJson, isAbstractProof, isStructuredSolution, withJsonFlags } from '../solve/verdict'
 import type { ChatTurn } from '../ai/types'
+import { DailyLimitError } from '../ai/limits'
 import { useI18n, type StringKey } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import { newProblemId, writeProblem, removeProblem, toStoredTurns, type Problem } from '../solve/store'
@@ -33,6 +34,8 @@ import { uploadProblemImage, deleteProblemImages, saveLocalCopy, resolveImageUri
 import SettingsModal from './SettingsModal'
 import HistorySheet from './HistorySheet'
 import CaptureScreen from './CaptureScreen'
+import LimitSheet from './LimitSheet'
+import PaywallSheet from './PaywallSheet'
 
 type Turn = {
   id: string
@@ -102,6 +105,9 @@ export default function SolverScreen() {
   const [sending, setSending] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
+  // The daily-cap upsell (server said DAILY_LIMIT/CHAT_LIMIT) and the paywall.
+  const [limitHit, setLimitHit] = useState<{ kind: 'solve' | 'chat'; limit: number; guest: boolean } | null>(null)
+  const [paywallOpen, setPaywallOpen] = useState(false)
   // The in-app capture flow (camera visor / gallery pick + trim).
   const [capture, setCapture] = useState<'camera' | 'library' | null>(null)
   // Turn-ids being machine-checked right now, with their stage: 'check' =
@@ -257,7 +263,10 @@ export default function SolverScreen() {
   // on a failed check, silently re-solve with the deep model and swap in the
   // corrected solution. The "✓" badge only ever comes from a real code check.
   const verifyFlow = useCallback(
-    async (id: string, problemText: string, image?: CapturedImage) => {
+    // `capId` = the problem's daily-cap id (the user turn's id): the correction
+    // re-solve below re-uses it so fixing a wrong answer never charges a
+    // second daily slot.
+    async (id: string, problemText: string, image?: CapturedImage, capId?: string) => {
       const turn = threadRef.current.find((x) => x.id === id)
       if (!turn) return
       const restated = String(getSolveJson(turn.text)?.problem ?? '').trim() || problemText.trim()
@@ -292,8 +301,8 @@ export default function SolverScreen() {
             // Be honest about the extra work — the pill says "re-solving".
             setVerifyingMap((m) => ({ ...m, [id]: 'recheck' }))
             const deepRaw = image
-              ? await solveImage(image, langName, ctrl.signal)
-              : await solveDeep(source, langName, ctrl.signal, CORRECTION_HINT)
+              ? await solveImage(image, langName, ctrl.signal, capId)
+              : await solveDeep(source, langName, ctrl.signal, CORRECTION_HINT, capId)
             if (ctrl.signal.aborted) return
             const v2 = isStructuredSolution(deepRaw) ? await verifyAnswer(source || restated, deepRaw, ctrl.signal) : 'unverifiable'
             if (ctrl.signal.aborted) return
@@ -355,11 +364,21 @@ export default function SolverScreen() {
         persist(done)
         // First solves get the background correctness check (not follow-ups).
         // The image rides along so a photo's deep re-solve re-reads the photo.
-        if (verifyProblem !== undefined && isStructuredSolution(text)) void verifyFlow(asstId, verifyProblem, verifyImage)
+        if (verifyProblem !== undefined && isStructuredSolution(text)) void verifyFlow(asstId, verifyProblem, verifyImage, userTurn.id)
       } catch (e) {
         if (ctrl.signal.aborted) {
           // User cancelled — quietly drop the attempt, back to where they were.
           commit(base)
+          return
+        }
+        if (e instanceof DailyLimitError) {
+          // The cap is a decision, not a failure: nothing half-done stays in
+          // the thread. The question returns to the composer (typed text is
+          // never lost) and the upsell sheet takes it from here.
+          commit(base)
+          if (userTurn.text) setInput((v) => v || userTurn.text)
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {})
+          setLimitHit({ kind: e.info.kind, limit: e.info.limit, guest: e.info.guest })
           return
         }
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {})
@@ -415,9 +434,16 @@ export default function SolverScreen() {
       setInput('')
       const isFirst = threadRef.current.length === 0
       const turns: ChatTurn[] = [...priorTurns(), { role: 'user', text }]
+      // The user turn's id doubles as the problem's daily-cap id — every
+      // request of this problem (escalation, correction re-solve, retry)
+      // shares it, so the whole flow charges ONE free-tier slot.
+      const turnId = uid()
       run(
-        { id: uid(), role: 'user', text },
-        (sig) => (isFirst ? solveProblem(text, langName, sig) : followUp(turns, langName, sig)),
+        { id: turnId, role: 'user', text },
+        (sig) =>
+          isFirst
+            ? solveProblem(text, langName, sig, turnId)
+            : followUp(turns, langName, sig, problemIdRef.current ?? undefined),
         isFirst ? text : undefined, // machine-check first solves only
       )
     },
@@ -513,7 +539,7 @@ export default function SolverScreen() {
               : `The student has now heard two explanations of step ${n} and still doesn't get it. STOP re-explaining. Switch method like a good teacher: give ONE similar but noticeably EASIER mini-problem that isolates the same move, walk through it together in short encouraging lines, and END by connecting it back to step ${n} of the original problem.`
         const label = asked >= 3 ? t('turn.practiceStep', { n }) : t('turn.explainStep', { n })
         run({ id: uid(), role: 'user', text: label }, (sig) =>
-          followUp([...priorTurns(), { role: 'user', text: ask }], langName, sig),
+          followUp([...priorTurns(), { role: 'user', text: ask }], langName, sig, problemIdRef.current ?? undefined),
         )
         return
       }
@@ -522,6 +548,7 @@ export default function SolverScreen() {
           [...priorTurns(), { role: 'user', text: 'Give me a similar problem to practice — just the problem, no solution.' }],
           langName,
           sig,
+          problemIdRef.current ?? undefined,
         ),
       )
     },
@@ -565,7 +592,7 @@ export default function SolverScreen() {
       // never the (possibly misread) restatement.
       run(
         { id: turnId, role: 'user', text: '', imageUri: img.uri, imageW: img.width, imageH: img.height },
-        (sig) => solveImage(img, langName, sig),
+        (sig) => solveImage(img, langName, sig, turnId),
         '',
         img,
       )
@@ -949,6 +976,20 @@ export default function SolverScreen() {
           if (problemIdRef.current === id) problemIdRef.current = null
         }}
       />
+      {/* The freemium moment: today's solves are done — sign in (guests) or
+          go Premium. NO blurred steps anywhere; the cap is the only wall. */}
+      <LimitSheet
+        open={!!limitHit}
+        kind={limitHit?.kind ?? 'solve'}
+        limit={limitHit?.limit ?? 5}
+        guest={limitHit?.guest ?? true}
+        onClose={() => setLimitHit(null)}
+        onPremium={() => {
+          setLimitHit(null)
+          setPaywallOpen(true)
+        }}
+      />
+      <PaywallSheet open={paywallOpen} onClose={() => setPaywallOpen(false)} />
       {/* The trust pitch, told at the moment of trust: what "Verified" means. */}
       <InfoDialog
         open={verifyInfo}

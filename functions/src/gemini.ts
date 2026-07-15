@@ -2,6 +2,7 @@ import { onRequest } from 'firebase-functions/v2/https'
 import { defineSecret } from 'firebase-functions/params'
 import { getAuth } from 'firebase-admin/auth'
 import { underRateLimit, RATE_LIMIT, RATE_LIMIT_GUEST } from './ratelimit'
+import { underDailyCap, underChatCap, isPremium, DAILY_SOLVES_GUEST, DAILY_SOLVES_USER, DAILY_CHAT_PER_PROBLEM } from './dailycap'
 
 /**
  * Authenticated proxy in front of the Gemini API.
@@ -73,6 +74,46 @@ export const gemini = onRequest(
     if (!(await underRateLimit(uid, isGuest ? RATE_LIMIT_GUEST : RATE_LIMIT))) {
       res.status(429).json({ error: 'Too many requests - please wait a moment.' })
       return
+    }
+
+    // The freemium DAILY caps. purpose=solve counts PROBLEMS (a stable
+    // per-problem id makes the fan-out — deep escalation, correction re-solve
+    // — charge ONE slot); purpose=followup counts chat questions per problem
+    // (10/day each — learning is generous, but chat can't become an unmetered
+    // solving side door). verify rides free on an already-charged problem.
+    // Premium users skip both. The 429 body shapes are a contract with the
+    // client (src/ai/limits.ts) — they open the upsell sheet.
+    const purpose = String(req.headers['x-rezolvo-purpose'] ?? '')
+    if ((purpose === 'solve' || purpose === 'followup') && !(await isPremium(uid))) {
+      // WHO is metered: signed-in users by uid (the account's limit, on any
+      // device); guests by INSTALL id — anonymous uids are minted fresh on
+      // every sign-out, so keying guests by uid would make "log out, get 2
+      // more" an infinite loop. No/invalid device header falls back to uid.
+      const deviceRaw = String(req.headers['x-rezolvo-device'] ?? '')
+      const capKey = isGuest && /^[A-Za-z0-9_-]{8,64}$/.test(deviceRaw) ? `device_${deviceRaw}` : uid
+      // An untagged id still counts (fail-closed): a unique fallback id means
+      // each such request consumes a slot rather than dodging the meter.
+      const problemId =
+        String(req.headers['x-rezolvo-problem'] ?? '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64) ||
+        `untagged-${Date.now()}`
+      if (purpose === 'solve') {
+        const limit = isGuest ? DAILY_SOLVES_GUEST : DAILY_SOLVES_USER
+        const cap = await underDailyCap(capKey, problemId, limit)
+        if (!cap.allowed) {
+          res.status(429).json({ error: 'Daily solve limit reached.', code: 'DAILY_LIMIT', used: cap.used, limit, guest: isGuest })
+          return
+        }
+        // Usage rides on the response so the app can show "3/5 azi" without
+        // an extra endpoint.
+        res.set('X-Daily-Used', String(cap.used))
+        res.set('X-Daily-Limit', String(limit))
+      } else {
+        const cap = await underChatCap(capKey, problemId, DAILY_CHAT_PER_PROBLEM)
+        if (!cap.allowed) {
+          res.status(429).json({ error: 'Daily chat limit reached for this problem.', code: 'CHAT_LIMIT', used: cap.used, limit: cap.limit, guest: isGuest })
+          return
+        }
+      }
     }
 
     // Forward only the fields the app legitimately sends, and clamp the

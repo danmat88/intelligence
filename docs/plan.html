@@ -303,15 +303,18 @@
       <div class="pbadge">5</div>
       <div class="pt">
         <div class="ptitle">Bani — freemium</div>
-        <div class="pmeta"><span class="chip c-block">Blochează lansarea</span><span class="effort">are nevoie de decizii de produs + analytics din Faza 4</span></div>
+        <div class="pmeta"><span class="chip c-block">Blochează lansarea</span><span class="effort">deciziile de produs sunt luate (15 iul) — mai are nevoie de analytics din Faza 4</span></div>
       </div>
     </div>
     <ul class="checks">
-      <li class="t"><span class="ic"></span><span class="tx"><strong>Decizii (Dan):</strong> câte rezolvări gratis/zi? preț abonament (~15–25 lei/lună)?</span></li>
-      <li class="t"><span class="ic"></span><span class="tx"><strong>Limită zilnică server-side</strong> în proxy — clientul nu poate fi păcălit <span class="tag dep">același doc rate_limits</span></span></li>
-      <li class="t"><span class="ic"></span><span class="tx"><strong>Paywall elegant</strong> — pași blurați + „Deblochează cu Premium"</span></li>
-      <li class="t"><span class="ic"></span><span class="tx"><strong>Google Play Billing / RevenueCat</strong> — abonamentul real</span></li>
+      <li class="d"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span><span class="tx"><strong>Decizii (Dan, 15 iul):</strong> pași compleți pentru toți, FĂRĂ blur — limita e doar de cantitate: <strong>2/zi</strong> guest · <strong>5/zi</strong> cu cont · <strong>nelimitat</strong> Premium; preț <strong>24,99 lei/lună</strong> · 119,99 lei/an (trial 3 zile) · 9,99 lei/săptămână</span></li>
+      <li class="d"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span><span class="tx"><strong>Limită zilnică server-side</strong> în proxy — numărată pe PROBLEME (nu pe cereri), reset la miezul nopții (ora României), Premium trece liber <span class="tag">LIVE pe proxy din 15 iul — verificat cu curl pe producție (a 3-a problemă de guest → DAILY_LIMIT)</span></span></li>
+      <li class="d"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span><span class="tx"><strong>Paywall la atingerea limitei</strong> — LimitSheet („Ai folosit cele 5 rezolvări de azi", guest → Google, cont → Premium) + PaywallSheet cu cele 3 planuri <span class="tag">verificat pe device 15 iul: 2 rezolvări de guest → a 3-a ridică LimitSheet → „Vezi Premium" deschide paywall-ul cu cele 3 planuri</span></span></li>
+      <li class="d"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span><span class="tx"><strong>Entitlement server-side</strong> — webhook RevenueCat → <code>users/{uid}.tier</code> (doar Admin SDK scrie; reguli + 16 teste emulator) <span class="tag">deployat — așteaptă doar configurarea RevenueCat</span></span></li>
+      <li class="d"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span><span class="tx"><strong>Lacăte anti-abuz (15 iul, decizii Dan)</strong> — contorul de guest legat de INSTALARE (delogarea nu mai dă rezolvări în plus — dovedit pe producție: uid proaspăt + același telefon → tot blocat) · chat plafonat <strong>10 întrebări/problemă/zi</strong> la free (a 11-a → CHAT_LIMIT, dovedit) · prompturile refuză non-probleme („fă-mi o imagine" → mesaj prietenos, nu „0=0") și problemele noi strecurate în chat <span class="tag">eval de prompturi 20/20 — npm run eval:prompts la orice modificare</span></span></li>
+      <li class="t"><span class="ic"></span><span class="tx"><strong>Google Play Billing / RevenueCat</strong> — abonamentul real: conturi (Dan) + swap-ul stub-ului <code>src/billing/purchases.ts</code> <span class="tag dep">pașii exacți în docs/LAUNCH-CHECKLIST.md</span></span></li>
     </ul>
+    <p class="note"><strong>Pregătit în avans (15 iul):</strong> tot ce nu depinde de conturi e scris și testat — capul zilnic, contractul DAILY_LIMIT client-server, foile de limită/paywall, stub-ul de billing și webhook-ul. Ziua conturilor = checklist-ul din docs/LAUNCH-CHECKLIST.md, de sus în jos.</p>
   </article>
 
   <!-- PHASE 6 -->
