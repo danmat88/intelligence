@@ -1,6 +1,7 @@
 import { getAuth } from '@react-native-firebase/auth'
 import { createGeminiClient } from './gemini'
 import { getInstallId } from '../lib/installId'
+import { getAppCheckToken } from '../lib/appcheck'
 
 export type { AIClient, AIResult, GenerateOptions } from './types'
 
@@ -25,6 +26,7 @@ export const ai = proxyUrl
       baseUrl: proxyUrl,
       getAuthToken: async () => (await getAuth().currentUser?.getIdToken()) ?? null,
       getDeviceId: getInstallId, // guests are capped per install, not per (disposable) uid
+      getAppCheckToken, // attestation header; proxy is monitor-only until enforced
     })
   : createGeminiClient({ apiKey, model })
 

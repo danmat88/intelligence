@@ -20,6 +20,7 @@ import {
   Fraunces_600SemiBold_Italic,
 } from '@expo-google-fonts/fraunces'
 import { JetBrainsMono_500Medium, JetBrainsMono_600SemiBold } from '@expo-google-fonts/jetbrains-mono'
+import { initAppCheck } from './src/lib/appcheck'
 import { ThemeProvider } from './src/theme/ThemeProvider'
 import { I18nProvider } from './src/i18n'
 import { AuthProvider, useAuth } from './src/auth/AuthProvider'
@@ -42,6 +43,11 @@ import BrandMark from './src/components/ui/BrandMark'
  */
 SplashScreen.preventAutoHideAsync().catch(() => {})
 SplashScreen.setOptions({ fade: true, duration: 300 })
+
+// App integrity attestation starts warming immediately — the first solve
+// request wants a cached token, not a cold fetch. No-op on builds without
+// the native module.
+initAppCheck()
 
 const BOOT_BG = '#F7F6F2' // matches the paper background
 

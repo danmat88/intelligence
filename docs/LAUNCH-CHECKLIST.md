@@ -32,6 +32,25 @@
   (Firestore → users → your uid; find the uid in Authentication). Remove the
   field to test the free flow again.
 
+## 0 · Project plumbing — ALL DONE 2026-07-15 (via REST APIs, no console needed)
+
+- [x] **App Check API enabled**, the Android app registered with the **Play
+      Integrity provider** (tokenTtl 1h), and the dev phone's debug token
+      registered ("dev phone (Dan)"). Proven live: proxy logged `token=missing`
+      before, then went silent (= verified) after. Play Integrity attestation
+      activates by itself once the app installs from Play — nothing to click.
+      **Deliberately NOT done:** the per-service Enforce toggles in the console
+      (Firestore/Auth/Storage — the "add app to APIs" list) stay UNENFORCED;
+      flipping them now would lock out old builds for zero benefit. At launch:
+      `APPCHECK_ENFORCE=true` on the proxy first, then optionally enforce
+      Firestore + Storage in the console once the fleet sends tokens.
+- [x] **Firestore TTL policy** on `daily_solves.expiresAt` (same as
+      `rate_limits`).
+- [x] **Dev accounts:** `mathosting@gmail.com` = PREMIUM (tier set on
+      users/Ms3ZS9FxdOWPipAuYQotA8S50uN2; device-proven — 6th solve of the day
+      passed, pill disappeared). `mateidan1988@gmail.com` stays FREE — use it
+      to test the cap/upsell flows.
+
 ## 1 · Google Play Console (Dan, ~1h + identity-check wait)
 
 1. https://play.google.com/console → create developer account (25 $ one-time).
@@ -93,6 +112,15 @@ One subscription, three base plans (ids are contracts — use exactly these):
    `priceString` (Play then shows every country its own currency).
 6. Rebuild + install; the proxy is already deployed (step 4), so new-build
    solves start counting 2/5/∞ immediately.
+
+## 5½ · LAUNCH-DAY SERVER FLIPS (me — do NOT skip, this is the security switch)
+
+- [ ] **`APPCHECK_ENFORCE=true` on the `gemini` function** (env var + redeploy):
+      the proxy goes from "log unverified requests" to "reject them". Do this
+      ONLY when the production build (with App Check) is the one users install
+      — flipping while old builds are around locks them out.
+- [ ] After a few quiet days: optionally enforce Firestore + Storage in
+      Firebase console → App Check → APIs (blocks non-app access to data too).
 
 ## 6 · Verify end-to-end (device, adb evidence per house rules)
 

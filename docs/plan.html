@@ -290,10 +290,12 @@
       </div>
     </div>
     <ul class="checks">
-      <li class="t"><span class="ic"></span><span class="tx"><strong>App Check (Play Integrity)</strong> — oprește farming-ul de uid-uri anonime prin proxy <span class="tag">ultima gaură de securitate</span></span></li>
-      <li class="t"><span class="ic"></span><span class="tx"><strong>Firebase Analytics</strong> — solve, verify, conversie guest→Google, share, paywall</span></li>
-      <li class="t"><span class="ic"></span><span class="tx"><strong>NetInfo</strong> — detecție reală de offline (nu doar euristică pe eroare)</span></li>
-      <li class="t"><span class="ic"></span><span class="tx">Pregătire <strong>RevenueCat</strong> (modulul nativ intră în același lot)</span></li>
+      <li class="d"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span><span class="tx"><strong>App Check (Play Integrity)</strong> — client + verificare monitor-only pe proxy (enforcement = un flip de env la lansare) <span class="tag">FUNCȚIONAL cap-coadă: API activat, token de debug înregistrat, dovedit în logurile proxy-ului (missing → verificat)</span></span></li>
+      <li class="d"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span><span class="tx"><strong>Firebase Analytics</strong> — solve_start/done, chat, verify_result, limit_hit, paywall_view, purchase_attempt, sign_in_linked, share <span class="tag">verificat pe device: evenimentele apar în logcat cu parametri</span></span></li>
+      <li class="d"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span><span class="tx"><strong>NetInfo</strong> — detecție reală de offline <span class="tag">verificat pe device: pastila apare instant la tăierea rețelei, fără nicio cerere irosită</span></span></li>
+      <li class="d"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span><span class="tx">Pregătire <strong>RevenueCat</strong> — stub + webhook + entitlement, gata din Faza 5</span></li>
+      <li class="d"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span><span class="tx"><strong>Limita vizibilă</strong> — pastila „X/Y azi" în header (din header-ele proxy-ului), avertisment la ultima rezolvare, tap → foaia de limită <span class="tag">verificat pe device: 5/5 azi</span></span></li>
+      <li class="d"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span><span class="tx"><strong>Igienă</strong> — aliasurile <code>-latest</code> scoase din whitelist (doar ID-uri fixate); eval-ul de prompturi extins: text + imagini + contractul verificatorului + latență <span class="tag">27/27</span></span></li>
     </ul>
   </article>
 

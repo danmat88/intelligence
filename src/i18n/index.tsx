@@ -115,6 +115,10 @@ const STRINGS = {
     'limit.tomorrow': 'Resets at midnight — see you tomorrow.',
     'limit.chat.title': "That's today's {n} questions on this problem",
     'limit.chat.sub': 'Premium makes questions unlimited. Meanwhile you can start a new problem — or come back tomorrow.',
+    // — usage pill (today's metered solves, from the proxy's response headers)
+    'usage.pill': '{used}/{limit} today',
+    'usage.info': 'Free solves today: {used}/{limit} — resets at midnight.',
+    'usage.last': 'That was your last free solve for today.',
     // — paywall
     'paywall.benefit.unlimited': 'Unlimited solves — full steps, verified',
     'paywall.benefit.chat': 'Unlimited follow-up questions on every problem',
@@ -279,6 +283,10 @@ const STRINGS = {
     'limit.tomorrow': 'Se resetează la miezul nopții — pe mâine.',
     'limit.chat.title': 'Ai folosit cele {n} întrebări la problema asta azi',
     'limit.chat.sub': 'Premium face întrebările nelimitate. Între timp poți porni o problemă nouă — sau revino mâine.',
+    // — usage pill (today's metered solves, from the proxy's response headers)
+    'usage.pill': '{used}/{limit} azi',
+    'usage.info': 'Rezolvări gratuite azi: {used}/{limit} — se resetează la miezul nopții.',
+    'usage.last': 'Asta a fost ultima rezolvare gratuită pe azi.',
     // — paywall
     'paywall.benefit.unlimited': 'Rezolvări nelimitate — pași compleți, verificate',
     'paywall.benefit.chat': 'Întrebări nelimitate la fiecare problemă',

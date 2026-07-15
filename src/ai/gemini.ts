@@ -1,5 +1,6 @@
 import type { AIClient, AIResult, ChatTurn, GenerateOptions } from './types'
 import { DailyLimitError, parseDailyLimit } from './limits'
+import { reportDailyUsage, clearDailyUsage } from './usage'
 
 /**
  * Gemini implementation of {@link AIClient}, talking straight to the REST API.
@@ -16,6 +17,9 @@ type GeminiConfig = {
   /** Proxy mode: per-install id — the proxy keys the GUEST daily cap on it,
    *  so signing out (fresh anonymous uid) can't reset the free allowance. */
   getDeviceId?: () => Promise<string | null>
+  /** Proxy mode: App Check attestation token (null when unavailable — the
+   *  proxy is monitor-only until enforcement flips server-side). */
+  getAppCheckToken?: () => Promise<string | null>
   model: string
   /** Override for a server proxy in production (defaults to Google's API). */
   baseUrl?: string
@@ -61,6 +65,8 @@ export function createGeminiClient(config: GeminiConfig): AIClient {
       const h: Record<string, string> = { Authorization: `Bearer ${token}` }
       const device = await config.getDeviceId?.().catch(() => null)
       if (device) h['X-Rezolvo-Device'] = device
+      const appCheck = await config.getAppCheckToken?.().catch(() => null)
+      if (appCheck) h['X-Firebase-AppCheck'] = appCheck
       return h
     }
     if (!config.apiKey) {
@@ -125,6 +131,15 @@ export function createGeminiClient(config: GeminiConfig): AIClient {
         signal: opts.signal,
       })
       if (res.ok) {
+        // Metered solves carry today's usage in headers — feed the "2/5 azi"
+        // pill. A solve WITHOUT them means the meter no longer applies
+        // (premium) — clear, so the pill never shows a stale count.
+        if (opts.purpose === 'solve') {
+          const used = Number(res.headers.get('x-daily-used'))
+          const limit = Number(res.headers.get('x-daily-limit'))
+          if (used > 0 && limit > 0) reportDailyUsage(used, limit)
+          else clearDailyUsage()
+        }
         const data = (await res.json()) as {
           candidates?: { content?: { parts?: Part[] }; finishReason?: string }[]
         }
@@ -143,7 +158,11 @@ export function createGeminiClient(config: GeminiConfig): AIClient {
       // as its own error type so the UI opens the upsell instead of "busy".
       if (res.status === 429) {
         const limitInfo = parseDailyLimit(detail)
-        if (limitInfo) throw new DailyLimitError(limitInfo)
+        if (limitInfo) {
+          // The wall itself is also usage information — pin the pill to full.
+          if (limitInfo.kind === 'solve') reportDailyUsage(limitInfo.used, limitInfo.limit)
+          throw new DailyLimitError(limitInfo)
+        }
       }
       const retryable = (res.status === 429 || res.status === 503) && failedFast && attempt < 2
       if (!retryable || opts.signal?.aborted) {

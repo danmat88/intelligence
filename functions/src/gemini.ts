@@ -1,6 +1,7 @@
 import { onRequest } from 'firebase-functions/v2/https'
 import { defineSecret } from 'firebase-functions/params'
 import { getAuth } from 'firebase-admin/auth'
+import { getAppCheck } from 'firebase-admin/app-check'
 import { underRateLimit, RATE_LIMIT, RATE_LIMIT_GUEST } from './ratelimit'
 import { underDailyCap, underChatCap, isPremium, DAILY_SOLVES_GUEST, DAILY_SOLVES_USER, DAILY_CHAT_PER_PROBLEM } from './dailycap'
 
@@ -19,17 +20,15 @@ import { underDailyCap, underChatCap, isPremium, DAILY_SOLVES_GUEST, DAILY_SOLVE
 const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY')
 
 // Models are whitelisted server-side: the app can pick between these two,
-// and a stolen client still can't run anything pricier.
-const DEFAULT_MODEL = process.env.GEMINI_MODEL ?? 'gemini-flash-latest'
+// and a stolen client still can't run anything pricier. PINNED ids only —
+// the `-latest` aliases were dropped 2026-07-15 (no public installs yet):
+// an alias hot-swap once put verification on a ~45s/check model, so nothing
+// unpinned is ever reachable again.
+const DEFAULT_MODEL = process.env.GEMINI_MODEL ?? 'gemini-3.1-flash-lite'
 const ALLOWED_MODELS = new Set([
   DEFAULT_MODEL,
-  // Pinned GA ids the app now uses.
   'gemini-3.1-flash-lite',
   'gemini-3.1-pro-preview',
-  // `-latest` aliases kept so already-shipped builds keep working.
-  'gemini-flash-latest',
-  'gemini-flash-lite-latest',
-  'gemini-pro-latest',
 ])
 const THINKING_LEVELS = new Set(['minimal', 'low', 'medium', 'high'])
 const GOOGLE_BASE = 'https://generativelanguage.googleapis.com/v1beta'
@@ -63,6 +62,28 @@ export const gemini = onRequest(
     } catch {
       res.status(401).json({ error: 'Invalid or expired auth token' })
       return
+    }
+
+    // App Check, MONITOR-ONLY rollout: verify the attestation token when the
+    // app sends one; log (don't block) when it's missing or invalid. Once the
+    // installed fleet sends tokens, enforcement is one env flip
+    // (APPCHECK_ENFORCE=true) — flipping earlier would lock out old builds.
+    let appChecked = false
+    const attestation = req.headers['x-firebase-appcheck']
+    if (typeof attestation === 'string' && attestation) {
+      try {
+        await getAppCheck().verifyToken(attestation)
+        appChecked = true
+      } catch {
+        // invalid/expired token — counted below like a missing one
+      }
+    }
+    if (!appChecked) {
+      if (process.env.APPCHECK_ENFORCE === 'true') {
+        res.status(403).json({ error: 'App integrity check failed.' })
+        return
+      }
+      console.log(`[appcheck] unverified request uid=${uid} token=${attestation ? 'invalid' : 'missing'}`)
     }
 
     // Cheap rejections first: an oversized request must not burn quota.

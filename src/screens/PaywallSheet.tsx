@@ -13,6 +13,7 @@ import { useToast } from '../components/ui/Toast'
 import { PLANS, type PlanId } from '../billing/plans'
 import { purchase, restore } from '../billing/purchases'
 import { subscribeTier, type Tier } from '../billing/tier'
+import { track } from '../lib/analytics'
 
 /**
  * Rezolvo Premium — the paywall. Sells QUANTITY, not withheld quality (the
@@ -36,6 +37,7 @@ export default function PaywallSheet({ open, onClose }: { open: boolean; onClose
 
   useEffect(() => {
     if (!open || !user) return
+    track('paywall_view')
     return subscribeTier(user.id, setTier)
   }, [open, user])
 
@@ -151,7 +153,15 @@ export default function PaywallSheet({ open, onClose }: { open: boolean; onClose
               )
             })}
 
-            <Press onPress={() => buy(() => purchase(selected))} scaleTo={0.975} containerStyle={styles.stretch} style={[styles.ctaWrap, { shadowColor: c.accent }]}>
+            <Press
+              onPress={() => {
+                track('purchase_attempt', { plan: selected })
+                buy(() => purchase(selected))
+              }}
+              scaleTo={0.975}
+              containerStyle={styles.stretch}
+              style={[styles.ctaWrap, { shadowColor: c.accent }]}
+            >
               <LinearGradient
                 colors={theme.gradient.brand as [string, string]}
                 start={{ x: 0, y: 0 }}

@@ -75,9 +75,14 @@ expects evidence, not assurances.
   `revenuecat` webhook/Admin SDK); followups 10/problem/day free. Over-cap →
   429 `DAILY_LIMIT`/`CHAT_LIMIT` (`src/ai/limits.ts`) → LimitSheet upsell →
   PaywallSheet (billing stub `src/billing/purchases.ts`, flips live per
-  `docs/LAUNCH-CHECKLIST.md`). Verify is never metered. Prompt changes MUST
-  keep `npm run eval:prompts` at 20/20 (real-model contract test: problems
-  solve, non-problems get `{"error"}` — never invented "0=0" filler).
+  `docs/LAUNCH-CHECKLIST.md`). Verify is never metered. The header shows the
+  live count (usage pill "X/Y azi", fed by X-Daily-Used/Limit response headers
+  via `src/ai/usage.ts`). Prompt changes MUST keep `npm run eval:prompts`
+  green (27 real-model contract cases: text solves, image anti-hallucination,
+  verify verdicts + latency; non-problems get `{"error"}` — never "0=0").
+  App Check rides every proxy request (`src/lib/appcheck.ts`, debug provider
+  in dev / Play Integrity in release); the proxy verifies MONITOR-ONLY until
+  `APPCHECK_ENFORCE=true` — flip it only after the fleet sends tokens.
 - **Capture** (`src/screens/CaptureScreen.tsx`): in-app dark "visor" (expo-camera
   CameraView, autofocus on) + trim stage with corner-drag crop. Origin-aware nav:
   camera entry → back=arrow to camera, "Refă"; gallery entry → picker opens OVER
@@ -113,6 +118,12 @@ expects evidence, not assurances.
 - **Telemetry** (`src/lib/report.ts`): `reportNonFatal(e, context)` → Crashlytics
   non-fatal + breadcrumb. Every background catch (persist, upload, verify,
   migrate, history subscribe) reports — background failures are never invisible.
+  Product analytics: `src/lib/analytics.ts::track(name, params)` (never throws;
+  event vocabulary documented in the file) — solve_start/done, chat_send,
+  verify_result, limit_hit, paywall_view, purchase_attempt, sign_in_linked,
+  share. Offline: `src/lib/connectivity.ts::useOnline()` (NetInfo) raises the
+  offline pill instantly and blocks doomed sends; the request-failure signal
+  still covers "server down, internet fine".
 - **i18n** (`src/i18n/index.tsx`): RO default + EN, `t(key,{vars})`, persisted
   `@rezolvo.lang`; `langName` is injected into solve prompts so the AI answers in
   the app language.

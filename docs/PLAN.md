@@ -201,5 +201,11 @@ solve/verify engine is the serious part and where the effort goes.
   `npm run eval:prompts` (20 fixed cases, run on every prompt change).
 - **DECIDED — name/branding:** Rezolvo, package `com.rezolvo.app` (logo still open).
 - **DECIDED — photos:** stored in Firebase Storage (migration/deletion handle them).
+- **DECIDED 2026-07-15 — guest history stays FULL** (login has enough carrots:
+  2→5 solves, cross-device sync); the "last 5" idea from the old table is dead.
+- **DONE 2026-07-15 — hygiene:** `-latest` model aliases removed from the proxy
+  whitelist (pinned ids only); usage pill "X/Y azi" live in the header;
+  NetInfo instant offline; Analytics events flowing (device-verified);
+  App Check monitor-only on the proxy (API enablement = console click).
 - Still open: target band to polish first (school algebra→calculus recommended;
   architecture stays all-levels).

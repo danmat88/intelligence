@@ -26,10 +26,13 @@ import { latexToPlain, solutionShareText } from '../solve/shareText'
 import { getSolveJson, isAbstractProof, isStructuredSolution, withJsonFlags } from '../solve/verdict'
 import type { ChatTurn } from '../ai/types'
 import { DailyLimitError } from '../ai/limits'
+import { subscribeDailyUsage, clearDailyUsage, isFromToday, type DailyUsage } from '../ai/usage'
 import { useI18n, type StringKey } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import { newProblemId, writeProblem, removeProblem, toStoredTurns, type Problem } from '../solve/store'
 import { reportNonFatal } from '../lib/report'
+import { useOnline } from '../lib/connectivity'
+import { track } from '../lib/analytics'
 import { uploadProblemImage, deleteProblemImages, saveLocalCopy, resolveImageUri } from '../solve/imageStore'
 import SettingsModal from './SettingsModal'
 import HistorySheet from './HistorySheet'
@@ -108,6 +111,9 @@ export default function SolverScreen() {
   // The daily-cap upsell (server said DAILY_LIMIT/CHAT_LIMIT) and the paywall.
   const [limitHit, setLimitHit] = useState<{ kind: 'solve' | 'chat'; limit: number; guest: boolean } | null>(null)
   const [paywallOpen, setPaywallOpen] = useState(false)
+  // Today's metered usage ("2/5 azi" pill) — fed by the proxy's response
+  // headers via src/ai/usage. Null until the first metered solve (or premium).
+  const [usage, setUsage] = useState<DailyUsage | null>(null)
   // The in-app capture flow (camera visor / gallery pick + trim).
   const [capture, setCapture] = useState<'camera' | 'library' | null>(null)
   // Turn-ids being machine-checked right now, with their stage: 'check' =
@@ -141,9 +147,14 @@ export default function SolverScreen() {
   // times each step was explained so re-taps escalate instead of repeating.
   const lastChipRef = useRef<{ id: string; at: number }>({ id: '', at: 0 })
   const explainCountsRef = useRef<Record<string, number>>({})
-  // Event-driven offline pill: raised by a network-classified failure,
-  // cleared by the next successful answer.
+  // Offline pill, two signals: NetInfo (instant OS truth — airplane mode
+  // shows before any request is wasted) + request failures (catches "internet
+  // fine, our server unreachable"). Either raises the pill.
+  const online = useOnline()
   const [netDown, setNetDown] = useState(false)
+  useEffect(() => {
+    if (online) setNetDown(false) // connectivity returned — the stale error signal drops
+  }, [online])
   // Caret position, so template keys can drop the cursor inside the structure
   // they insert (tap "fraction" → caret lands in the numerator).
   const selRef = useRef({ start: 0, end: 0 })
@@ -162,6 +173,7 @@ export default function SolverScreen() {
   useEffect(() => {
     if (wasAnonRef.current && user && !user.isAnonymous) {
       toast.show(t('auth.signedInAs', { name: user.name ?? user.email }))
+      track('sign_in_linked')
     }
     wasAnonRef.current = user?.isAnonymous ?? false
   }, [user, toast, t])
@@ -185,6 +197,22 @@ export default function SolverScreen() {
     setThread(next)
   }, [])
 
+  // Usage pill + the gentle "that was the last one" beat: when a solve lands
+  // exactly on the ceiling, say so once — the wall stops being a surprise.
+  const prevUsageRef = useRef<DailyUsage | null>(null)
+  useEffect(
+    () =>
+      subscribeDailyUsage((u) => {
+        const prev = prevUsageRef.current
+        prevUsageRef.current = u
+        setUsage(u)
+        if (u && u.used === u.limit && (!prev || prev.used < u.limit) && isFromToday(u.at)) {
+          toast.show(t('usage.last'), 'info')
+        }
+      }),
+    [toast, t],
+  )
+
   // If the account changes mid-session (sign-out → fresh guest, or a guest
   // link that fell back to an existing Google account), the open problem
   // belongs to the OLD account. Sign-out no longer unmounts this screen —
@@ -195,6 +223,9 @@ export default function SolverScreen() {
     if (prevUidRef.current !== user?.id) {
       prevUidRef.current = user?.id
       problemIdRef.current = null
+      // The pill's count belongs to the OLD account (guest counts survive on
+      // the install key, but the next metered solve repopulates it anyway).
+      clearDailyUsage()
       // A solve (or verification) in flight belongs to the OLD account —
       // kill it, or its answer would commit into the fresh session.
       abortRef.current?.abort()
@@ -286,6 +317,7 @@ export default function SolverScreen() {
       try {
         const v = await verifyAnswer(problemText, turn.text, ctrl.signal)
         if (ctrl.signal.aborted) return
+        track('verify_result', { verdict: v })
         if (v === 'correct') {
           applyText(withJsonFlags(turn.text, { _verified: true }))
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {})
@@ -362,6 +394,7 @@ export default function SolverScreen() {
         const done: Turn[] = [...base, userTurn, { id: asstId, role: 'assistant', text }]
         commit(done)
         persist(done)
+        track(verifyProblem !== undefined ? 'solve_done' : 'chat_reply')
         // First solves get the background correctness check (not follow-ups).
         // The image rides along so a photo's deep re-solve re-reads the photo.
         if (verifyProblem !== undefined && isStructuredSolution(text)) void verifyFlow(asstId, verifyProblem, verifyImage, userTurn.id)
@@ -378,11 +411,13 @@ export default function SolverScreen() {
           commit(base)
           if (userTurn.text) setInput((v) => v || userTurn.text)
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {})
+          track('limit_hit', { kind: e.info.kind, guest: e.info.guest })
           setLimitHit({ kind: e.info.kind, limit: e.info.limit, guest: e.info.guest })
           return
         }
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {})
         const msg = friendlyError(e, t)
+        track('solve_error', { network: msg === t('err.network') })
         if (msg === t('err.network')) setNetDown(true)
         commit([...base, userTurn, { id: asstId, role: 'assistant', text: msg, error: true }])
       } finally {
@@ -427,12 +462,19 @@ export default function SolverScreen() {
     (raw: string) => {
       const text = raw.trim()
       if (!text || sending) return
+      // Definitely offline: say so NOW and keep the input — don't burn a
+      // failed attempt the user has to watch time out.
+      if (!online) {
+        toast.show(t('err.network'), 'wifi-off')
+        return
+      }
       // Sending = done typing: drop the keyboard so the solution gets the
       // whole screen (the pending card and the answer land in full view).
       Keyboard.dismiss()
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
       setInput('')
       const isFirst = threadRef.current.length === 0
+      track(isFirst ? 'solve_start' : 'chat_send', isFirst ? { source: 'text' } : undefined)
       const turns: ChatTurn[] = [...priorTurns(), { role: 'user', text }]
       // The user turn's id doubles as the problem's daily-cap id — every
       // request of this problem (escalation, correction re-solve, retry)
@@ -447,7 +489,7 @@ export default function SolverScreen() {
         isFirst ? text : undefined, // machine-check first solves only
       )
     },
-    [sending, run, priorTurns, langName],
+    [sending, online, toast, t, run, priorTurns, langName],
   )
 
   const reset = useCallback(() => {
@@ -573,6 +615,7 @@ export default function SolverScreen() {
       // model accurate and history clean, so leave the previous thread behind.
       if (threadRef.current.length > 0) reset()
       const turnId = uid()
+      track('solve_start', { source: 'photo' })
       // Permanent LOCAL copy first (the capture lives in purgeable cache):
       // history opens on this device never touch the network for the photo.
       saveLocalCopy(turnId, img.uri).catch(() => {})
@@ -653,6 +696,7 @@ export default function SolverScreen() {
         answer: t('solution.answer'),
         signature: t('share.signature'),
       })
+      track('share', { kind })
       if (kind === 'copy') {
         Clipboard.setStringAsync(text)
         Haptics.selectionAsync().catch(() => {})
@@ -701,6 +745,35 @@ export default function SolverScreen() {
           <Txt style={{ fontFamily: theme.font.display, color: c.accent, fontSize: 21 }}>o</Txt>
         </Txt>
         <View style={styles.headerRight}>
+          {/* Today's metered usage — the cap you can SEE coming. Tap explains;
+              at the ceiling it opens the limit sheet (the honest upsell). */}
+          {usage && isFromToday(usage.at) && (
+            <Press
+              onPress={() => {
+                if (usage.used >= usage.limit) {
+                  setLimitHit({ kind: 'solve', limit: usage.limit, guest: user?.isAnonymous ?? true })
+                } else {
+                  toast.show(t('usage.info', { used: usage.used, limit: usage.limit }), 'info')
+                }
+              }}
+              hitSlop={8}
+              style={[
+                styles.usagePill,
+                usage.used >= usage.limit
+                  ? { backgroundColor: c.accentSoft, borderColor: c.accent }
+                  : { backgroundColor: c.surface, borderColor: c.border },
+              ]}
+            >
+              <Txt
+                size={11}
+                weight="semibold"
+                color={usage.used >= usage.limit ? c.accent : c.textMuted}
+                style={{ fontFamily: theme.font.mono }}
+              >
+                {t('usage.pill', { used: usage.used, limit: usage.limit })}
+              </Txt>
+            </Press>
+          )}
           {!empty && (
             <Press onPress={() => !sending && reset()} hitSlop={8} style={[styles.newBtn, { borderColor: c.border, backgroundColor: c.surface }]}>
               <Feather name="plus" size={15} color={c.accent} />
@@ -881,7 +954,7 @@ export default function SolverScreen() {
         </CrossFade>
 
         <View style={[styles.composerWrap, { paddingBottom: insets.bottom + 8 }]}>
-          {netDown && (
+          {(netDown || !online) && (
             <ReAnimated.View entering={bubbleEnter} style={[styles.netBar, { backgroundColor: c.dangerSoft }]}>
               <Feather name="wifi-off" size={13} color={c.danger} />
               <Txt size={12} weight="semibold" color={c.danger}>
@@ -1034,6 +1107,14 @@ const styles = StyleSheet.create({
   wordmark: { fontSize: 21, letterSpacing: -0.4 },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   iconBtn: { width: 38, height: 38, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  usagePill: {
+    height: 26,
+    alignSelf: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+  },
   accountSlot: { width: 38, height: 38 },
   avatar: { width: 30, height: 30, borderRadius: 15 },
   newBtn: {
