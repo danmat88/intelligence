@@ -17,7 +17,10 @@ export type { AIClient, AIResult, GenerateOptions } from './types'
  * key, so the app still works before the backend is deployed.
  */
 const proxyUrl = process.env.EXPO_PUBLIC_AI_PROXY_URL ?? ''
-const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY ?? ''
+// The dev fallback key is referenced ONLY under __DEV__: in release bundles
+// the branch folds to '' and the minifier strips the inlined literal, so the
+// raw key can never ship inside an APK (verified by grepping the bundle).
+const apiKey = __DEV__ ? (process.env.EXPO_PUBLIC_GEMINI_API_KEY ?? '') : ''
 const model = process.env.EXPO_PUBLIC_GEMINI_MODEL ?? 'gemini-flash-latest'
 
 export const ai = proxyUrl
