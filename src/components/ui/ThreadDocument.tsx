@@ -43,6 +43,7 @@ export type DocLabels = {
   fix: string
   copy: string
   share: string
+  report: string
   solution: string
   answer: string
   graph: string
@@ -481,7 +482,8 @@ function drawNumberLine(N){
 }
 var icons={
   copy:'<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>',
-  share:'<svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>'
+  share:'<svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>',
+  flag:'<svg viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>'
 };
 
 /* pending label stages */
@@ -541,7 +543,8 @@ function solutionHtml(turn, verifying, reveal){
   out+='<div class="chips"><button class="fu" onclick="chip(\\'similar\\')">'+esc(L.similar)+'</button>'+
        '<button class="fu alt" onclick="chip(\\'mistake\\')">'+esc(L.mistake)+'</button></div>';
   out+='<div class="acts"><span class="act" onclick="act(\\'copy\\',\\''+turn.id+'\\')">'+icons.copy+esc(L.copy)+'</span>'+
-       '<span class="act" onclick="act(\\'share\\',\\''+turn.id+'\\')">'+icons.share+esc(L.share)+'</span></div>';
+       '<span class="act" onclick="act(\\'share\\',\\''+turn.id+'\\')">'+icons.share+esc(L.share)+'</span>'+
+       '<span class="act" onclick="act(\\'report\\',\\''+turn.id+'\\')">'+icons.flag+esc(L.report)+'</span></div>';
   wasVerified=nowVerified;
   return out;
 }
@@ -682,7 +685,7 @@ export default function ThreadDocument({
   onVerifyTap?: () => void
   onRetry?: () => void
   onCancel?: () => void
-  onAction?: (kind: 'copy' | 'share', turnId: string) => void
+  onAction?: (kind: 'copy' | 'share' | 'report', turnId: string) => void
   /** "Fix it" on the read-back problem: restart with the corrected text. */
   onFixProblem?: (problemLatex: string) => void
 }) {
@@ -798,7 +801,7 @@ export default function ThreadDocument({
           const rest = d.slice(2)
           const sep = rest.indexOf(':')
           const kind = rest.slice(0, sep)
-          if (kind === 'copy' || kind === 'share') onAction?.(kind, rest.slice(sep + 1))
+          if (kind === 'copy' || kind === 'share' || kind === 'report') onAction?.(kind, rest.slice(sep + 1))
         }
       }}
     />

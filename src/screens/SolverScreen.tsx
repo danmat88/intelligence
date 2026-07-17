@@ -686,11 +686,21 @@ export default function SolverScreen() {
     [sending, cancelRun, user, reset],
   )
 
-  // Copy/Share fired from inside the document (per solution turn).
+  // Copy/Share/Report fired from inside the document (per solution turn).
   const handleDocAction = useCallback(
-    (kind: 'copy' | 'share', turnId: string) => {
+    (kind: 'copy' | 'share' | 'report', turnId: string) => {
       const turn = threadRef.current.find((x) => x.id === turnId)
       if (!turn) return
+      if (kind === 'report') {
+        // Play's AI-content policy requires in-app flagging of AI output.
+        // The report reaches us as a Crashlytics non-fatal + analytics event
+        // carrying the problem id, so the flagged content can be pulled up.
+        track('content_report', { problem: problemIdRef.current ?? 'none' })
+        reportNonFatal(new Error('content_report'), `user flagged AI content, problem=${problemIdRef.current ?? '?'} turn=${turnId}`)
+        Haptics.selectionAsync().catch(() => {})
+        toast.show(t('action.reported'), 'check')
+        return
+      }
       const text = solutionShareText(turn.text, {
         problem: t('share.problem'),
         answer: t('solution.answer'),
@@ -716,6 +726,7 @@ export default function SolverScreen() {
       fix: t('doc.fix'),
       copy: t('action.copy'),
       share: t('action.share'),
+      report: t('action.report'),
       solution: t('solution.label'),
       answer: t('solution.answer'),
       graph: t('solution.graph'),

@@ -15,6 +15,7 @@ import { getAnalytics, logEvent } from '@react-native-firebase/analytics'
  *   paywall_view / purchase_attempt {plan} · does the funnel move?
  *   sign_in_linked              · guest → Google conversion
  *   share {kind}                · organic spread
+ *   content_report {problem}    · user flagged AI output (Play AI-content policy)
  */
 export function track(name: string, params?: Record<string, string | number | boolean>) {
   try {

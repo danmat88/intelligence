@@ -122,6 +122,47 @@ One subscription, three base plans (ids are contracts — use exactly these):
 - [ ] After a few quiet days: optionally enforce Firestore + Storage in
       Firebase console → App Check → APIs (blocks non-app access to data too).
 
+## 5¾ · Legal & Play compliance (audited 2026-07-16 — mostly DONE, rest is forms)
+
+**Already done (verified live):**
+- [x] Privacy/terms/delete-account pages live at rezolvo.web.app, RO+EN,
+      **corrected 2026-07-16**: photos ARE stored (policy used to deny it),
+      Analytics + install id + App Check/Play Integrity disclosed, 90-day
+      guest purge stated, 13+ minimum-age clause in terms §4.
+- [x] In-app legal links (Settings → Legal → privacy/terms).
+- [x] In-app account deletion + web deletion page (Play requirement for apps
+      with account creation).
+- [x] **In-app AI-content reporting** („Raportează" on every solution card →
+      Crashlytics non-fatal + `content_report` analytics event) — required by
+      Play's AI-Generated Content policy for conversational-AI apps
+      (support.google.com/googleplay/android-developer/answer/13985936).
+      Code-complete 2026-07-16; device-verify with the next debug build.
+
+**Launch-day forms (Play Console, ~1h, no lawyer needed):**
+- [ ] **Data Safety form** — declare exactly: account data (name/email/photo,
+      optional, Google sign-in), user content (math problems + photos, stored,
+      deletable), device/install id (anti-abuse), crash logs (Crashlytics),
+      analytics (Firebase Analytics). No ads, no data sold, data encrypted in
+      transit, deletion available. Mirror of rezolvo.web.app/privacy — if the
+      two ever disagree, FIX ONE, they must match.
+- [ ] **Content rating questionnaire** — education app, no objectionable
+      content → expect PEGI 3.
+- [ ] **Target audience: 13+** (13-15, 16-17, 18+). NEVER select an under-13
+      group — that triggers the Families Policy. Product rule that keeps this
+      truthful (decision 2026-07-16, revised same day): the app never asks age
+      or class — explanation level is inferred per problem (solve JSON `level`
+      field, planned F2), the EN/BAC goal is a content choice inside Exersează —
+      and store listing/marketing speak to EN/BAC/liceu/parents.
+- [ ] **Privacy policy URL** in the store listing: https://rezolvo.web.app/privacy
+- [ ] **AI declaration**: Play Console asks whether the app uses AI — answer
+      yes, the report mechanism above is the compliance hook.
+
+**When billing flips live (with §3-5):**
+- [ ] Add RevenueCat to the privacy policy (purchase/subscription processor).
+- [ ] Verify a Play refund reaches the webhook as an entitlement-ending event
+      (EXPIRATION) → `tier: 'free'` — the code path exists, the RevenueCat
+      behavior is the unverified half.
+
 ## 6 · Verify end-to-end (device, adb evidence per house rules)
 
 - [ ] Guest: 2 solves fine, 3rd → LimitSheet ("Ai folosit cele 2 rezolvări de
