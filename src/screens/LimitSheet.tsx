@@ -2,12 +2,12 @@ import { useEffect, useRef } from 'react'
 import { ActivityIndicator, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { LinearGradient } from 'expo-linear-gradient'
-import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
 import { useI18n } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import Overlay from '../components/ui/Overlay'
 import Press from '../components/ui/Press'
+import RezIcon from '../components/ui/RezIcon'
 import Txt from '../components/ui/Txt'
 
 /**
@@ -59,17 +59,17 @@ export default function LimitSheet({
       <View
         style={[
           styles.sheet,
-          { backgroundColor: c.bgElevated, borderColor: c.border, paddingBottom: insets.bottom + 16 },
+          { backgroundColor: c.text, borderColor: 'rgba(255,255,255,0.10)', paddingBottom: insets.bottom + 18 },
         ]}
       >
-        <View style={[styles.grab, { backgroundColor: c.border }]} />
-        <View style={[styles.badge, { backgroundColor: c.accentSoft }]}>
-          <Feather name={kind === 'chat' ? 'message-circle' : 'sunrise'} size={24} color={c.accent} />
+        <View style={[styles.grab, { backgroundColor: 'rgba(255,255,255,0.18)' }]} />
+        <View style={styles.badge}>
+          <RezIcon name={kind === 'chat' ? 'message' : 'solve'} size={25} color="#A995FF" accent="#A995FF" />
         </View>
-        <Txt style={[styles.title, { fontFamily: theme.font.display, color: c.text }]}>
+        <Txt style={[styles.title, { fontFamily: theme.font.display, color: '#fff' }]}>
           {t(kind === 'chat' ? 'limit.chat.title' : 'limit.title', { n: limit })}
         </Txt>
-        <Txt size={13.5} color={c.textMuted} style={styles.sub}>
+        <Txt size={13.5} color="rgba(255,255,255,0.62)" style={styles.sub}>
           {kind === 'chat' ? t('limit.chat.sub') : guest ? t('limit.sub.guest') : t('limit.sub.user')}
         </Txt>
 
@@ -86,7 +86,7 @@ export default function LimitSheet({
                 <ActivityIndicator size="small" color={c.onAccent} />
               ) : (
                 <>
-                  <Feather name="user" size={17} color={c.onAccent} />
+                  <RezIcon name="user" size={17} color={c.onAccent} accent="#B8FFC9" />
                   <Txt weight="bold" size={15} color={c.onAccent}>
                     {t('limit.cta.signin')}
                   </Txt>
@@ -96,10 +96,10 @@ export default function LimitSheet({
             <Press
               onPress={onPremium}
               containerStyle={styles.stretch}
-              style={[styles.ctaGhost, { backgroundColor: c.surface, borderColor: c.border }]}
+              style={styles.ctaGhost}
             >
-              <Feather name="zap" size={16} color={c.accent} />
-              <Txt weight="semibold" size={14} color={c.text}>
+              <RezIcon name="premium" size={17} color="#A995FF" accent="#A995FF" />
+              <Txt weight="semibold" size={14} color="#fff">
                 {t('limit.cta.premium')}
               </Txt>
             </Press>
@@ -113,7 +113,7 @@ export default function LimitSheet({
               end={{ x: 1, y: 1 }}
               style={styles.cta}
             >
-              <Feather name="zap" size={17} color="#fff" />
+              <RezIcon name="premium" size={18} color="#fff" accent="#fff" />
               <Txt weight="bold" size={15} color="#fff">
                 {t('limit.cta.premium.main')}
               </Txt>
@@ -121,7 +121,7 @@ export default function LimitSheet({
           </Press>
         )}
 
-        <Txt size={11} color={c.textFaint} style={[styles.tomorrow, { fontFamily: theme.font.mono }]}>
+        <Txt size={11} color="rgba(255,255,255,0.42)" style={[styles.tomorrow, { fontFamily: theme.font.mono }]}>
           {t('limit.tomorrow')}
         </Txt>
       </View>
@@ -131,16 +131,20 @@ export default function LimitSheet({
 
 const styles = StyleSheet.create({
   sheet: {
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
+    borderRadius: 30,
     borderWidth: 1,
     paddingHorizontal: 22,
-    paddingTop: 10,
+    paddingTop: 9,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.36,
+    shadowRadius: 38,
+    shadowOffset: { width: 0, height: 18 },
+    elevation: 16,
   },
-  grab: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, marginBottom: 18 },
-  badge: { width: 54, height: 54, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 22, letterSpacing: -0.4, textAlign: 'center', marginTop: 14 },
+  grab: { alignSelf: 'center', width: 34, height: 4, borderRadius: 2, marginBottom: 20 },
+  badge: { width: 58, height: 58, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.09)' },
+  title: { fontSize: 24, letterSpacing: -0.8, textAlign: 'center', marginTop: 15 },
   sub: { textAlign: 'center', marginTop: 8, marginBottom: 20, lineHeight: 20 },
   stretch: { alignSelf: 'stretch' },
   ctaWrap: {
@@ -164,8 +168,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     height: 48,
-    borderRadius: 18,
+    borderRadius: 17,
     borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: 'rgba(255,255,255,0.08)',
     marginTop: 10,
   },
   tomorrow: { marginTop: 16, letterSpacing: 0.4, textAlign: 'center' },

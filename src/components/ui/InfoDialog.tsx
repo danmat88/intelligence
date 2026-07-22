@@ -1,8 +1,8 @@
 import { StyleSheet, View } from 'react-native'
-import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../../theme/ThemeProvider'
 import Overlay from './Overlay'
 import Press from './Press'
+import RezIcon from './RezIcon'
 import Txt from './Txt'
 
 /**
@@ -28,14 +28,12 @@ export default function InfoDialog({
 }) {
   const { theme } = useTheme()
   const c = theme.colors
-  const tileBg = tone === 'success' ? c.successSoft : '#FFF8E6'
-  const tileFg = tone === 'success' ? c.success : '#9A6700'
 
   return (
     <Overlay open={open} onClose={onClose} align="center">
-      <View style={[styles.card, { backgroundColor: c.bgElevated, borderColor: c.border }]}>
-        <View style={[styles.badge, { backgroundColor: tileBg }]}>
-          <Feather name={tone === 'success' ? 'check-circle' : 'alert-triangle'} size={20} color={tileFg} />
+      <View style={[styles.card, { backgroundColor: c.bgElevated }]}>
+        <View style={[styles.badge, { backgroundColor: c.text }]}>
+          <RezIcon name={tone === 'success' ? 'check' : 'alert'} size={21} color="#fff" accent={tone === 'success' ? '#9CFFCC' : '#FFCF70'} />
         </View>
         <Txt size={19} style={{ fontFamily: theme.font.display, letterSpacing: -0.3 }}>
           {title}
@@ -57,17 +55,16 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 400,
-    borderWidth: 1,
-    borderRadius: 26,
+    borderRadius: 30,
     padding: 24,
     gap: 10,
-    shadowColor: '#1A1626',
-    shadowOpacity: 0.18,
-    shadowRadius: 30,
+    shadowColor: '#15121F',
+    shadowOpacity: 0.24,
+    shadowRadius: 36,
     shadowOffset: { width: 0, height: 16 },
     elevation: 12,
   },
-  badge: { width: 44, height: 44, borderRadius: 15, alignItems: 'center', justifyContent: 'center', marginBottom: 2 },
+  badge: { width: 46, height: 46, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   message: { lineHeight: 21 },
-  btn: { marginTop: 12, borderRadius: 999, paddingVertical: 13, alignItems: 'center', justifyContent: 'center' },
+  btn: { marginTop: 12, borderRadius: 16, paddingVertical: 14, alignItems: 'center', justifyContent: 'center' },
 })

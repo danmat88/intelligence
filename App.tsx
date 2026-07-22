@@ -27,7 +27,7 @@ import { AuthProvider, useAuth } from './src/auth/AuthProvider'
 import ErrorBoundary from './src/components/ErrorBoundary'
 import { ToastProvider } from './src/components/ui/Toast'
 import CrossFade from './src/components/ui/CrossFade'
-import SolverScreen from './src/screens/SolverScreen'
+import AppShell from './src/navigation/AppShell'
 import WelcomeScreen from './src/screens/WelcomeScreen'
 import BrandMark from './src/components/ui/BrandMark'
 
@@ -49,7 +49,7 @@ SplashScreen.setOptions({ fade: true, duration: 300 })
 // the native module.
 initAppCheck()
 
-const BOOT_BG = '#F7F6F2' // matches the paper background
+const BOOT_BG = '#F4F5FA'
 
 export default function App() {
   const [fontsLoaded, fontError] = useFonts({
@@ -121,7 +121,7 @@ function Root({ fontsLoaded }: { fontsLoaded: boolean }) {
   let content: ReactNode
   if (!ready && wasReady.current && lastPhaseRef.current === 'app') {
     phase = 'app'
-    content = <SolverScreen />
+    content = <AppShell />
   } else if (!ready) {
     // Plain twin of the native splash, held until fonts + session are ready.
     phase = 'boot'
@@ -136,7 +136,7 @@ function Root({ fontsLoaded }: { fontsLoaded: boolean }) {
     // stays truthy, the phase stays 'app', and the solver never remounts —
     // work stays on screen.
     phase = 'app'
-    content = <SolverScreen />
+    content = <AppShell />
   } else {
     phase = 'welcome'
     content = <WelcomeScreen />

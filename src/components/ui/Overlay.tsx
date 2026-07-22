@@ -69,7 +69,7 @@ export default function Overlay({
 
 const styles = StyleSheet.create({
   host: { zIndex: 100 },
-  scrim: { backgroundColor: 'rgba(0,0,0,0.62)' },
-  bottom: { position: 'absolute', left: 0, right: 0, bottom: 0 },
-  center: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', padding: 28 },
+  scrim: { backgroundColor: 'rgba(15,12,24,0.72)' },
+  bottom: { position: 'absolute', left: 10, right: 10, bottom: 8 },
+  center: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', padding: 22 },
 })

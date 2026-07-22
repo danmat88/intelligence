@@ -99,44 +99,45 @@ function buildDocHtml(c: Theme['colors'], labels: DocLabels, local: boolean) {
 ${fonts}
 :root{color-scheme:light}
 html,body{margin:0;padding:0;background:transparent;overflow-x:hidden;max-width:100%}
-body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%;padding:6px 16px 24px;word-break:break-word;-webkit-tap-highlight-color:transparent}
+body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%;padding:8px 18px 28px;word-break:break-word;-webkit-tap-highlight-color:transparent}
 .lbl{font-family:'JB',monospace;font-weight:600;font-size:9.5px;letter-spacing:.15em;text-transform:uppercase}
 
 /* — problem header: the page's title, underlined like a notebook — */
-.prob{border-bottom:2px solid ${c.text};padding:6px 2px 12px;margin-bottom:4px}
-.prob .lbl{color:${c.accent};display:flex;align-items:center;gap:8px}
-.prob .src{margin-left:auto;color:${c.textFaint};letter-spacing:.08em}
-.prob .ptx{font-size:19px;margin-top:8px;overflow-x:auto;overflow-y:hidden}
+.prob{background:#15121F;color:#fff;border-radius:24px;padding:18px 18px 19px;margin:2px 0 22px;box-shadow:0 14px 32px rgba(21,18,31,.18)}
+.prob .lbl{color:#A995FF;display:flex;align-items:center;gap:8px}
+.prob .src{margin-left:auto;color:rgba(255,255,255,.42);letter-spacing:.08em}
+.prob .ptx{font-size:19px;margin-top:11px;overflow-x:auto;overflow-y:hidden}
+.prob .katex{color:#fff}
 /* The photo box is reserved at its EXACT aspect ratio before the image
    loads — the layout is final from the first pixel, the photo materialises
    into it (no push-down, no jump). */
-.imgbox{position:relative;border-radius:12px;overflow:hidden;margin-top:10px;background:${c.surfaceAlt}}
+.imgbox{position:relative;border-radius:16px;overflow:hidden;margin-top:12px;background:#2A2635}
 .imgbox img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .18s ease}
 .imgbox img.ld{opacity:1}
 /* the confirm-what-I-read loop: the problem as the AI understood it, typeset */
 .pread{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:11px}
-.pread .rl{font-family:'JB',monospace;font-weight:600;font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;color:${c.textFaint};flex:0 0 auto}
+.pread .rl{font-family:'JB',monospace;font-weight:600;font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;color:rgba(255,255,255,.45);flex:0 0 auto}
 .pread .rm{font-size:17px;overflow-x:auto;overflow-y:hidden;flex:1;min-width:60%}
-.pread .pfix{font-family:'IN';font-weight:600;font-size:11px;color:${c.accent};background:${c.accentSoft};border-radius:999px;padding:5px 11px;cursor:pointer;flex:0 0 auto}
+.pread .pfix{font-family:'IN';font-weight:600;font-size:11px;color:#fff;background:rgba(255,255,255,.12);border-radius:999px;padding:6px 11px;cursor:pointer;flex:0 0 auto}
 
 /* — solution: borderless panels breathing on the paper — */
 .sec{margin-top:16px}
 .sec>.lbl{color:${c.textFaint};display:block;margin-bottom:7px;padding-left:2px}
-.panel{background:#fff;border-radius:18px;padding:2px 16px;box-shadow:0 2px 6px rgba(26,22,38,.04),0 10px 24px rgba(26,22,38,.06)}
-.step{display:grid;grid-template-columns:26px 1fr;gap:12px;padding:13px 0;cursor:pointer}
-.step+.step{border-top:1px solid rgba(26,22,38,.05)}
-.step .no{width:24px;height:24px;border-radius:8px;background:${c.accentSoft};color:${c.accent};font-family:'JB',monospace;font-weight:600;font-size:11.5px;display:flex;align-items:center;justify-content:center;margin-top:2px;transition:background .25s,color .25s}
+.panel{background:transparent;border-radius:0;padding:0 2px;box-shadow:none}
+.step{display:grid;grid-template-columns:30px 1fr;gap:13px;padding:16px 0;cursor:pointer}
+.step+.step{border-top:1px solid ${c.border}}
+.step .no{width:28px;height:28px;border-radius:10px;background:#15121F;color:#fff;font-family:'JB',monospace;font-weight:600;font-size:11px;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:background .25s,color .25s}
 .step.asked .no{background:${c.accent};color:#fff}
 .step .math{font-size:16.5px;overflow-x:auto;overflow-y:hidden;padding-top:2px}
 .step .why{font-size:12px;color:${c.textMuted};margin-top:5px;line-height:1.5}
 /* — answer box: CALM by default (variant A — paper + a blurple accent edge).
    Green is EARNED: only a code-verified answer turns green (.ans.verified),
    with the tick + light sweep. Never a triumphant green on an unchecked answer. */
-.ans{display:flex;gap:12px;align-items:center;background:${c.surface};border:1px solid ${c.border};border-left:3px solid ${c.accent};border-radius:18px;padding:15px 16px;margin-top:10px;position:relative;overflow:hidden}
+.ans{display:flex;gap:12px;align-items:center;background:#15121F;border:none;border-radius:20px;padding:17px 17px;margin-top:14px;position:relative;overflow:hidden;box-shadow:0 12px 28px rgba(21,18,31,.16)}
 .ans .tick{display:none;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.22);align-items:center;justify-content:center;flex:0 0 auto}
 .ans .tick svg{width:14px;height:14px;stroke:#fff;stroke-width:2.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
-.ans .ak{display:block;color:${c.textFaint}}
-.ans .math{color:${c.text};font-size:18px;margin-top:2px;overflow-x:auto;overflow-y:hidden}
+.ans .ak{display:block;color:rgba(255,255,255,.48)}
+.ans .math,.ans .katex{color:#fff;font-size:18px;margin-top:2px;overflow-x:auto;overflow-y:hidden}
 .ans.verified{background:linear-gradient(135deg,#0E9F6E,#0B8259);border:1px solid transparent;box-shadow:0 10px 26px rgba(14,159,110,.28)}
 .ans.verified .tick{display:flex}
 .ans.verified .ak{color:rgba(255,255,255,.75)}
@@ -170,15 +171,15 @@ body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-
 .nl-open{fill:#fff;stroke:#0E9F6E;stroke-width:2.2}
 .nl-plbl{font-family:Georgia,serif;font-style:italic;font-size:11px;fill:#0E9F6E}
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
-.fu{font-family:'IN';font-weight:600;font-size:12.5px;color:${c.accent};border:none;background:${c.accentSoft};border-radius:12px;padding:10px 15px;cursor:pointer}
-.fu.alt{color:${c.textMuted};background:${c.surfaceAlt}}
+.fu{font-family:'IN';font-weight:600;font-size:12.5px;color:#fff;border:none;background:#15121F;border-radius:14px;padding:11px 15px;cursor:pointer}
+.fu.alt{color:${c.accent};background:${c.accentSoft}}
 .acts{display:flex;gap:8px;margin-top:10px}
 .act{display:inline-flex;align-items:center;gap:6px;font-family:'IN';font-weight:600;font-size:11.5px;color:${c.textMuted};background:#fff;border:1px solid rgba(26,22,38,.1);border-radius:12px;padding:7px 12px;cursor:pointer}
 .act svg{width:12px;height:12px;stroke:currentColor;stroke-width:2.1;fill:none;stroke-linecap:round;stroke-linejoin:round}
 
 /* — annotations: the user's questions as post-its — */
-.qa{margin-top:18px;background:#FFF9E8;border-left:3px solid #E8B93B;border-radius:4px 14px 14px 4px;padding:12px 14px}
-.qa .q{font-family:'IN';font-weight:600;font-size:12.5px;color:#8A6A0E}
+.qa{margin-top:18px;background:${c.accentSoft};border-left:3px solid ${c.accent};border-radius:4px 16px 16px 4px;padding:14px 15px}
+.qa .q{font-family:'IN';font-weight:600;font-size:12.5px;color:${c.accent}}
 .qa .a{font-size:13.5px;line-height:1.6;margin-top:6px}
 .qa .a p{margin:.4em 0}
 .qa .a strong{font-weight:600}

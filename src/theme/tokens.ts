@@ -1,10 +1,9 @@
 /**
  * Design tokens — the single source of truth for the whole app's look.
- * Direction: "electric on warm paper." A warm near-white ground, one vivid
- * blurple accent with a violet→indigo gradient for brand moments, indigo-ink
- * text. Space Grotesk carries display/headers, Inter runs the UI, JetBrains
- * Mono does the technical labels; Fraunces survives only for math GLYPHS
- * (the ∫ watermark) where a serif italic reads as notation, not nostalgia.
+ * Direction: "porcelain, ink, signal." A cool near-white canvas, deep ink
+ * surfaces and one electric-violet signal make every screen recognizable as
+ * Rezolvo. Space Grotesk carries display/headers, Inter runs the UI, JetBrains
+ * Mono does technical labels; Fraunces is reserved for mathematical notation.
  */
 
 export type Theme = {
@@ -52,29 +51,29 @@ export type Theme = {
 }
 
 // The one signature accent — electric blurple; the gradient runs violet → indigo.
-const BRAND = ['#7A5CFF', '#4F33EA']
+const BRAND = ['#8B6CFF', '#5737F6']
 
 export const theme: Theme = {
   colors: {
-    bg: '#F7F6F2',
-    bgElevated: '#FFFFFF',
+    bg: '#F4F5FA',
+    bgElevated: '#FCFCFF',
     surface: '#FFFFFF',
-    surfaceAlt: '#EFEDE7',
-    border: 'rgba(26,22,38,0.10)',
-    text: '#1A1626',
-    textMuted: '#5D5870',
-    textFaint: '#9B96AB',
-    accent: '#6355FF',
-    accentSoft: '#EDEAFF',
+    surfaceAlt: '#EAEBF2',
+    border: 'rgba(21,18,31,0.09)',
+    text: '#15121F',
+    textMuted: '#656174',
+    textFaint: '#9C98AA',
+    accent: '#6847F5',
+    accentSoft: '#EEE9FF',
     onAccent: '#FFFFFF',
     danger: '#E5484D',
-    dangerSoft: '#FCEBEC',
-    success: '#0E9F6E',
-    successSoft: '#E3F6EE',
+    dangerSoft: '#FDECEE',
+    success: '#078B61',
+    successSoft: '#E2F6EE',
   },
   gradient: {
     brand: BRAND,
-    surface: ['#FFFFFF', '#F4F2EC'],
+    surface: ['#FFFFFF', '#F2F0FA'],
   },
   radius: { sm: 12, md: 16, lg: 22, xl: 30, pill: 999 },
   space: (n: number) => n * 4,

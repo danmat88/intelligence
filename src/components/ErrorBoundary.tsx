@@ -35,22 +35,46 @@ export default class ErrorBoundary extends Component<{ children: ReactNode }, { 
     if (!this.state.failed) return this.props.children
     return (
       <View style={styles.wrap}>
-        <Text style={styles.title}>Something went wrong</Text>
-        <Text style={styles.body}>
-          The error has been reported automatically. Restart to continue - your chats are safe.
-        </Text>
-        <Pressable onPress={this.restart} style={({ pressed }) => [styles.btn, { opacity: pressed ? 0.7 : 1 }]}>
-          <Text style={styles.btnLabel}>Restart app</Text>
-        </Pressable>
+        <View style={styles.card}>
+          <View style={styles.signal} />
+          <View style={styles.badge}>
+            <Text style={styles.badgeLabel}>!</Text>
+          </View>
+          <Text style={styles.eyebrow}>REZOLVO</Text>
+          <Text style={styles.title}>A apărut o problemă</Text>
+          <Text style={styles.body}>
+            Eroarea a fost raportată automat. Repornește aplicația ca să continui — rezolvările tale sunt în siguranță.
+          </Text>
+          <Pressable onPress={this.restart} style={({ pressed }) => [styles.btn, { opacity: pressed ? 0.82 : 1 }]}>
+            <Text style={styles.btnLabel}>Repornește aplicația</Text>
+          </Pressable>
+        </View>
       </View>
     )
   }
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, backgroundColor: '#F7F6F2', alignItems: 'center', justifyContent: 'center', padding: 32, gap: 12 },
-  title: { color: '#1A1626', fontSize: 22, fontWeight: '700' },
-  body: { color: '#5D5870', fontSize: 15, textAlign: 'center', lineHeight: 22, maxWidth: 320 },
-  btn: { marginTop: 12, backgroundColor: '#6355FF', borderRadius: 999, paddingHorizontal: 28, paddingVertical: 14 },
-  btnLabel: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  wrap: { flex: 1, backgroundColor: '#F4F5FA', alignItems: 'center', justifyContent: 'center', padding: 22 },
+  card: {
+    width: '100%',
+    maxWidth: 420,
+    overflow: 'hidden',
+    backgroundColor: '#FCFCFF',
+    borderRadius: 30,
+    padding: 24,
+    shadowColor: '#15121F',
+    shadowOpacity: 0.16,
+    shadowRadius: 30,
+    shadowOffset: { width: 0, height: 14 },
+    elevation: 10,
+  },
+  signal: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 5, backgroundColor: '#6847F5' },
+  badge: { width: 48, height: 48, borderRadius: 16, backgroundColor: '#15121F', alignItems: 'center', justifyContent: 'center' },
+  badgeLabel: { color: '#FFFFFF', fontSize: 24, fontWeight: '800', lineHeight: 28 },
+  eyebrow: { marginTop: 22, color: '#6847F5', fontSize: 11, fontWeight: '800', letterSpacing: 1.8 },
+  title: { marginTop: 7, color: '#15121F', fontSize: 24, fontWeight: '800', letterSpacing: -0.5 },
+  body: { marginTop: 10, color: '#656174', fontSize: 15, lineHeight: 22 },
+  btn: { marginTop: 24, backgroundColor: '#15121F', borderRadius: 16, paddingHorizontal: 24, paddingVertical: 15, alignItems: 'center' },
+  btnLabel: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
 })

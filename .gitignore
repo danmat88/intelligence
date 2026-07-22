@@ -28,6 +28,8 @@ yarn-error.*
 .expo-dev-client.log
 .dev-client-*.png
 .manifest-response.json
+.codex-screens/
+.expo-export-check/
 
 # macOS
 .DS_Store

@@ -23,11 +23,11 @@ import { CameraView, useCameraPermissions } from 'expo-camera'
 import * as Haptics from 'expo-haptics'
 import { StatusBar } from 'expo-status-bar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
 import { useI18n } from '../i18n'
 import CrossFade from '../components/ui/CrossFade'
 import Press from '../components/ui/Press'
+import RezIcon from '../components/ui/RezIcon'
 import Txt from '../components/ui/Txt'
 import { cropAndPrepare, pickFromLibrary, type CapturedImage, type RawShot } from '../solve/capture'
 
@@ -304,7 +304,7 @@ function CameraStage({
       {/* top chrome */}
       <View style={[styles.topBar, { paddingTop: insets.top + 6 }]}>
         <Press onPress={onClose} hitSlop={10} accessibilityRole="button" accessibilityLabel={t('a11y.close')} style={styles.chromeBtn}>
-          <Feather name="x" size={19} color={V.text} />
+          <RezIcon name="close" size={19} color={V.text} accent={V.accent} />
         </Press>
         <Txt size={15} color={V.text} style={[styles.chromeTitle, { fontFamily: theme.font.display }]}>
           {t('capture.title')}
@@ -316,7 +316,7 @@ function CameraStage({
           accessibilityLabel={t('a11y.torch')}
           style={[styles.chromeBtn, torch && { backgroundColor: 'rgba(160,140,255,0.22)', borderColor: V.accent }]}
         >
-          <Feather name={torch ? 'zap' : 'zap-off'} size={17} color={torch ? V.accent : V.text} />
+          <RezIcon name="premium" size={18} color={torch ? V.accent : V.text} accent={torch ? V.accent : V.text} />
         </Press>
       </View>
 
@@ -334,7 +334,7 @@ function CameraStage({
           />
         ) : live && perm ? (
           <View style={[styles.flex, styles.center, styles.deniedPad]}>
-            <Feather name="camera-off" size={30} color={V.faint} />
+            <RezIcon name="camera-off" size={31} color={V.faint} accent={V.accent} />
             <Txt size={14} color={V.soft} style={styles.deniedTxt}>
               {t('capture.denied')}
             </Txt>
@@ -384,7 +384,7 @@ function CameraStage({
       <View style={[styles.camBar, { paddingBottom: insets.bottom + 14 }]}>
         <View style={styles.side}>
           <Press onPress={pick} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('hero.library')} style={styles.sideBtn}>
-            <Feather name="image" size={20} color={V.text} />
+            <RezIcon name="gallery" size={21} color={V.text} accent={V.accent} />
           </Press>
           <Txt size={10.5} weight="semibold" color={V.faint} style={styles.sideLbl}>
             {t('capture.lblGallery')}
@@ -409,7 +409,7 @@ function CameraStage({
         </Press>
         <View style={styles.side}>
           <Press onPress={onTypeInstead} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('capture.typeInstead')} style={styles.sideBtn}>
-            <Feather name="type" size={20} color={V.text} />
+            <RezIcon name="write" size={21} color={V.text} accent={V.accent} />
           </Press>
           <Txt size={10.5} weight="semibold" color={V.faint} style={styles.sideLbl}>
             {t('capture.lblType')}
@@ -553,7 +553,7 @@ function TrimStage({
           accessibilityLabel={backIcon === 'x' ? t('a11y.close') : t('crop.retake')}
           style={styles.chromeBtn}
         >
-          <Feather name={backIcon} size={19} color={V.text} />
+          <RezIcon name={backIcon === 'x' ? 'close' : 'back'} size={19} color={V.text} accent={V.accent} />
         </Press>
         <Txt size={15} color={V.text} style={[styles.chromeTitle, { fontFamily: theme.font.display }]}>
           {t('crop.title')}
@@ -621,7 +621,7 @@ function TrimStage({
           accessibilityLabel={ghostLabel}
           style={styles.ghostTile}
         >
-          <Feather name={ghostIcon} size={18} color={V.soft} />
+          <RezIcon name={ghostIcon === 'image' ? 'gallery' : 'retry'} size={19} color={V.soft} accent={V.accent} />
         </Press>
         {/* "Obturator": the camera's shutter disc lives INSIDE the solve bar —
             you press the shutter a second time and the problem gets solved.
@@ -640,7 +640,9 @@ function TrimStage({
           <Txt size={16.5} color={V.text} style={[styles.solveLbl, { fontFamily: theme.font.display }]}>
             {t('crop.solve')}
           </Txt>
-          <Feather name="arrow-right" size={17} color={V.soft} style={styles.solveArrow} />
+          <View style={styles.solveArrow}>
+            <RezIcon name="forward" size={17} color={V.soft} accent={V.accent} />
+          </View>
         </Press>
       </View>
     </View>

@@ -3,12 +3,12 @@ import { Keyboard, Pressable, ScrollView, StyleSheet, TextInput, useWindowDimens
 import RAnimated, { Easing as REasing, LinearTransition, SlideOutLeft } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import * as Haptics from 'expo-haptics'
-import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
 import { useI18n } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import Overlay from '../components/ui/Overlay'
 import Press from '../components/ui/Press'
+import RezIcon, { type RezIconName } from '../components/ui/RezIcon'
 import { useToast } from '../components/ui/Toast'
 import Txt from '../components/ui/Txt'
 import { subscribeProblems, removeProblem, writeProblem, type Problem } from '../solve/store'
@@ -234,7 +234,7 @@ export default function HistorySheet({
         <View style={styles.head}>
           <Txt style={[styles.title, { fontFamily: theme.font.display, color: c.text }]}>{t('history.title')}</Txt>
           <Press onPress={onClose} hitSlop={8} scaleTo={0.88} accessibilityRole="button" accessibilityLabel={t('a11y.close')} style={[styles.closeBtn, { backgroundColor: c.surfaceAlt }]}>
-            <Feather name="x" size={17} color={c.textMuted} />
+            <RezIcon name="close" size={17} color={c.textMuted} accent={c.accent} />
           </Press>
         </View>
 
@@ -242,7 +242,7 @@ export default function HistorySheet({
           // Brand-new account: the panel keeps its size; the message owns it.
           <View style={styles.empty}>
             <View style={[styles.emptyBadge, { backgroundColor: c.accentSoft }]}>
-              <Feather name="inbox" size={24} color={c.accent} />
+              <RezIcon name="history" size={25} color={c.accent} accent={c.accent} />
             </View>
             <Txt size={14} color={c.textMuted} style={styles.emptyTxt}>
               {t('history.empty')}
@@ -253,7 +253,7 @@ export default function HistorySheet({
             {/* stats — ghost values until the first snapshot lands */}
             <View style={styles.stats}>
               <StatTile
-                icon="check-circle"
+                icon="check"
                 value={loaded ? String(items.length) : null}
                 label={t('history.stat.solved')}
                 c={c}
@@ -261,7 +261,7 @@ export default function HistorySheet({
               />
               {(!loaded || streak > 0) && (
                 <StatTile
-                  icon="zap"
+                  icon="premium"
                   value={loaded ? String(streak) : null}
                   label={streak === 1 ? t('history.stat.streak.one') : t('history.stat.streak')}
                   c={c}
@@ -273,7 +273,7 @@ export default function HistorySheet({
             {/* search — a ghost twin while loading, so nothing jumps */}
             {loaded ? (
               <View style={[styles.search, { backgroundColor: c.surface, borderColor: c.border }]}>
-                <Feather name="search" size={16} color={c.textFaint} />
+                <RezIcon name="search" size={17} color={c.textFaint} accent={c.accent} />
                 <TextInput
                   style={[styles.searchInput, { color: c.text }]}
                   placeholder={t('history.search')}
@@ -285,13 +285,13 @@ export default function HistorySheet({
                 />
                 {!!query && (
                   <Pressable onPress={() => setQuery('')} hitSlop={8}>
-                    <Feather name="x" size={16} color={c.textFaint} />
+                    <RezIcon name="close" size={16} color={c.textFaint} accent={c.accent} />
                   </Pressable>
                 )}
               </View>
             ) : (
               <View style={[styles.search, { backgroundColor: c.surface, borderColor: c.border }]}>
-                <Feather name="search" size={16} color={c.textFaint} />
+                <RezIcon name="search" size={17} color={c.textFaint} accent={c.accent} />
                 <View style={[styles.ghostBar, { backgroundColor: c.surfaceAlt, width: 132 }]} />
               </View>
             )}
@@ -365,7 +365,7 @@ export default function HistorySheet({
                         style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }]}
                       >
                         <View style={[styles.cardIcon, { backgroundColor: c.accentSoft }]}>
-                          <Feather name={isPhotoProblem(item.p) ? 'camera' : 'edit-3'} size={16} color={c.accent} />
+                          <RezIcon name={isPhotoProblem(item.p) ? 'camera' : 'write'} size={17} color={c.accent} accent={c.accent} />
                         </View>
                         <View style={styles.flex}>
                           <Txt weight="semibold" size={14.5} numberOfLines={1} color={c.text}>
@@ -389,7 +389,7 @@ export default function HistorySheet({
                           accessibilityLabel={t('a11y.delete')}
                           style={({ pressed }) => [styles.del, { opacity: pressed ? 0.5 : 1 }]}
                         >
-                          <Feather name="trash-2" size={16} color={c.textFaint} />
+                          <RezIcon name="trash" size={16} color={c.textFaint} accent={c.danger} />
                         </Pressable>
                       </Press>
                     </RAnimated.View>
@@ -411,7 +411,7 @@ function StatTile({
   c,
   displayFont,
 }: {
-  icon: keyof typeof Feather.glyphMap
+  icon: RezIconName
   /** null while loading — renders a ghost bar in the value slot. */
   value: string | null
   label: string
@@ -421,7 +421,7 @@ function StatTile({
   return (
     <View style={[styles.stat, { backgroundColor: c.surface, borderColor: c.border }]}>
       <View style={[styles.statIcon, { backgroundColor: c.accentSoft }]}>
-        <Feather name={icon} size={15} color={c.accent} />
+        <RezIcon name={icon} size={17} color={c.accent} accent={c.accent} />
       </View>
       <View style={styles.flex}>
         {value == null ? (
@@ -469,16 +469,20 @@ function TopicChip({
 
 const styles = StyleSheet.create({
   sheet: {
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
+    borderRadius: 30,
     borderWidth: 1,
-    paddingHorizontal: 16,
-    paddingTop: 10,
+    paddingHorizontal: 18,
+    paddingTop: 9,
+    shadowColor: '#15121F',
+    shadowOpacity: 0.22,
+    shadowRadius: 34,
+    shadowOffset: { width: 0, height: 16 },
+    elevation: 14,
   },
-  grab: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, marginBottom: 12 },
-  head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, paddingHorizontal: 4 },
-  title: { fontSize: 22, letterSpacing: -0.4 },
-  closeBtn: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  grab: { alignSelf: 'center', width: 34, height: 4, borderRadius: 2, marginBottom: 15 },
+  head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 17, paddingHorizontal: 2 },
+  title: { fontSize: 24, letterSpacing: -0.8 },
+  closeBtn: { width: 36, height: 36, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 30, paddingBottom: 40 },
   emptyBadge: { width: 54, height: 54, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   emptyTxt: { marginTop: 12, textAlign: 'center' },
@@ -489,7 +493,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 19,
     paddingVertical: 10,
     paddingHorizontal: 12,
   },
@@ -499,7 +503,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     borderWidth: 1,
-    borderRadius: 14,
+    borderRadius: 17,
     paddingHorizontal: 12,
     paddingVertical: 9,
     marginBottom: 10,
@@ -508,13 +512,13 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontSize: 14.5, fontFamily: 'Inter_400Regular', padding: 0 },
   chipsBar: { flexGrow: 0, flexShrink: 0 },
   chips: { gap: 7, paddingBottom: 12, paddingRight: 4 },
-  chip: { borderWidth: 1, borderRadius: 999, paddingVertical: 7, paddingHorizontal: 12 },
+  chip: { borderWidth: 1, borderRadius: 14, paddingVertical: 8, paddingHorizontal: 12 },
   chipTxt: { lineHeight: 16, includeFontPadding: false },
   listPad: { paddingBottom: 8 },
   sectionLabel: { letterSpacing: 1.1, marginBottom: 8, marginTop: 4, paddingHorizontal: 4 },
   noMatch: { textAlign: 'center', paddingVertical: 24 },
-  card: { flexDirection: 'row', alignItems: 'center', gap: 11, borderWidth: 1, borderRadius: 16, padding: 13, marginBottom: 9 },
-  cardIcon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  card: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 19, padding: 14, marginBottom: 7 },
+  cardIcon: { width: 38, height: 38, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   flex: { flex: 1 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },
   tag: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, overflow: 'hidden' },

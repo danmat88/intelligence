@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ActivityIndicator, Image, Keyboard, Pressable, ScrollView, Share, StyleSheet, TextInput, View } from 'react-native'
+import { Keyboard, Pressable, Share, StyleSheet, TextInput, View } from 'react-native'
 import ReAnimated, { Easing as REasing, withTiming, type EntryAnimationsValues } from 'react-native-reanimated'
 import { LinearGradient } from 'expo-linear-gradient'
 import * as Clipboard from 'expo-clipboard'
@@ -7,7 +7,6 @@ import * as Haptics from 'expo-haptics'
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 import { StatusBar } from 'expo-status-bar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
 import CrossFade from '../components/ui/CrossFade'
 import Press from '../components/ui/Press'
@@ -18,6 +17,9 @@ import InfoDialog from '../components/ui/InfoDialog'
 import ThreadDocument, { type DocLabels } from '../components/ui/ThreadDocument'
 import SymbolBar, { type MathKey } from '../components/ui/SymbolBar'
 import MathPreview from '../components/ui/MathPreview'
+import AppHeader from '../components/ui/AppHeader'
+import RezIcon from '../components/ui/RezIcon'
+import type { SolveEntryAction } from '../navigation/types'
 import { isMathInput, plainToLatex } from '../solve/mathInput'
 import type { CapturedImage } from '../solve/capture'
 import { solveImage, solveProblem, followUp, solveDeep, verifyAnswer } from '../solve/solve'
@@ -34,7 +36,6 @@ import { reportNonFatal } from '../lib/report'
 import { useOnline } from '../lib/connectivity'
 import { track } from '../lib/analytics'
 import { uploadProblemImage, deleteProblemImages, saveLocalCopy, resolveImageUri } from '../solve/imageStore'
-import SettingsModal from './SettingsModal'
 import HistorySheet from './HistorySheet'
 import CaptureScreen from './CaptureScreen'
 import LimitSheet from './LimitSheet'
@@ -74,6 +75,15 @@ function errorResultMessage(text: string): string | null {
 
 type T = (key: StringKey, vars?: Record<string, string | number>) => string
 
+export type SolverChrome = 'idle' | 'focused' | 'thread' | 'capture'
+
+type SolverScreenProps = {
+  entryAction?: SolveEntryAction | null
+  onEntryActionHandled?: () => void
+  onChromeChange?: (chrome: SolverChrome) => void
+  onOpenSettings: () => void
+}
+
 /** Map a raw error to a calm, human message (localized via `t`). */
 function friendlyError(e: unknown, t: T): string {
   const raw = e instanceof Error ? e.message : String(e)
@@ -96,17 +106,16 @@ function friendlyError(e: unknown, t: T): string {
  * follow-ups about it. One thread = one problem (kept intentionally short so the
  * model stays accurate). "New" starts a fresh problem.
  */
-export default function SolverScreen() {
+export default function SolverScreen({ entryAction, onEntryActionHandled, onChromeChange, onOpenSettings }: SolverScreenProps) {
   const { theme } = useTheme()
   const c = theme.colors
   const insets = useSafeAreaInsets()
-  const { user, signIn, signingIn, error: authError, carried, clearCarried } = useAuth()
+  const { user, signIn, error: authError, carried, clearCarried } = useAuth()
   const { t, langName } = useI18n()
   const toast = useToast()
   const [thread, setThread] = useState<Turn[]>([])
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
-  const [settingsOpen, setSettingsOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   // The daily-cap upsell (server said DAILY_LIMIT/CHAT_LIMIT) and the paywall.
   const [limitHit, setLimitHit] = useState<{ kind: 'solve' | 'chat'; limit: number; guest: boolean } | null>(null)
@@ -166,6 +175,14 @@ export default function SolverScreen() {
   // surface; the inert cards just ride it). 'live-*' keys are fresh problems.
   const [threadKey, setThreadKey] = useState('live-0')
   const empty = thread.length === 0
+  const [inputFocused, setInputFocused] = useState(false)
+  const chrome: SolverChrome = capture ? 'capture' : !empty ? 'thread' : inputFocused ? 'focused' : 'idle'
+
+  useEffect(() => {
+    onChromeChange?.(chrome)
+  }, [chrome, onChromeChange])
+
+  useEffect(() => () => onChromeChange?.('idle'), [onChromeChange])
 
   // Visible feedback for the sign-in flow (linking fires no navigation, so the
   // moment needs its own confirmation): toast on guest→signed-in, toast on error.
@@ -649,6 +666,13 @@ export default function SolverScreen() {
     setTimeout(() => inputRef.current?.focus(), 280)
   }, [])
 
+  useEffect(() => {
+    if (!entryAction) return
+    if (entryAction.kind === 'type') typeInstead()
+    else snap(entryAction.kind)
+    onEntryActionHandled?.()
+  }, [entryAction, onEntryActionHandled, snap, typeInstead])
+
   // A math key: splice its template in at the caret, then park the caret
   // inside the structure (fraction → numerator, root → under the radical).
   const insertKey = useCallback(
@@ -749,13 +773,7 @@ export default function SolverScreen() {
     <ScreenBackground>
       <StatusBar style="dark" />
 
-      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <View style={styles.headerInner}>
-        <Txt style={[styles.wordmark, { fontFamily: theme.font.display, color: c.text }]}>
-          Rezolv
-          <Txt style={{ fontFamily: theme.font.display, color: c.accent, fontSize: 21 }}>o</Txt>
-        </Txt>
-        <View style={styles.headerRight}>
+      <AppHeader onOpenSettings={onOpenSettings}>
           {/* Today's metered usage — the cap you can SEE coming. Tap explains;
               at the ceiling it opens the limit sheet (the honest upsell). */}
           {usage && isFromToday(usage.at) && (
@@ -787,7 +805,7 @@ export default function SolverScreen() {
           )}
           {!empty && (
             <Press onPress={() => !sending && reset()} hitSlop={8} style={[styles.newBtn, { borderColor: c.border, backgroundColor: c.surface }]}>
-              <Feather name="plus" size={15} color={c.accent} />
+              <RezIcon name="plus" size={15} color={c.accent} accent={c.accent} />
               <Txt weight="semibold" size={13} color={c.accent}>
                 {t('header.new')}
               </Txt>
@@ -801,49 +819,9 @@ export default function SolverScreen() {
             accessibilityLabel={t('history.title')}
             style={[styles.iconBtn, { backgroundColor: c.surface, borderColor: c.border }]}
           >
-            <Feather name="clock" size={19} color={c.textMuted} />
+            <RezIcon name="history" size={19} color={c.textMuted} accent={c.accent} />
           </Press>
-          {/* Account slot: FIXED 38px footprint in both states, so the swap
-              never resizes the row and neighbours never move. */}
-          <CrossFade dep={user?.isAnonymous ? 'guest' : 'account'} style={styles.accountSlot}>
-            {user?.isAnonymous ? (
-              // Guest: the slot opens Settings (sign-in card + language + legal
-              // live there), accent-ringed so it still invites a tap. One-tap
-              // sign-in stays available from the composer CTA below.
-              <Press
-                onPress={() => setSettingsOpen(true)}
-                hitSlop={8}
-                accessibilityRole="button"
-                accessibilityLabel={t('settings.title')}
-                style={[styles.iconBtn, { backgroundColor: c.accentSoft, borderColor: c.accent }]}
-              >
-                {signingIn ? (
-                  <ActivityIndicator size="small" color={c.accent} />
-                ) : (
-                  <Feather name="user" size={17} color={c.accent} />
-                )}
-              </Press>
-            ) : (
-              // Signed in: your avatar IS the account button — the visible proof
-              // you're logged in. Falls back to the gear when there's no photo.
-              <Press
-                onPress={() => setSettingsOpen(true)}
-                hitSlop={8}
-                accessibilityRole="button"
-                accessibilityLabel={t('settings.title')}
-                style={[styles.iconBtn, { backgroundColor: c.surface, borderColor: c.border }]}
-              >
-                {user?.photo ? (
-                  <Image source={{ uri: user.photo }} style={styles.avatar} />
-                ) : (
-                  <Feather name="settings" size={19} color={c.textMuted} />
-                )}
-              </Press>
-            )}
-          </CrossFade>
-        </View>
-        </View>
-      </View>
+      </AppHeader>
 
       <KeyboardAvoidingView style={styles.flex} behavior="padding" keyboardVerticalOffset={-insets.bottom}>
         <View style={styles.column}>
@@ -851,92 +829,64 @@ export default function SolverScreen() {
             navigation — one opaque surface slides out, the next slides in. */}
         <CrossFade dep={empty ? 'hero' : `thread:${threadKey}`} axis="x" style={styles.flex}>
         {empty ? (
-          <ScrollView
-            contentContainerStyle={styles.heroWrap}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="on-drag"
-          >
-            {/* ambient math watermark — the approved mockup's giant faint ∫ */}
-            <Txt
-              pointerEvents="none"
-              maxFontSizeMultiplier={1}
-              style={[styles.wm, { fontFamily: theme.font.serifItalic, color: c.accent }]}
-            >
-              ∫
-            </Txt>
-            <Txt size={11} color={c.textFaint} style={[styles.kicker, { fontFamily: theme.font.mono }]}>
-              {user && !user.isAnonymous && user.name
-                ? t('hero.kicker.named', { name: user.name.split(' ')[0].toUpperCase() })
-                : t('hero.kicker')}
-            </Txt>
-            <Txt style={[styles.heroTitle, { fontFamily: theme.font.display, color: c.text }]}>
-              {t('hero.title.lead')}
-              <Txt style={{ fontFamily: theme.font.display, color: c.accent, fontSize: 35 }}>
-                {t('hero.title.accent')}
-              </Txt>
-            </Txt>
-            {/* primary CTA — Home's one brand-gradient moment */}
-            <Press
-              onPress={() => snap('camera')}
-              scaleTo={0.975}
-              containerStyle={styles.stretch}
-              style={[styles.snapCard, { backgroundColor: c.accent, shadowColor: c.accent }]}
-            >
-              <LinearGradient
-                colors={theme.gradient.brand as [string, string]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.snapGrad}
-              >
-                <View style={styles.snapIcon}>
-                  <Feather name="camera" size={23} color="#fff" />
+          <View style={styles.heroWrap}>
+            <View style={styles.heroHeading}>
+              <View style={styles.heroHeadingCopy}>
+                <Txt size={9.5} color={c.accent} style={[styles.kicker, { fontFamily: theme.font.mono }]}>SOLVER MATEMATIC</Txt>
+                <Txt numberOfLines={1} style={[styles.heroTitle, { fontFamily: theme.font.display, color: c.text }]}>Pune problema pe masă.</Txt>
+              </View>
+              <RezIcon name="solve" size={27} color={c.accent} accent={c.accent} strokeWidth={1.9} />
+            </View>
+
+            <View style={[styles.scanStage, { backgroundColor: c.text, shadowColor: c.text }]}>
+              <LinearGradient colors={['#302842', '#15121F']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+              <View pointerEvents="none" style={styles.scanGlow} />
+              <View style={styles.scanTop}>
+                <View style={styles.scanStatus}>
+                  <View style={styles.scanDot} />
+                  <Txt size={9.5} color="rgba(255,255,255,0.54)" style={{ fontFamily: theme.font.mono, letterSpacing: 1.1 }}>CAMERĂ PREGĂTITĂ</Txt>
                 </View>
-                <View style={styles.flex}>
-                  <Txt weight="bold" size={16.5} color="#fff">
-                    {t('hero.snap.title')}
-                  </Txt>
-                  <Txt size={12.5} color="rgba(255,255,255,0.78)" style={styles.snapSub}>
-                    {t('hero.snap.sub')}
-                  </Txt>
+                <Txt size={9.5} color="rgba(255,255,255,0.3)" style={{ fontFamily: theme.font.mono }}>AUTO-CROP</Txt>
+              </View>
+
+              <View style={styles.scanBody}>
+                <Press onPress={() => snap('camera')} accessibilityLabel="Scanează problema" style={[styles.scanPortal, { backgroundColor: c.accent }]}>
+                  <View style={styles.scanRing}>
+                    <RezIcon name="camera" size={27} color="#fff" accent="#B8FFC9" />
+                  </View>
+                </Press>
+                <View style={styles.scanCopy}>
+                  <Txt style={[styles.scanTitle, { fontFamily: theme.font.display }]}>Scanează. Rezolvă. Înțelege.</Txt>
+                  <Txt numberOfLines={2} size={11.5} color="rgba(255,255,255,0.55)" style={styles.scanDescription}>Încadrează exercițiul complet; explicația vine pas cu pas.</Txt>
                 </View>
-                <Feather name="arrow-right" size={20} color="rgba(255,255,255,0.9)" />
-              </LinearGradient>
-            </Press>
-            <Press
-              onPress={() => snap('library')}
-              hitSlop={8}
-              containerStyle={styles.stretch}
-              style={[styles.libBtn, { backgroundColor: c.surface, borderColor: c.border }]}
-            >
-              <Feather name="image" size={16} color={c.accent} />
-              <Txt weight="semibold" size={14} color={c.text}>
-                {t('hero.library')}
-              </Txt>
-            </Press>
-            <Txt size={13} color={c.textFaint} style={styles.orType}>
-              {t('hero.examples')}
-            </Txt>
+              </View>
+
+              <View style={styles.scanDock}>
+                <Press onPress={() => snap('camera')} containerStyle={styles.scanPrimarySlot} style={[styles.scanPrimary, { backgroundColor: c.accent }]}>
+                  <Txt weight="bold" size={12.5} color="#fff">Deschide camera</Txt>
+                  <RezIcon name="arrow" size={16} color="#fff" />
+                </Press>
+                <Press onPress={() => snap('library')} style={styles.galleryAction}>
+                  <RezIcon name="gallery" size={18} color="#fff" accent="#A995FF" />
+                  <Txt weight="semibold" size={11} color="rgba(255,255,255,0.72)">Galerie</Txt>
+                </Press>
+              </View>
+            </View>
+
+            <View style={styles.examplesHead}>
+              <Txt size={9.5} color={c.textFaint} style={{ fontFamily: theme.font.mono, letterSpacing: 1 }}>EXEMPLE RAPIDE</Txt>
+              <Txt size={10.5} color={c.textFaint}>atinge pentru a testa</Txt>
+            </View>
             <View style={styles.examples}>
-              {[
-                '2x² + 5x − 3 = 0',
-                'x² = x + 2',
-                'x² − 4 > 0',
-                '|x − 3| ≤ 2',
-                'Triunghi dreptunghic cu catetele 6 și 8',
-                'Aria cercului cu raza 5',
-                'Triunghi cu laturile 5, 6, 7',
-                '∫ x·eˣ dx',
-                t('hero.example.derivative'),
-              ].map((ex) => (
-                <Press key={ex} onPress={() => sendText(ex)} style={[styles.chip, { backgroundColor: c.surface, borderColor: c.border }]}>
-                  <Txt size={12.5} color={c.textMuted} style={{ fontFamily: theme.font.mono }}>
-                    {ex}
-                  </Txt>
+              {['2x² + 5x − 3 = 0', '|x − 3| ≤ 2'].map((ex, index) => (
+                <Press key={ex} onPress={() => sendText(ex)} containerStyle={styles.exampleSlot} style={[styles.chip, { backgroundColor: c.surface }]}>
+                  <Txt size={9.5} color={c.accent} style={{ fontFamily: theme.font.mono }}>0{index + 1}</Txt>
+                  <Txt numberOfLines={1} size={11.5} color={c.text} style={[styles.exampleText, { fontFamily: theme.font.mono }]}>{ex}</Txt>
+                  <RezIcon name="chevron" size={13} color={c.textFaint} />
                 </Press>
               ))}
             </View>
-          </ScrollView>
+          </View>
         ) : (
           // The conversation as ONE living document (no bubbles): problem as
           // the page title, solution as the body, follow-ups as annotations.
@@ -967,7 +917,7 @@ export default function SolverScreen() {
         <View style={[styles.composerWrap, { paddingBottom: insets.bottom + 8 }]}>
           {(netDown || !online) && (
             <ReAnimated.View entering={bubbleEnter} style={[styles.netBar, { backgroundColor: c.dangerSoft }]}>
-              <Feather name="wifi-off" size={13} color={c.danger} />
+              <RezIcon name="offline" size={14} color={c.danger} accent={c.danger} />
               <Txt size={12} weight="semibold" color={c.danger}>
                 {t('net.offline')}
               </Txt>
@@ -976,8 +926,8 @@ export default function SolverScreen() {
           {/* What you'll send, typeset — the same converter that renders it
               in the document, so the preview IS the result. */}
           {!!previewLatex && <MathPreview latex={previewLatex} label={t('composer.preview')} />}
-          <SymbolBar onInsert={insertKey} />
-          <View style={[styles.field, { backgroundColor: c.surface, borderColor: c.border }]}>
+          {(!empty || inputFocused || !!input.trim()) && <SymbolBar onInsert={insertKey} />}
+          <View style={[styles.field, empty && styles.fieldIdle, { backgroundColor: c.surface, borderColor: inputFocused ? c.accent : c.border }]}>
             <Press
               onPress={() => snap('camera')}
               hitSlop={6}
@@ -985,18 +935,20 @@ export default function SolverScreen() {
               accessibilityLabel={t('a11y.camera')}
               style={[styles.camBtn, { backgroundColor: c.accentSoft }]}
             >
-              <Feather name="camera" size={18} color={c.accent} />
+              <RezIcon name="camera" size={18} color={c.accent} accent={c.accent} />
             </Press>
             <TextInput
               ref={inputRef}
               style={[styles.input, { color: c.text }]}
-              placeholder={empty ? t('composer.placeholder.first') : t('composer.placeholder.followup')}
+              placeholder={empty ? 'Scrie problema…' : 'Întreabă despre soluție…'}
               placeholderTextColor={c.textFaint}
               value={input}
               onChangeText={(v) => {
                 setInput(v)
                 setSelection(undefined) // hand the caret back to the OS while typing
               }}
+              onFocus={() => setInputFocused(true)}
+              onBlur={() => setInputFocused(false)}
               selection={selection}
               onSelectionChange={(e) => {
                 selRef.current = e.nativeEvent.selection
@@ -1025,11 +977,11 @@ export default function SolverScreen() {
                   end={{ x: 1, y: 1 }}
                   style={styles.sendFill}
                 >
-                  <Feather name="arrow-up" size={18} color={c.onAccent} />
+                  <RezIcon name="send" size={18} color={c.onAccent} accent={c.onAccent} />
                 </LinearGradient>
               ) : (
                 <View style={[styles.sendFill, { backgroundColor: c.surfaceAlt }]}>
-                  <Feather name="arrow-up" size={18} color={c.textFaint} />
+                  <RezIcon name="send" size={18} color={c.textFaint} accent={c.textFaint} />
                 </View>
               )}
             </Press>
@@ -1037,19 +989,18 @@ export default function SolverScreen() {
           {user?.isAnonymous ? (
             <Pressable onPress={signIn} hitSlop={6}>
               <Txt size={10.5} weight="semibold" color={c.accent} style={styles.disc}>
-                {t('composer.guestCta')}
+                Conectează-te pentru a păstra problemele rezolvate
               </Txt>
             </Pressable>
           ) : (
             <Txt size={10} color={c.textFaint} style={[styles.disc, { fontFamily: theme.font.mono }]}>
-              {t('composer.disclaimer')}
+              Rezolvo poate greși. Verifică rezultatele importante.
             </Txt>
           )}
         </View>
         </View>
       </KeyboardAvoidingView>
 
-      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <HistorySheet
         open={historyOpen}
         onClose={() => setHistoryOpen(false)}
@@ -1099,24 +1050,7 @@ function bubbleEnter(v: EntryAnimationsValues) {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  stretch: { alignSelf: 'stretch' },
-  // One content column, identical on every screen size: full width on phones,
-  // capped and centered on wide/tablet screens (controls stay fixed-dp).
   column: { flex: 1, width: '100%', maxWidth: 720, alignSelf: 'center' },
-  header: {
-    paddingHorizontal: 18,
-    paddingBottom: 10,
-  },
-  headerInner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-    maxWidth: 720,
-    alignSelf: 'center',
-  },
-  wordmark: { fontSize: 21, letterSpacing: -0.4 },
-  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   iconBtn: { width: 38, height: 38, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   usagePill: {
     height: 26,
@@ -1126,78 +1060,42 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 10,
   },
-  accountSlot: { width: 38, height: 38 },
-  avatar: { width: 30, height: 30, borderRadius: 15 },
   newBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 5,
-    // same 38dp rhythm as every other header control — one visual row height
     height: 38,
     borderWidth: 1,
     borderRadius: 999,
     paddingHorizontal: 13,
   },
 
-  // hero (empty state)
-  heroWrap: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 30, paddingBottom: 20 },
-  wm: { position: 'absolute', top: -6, right: -14, fontSize: 200, lineHeight: 210, opacity: 0.06 },
-  kicker: { letterSpacing: 1.4 },
-  heroTitle: { fontSize: 35, letterSpacing: -0.8, marginTop: 12, marginBottom: 28, textAlign: 'center' },
-  snapCard: {
-    alignSelf: 'stretch',
-    borderRadius: 24,
-    shadowOpacity: 0.32,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 9 },
-    elevation: 7,
-  },
-  snapGrad: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    borderRadius: 24,
-    paddingVertical: 18,
-    paddingHorizontal: 18,
-  },
-  snapIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 17,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.18)',
-  },
-  snapSub: { marginTop: 2 },
-  libBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    marginTop: 12,
-    height: 50,
-    borderRadius: 999,
-    borderWidth: 1,
-    shadowColor: '#1A1626',
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
-  },
-  orType: { marginTop: 24 },
-  examples: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginTop: 12 },
-  chip: {
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingVertical: 8,
-    paddingHorizontal: 13,
-    shadowColor: '#1A1626',
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
-  },
+  heroWrap: { flex: 1, paddingHorizontal: 18, paddingBottom: 4, paddingTop: 6 },
+  heroHeading: { alignItems: 'flex-end', flexDirection: 'row', justifyContent: 'space-between' },
+  heroHeadingCopy: { flex: 1, paddingRight: 12 },
+  kicker: { letterSpacing: 1.15 },
+  heroTitle: { fontSize: 29, letterSpacing: -1.35, lineHeight: 34, marginTop: 4 },
+  scanStage: { borderRadius: 27, flex: 1, marginTop: 11, maxHeight: 250, minHeight: 205, overflow: 'hidden', padding: 16, shadowOpacity: 0.2, shadowRadius: 24, shadowOffset: { width: 0, height: 12 }, elevation: 8 },
+  scanGlow: { backgroundColor: 'rgba(104,71,245,0.29)', borderRadius: 110, height: 220, position: 'absolute', right: -110, top: -80, width: 220 },
+  scanTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  scanStatus: { alignItems: 'center', flexDirection: 'row', gap: 7 },
+  scanDot: { backgroundColor: '#9CFFCC', borderRadius: 4, height: 6, width: 6 },
+  scanBody: { alignItems: 'center', flex: 1, flexDirection: 'row', gap: 15, paddingVertical: 9 },
+  scanPortal: { alignItems: 'center', borderRadius: 32, height: 64, justifyContent: 'center', shadowColor: '#6847F5', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 17, width: 64 },
+  scanRing: { alignItems: 'center', borderColor: 'rgba(255,255,255,0.45)', borderRadius: 23, borderWidth: 1, height: 46, justifyContent: 'center', width: 46 },
+  scanCopy: { flex: 1 },
+  scanTitle: { color: '#fff', fontSize: 20, letterSpacing: -0.65, lineHeight: 23 },
+  scanDescription: { lineHeight: 16.5, marginTop: 5, maxWidth: 230 },
+  scanDock: { alignItems: 'center', borderTopColor: 'rgba(255,255,255,0.1)', borderTopWidth: 1, flexDirection: 'row', gap: 5, paddingTop: 10 },
+  scanPrimarySlot: { flex: 1 },
+  scanPrimary: { alignItems: 'center', borderRadius: 14, flexDirection: 'row', height: 40, justifyContent: 'space-between', paddingHorizontal: 13 },
+  galleryAction: { alignItems: 'center', flexDirection: 'row', gap: 6, height: 40, justifyContent: 'center', paddingHorizontal: 8 },
+  examplesHead: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 },
+  examples: { flexDirection: 'row', gap: 7, paddingTop: 7 },
+  exampleSlot: { flex: 1 },
+  chip: { alignItems: 'center', borderRadius: 14, flexDirection: 'row', gap: 7, height: 43, paddingHorizontal: 9 },
+  exampleText: { flex: 1, letterSpacing: -0.2 },
 
   // composer
   composerWrap: { paddingHorizontal: 14, paddingTop: 6 },
@@ -1206,19 +1104,20 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     gap: 8,
     borderWidth: 1,
-    borderRadius: 26,
+    borderRadius: 21,
     paddingVertical: 7,
     paddingHorizontal: 7,
-    shadowColor: '#1A1626',
-    shadowOpacity: 0.06,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 3,
+    shadowColor: '#15121F',
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 7 },
+    elevation: 4,
   },
-  camBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  fieldIdle: { minHeight: 58 },
+  camBtn: { width: 42, height: 42, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   input: { flex: 1, fontSize: 15.5, fontFamily: 'Inter_400Regular', maxHeight: 120, paddingVertical: 8, paddingTop: 9 },
-  sendBtn: { width: 40, height: 40, borderRadius: 20, overflow: 'hidden' },
-  sendFill: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  sendBtn: { width: 42, height: 42, borderRadius: 15, overflow: 'hidden' },
+  sendFill: { width: 42, height: 42, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   stopSquare: { width: 11, height: 11, borderRadius: 2.5, backgroundColor: '#FFFFFF' },
   netBar: {
     alignSelf: 'center',

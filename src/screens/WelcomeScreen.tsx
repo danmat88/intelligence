@@ -4,7 +4,6 @@ import { StatusBar } from 'expo-status-bar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { AntDesign } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
-import { useI18n } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import BrandMark from '../components/ui/BrandMark'
 import ScreenBackground from '../components/ui/ScreenBackground'
@@ -20,7 +19,6 @@ export default function WelcomeScreen() {
   const c = theme.colors
   const insets = useSafeAreaInsets()
   const { signIn, signInGuest, signingIn, error } = useAuth()
-  const { t } = useI18n()
 
   // Revealed by BrandMark's onEntered, so the button appears after the lockup.
   const footer = useRef(new Animated.Value(0)).current
@@ -33,7 +31,7 @@ export default function WelcomeScreen() {
       <StatusBar style="dark" />
 
       <View style={[styles.wrap, { paddingTop: insets.top, paddingBottom: insets.bottom + 24 }]}>
-        <BrandMark tagline={t('welcome.tagline')} onEntered={revealFooter} />
+        <BrandMark tagline="Matematica devine clară." onEntered={revealFooter} />
 
         {/* Slides up from below the screen edge, fully opaque — no fade. */}
         <Animated.View
@@ -50,21 +48,21 @@ export default function WelcomeScreen() {
             style={({ pressed }) => [
               styles.googleBtn,
               {
-                backgroundColor: c.surface,
-                borderColor: c.border,
-                borderRadius: theme.radius.pill,
+                backgroundColor: c.text,
+                borderColor: c.text,
+                borderRadius: 18,
                 opacity: pressed ? 0.75 : 1,
                 transform: [{ scale: pressed && !signingIn ? 0.98 : 1 }],
               },
             ]}
           >
             {signingIn ? (
-              <ActivityIndicator color={c.text} />
+              <ActivityIndicator color="#fff" />
             ) : (
               <>
-                <AntDesign name="google" size={20} color={c.text} />
-                <Txt weight="semibold" size={16}>
-                  {t('welcome.google')}
+                <AntDesign name="google" size={20} color="#fff" />
+                <Txt weight="bold" size={15.5} color="#fff">
+                  Continuă cu Google
                 </Txt>
               </>
             )}
@@ -76,7 +74,7 @@ export default function WelcomeScreen() {
             </Txt>
           ) : (
             <Txt size={13} color={c.textFaint} style={styles.error}>
-              {t('welcome.caption')}
+              Poți începe imediat. Contul îți păstrează problemele.
             </Txt>
           )}
 
@@ -84,10 +82,10 @@ export default function WelcomeScreen() {
             onPress={signInGuest}
             disabled={signingIn}
             hitSlop={8}
-            style={({ pressed }) => [styles.tryBtn, { opacity: pressed || signingIn ? 0.5 : 1 }]}
+            style={({ pressed }) => [styles.tryBtn, { backgroundColor: c.surface, borderColor: c.border, opacity: pressed || signingIn ? 0.5 : 1 }]}
           >
-            <Txt weight="semibold" size={14} color={c.accent}>
-              {t('welcome.guest')}
+            <Txt weight="bold" size={14} color={c.text}>
+              Încearcă fără cont
             </Txt>
           </Pressable>
         </Animated.View>
@@ -98,7 +96,7 @@ export default function WelcomeScreen() {
 
 const styles = StyleSheet.create({
   wrap: { flex: 1, paddingHorizontal: 28 },
-  footer: { width: '100%', maxWidth: 420, alignSelf: 'center', gap: 14 },
+  footer: { width: '100%', maxWidth: 420, alignSelf: 'center', gap: 12 },
   googleBtn: {
     height: 56,
     borderWidth: 1,
@@ -106,12 +104,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    shadowColor: '#1A1626',
-    shadowOpacity: 0.07,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 3,
+    shadowColor: '#15121F',
+    shadowOpacity: 0.18,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 7,
   },
   error: { textAlign: 'center', lineHeight: 18, paddingHorizontal: 12 },
-  tryBtn: { alignSelf: 'center', paddingVertical: 6, paddingHorizontal: 10 },
+  tryBtn: { alignItems: 'center', alignSelf: 'stretch', borderRadius: 18, borderWidth: 1, height: 52, justifyContent: 'center' },
 })

@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { LinearGradient } from 'expo-linear-gradient'
-import { Feather } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
 import { useI18n, type StringKey } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import Overlay from '../components/ui/Overlay'
 import Press from '../components/ui/Press'
+import RezIcon, { type RezIconName } from '../components/ui/RezIcon'
 import Txt from '../components/ui/Txt'
 import { useToast } from '../components/ui/Toast'
 import { PLANS, type PlanId } from '../billing/plans'
@@ -53,9 +53,9 @@ export default function PaywallSheet({ open, onClose }: { open: boolean; onClose
     // 'cancelled' is the user's own choice — no toast, no drama
   }
 
-  const benefits: { icon: keyof typeof Feather.glyphMap; key: StringKey }[] = [
-    { icon: 'zap', key: 'paywall.benefit.unlimited' },
-    { icon: 'message-circle', key: 'paywall.benefit.chat' },
+  const benefits: { icon: RezIconName; key: StringKey }[] = [
+    { icon: 'premium', key: 'paywall.benefit.unlimited' },
+    { icon: 'message', key: 'paywall.benefit.chat' },
     { icon: 'search', key: 'paywall.benefit.mistake' },
   ]
 
@@ -81,7 +81,7 @@ export default function PaywallSheet({ open, onClose }: { open: boolean; onClose
             accessibilityLabel={t('a11y.close')}
             style={[styles.closeBtn, { backgroundColor: c.surfaceAlt }]}
           >
-            <Feather name="x" size={17} color={c.textMuted} />
+            <RezIcon name="close" size={17} color={c.textMuted} accent={c.accent} />
           </Press>
         </View>
 
@@ -89,7 +89,7 @@ export default function PaywallSheet({ open, onClose }: { open: boolean; onClose
           // Already entitled (fresh purchase or restored): celebrate, don't sell.
           <View style={styles.already}>
             <View style={[styles.alreadyBadge, { backgroundColor: c.successSoft }]}>
-              <Feather name="check" size={26} color={c.success} />
+              <RezIcon name="check" size={26} color={c.success} accent={c.success} />
             </View>
             <Txt size={14.5} color={c.textMuted} style={styles.alreadyTxt}>
               {t('paywall.already')}
@@ -101,9 +101,9 @@ export default function PaywallSheet({ open, onClose }: { open: boolean; onClose
               {benefits.map((b) => (
                 <View key={b.key} style={styles.benefit}>
                   <View style={[styles.benefitIcon, { backgroundColor: c.accentSoft }]}>
-                    <Feather name={b.icon} size={15} color={c.accent} />
+                    <RezIcon name={b.icon} size={18} color="#fff" accent="#A995FF" />
                   </View>
-                  <Txt size={13.5} color={c.text} style={styles.benefitTxt}>
+                  <Txt size={13} color="rgba(255,255,255,0.78)" style={styles.benefitTxt}>
                     {t(b.key)}
                   </Txt>
                 </View>
@@ -168,6 +168,7 @@ export default function PaywallSheet({ open, onClose }: { open: boolean; onClose
                 end={{ x: 1, y: 1 }}
                 style={styles.cta}
               >
+                <RezIcon name="premium" size={18} color="#fff" accent="#fff" />
                 <Txt weight="bold" size={15} color="#fff">
                   {t('paywall.cta')}
                 </Txt>
@@ -193,19 +194,23 @@ export default function PaywallSheet({ open, onClose }: { open: boolean; onClose
 
 const styles = StyleSheet.create({
   sheet: {
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
+    borderRadius: 30,
     borderWidth: 1,
-    paddingHorizontal: 18,
-    paddingTop: 10,
+    paddingHorizontal: 20,
+    paddingTop: 9,
+    shadowColor: '#15121F',
+    shadowOpacity: 0.24,
+    shadowRadius: 36,
+    shadowOffset: { width: 0, height: 16 },
+    elevation: 14,
   },
-  grab: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, marginBottom: 12 },
-  head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, paddingHorizontal: 4 },
-  title: { fontSize: 22, letterSpacing: -0.4 },
-  closeBtn: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
-  benefits: { gap: 10, marginBottom: 16, paddingHorizontal: 4 },
-  benefit: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  benefitIcon: { width: 28, height: 28, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
+  grab: { alignSelf: 'center', width: 34, height: 4, borderRadius: 2, marginBottom: 15 },
+  head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 13, paddingHorizontal: 2 },
+  title: { fontSize: 24, letterSpacing: -0.9 },
+  closeBtn: { width: 36, height: 36, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  benefits: { backgroundColor: '#15121F', borderRadius: 18, gap: 2, marginBottom: 13, paddingHorizontal: 12, paddingVertical: 8 },
+  benefit: { flexDirection: 'row', alignItems: 'center', gap: 9, minHeight: 34 },
+  benefitIcon: { width: 25, alignItems: 'center', justifyContent: 'center' },
   benefitTxt: { flex: 1 },
   stretch: { alignSelf: 'stretch' },
   flex: { flex: 1 },
@@ -215,7 +220,7 @@ const styles = StyleSheet.create({
     gap: 10,
     borderWidth: 1.5,
     borderRadius: 16,
-    paddingVertical: 13,
+    paddingVertical: 11,
     paddingHorizontal: 14,
     marginBottom: 8,
   },
@@ -224,13 +229,13 @@ const styles = StyleSheet.create({
   planNote: { marginTop: 3 },
   ctaWrap: {
     marginTop: 6,
-    borderRadius: 18,
+    borderRadius: 17,
     shadowOpacity: 0.3,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 7 },
     elevation: 6,
   },
-  cta: { alignItems: 'center', justifyContent: 'center', height: 52, borderRadius: 18 },
+  cta: { alignItems: 'center', flexDirection: 'row', gap: 8, justifyContent: 'center', height: 50, borderRadius: 17 },
   legalRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 14, marginTop: 12 },
   already: { alignItems: 'center', paddingVertical: 26, paddingHorizontal: 24 },
   alreadyBadge: { width: 56, height: 56, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },

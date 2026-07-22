@@ -25,7 +25,7 @@ function BrandSymbol() {
       <Path
         d="M58 67 L76 88 L123 42"
         fill="none"
-        stroke="#F7F6F2"
+        stroke="#F4F5FA"
         strokeWidth={24}
         strokeLinecap="round"
         strokeLinejoin="round"

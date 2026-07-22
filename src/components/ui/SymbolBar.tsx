@@ -58,7 +58,7 @@ export default function SymbolBar({ onInsert }: { onInsert: (key: MathKey) => vo
           style={[
             styles.key,
             k.tpl
-              ? { backgroundColor: c.accentSoft, borderColor: 'rgba(99,85,255,0.35)' }
+              ? { backgroundColor: c.text, borderColor: c.text }
               : { backgroundColor: c.surface, borderColor: c.border },
           ]}
         >
@@ -66,7 +66,7 @@ export default function SymbolBar({ onInsert }: { onInsert: (key: MathKey) => vo
             <Txt
               size={k.label.length > 2 ? 12.5 : 15.5}
               weight={k.tpl ? 'semibold' : 'medium'}
-              color={k.tpl ? c.accent : c.text}
+              color={k.tpl ? '#fff' : c.text}
               style={styles.glyph}
             >
               {k.label}
@@ -79,20 +79,15 @@ export default function SymbolBar({ onInsert }: { onInsert: (key: MathKey) => vo
 }
 
 const styles = StyleSheet.create({
-  row: { gap: 7, paddingHorizontal: 14, paddingBottom: 8 },
+  row: { gap: 7, paddingHorizontal: 2, paddingBottom: 8 },
   key: {
     minWidth: 42,
     height: 38,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 9,
-    shadowColor: '#1A1626',
-    shadowOpacity: 0.04,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
   },
   center: { alignItems: 'center', justifyContent: 'center' },
   glyph: { includeFontPadding: false },

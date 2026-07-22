@@ -1,7 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { ActivityIndicator, Image, Linking, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Feather } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useTheme } from '../theme/ThemeProvider'
 import { useI18n } from '../i18n'
@@ -9,6 +8,7 @@ import { useAuth } from '../auth/AuthProvider'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import Overlay from '../components/ui/Overlay'
 import Press from '../components/ui/Press'
+import RezIcon, { type RezIconName } from '../components/ui/RezIcon'
 import { useToast } from '../components/ui/Toast'
 import Txt from '../components/ui/Txt'
 
@@ -63,7 +63,7 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
               {t('settings.title')}
             </Txt>
             <Press onPress={onClose} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('a11y.close')} scaleTo={0.88} style={[styles.closeBtn, { backgroundColor: c.surfaceAlt }]}>
-              <Feather name="x" size={17} color={c.textMuted} />
+              <RezIcon name="close" size={17} color={c.textMuted} accent={c.accent} />
             </Press>
           </View>
 
@@ -88,7 +88,7 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
                   {signingIn ? (
                     <ActivityIndicator size="small" color="#fff" />
                   ) : (
-                    <Feather name="log-in" size={20} color="#fff" />
+                    <RezIcon name="login" size={20} color="#fff" accent="#B8FFC9" />
                   )}
                 </View>
                 <View style={styles.flex}>
@@ -99,7 +99,7 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
                     {t('settings.guest.sub')}
                   </Txt>
                 </View>
-                <Feather name="arrow-right" size={18} color="rgba(255,255,255,0.9)" />
+                <RezIcon name="arrow" size={18} color="rgba(255,255,255,0.9)" />
               </LinearGradient>
             </Press>
           ) : (
@@ -108,7 +108,7 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
                 <Image source={{ uri: user.photo }} style={styles.avatar} />
               ) : (
                 <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: c.accentSoft }]}>
-                  <Feather name="user" size={22} color={c.accent} />
+                  <RezIcon name="user" size={22} color={c.accent} accent={c.accent} />
                 </View>
               )}
               <View style={styles.flex}>
@@ -125,7 +125,7 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
           <SectionLabel text={t('settings.section.prefs')} color={c.textFaint} monoStyle={mono} />
           <Group border={c.border} surface={c.surface}>
             <Row
-              icon="globe"
+              icon="language"
               label={t('settings.language')}
               value={t('settings.language.value')}
               onPress={() => setLang(lang === 'ro' ? 'en' : 'ro')}
@@ -137,7 +137,7 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
           <Group border={c.border} surface={c.surface}>
             <Row icon="shield" label={t('settings.privacy')} onPress={() => Linking.openURL('https://rezolvo.web.app/privacy')} c={c} />
             <Separator color={c.border} />
-            <Row icon="file-text" label={t('settings.terms')} onPress={() => Linking.openURL('https://rezolvo.web.app/terms')} c={c} />
+            <Row icon="document" label={t('settings.terms')} onPress={() => Linking.openURL('https://rezolvo.web.app/terms')} c={c} />
           </Group>
 
           {/* Account actions only make sense for a real (signed-in) account:
@@ -147,7 +147,7 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
               <SectionLabel text={t('settings.section.account')} color={c.textFaint} monoStyle={mono} />
               <Group border={c.border} surface={c.surface}>
                 <Row
-                  icon="log-out"
+                  icon="logout"
                   label={t('settings.signOut')}
                   onPress={() => {
                     onClose()
@@ -161,7 +161,7 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
                     {deleting ? (
                       <ActivityIndicator size="small" color={c.danger} />
                     ) : (
-                      <Feather name="trash-2" size={16} color={c.danger} />
+                      <RezIcon name="trash" size={16} color={c.danger} accent={c.danger} />
                     )}
                   </View>
                   <Txt size={15} weight="medium" color={c.danger} style={styles.flex}>
@@ -215,16 +215,16 @@ function Row({
   onPress,
   c,
 }: {
-  icon: keyof typeof Feather.glyphMap
+  icon: RezIconName
   label: string
   value?: string
   onPress: () => void
-  c: { text: string; textMuted: string; textFaint: string; surfaceAlt: string }
+  c: { text: string; textMuted: string; textFaint: string; surfaceAlt: string; accent: string }
 }) {
   return (
     <Press onPress={onPress} scaleTo={0.98} style={styles.row}>
-      <View style={[styles.rowIcon, { backgroundColor: c.surfaceAlt }]}>
-        <Feather name={icon} size={16} color={c.textMuted} />
+      <View style={styles.rowIcon}>
+        <RezIcon name={icon} size={18} color={c.textMuted} accent={c.accent} />
       </View>
       <Txt size={15} weight="medium" style={styles.flex}>
         {label}
@@ -234,29 +234,33 @@ function Row({
           {value}
         </Txt>
       )}
-      <Feather name="chevron-right" size={17} color={c.textFaint} />
+      <RezIcon name="chevron" size={16} color={c.textFaint} accent={c.accent} />
     </Press>
   )
 }
 
 const styles = StyleSheet.create({
   sheet: {
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
+    borderRadius: 30,
     borderWidth: 1,
-    paddingHorizontal: 18,
-    paddingTop: 10,
+    paddingHorizontal: 17,
+    paddingTop: 9,
+    shadowColor: '#15121F',
+    shadowOpacity: 0.22,
+    shadowRadius: 34,
+    shadowOffset: { width: 0, height: 16 },
+    elevation: 14,
   },
-  grab: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, marginBottom: 12 },
-  head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4, marginBottom: 14 },
-  closeBtn: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  grab: { alignSelf: 'center', width: 30, height: 3, borderRadius: 2, marginBottom: 11 },
+  head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 2, marginBottom: 12 },
+  closeBtn: { width: 36, height: 36, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   profile: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     borderWidth: 1,
-    borderRadius: 20,
-    padding: 14,
+    borderRadius: 18,
+    padding: 12,
     marginBottom: 6,
   },
   stretch: { alignSelf: 'stretch' },
@@ -264,26 +268,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    borderRadius: 20,
-    padding: 16,
+    borderRadius: 18,
+    padding: 14,
     marginBottom: 6,
   },
   guestIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
+    width: 38,
+    height: 38,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(255,255,255,0.18)',
   },
   guestSub: { marginTop: 2 },
-  avatar: { width: 46, height: 46, borderRadius: 23 },
+  avatar: { width: 40, height: 40, borderRadius: 20 },
   avatarFallback: { alignItems: 'center', justifyContent: 'center' },
-  sectionLabel: { letterSpacing: 1.1, marginTop: 14, marginBottom: 7, paddingHorizontal: 6 },
-  group: { borderWidth: 1, borderRadius: 18, overflow: 'hidden' },
-  sep: { height: StyleSheet.hairlineWidth, marginLeft: 56 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 12, paddingVertical: 12 },
-  rowIcon: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  sectionLabel: { letterSpacing: 1.15, marginTop: 13, marginBottom: 6, paddingHorizontal: 3 },
+  group: { borderWidth: 1, borderRadius: 17, overflow: 'hidden' },
+  sep: { height: StyleSheet.hairlineWidth, marginLeft: 49 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 48, paddingHorizontal: 11, paddingVertical: 8 },
+  rowIcon: { width: 29, height: 29, alignItems: 'center', justifyContent: 'center' },
   note: { paddingHorizontal: 6, paddingTop: 8, lineHeight: 16 },
   flex: { flex: 1 },
   dim: { opacity: 0.6 },
