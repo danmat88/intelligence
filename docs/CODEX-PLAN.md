@@ -7,7 +7,7 @@
 > Update this document when a decision changes. Do not let implementation and
 > plan silently drift apart.
 
-Last updated: 17 July 2026
+Last updated: 20 July 2026
 
 ## 1. Product direction
 
@@ -310,6 +310,11 @@ Do not mark a phase complete based only on TypeScript or a web preview.
 
 Decided:
 
+- Rezolvo's brand mark is the violet-to-indigo radical/check symbol: a math
+  problem resolving into a verified answer. The launcher, Android adaptive and
+  monochrome icons, favicon, Play icon and in-app lockup share this identity.
+- Keep the native splash as bare warm paper; the new mark enters in the
+  existing animated JavaScript brand beat instead of appearing twice.
 - Bottom navigation is appropriate for top-level product areas.
 - Start with three tabs: Acasă, Rezolvă, Exersează.
 - Hide app tabs during active solver threads, tests and camera flows.

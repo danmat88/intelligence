@@ -1,12 +1,49 @@
 import { useEffect, useRef } from 'react'
-import { Animated, Easing, Image, StyleSheet, View } from 'react-native'
+import { Animated, Easing, StyleSheet, View } from 'react-native'
+import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg'
 import { useTheme } from '../../theme/ThemeProvider'
 import Txt from './Txt'
 
-const BRAND_SYMBOL = require('../../../assets/android-icon-foreground.png')
+function BrandSymbol() {
+  return (
+    <Svg width={140} height={108} viewBox="0 0 140 108" accessibilityLabel="Rezolvo">
+      <Defs>
+        <LinearGradient id="brand" x1="12" y1="14" x2="126" y2="94" gradientUnits="userSpaceOnUse">
+          <Stop offset="0" stopColor="#9B74FF" />
+          <Stop offset="0.52" stopColor="#7552FF" />
+          <Stop offset="1" stopColor="#4F33EA" />
+        </LinearGradient>
+      </Defs>
+      <Path
+        d="M17 43 L38 91 L61 17 L112 17"
+        fill="none"
+        stroke="url(#brand)"
+        strokeWidth={18}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M58 67 L76 88 L123 42"
+        fill="none"
+        stroke="#F7F6F2"
+        strokeWidth={24}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M58 67 L76 88 L123 42"
+        fill="none"
+        stroke="url(#brand)"
+        strokeWidth={18}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  )
+}
 
 /**
- * The brand lockup: the launcher mark + the "Intelligence" wordmark, with an
+ * The brand lockup: the Rezolvo radical/check mark + wordmark, with an
  * optional tagline. It is shown on boot and on the sign-in screen so the mark
  * never changes identity between first touchpoints.
  */
@@ -41,7 +78,7 @@ export default function BrandMark({
         }}
       >
         <View style={styles.markStage}>
-          <Image source={BRAND_SYMBOL} style={styles.mark} resizeMode="contain" />
+          <BrandSymbol />
         </View>
       </Animated.View>
 
@@ -68,12 +105,11 @@ export default function BrandMark({
 const styles = StyleSheet.create({
   hero: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10 },
   markStage: {
-    width: 92,
-    height: 92,
+    width: 140,
+    height: 108,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
   },
-  mark: { width: 162, height: 162 },
   tagline: { textAlign: 'center', lineHeight: 23, maxWidth: 300 },
 })
