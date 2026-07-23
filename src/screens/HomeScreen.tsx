@@ -1,6 +1,8 @@
 import { StyleSheet, useWindowDimensions, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
+import * as Haptics from 'expo-haptics'
 import AppHeader from '../components/ui/AppHeader'
+import IconTile, { SelectionMark } from '../components/ui/IconTile'
 import Press from '../components/ui/Press'
 import RezIcon from '../components/ui/RezIcon'
 import ScreenBackground from '../components/ui/ScreenBackground'
@@ -21,6 +23,11 @@ export default function HomeScreen({ goal, onSelectGoal, onOpenPreparation, onOp
   const { height } = useWindowDimensions()
   const c = theme.colors
   const compact = height < 760
+  const chooseGoal = (next: Exclude<ExamGoal, null>) => {
+    if (next === goal) return
+    Haptics.selectionAsync().catch(() => {})
+    onSelectGoal(next)
+  }
 
   return (
     <ScreenBackground>
@@ -34,9 +41,7 @@ export default function HomeScreen({ goal, onSelectGoal, onOpenPreparation, onOp
             </View>
             <Txt numberOfLines={1} style={[styles.title, compact && styles.titleCompact, { color: c.text, fontFamily: theme.font.display }]}>Ce rezolvăm azi?</Txt>
           </View>
-          <View style={[styles.mathSeal, { backgroundColor: c.accentSoft }]}>
-            <Txt style={[styles.mathSealText, { color: c.accent, fontFamily: theme.font.serifItalic }]}>√</Txt>
-          </View>
+          <IconTile name="math" size={45} iconSize={23} tone="violet" />
         </View>
 
         <View style={[styles.console, compact && styles.consoleCompact, { backgroundColor: c.text, shadowColor: c.text }]}>
@@ -55,27 +60,30 @@ export default function HomeScreen({ goal, onSelectGoal, onOpenPreparation, onOp
               <Txt style={[styles.consoleTitle, compact && styles.consoleTitleCompact, { fontFamily: theme.font.display }]}>Arată-mi exercițiul.</Txt>
               <Txt numberOfLines={2} size={12.5} color="rgba(255,255,255,0.58)" style={styles.consoleDescription}>Îl citesc, verific rezultatul și îți explic metoda clar.</Txt>
             </View>
-            <Press onPress={() => onSolve('camera')} accessibilityLabel="Fotografiază problema" style={[styles.scanOrb, compact && styles.scanOrbCompact, { backgroundColor: c.accent }]}>
-              <View style={styles.orbCorners}>
-                <View style={[styles.orbCorner, styles.orbTL]} />
-                <View style={[styles.orbCorner, styles.orbBR]} />
-                <RezIcon name="camera" size={compact ? 25 : 29} color="#fff" accent="#B8FFC9" strokeWidth={1.65} />
-              </View>
-            </Press>
+            <View style={[styles.scanCluster, compact && styles.scanClusterCompact]}>
+              <View pointerEvents="none" style={[styles.focusCorner, styles.focusTL]} />
+              <View pointerEvents="none" style={[styles.focusCorner, styles.focusBR]} />
+              <Press onPress={() => onSolve('camera')} accessibilityLabel="Fotografiază problema" style={styles.scanPress}>
+                <IconTile name="camera" size={compact ? 62 : 70} iconSize={compact ? 26 : 29} selected />
+              </Press>
+            </View>
           </View>
 
           <View style={styles.consoleDock}>
             <Press onPress={() => onSolve('camera')} containerStyle={styles.primarySlot} style={[styles.primaryAction, { backgroundColor: c.accent }]}>
-              <Txt weight="bold" size={13.5} color="#fff">Fotografiază</Txt>
+              <View style={styles.primaryGlyph}>
+                <RezIcon name="camera" size={16} color="#fff" accent="#9CFFCC" />
+              </View>
+              <Txt weight="bold" size={13.5} color="#fff" style={{ fontFamily: theme.font.displayMedium }}>Fotografiază</Txt>
               <RezIcon name="arrow" size={17} color="#fff" />
             </Press>
             <Press onPress={() => onSolve('library')} accessibilityLabel="Alege din galerie" style={styles.toolAction}>
-              <RezIcon name="gallery" size={19} color="#fff" accent="#A995FF" />
-              <Txt weight="semibold" size={11.5} color="rgba(255,255,255,0.78)">Galerie</Txt>
+              <View style={styles.toolGlyph}><RezIcon name="gallery" size={17} color="#fff" accent="#A995FF" /></View>
+              <Txt weight="semibold" size={11.5} color="rgba(255,255,255,0.78)" style={{ fontFamily: theme.font.displayMedium }}>Galerie</Txt>
             </Press>
             <Press onPress={() => onSolve('type')} accessibilityLabel="Scrie problema" style={styles.toolAction}>
-              <RezIcon name="write" size={19} color="#fff" accent="#A995FF" />
-              <Txt weight="semibold" size={11.5} color="rgba(255,255,255,0.78)">Scrie</Txt>
+              <View style={styles.toolGlyph}><RezIcon name="write" size={17} color="#fff" accent="#A995FF" /></View>
+              <Txt weight="semibold" size={11.5} color="rgba(255,255,255,0.78)" style={{ fontFamily: theme.font.displayMedium }}>Scrie</Txt>
             </Press>
           </View>
         </View>
@@ -92,37 +100,41 @@ export default function HomeScreen({ goal, onSelectGoal, onOpenPreparation, onOp
         </View>
 
         <View style={[styles.goalRail, { backgroundColor: c.surface }]}>
-          {([['en', 'Evaluare', 'VIII'], ['bac', 'Bacalaureat', 'XII']] as const).map(([key, label, grade], index) => {
-            const active = goal === key
+          {([['en', 'Evaluare', 'VIII', 'exam-en'], ['bac', 'Bacalaureat', 'XII', 'exam-bac']] as const).map(([key, label, grade, icon]) => {
+            const selected = goal === key
             return (
               <Press
                 key={key}
-                onPress={() => onSelectGoal(key)}
+                onPress={() => chooseGoal(key)}
                 containerStyle={styles.goalSlot}
                 style={[
                   styles.goal,
-                  index === 0 && styles.goalDivider,
-                  { borderColor: c.border },
-                  active && { backgroundColor: c.accentSoft },
+                  { borderColor: selected ? c.accent : c.border, backgroundColor: selected ? c.accentSoft : c.surface },
                 ]}
               >
-                <Txt style={[styles.grade, { color: active ? c.accent : c.textFaint, fontFamily: theme.font.display }]}>{grade}</Txt>
+                <IconTile name={icon} size={35} iconSize={17} tone={selected ? 'violet' : 'paper'} selected={selected} />
                 <View style={styles.goalCopy}>
-                  <Txt numberOfLines={1} weight="bold" size={12.5} color={c.text}>{label}</Txt>
-                  <Txt numberOfLines={1} size={10.5} color={active ? c.accent : c.textFaint}>{active ? 'traseu activ' : 'selectează'}</Txt>
+                  <View style={styles.goalNameRow}>
+                    <Txt numberOfLines={1} weight="bold" size={12.5} color={c.text}>{label}</Txt>
+                    <Txt size={8.5} color={selected ? c.accent : c.textFaint} style={[styles.gradeChip, { backgroundColor: selected ? 'rgba(104,71,245,0.1)' : c.surfaceAlt, fontFamily: theme.font.mono }]}>{grade}</Txt>
+                  </View>
+                  <Txt numberOfLines={1} size={10.5} color={selected ? c.accent : c.textFaint}>{selected ? 'traseu activ' : 'selectează'}</Txt>
                 </View>
-                <View style={[styles.goalMarker, { borderColor: active ? c.accent : c.border, backgroundColor: active ? c.accent : 'transparent' }]}>
-                  {active && <RezIcon name="check" size={10} color="#fff" accent="#fff" strokeWidth={2.2} />}
-                </View>
+                <SelectionMark active={selected} />
               </Press>
             )
           })}
         </View>
 
         {!compact && (
-          <View style={styles.promise}>
-            <RezIcon name="spark" size={17} color={c.accent} accent={c.accent} />
-            <Txt numberOfLines={1} size={11.5} color={c.textMuted} style={styles.promiseText}>Nu doar răspunsul — ideea, pașii și verificarea.</Txt>
+          <View style={styles.methodRail}>
+            {['CITEȘTE', 'EXPLICĂ', 'VERIFICĂ'].map((label, index) => (
+              <View key={label} style={styles.methodStep}>
+                <Txt size={9} color={c.accent} style={{ fontFamily: theme.font.mono }}>0{index + 1}</Txt>
+                <Txt size={10} color={c.textMuted} style={{ fontFamily: theme.font.displayMedium, letterSpacing: 0.55 }}>{label}</Txt>
+                {index < 2 && <View style={[styles.methodLine, { backgroundColor: c.border }]} />}
+              </View>
+            ))}
           </View>
         )}
       </View>
@@ -140,8 +152,6 @@ const styles = StyleSheet.create({
   eyebrow: { letterSpacing: 1.15 },
   title: { fontSize: 32, letterSpacing: -1.55, lineHeight: 37, marginTop: 5 },
   titleCompact: { fontSize: 28, lineHeight: 32 },
-  mathSeal: { alignItems: 'center', borderRadius: 18, height: 45, justifyContent: 'center', width: 45 },
-  mathSealText: { fontSize: 25, marginTop: -2 },
   console: { borderRadius: 28, flex: 1, marginTop: 13, maxHeight: 285, minHeight: 230, overflow: 'hidden', padding: 18, shadowOffset: { width: 0, height: 13 }, shadowOpacity: 0.2, shadowRadius: 26, elevation: 10 },
   consoleCompact: { marginTop: 10, minHeight: 210, padding: 15 },
   consoleGlow: { backgroundColor: 'rgba(104,71,245,0.30)', borderRadius: 110, height: 220, position: 'absolute', right: -105, top: -85, width: 220 },
@@ -153,26 +163,28 @@ const styles = StyleSheet.create({
   consoleTitle: { color: '#fff', fontSize: 26, letterSpacing: -1.1, lineHeight: 30 },
   consoleTitleCompact: { fontSize: 23, lineHeight: 27 },
   consoleDescription: { lineHeight: 18, marginTop: 6, maxWidth: 255 },
-  scanOrb: { alignItems: 'center', borderRadius: 38, height: 76, justifyContent: 'center', shadowColor: '#6847F5', shadowOffset: { width: 0, height: 9 }, shadowOpacity: 0.42, shadowRadius: 19, width: 76 },
-  scanOrbCompact: { borderRadius: 33, height: 66, width: 66 },
-  orbCorners: { alignItems: 'center', height: 44, justifyContent: 'center', width: 44 },
-  orbCorner: { borderColor: 'rgba(255,255,255,0.55)', height: 12, position: 'absolute', width: 12 },
-  orbTL: { borderLeftWidth: 1.4, borderTopWidth: 1.4, left: 0, top: 0 },
-  orbBR: { borderBottomWidth: 1.4, borderRightWidth: 1.4, bottom: 0, right: 0 },
+  scanCluster: { alignItems: 'center', height: 88, justifyContent: 'center', width: 88 },
+  scanClusterCompact: { height: 76, width: 76 },
+  scanPress: { shadowColor: '#6847F5', shadowOffset: { width: 0, height: 9 }, shadowOpacity: 0.38, shadowRadius: 18, elevation: 8 },
+  focusCorner: { borderColor: 'rgba(169,149,255,0.6)', height: 15, position: 'absolute', width: 15 },
+  focusTL: { borderLeftWidth: 1.4, borderTopWidth: 1.4, left: 0, top: 0 },
+  focusBR: { borderBottomWidth: 1.4, borderRightWidth: 1.4, bottom: 0, right: 0 },
   consoleDock: { alignItems: 'center', borderTopColor: 'rgba(255,255,255,0.10)', borderTopWidth: 1, flexDirection: 'row', gap: 6, paddingTop: 11 },
   primarySlot: { flex: 1 },
-  primaryAction: { alignItems: 'center', borderRadius: 15, flexDirection: 'row', height: 43, justifyContent: 'space-between', paddingHorizontal: 14 },
-  toolAction: { alignItems: 'center', flexDirection: 'row', gap: 6, height: 43, justifyContent: 'center', paddingHorizontal: 8 },
+  primaryAction: { alignItems: 'center', borderRadius: 15, flexDirection: 'row', gap: 8, height: 43, paddingHorizontal: 7 },
+  primaryGlyph: { alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.13)', borderRadius: 10, height: 29, justifyContent: 'center', width: 29 },
+  toolAction: { alignItems: 'center', flexDirection: 'row', gap: 6, height: 43, justifyContent: 'center', paddingHorizontal: 6 },
+  toolGlyph: { alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.07)', borderColor: 'rgba(255,255,255,0.08)', borderRadius: 9, borderWidth: 1, height: 28, justifyContent: 'center', width: 28 },
   goalHeading: { alignItems: 'flex-end', flexDirection: 'row', justifyContent: 'space-between', marginTop: 15 },
   sectionTitle: { letterSpacing: -0.55, marginTop: 2 },
   openPrep: { alignItems: 'center', flexDirection: 'row', gap: 5, paddingBottom: 2 },
-  goalRail: { borderRadius: 19, flexDirection: 'row', marginTop: 9, overflow: 'hidden', shadowColor: '#15121F', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 2 },
+  goalRail: { flexDirection: 'row', gap: 8, marginTop: 9 },
   goalSlot: { flex: 1 },
-  goal: { alignItems: 'center', flexDirection: 'row', gap: 8, height: 62, paddingHorizontal: 10 },
-  goalDivider: { borderRightWidth: 1 },
-  grade: { fontSize: 18, letterSpacing: -1.1, width: 34 },
+  goal: { alignItems: 'center', borderRadius: 18, borderWidth: 1, flexDirection: 'row', gap: 8, height: 66, paddingHorizontal: 9, shadowColor: '#15121F', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.035, shadowRadius: 9, elevation: 1 },
   goalCopy: { flex: 1, gap: 2 },
-  goalMarker: { alignItems: 'center', borderRadius: 999, borderWidth: 1.5, height: 17, justifyContent: 'center', width: 17 },
-  promise: { alignItems: 'center', flexDirection: 'row', gap: 8, justifyContent: 'center', minHeight: 28 },
-  promiseText: { letterSpacing: -0.1 },
+  goalNameRow: { alignItems: 'center', flexDirection: 'row', gap: 5 },
+  gradeChip: { borderRadius: 6, overflow: 'hidden', paddingHorizontal: 4, paddingVertical: 1 },
+  methodRail: { alignItems: 'center', flexDirection: 'row', justifyContent: 'center', marginTop: 'auto', minHeight: 32, paddingTop: 4 },
+  methodStep: { alignItems: 'center', flexDirection: 'row', gap: 5 },
+  methodLine: { height: 1, marginHorizontal: 9, width: 20 },
 })

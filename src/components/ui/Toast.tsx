@@ -2,8 +2,9 @@ import { createContext, useCallback, useContext, useRef, useState, type ReactNod
 import { Animated, Easing, Pressable, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTheme } from '../../theme/ThemeProvider'
+import IconTile from './IconTile'
 import Txt from './Txt'
-import RezIcon, { type RezIconName } from './RezIcon'
+import type { RezIconName } from './RezIcon'
 
 type ToastIcon = 'check' | 'alert-triangle' | 'download-cloud' | 'info' | 'wifi-off' | 'clock' | 'trash-2'
 
@@ -41,12 +42,14 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const hide = useCallback(() => {
     if (timer.current) clearTimeout(timer.current)
+    anim.stopAnimation()
     Animated.timing(anim, { toValue: 0, duration: 320, easing: Easing.in(Easing.cubic), useNativeDriver: true }).start(() => setMsg(null))
   }, [anim])
 
   const show = useCallback(
     (text: string, icon: ToastIcon = 'check', action?: ToastAction) => {
       if (timer.current) clearTimeout(timer.current)
+      anim.stopAnimation()
       setMsg({ text, icon, action })
       Animated.timing(anim, { toValue: 1, duration: 460, easing: Easing.bezier(0.22, 1, 0.36, 1), useNativeDriver: true }).start()
       // An actionable toast lingers long enough to actually be used.
@@ -75,7 +78,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             },
           ]}
         >
-          <RezIcon name={toastGlyph(msg.icon)} size={15} color="#A995FF" accent="#A995FF" />
+          <IconTile name={toastGlyph(msg.icon)} size={28} iconSize={14} tone="ink" />
           <Txt size={13.5} weight="medium" color="#fff">
             {msg.text}
           </Txt>

@@ -103,7 +103,9 @@ body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-
 .lbl{font-family:'JB',monospace;font-weight:600;font-size:9.5px;letter-spacing:.15em;text-transform:uppercase}
 
 /* — problem header: the page's title, underlined like a notebook — */
-.prob{background:#15121F;color:#fff;border-radius:24px;padding:18px 18px 19px;margin:2px 0 22px;box-shadow:0 14px 32px rgba(21,18,31,.18)}
+.prob{background:#15121F;color:#fff;border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:19px 18px 19px;margin:2px 0 22px;box-shadow:0 14px 32px rgba(21,18,31,.18);position:relative;overflow:hidden}
+.prob::before{content:'';position:absolute;left:18px;top:0;width:92px;height:3px;background:linear-gradient(90deg,#6847F5,#A995FF,transparent)}
+.prob::after{content:'';position:absolute;right:14px;top:14px;width:22px;height:22px;border-top:1px solid rgba(169,149,255,.35);border-right:1px solid rgba(169,149,255,.35)}
 .prob .lbl{color:#A995FF;display:flex;align-items:center;gap:8px}
 .prob .src{margin-left:auto;color:rgba(255,255,255,.42);letter-spacing:.08em}
 .prob .ptx{font-size:19px;margin-top:11px;overflow-x:auto;overflow-y:hidden}
@@ -126,14 +128,17 @@ body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-
 .panel{background:transparent;border-radius:0;padding:0 2px;box-shadow:none}
 .step{display:grid;grid-template-columns:30px 1fr;gap:13px;padding:16px 0;cursor:pointer}
 .step+.step{border-top:1px solid ${c.border}}
-.step .no{width:28px;height:28px;border-radius:10px;background:#15121F;color:#fff;font-family:'JB',monospace;font-weight:600;font-size:11px;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:background .25s,color .25s}
+.step .no{width:30px;height:30px;border-radius:10px;background:#15121F;color:#fff;border:1px solid rgba(21,18,31,.08);font-family:'JB',monospace;font-weight:600;font-size:11px;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:background .18s,color .18s;position:relative;overflow:hidden}
+.step .no::after{content:'';position:absolute;right:3px;top:3px;width:6px;height:6px;border-top:1.5px solid #A995FF;border-right:1.5px solid #A995FF}
 .step.asked .no{background:${c.accent};color:#fff}
 .step .math{font-size:16.5px;overflow-x:auto;overflow-y:hidden;padding-top:2px}
 .step .why{font-size:12px;color:${c.textMuted};margin-top:5px;line-height:1.5}
 /* — answer box: CALM by default (variant A — paper + a blurple accent edge).
    Green is EARNED: only a code-verified answer turns green (.ans.verified),
    with the tick + light sweep. Never a triumphant green on an unchecked answer. */
-.ans{display:flex;gap:12px;align-items:center;background:#15121F;border:none;border-radius:20px;padding:17px 17px;margin-top:14px;position:relative;overflow:hidden;box-shadow:0 12px 28px rgba(21,18,31,.16)}
+.ans{display:flex;gap:12px;align-items:center;background:#15121F;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:17px 17px 17px 20px;margin-top:14px;position:relative;overflow:hidden;box-shadow:0 12px 28px rgba(21,18,31,.16)}
+.ans::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:#6847F5}
+.ans.verified::before{background:#9CFFCC}
 .ans .tick{display:none;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.22);align-items:center;justify-content:center;flex:0 0 auto}
 .ans .tick svg{width:14px;height:14px;stroke:#fff;stroke-width:2.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .ans .ak{display:block;color:rgba(255,255,255,.48)}
@@ -147,7 +152,7 @@ body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-
 .vstat .dot{width:6px;height:6px;border-radius:50%;background:${c.accent};animation:vpulse 1.1s ease-in-out infinite}
 @keyframes vpulse{0%,100%{opacity:.25}50%{opacity:1}}
 .vbadge{display:inline-flex;align-items:center;gap:5px;font-family:'JB',monospace;font-weight:600;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#0E9F6E;background:#fff;border-radius:999px;padding:5px 11px;box-shadow:0 2px 10px rgba(14,159,110,.3);cursor:pointer}
-.graph{border:1px solid ${c.border};border-radius:16px;background:#fff;padding:14px 14px 10px;margin-top:12px}
+.graph{border:1px solid ${c.border};border-radius:18px;background:#fff;padding:14px 14px 10px;margin-top:12px;box-shadow:0 5px 16px rgba(21,18,31,.04)}
 .graph .glabel{font-family:'JB',monospace;font-weight:600;font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:${c.textFaint};margin-bottom:8px}
 .graph svg{width:100%;height:auto;display:block;overflow:visible}
 .grid-l{stroke:rgba(26,22,38,.05);stroke-width:1}
@@ -171,14 +176,15 @@ body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-
 .nl-open{fill:#fff;stroke:#0E9F6E;stroke-width:2.2}
 .nl-plbl{font-family:Georgia,serif;font-style:italic;font-size:11px;fill:#0E9F6E}
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
-.fu{font-family:'IN';font-weight:600;font-size:12.5px;color:#fff;border:none;background:#15121F;border-radius:14px;padding:11px 15px;cursor:pointer}
-.fu.alt{color:${c.accent};background:${c.accentSoft}}
+.fu{font-family:'SG','IN';font-weight:700;font-size:12.5px;color:#fff;border:1px solid #15121F;background:#15121F;border-radius:14px;padding:11px 15px;cursor:pointer}
+.fu.alt{color:${c.accent};background:${c.accentSoft};border-color:rgba(104,71,245,.14)}
 .acts{display:flex;gap:8px;margin-top:10px}
-.act{display:inline-flex;align-items:center;gap:6px;font-family:'IN';font-weight:600;font-size:11.5px;color:${c.textMuted};background:#fff;border:1px solid rgba(26,22,38,.1);border-radius:12px;padding:7px 12px;cursor:pointer}
+.act{display:inline-flex;align-items:center;gap:6px;font-family:'SG','IN';font-weight:700;font-size:11.5px;color:${c.textMuted};background:#fff;border:1px solid rgba(26,22,38,.1);border-radius:12px;padding:8px 12px;cursor:pointer}
 .act svg{width:12px;height:12px;stroke:currentColor;stroke-width:2.1;fill:none;stroke-linecap:round;stroke-linejoin:round}
 
 /* — annotations: the user's questions as post-its — */
-.qa{margin-top:18px;background:${c.accentSoft};border-left:3px solid ${c.accent};border-radius:4px 16px 16px 4px;padding:14px 15px}
+.qa{margin-top:18px;background:${c.accentSoft};border:1px solid rgba(104,71,245,.12);border-radius:17px;padding:14px 15px 14px 18px;position:relative;overflow:hidden}
+.qa::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:${c.accent}}
 .qa .q{font-family:'IN';font-weight:600;font-size:12.5px;color:${c.accent}}
 .qa .a{font-size:13.5px;line-height:1.6;margin-top:6px}
 .qa .a p{margin:.4em 0}
@@ -210,10 +216,8 @@ body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-
 
 /* — reveal motion (house style: clipped rise, no fades on content) — */
 @media (prefers-reduced-motion:no-preference){
-  .rise{animation:rise .5s cubic-bezier(.22,1,.36,1) both}
-  @keyframes rise{from{transform:translateY(18px);opacity:0}to{transform:none;opacity:1}}
-  .ans.celebrate::after{content:'';position:absolute;top:0;bottom:0;width:70px;left:-90px;transform:skewX(-12deg);background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.5),rgba(255,255,255,0));animation:sweep .7s ease-out 1}
-  @keyframes sweep{to{left:120%}}
+  .rise{animation:rise .42s cubic-bezier(.22,1,.36,1) both}
+  @keyframes rise{from{transform:translateY(14px)}to{transform:none}}
   .vbadge .chk{display:inline-block;transform-origin:center;animation:chkpop .45s cubic-bezier(.22,1,.36,1)}
   @keyframes chkpop{from{transform:scale(.3)}to{transform:scale(1)}}
 }

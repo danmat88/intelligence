@@ -1,6 +1,8 @@
 import { StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import * as Haptics from 'expo-haptics'
 import { useTheme } from '../theme/ThemeProvider'
+import IconTile from '../components/ui/IconTile'
 import Press from '../components/ui/Press'
 import RezIcon, { type RezIconName } from '../components/ui/RezIcon'
 import Txt from '../components/ui/Txt'
@@ -27,15 +29,22 @@ export default function AppTabBar({ activeTab, onChange }: Props) {
           return (
             <Press
               key={tab.key}
-              onPress={() => onChange(tab.key)}
+              onPress={() => {
+                if (!active) Haptics.selectionAsync().catch(() => {})
+                onChange(tab.key)
+              }}
               accessibilityRole="tab"
               accessibilityState={{ selected: active }}
               containerStyle={styles.slot}
-              style={[styles.tab, active && { backgroundColor: c.surface }]}
+              style={[styles.tab, active && styles.tabActive]}
             >
-              <RezIcon name={tab.icon} size={18} color={active ? c.text : 'rgba(255,255,255,0.48)'} accent={active ? c.accent : 'rgba(255,255,255,0.48)'} />
-              <Txt weight="bold" size={11.5} color={active ? c.text : 'rgba(255,255,255,0.56)'}>{tab.label}</Txt>
-              {active && <View style={[styles.activeSignal, { backgroundColor: c.accent }]} />}
+              {active ? (
+                <IconTile name={tab.icon} size={30} iconSize={15} selected />
+              ) : (
+                <View style={styles.iconRest}><RezIcon name={tab.icon} size={18} color="rgba(255,255,255,0.48)" accent="#A995FF" /></View>
+              )}
+              <Txt weight="bold" size={11.5} color={active ? '#fff' : 'rgba(255,255,255,0.5)'} style={{ fontFamily: theme.font.displayMedium, letterSpacing: -0.15 }}>{tab.label}</Txt>
+              {active && <View style={styles.activeSignal} />}
             </Press>
           )
         })}
@@ -52,6 +61,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 4,
     maxWidth: 520,
+    borderColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
     padding: 4,
     shadowOpacity: 0.2,
     shadowRadius: 22,
@@ -60,6 +71,8 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   slot: { flex: 1 },
-  tab: { alignItems: 'center', borderRadius: 19, flexDirection: 'row', gap: 7, height: 47, justifyContent: 'center', overflow: 'hidden' },
-  activeSignal: { borderRadius: 999, bottom: 4, height: 3, position: 'absolute', width: 16 },
+  tab: { alignItems: 'center', borderRadius: 18, flexDirection: 'row', gap: 7, height: 49, justifyContent: 'center', overflow: 'hidden' },
+  tabActive: { backgroundColor: 'rgba(255,255,255,0.08)' },
+  iconRest: { alignItems: 'center', height: 30, justifyContent: 'center', width: 30 },
+  activeSignal: { backgroundColor: '#9CFFCC', borderRadius: 999, height: 5, position: 'absolute', right: 9, top: 8, width: 5 },
 })

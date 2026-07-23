@@ -2,12 +2,15 @@ import { useEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { LinearGradient } from 'expo-linear-gradient'
+import * as Haptics from 'expo-haptics'
 import { useTheme } from '../theme/ThemeProvider'
 import { useI18n, type StringKey } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import Overlay from '../components/ui/Overlay'
+import IconTile, { SelectionMark } from '../components/ui/IconTile'
 import Press from '../components/ui/Press'
 import RezIcon, { type RezIconName } from '../components/ui/RezIcon'
+import { SheetHeader, SheetSignals, SignatureHandle } from '../components/ui/SheetChrome'
 import Txt from '../components/ui/Txt'
 import { useToast } from '../components/ui/Toast'
 import { PLANS, type PlanId } from '../billing/plans'
@@ -67,23 +70,17 @@ export default function PaywallSheet({ open, onClose }: { open: boolean; onClose
           { backgroundColor: c.bgElevated, borderColor: c.border, paddingBottom: insets.bottom + 14 },
         ]}
       >
-        <View style={[styles.grab, { backgroundColor: c.border }]} />
-        <View style={styles.head}>
-          <Txt style={[styles.title, { fontFamily: theme.font.display, color: c.text }]}>
+        <SheetSignals />
+        <SignatureHandle />
+        <SheetHeader
+          icon="premium"
+          onClose={onClose}
+          closeLabel={t('a11y.close')}
+          title={<Txt style={[styles.title, { fontFamily: theme.font.display, color: c.text }]}>
             Rezolvo{' '}
             <Txt style={{ fontFamily: theme.font.display, fontSize: 22, color: c.accent }}>Premium</Txt>
-          </Txt>
-          <Press
-            onPress={onClose}
-            hitSlop={8}
-            scaleTo={0.88}
-            accessibilityRole="button"
-            accessibilityLabel={t('a11y.close')}
-            style={[styles.closeBtn, { backgroundColor: c.surfaceAlt }]}
-          >
-            <RezIcon name="close" size={17} color={c.textMuted} accent={c.accent} />
-          </Press>
-        </View>
+          </Txt>}
+        />
 
         {tier === 'premium' ? (
           // Already entitled (fresh purchase or restored): celebrate, don't sell.
@@ -100,9 +97,7 @@ export default function PaywallSheet({ open, onClose }: { open: boolean; onClose
             <View style={styles.benefits}>
               {benefits.map((b) => (
                 <View key={b.key} style={styles.benefit}>
-                  <View style={[styles.benefitIcon, { backgroundColor: c.accentSoft }]}>
-                    <RezIcon name={b.icon} size={18} color="#fff" accent="#A995FF" />
-                  </View>
+                  <IconTile name={b.icon} size={30} iconSize={15} tone="ink" />
                   <Txt size={13} color="rgba(255,255,255,0.78)" style={styles.benefitTxt}>
                     {t(b.key)}
                   </Txt>
@@ -115,7 +110,10 @@ export default function PaywallSheet({ open, onClose }: { open: boolean; onClose
               return (
                 <Press
                   key={p.id}
-                  onPress={() => setSelected(p.id)}
+                  onPress={() => {
+                    if (!active) Haptics.selectionAsync().catch(() => {})
+                    setSelected(p.id)
+                  }}
                   containerStyle={styles.stretch}
                   style={[
                     styles.plan,
@@ -149,6 +147,7 @@ export default function PaywallSheet({ open, onClose }: { open: boolean; onClose
                       {t(p.periodKey)}
                     </Txt>
                   </Txt>
+                  <SelectionMark active={active} />
                 </Press>
               )
             })}
@@ -204,13 +203,9 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 16 },
     elevation: 14,
   },
-  grab: { alignSelf: 'center', width: 34, height: 4, borderRadius: 2, marginBottom: 15 },
-  head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 13, paddingHorizontal: 2 },
   title: { fontSize: 24, letterSpacing: -0.9 },
-  closeBtn: { width: 36, height: 36, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
-  benefits: { backgroundColor: '#15121F', borderRadius: 18, gap: 2, marginBottom: 13, paddingHorizontal: 12, paddingVertical: 8 },
-  benefit: { flexDirection: 'row', alignItems: 'center', gap: 9, minHeight: 34 },
-  benefitIcon: { width: 25, alignItems: 'center', justifyContent: 'center' },
+  benefits: { backgroundColor: '#15121F', borderRadius: 20, gap: 3, marginBottom: 13, paddingHorizontal: 10, paddingVertical: 8 },
+  benefit: { flexDirection: 'row', alignItems: 'center', gap: 9, minHeight: 36 },
   benefitTxt: { flex: 1 },
   stretch: { alignSelf: 'stretch' },
   flex: { flex: 1 },
@@ -219,7 +214,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     borderWidth: 1.5,
-    borderRadius: 16,
+    borderRadius: 18,
     paddingVertical: 11,
     paddingHorizontal: 14,
     marginBottom: 8,

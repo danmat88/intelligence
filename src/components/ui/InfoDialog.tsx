@@ -1,8 +1,8 @@
 import { StyleSheet, View } from 'react-native'
 import { useTheme } from '../../theme/ThemeProvider'
+import IconTile from './IconTile'
 import Overlay from './Overlay'
 import Press from './Press'
-import RezIcon from './RezIcon'
 import Txt from './Txt'
 
 /**
@@ -32,9 +32,11 @@ export default function InfoDialog({
   return (
     <Overlay open={open} onClose={onClose} align="center">
       <View style={[styles.card, { backgroundColor: c.bgElevated }]}>
-        <View style={[styles.badge, { backgroundColor: c.text }]}>
-          <RezIcon name={tone === 'success' ? 'check' : 'alert'} size={21} color="#fff" accent={tone === 'success' ? '#9CFFCC' : '#FFCF70'} />
-        </View>
+        <View pointerEvents="none" style={[styles.signal, { backgroundColor: tone === 'success' ? c.success : c.accent }]} />
+        <IconTile name={tone === 'success' ? 'check' : 'alert'} size={48} iconSize={22} tone={tone === 'success' ? 'mint' : 'amber'} verified={tone === 'success'} />
+        <Txt size={9} color={tone === 'success' ? c.success : c.accent} style={{ fontFamily: theme.font.mono, letterSpacing: 1.1 }}>
+          {tone === 'success' ? 'VERIFICARE REZOLVO' : 'DE REȚINUT'}
+        </Txt>
         <Txt size={19} style={{ fontFamily: theme.font.display, letterSpacing: -0.3 }}>
           {title}
         </Txt>
@@ -42,7 +44,7 @@ export default function InfoDialog({
           {message}
         </Txt>
         <Press onPress={onClose} scaleTo={0.97} style={[styles.btn, { backgroundColor: c.accent }]}>
-          <Txt weight="semibold" size={14.5} color={c.onAccent}>
+          <Txt weight="semibold" size={14.5} color={c.onAccent} style={{ fontFamily: theme.font.displayMedium }}>
             {okLabel}
           </Txt>
         </Press>
@@ -56,6 +58,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 400,
     borderRadius: 30,
+    overflow: 'hidden',
     padding: 24,
     gap: 10,
     shadowColor: '#15121F',
@@ -64,7 +67,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 16 },
     elevation: 12,
   },
-  badge: { width: 46, height: 46, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  signal: { bottom: 0, left: 0, position: 'absolute', top: 0, width: 5 },
   message: { lineHeight: 21 },
   btn: { marginTop: 12, borderRadius: 16, paddingVertical: 14, alignItems: 'center', justifyContent: 'center' },
 })

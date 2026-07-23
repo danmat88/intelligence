@@ -311,6 +311,9 @@ legacy warm-paper screens with redesigned product screens.
 - a code-native Rezolvo vector icon alphabet for product navigation and
   actions; retain third-party symbols only for protected brand marks such as
   Google, and never use emoji as interface icons;
+- icons live in a shared mathematical tile language: hybrid line/solid glyphs,
+  one open-corner signal, violet selected states and mint only for earned or
+  verified state; buttons, selectors and panels reuse that same language;
 - accessible contrast, touch targets, font scaling and screen-reader labels.
 
 The target is a premium educational product, not a generic AI chat app and not
@@ -320,7 +323,11 @@ Motion remains calm and functional:
 
 - preserve the established opaque-push/soft-tail language;
 - avoid simultaneous zoom and opacity transitions;
-- transitions explain navigation or state change;
+- transitions explain navigation or state change and run serially when two
+  heavy surfaces are involved: the old destination leaves before the new one
+  mounts and enters;
+- idle destinations have no looping ambient motion; motion is reserved for
+  direct touch feedback, an actual state transition or honest progress;
 - respect reduced motion;
 - never let polish make input, camera or solving feel slower.
 

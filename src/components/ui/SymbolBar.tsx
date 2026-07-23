@@ -58,16 +58,17 @@ export default function SymbolBar({ onInsert }: { onInsert: (key: MathKey) => vo
           style={[
             styles.key,
             k.tpl
-              ? { backgroundColor: c.text, borderColor: c.text }
+              ? { backgroundColor: c.accentSoft, borderColor: 'rgba(104,71,245,0.18)' }
               : { backgroundColor: c.surface, borderColor: c.border },
           ]}
         >
+          <View style={[styles.corner, { borderColor: k.tpl ? c.accent : c.textFaint }]} />
           <View style={styles.center}>
             <Txt
               size={k.label.length > 2 ? 12.5 : 15.5}
               weight={k.tpl ? 'semibold' : 'medium'}
-              color={k.tpl ? '#fff' : c.text}
-              style={styles.glyph}
+              color={k.tpl ? c.accent : c.text}
+              style={[styles.glyph, { fontFamily: k.tpl ? theme.font.serif : theme.font.medium }]}
             >
               {k.label}
             </Txt>
@@ -83,12 +84,13 @@ const styles = StyleSheet.create({
   key: {
     minWidth: 42,
     height: 38,
-    borderRadius: 14,
+    borderRadius: 13,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 9,
   },
   center: { alignItems: 'center', justifyContent: 'center' },
+  corner: { borderRightWidth: 1.25, borderTopWidth: 1.25, height: 7, position: 'absolute', right: 4, top: 4, width: 7 },
   glyph: { includeFontPadding: false },
 })

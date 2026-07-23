@@ -7,8 +7,10 @@ import { useTheme } from '../theme/ThemeProvider'
 import { useI18n } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import Overlay from '../components/ui/Overlay'
+import IconTile from '../components/ui/IconTile'
 import Press from '../components/ui/Press'
 import RezIcon, { type RezIconName } from '../components/ui/RezIcon'
+import { SheetHeader, SheetSignals, SignatureHandle } from '../components/ui/SheetChrome'
 import { useToast } from '../components/ui/Toast'
 import Txt from '../components/ui/Txt'
 import { subscribeProblems, removeProblem, writeProblem, type Problem } from '../solve/store'
@@ -230,23 +232,26 @@ export default function HistorySheet({
           },
         ]}
       >
-        <View style={[styles.grab, { backgroundColor: c.border }]} />
-        <View style={styles.head}>
-          <Txt style={[styles.title, { fontFamily: theme.font.display, color: c.text }]}>{t('history.title')}</Txt>
-          <Press onPress={onClose} hitSlop={8} scaleTo={0.88} accessibilityRole="button" accessibilityLabel={t('a11y.close')} style={[styles.closeBtn, { backgroundColor: c.surfaceAlt }]}>
-            <RezIcon name="close" size={17} color={c.textMuted} accent={c.accent} />
-          </Press>
-        </View>
+        <SheetSignals />
+        <SignatureHandle />
+        <SheetHeader title={t('history.title')} icon="history" onClose={onClose} closeLabel={t('a11y.close')} />
 
         {loaded && items.length === 0 ? (
           // Brand-new account: the panel keeps its size; the message owns it.
           <View style={styles.empty}>
             <View style={[styles.emptyBadge, { backgroundColor: c.accentSoft }]}>
-              <RezIcon name="history" size={25} color={c.accent} accent={c.accent} />
+              <IconTile name="history" size={54} iconSize={25} tone="violet" />
             </View>
             <Txt size={14} color={c.textMuted} style={styles.emptyTxt}>
               {t('history.empty')}
             </Txt>
+            <View style={styles.emptyFlow} pointerEvents="none">
+              <IconTile name="camera" size={34} iconSize={16} tone="paper" />
+              <View style={[styles.emptyLine, { backgroundColor: c.border }]} />
+              <IconTile name="solve" size={34} iconSize={16} selected />
+              <View style={[styles.emptyLine, { backgroundColor: c.border }]} />
+              <IconTile name="history" size={34} iconSize={16} tone="mint" verified />
+            </View>
           </View>
         ) : (
           <>
@@ -364,9 +369,7 @@ export default function HistorySheet({
                         scaleTo={0.975}
                         style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }]}
                       >
-                        <View style={[styles.cardIcon, { backgroundColor: c.accentSoft }]}>
-                          <RezIcon name={isPhotoProblem(item.p) ? 'camera' : 'write'} size={17} color={c.accent} accent={c.accent} />
-                        </View>
+                        <IconTile name={isPhotoProblem(item.p) ? 'camera' : 'write'} size={40} iconSize={18} tone="violet" />
                         <View style={styles.flex}>
                           <Txt weight="semibold" size={14.5} numberOfLines={1} color={c.text}>
                             {cleanTitle(item.p.title)}
@@ -420,9 +423,7 @@ function StatTile({
 }) {
   return (
     <View style={[styles.stat, { backgroundColor: c.surface, borderColor: c.border }]}>
-      <View style={[styles.statIcon, { backgroundColor: c.accentSoft }]}>
-        <RezIcon name={icon} size={17} color={c.accent} accent={c.accent} />
-      </View>
+      <IconTile name={icon} size={32} iconSize={16} tone="violet" />
       <View style={styles.flex}>
         {value == null ? (
           <View style={[styles.ghostBar, { backgroundColor: c.surfaceAlt, width: 34, marginBottom: 5 }]} />
@@ -479,13 +480,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 16 },
     elevation: 14,
   },
-  grab: { alignSelf: 'center', width: 34, height: 4, borderRadius: 2, marginBottom: 15 },
-  head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 17, paddingHorizontal: 2 },
-  title: { fontSize: 24, letterSpacing: -0.8 },
-  closeBtn: { width: 36, height: 36, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 30, paddingBottom: 40 },
   emptyBadge: { width: 54, height: 54, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   emptyTxt: { marginTop: 12, textAlign: 'center' },
+  emptyFlow: { alignItems: 'center', flexDirection: 'row', marginTop: 22 },
+  emptyLine: { height: 1, marginHorizontal: 7, width: 30 },
   stats: { flexDirection: 'row', gap: 8, marginBottom: 10 },
   stat: {
     flex: 1,
@@ -497,7 +496,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
   },
-  statIcon: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   search: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -517,7 +515,7 @@ const styles = StyleSheet.create({
   listPad: { paddingBottom: 8 },
   sectionLabel: { letterSpacing: 1.1, marginBottom: 8, marginTop: 4, paddingHorizontal: 4 },
   noMatch: { textAlign: 'center', paddingVertical: 24 },
-  card: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 19, padding: 14, marginBottom: 7 },
+  card: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 20, padding: 12, marginBottom: 7, shadowColor: '#15121F', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.025, shadowRadius: 8, elevation: 1 },
   cardIcon: { width: 38, height: 38, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   flex: { flex: 1 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },

@@ -1,6 +1,6 @@
 import { useEffect, type ReactNode } from 'react'
 import { BackHandler, Keyboard, Pressable, StyleSheet, View } from 'react-native'
-import Animated, { Easing, FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated'
+import Animated, { Easing, FadeIn, FadeOut, SlideInDown, SlideOutDown, useReducedMotion } from 'react-native-reanimated'
 
 const EASE = Easing.bezier(0.22, 1, 0.36, 1)
 
@@ -27,6 +27,9 @@ export default function Overlay({
   align?: 'bottom' | 'center'
   children: ReactNode
 }) {
+  const reduceMotion = useReducedMotion()
+  const enterMs = reduceMotion ? 1 : 400
+  const exitMs = reduceMotion ? 1 : 280
   useEffect(() => {
     // Keyboard rule: an overlay is a context switch — the keyboard never
     // stays up across one, in either direction (covers "open settings with
@@ -49,16 +52,16 @@ export default function Overlay({
   return (
     <View style={[StyleSheet.absoluteFill, styles.host]} pointerEvents="box-none">
       <Animated.View
-        entering={FadeIn.duration(360)}
-        exiting={FadeOut.duration(300)}
+        entering={FadeIn.duration(reduceMotion ? 1 : 240)}
+        exiting={FadeOut.duration(reduceMotion ? 1 : 220)}
         style={[StyleSheet.absoluteFill, styles.scrim]}
       >
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
       </Animated.View>
       <Animated.View
         pointerEvents="box-none"
-        entering={SlideInDown.duration(500).easing(EASE)}
-        exiting={SlideOutDown.duration(340).easing(Easing.in(Easing.cubic))}
+        entering={SlideInDown.duration(enterMs).easing(EASE)}
+        exiting={SlideOutDown.duration(exitMs).easing(Easing.in(Easing.cubic))}
         style={align === 'bottom' ? styles.bottom : styles.center}
       >
         {children}

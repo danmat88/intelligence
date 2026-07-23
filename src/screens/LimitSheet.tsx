@@ -6,8 +6,10 @@ import { useTheme } from '../theme/ThemeProvider'
 import { useI18n } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import Overlay from '../components/ui/Overlay'
+import IconTile from '../components/ui/IconTile'
 import Press from '../components/ui/Press'
 import RezIcon from '../components/ui/RezIcon'
+import { SheetSignals, SignatureHandle } from '../components/ui/SheetChrome'
 import Txt from '../components/ui/Txt'
 
 /**
@@ -62,10 +64,9 @@ export default function LimitSheet({
           { backgroundColor: c.text, borderColor: 'rgba(255,255,255,0.10)', paddingBottom: insets.bottom + 18 },
         ]}
       >
-        <View style={[styles.grab, { backgroundColor: 'rgba(255,255,255,0.18)' }]} />
-        <View style={styles.badge}>
-          <RezIcon name={kind === 'chat' ? 'message' : 'solve'} size={25} color="#A995FF" accent="#A995FF" />
-        </View>
+        <SheetSignals dark />
+        <SignatureHandle dark />
+        <IconTile name={kind === 'chat' ? 'message' : 'solve'} size={58} iconSize={26} tone="ink" />
         <Txt style={[styles.title, { fontFamily: theme.font.display, color: '#fff' }]}>
           {t(kind === 'chat' ? 'limit.chat.title' : 'limit.title', { n: limit })}
         </Txt>
@@ -142,7 +143,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 18 },
     elevation: 16,
   },
-  grab: { alignSelf: 'center', width: 34, height: 4, borderRadius: 2, marginBottom: 20 },
   badge: { width: 58, height: 58, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.09)' },
   title: { fontSize: 24, letterSpacing: -0.8, textAlign: 'center', marginTop: 15 },
   sub: { textAlign: 'center', marginTop: 8, marginBottom: 20, lineHeight: 20 },
