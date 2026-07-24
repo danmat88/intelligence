@@ -4,8 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAuth } from '../../auth/AuthProvider'
 import { useTheme } from '../../theme/ThemeProvider'
 import CrossFade from './CrossFade'
-import IconTile from './IconTile'
 import Press from './Press'
+import RezIcon from './RezIcon'
 import Txt from './Txt'
 
 export default function AppHeader({ onOpenSettings, children }: { onOpenSettings: () => void; children?: ReactNode }) {
@@ -18,7 +18,9 @@ export default function AppHeader({ onOpenSettings, children }: { onOpenSettings
     <View style={[styles.host, { paddingTop: insets.top + 10 }]}>
       <View style={styles.inner}>
         <View style={styles.lockup}>
-          <IconTile name="solve" size={31} iconSize={17} tone="violet" />
+          <View style={[styles.brandGlyph, { backgroundColor: c.accentSoft }]}>
+            <RezIcon name="solve" size={18} color={c.accent} accent={c.accent} strokeWidth={1.95} />
+          </View>
           <Txt style={[styles.wordmark, { color: c.text, fontFamily: theme.font.display }]}>rezolvo</Txt>
         </View>
         <View style={styles.actions}>
@@ -39,7 +41,7 @@ export default function AppHeader({ onOpenSettings, children }: { onOpenSettings
               ) : user?.photo ? (
                 <Image source={{ uri: user.photo }} style={styles.avatar} />
               ) : (
-                <IconTile name={user?.isAnonymous ? 'user' : 'settings'} size={38} iconSize={18} tone={user?.isAnonymous ? 'ink' : 'paper'} />
+                <RezIcon name={user?.isAnonymous ? 'user' : 'settings'} size={18} color={user?.isAnonymous ? '#fff' : c.text} accent={c.accent} />
               )}
             </Press>
           </CrossFade>
@@ -53,6 +55,7 @@ const styles = StyleSheet.create({
   host: { flexShrink: 0, paddingBottom: 8, paddingHorizontal: 18 },
   inner: { alignItems: 'center', alignSelf: 'center', flexDirection: 'row', justifyContent: 'space-between', maxWidth: 720, width: '100%' },
   lockup: { alignItems: 'center', flexDirection: 'row', gap: 8 },
+  brandGlyph: { alignItems: 'center', borderRadius: 10, height: 30, justifyContent: 'center', width: 30 },
   wordmark: { fontSize: 20.5, letterSpacing: -1 },
   actions: { alignItems: 'center', flexDirection: 'row', gap: 8 },
   accountSlot: { height: 38, width: 38 },

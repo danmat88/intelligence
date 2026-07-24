@@ -18,7 +18,6 @@ import ThreadDocument, { type DocLabels } from '../components/ui/ThreadDocument'
 import SymbolBar, { type MathKey } from '../components/ui/SymbolBar'
 import MathPreview from '../components/ui/MathPreview'
 import AppHeader from '../components/ui/AppHeader'
-import IconTile from '../components/ui/IconTile'
 import RezIcon from '../components/ui/RezIcon'
 import type { SolveEntryAction } from '../navigation/types'
 import { isMathInput, plainToLatex } from '../solve/mathInput'
@@ -121,10 +120,6 @@ export default function SolverScreen({ entryAction, onEntryActionHandled, onChro
   // The daily-cap upsell (server said DAILY_LIMIT/CHAT_LIMIT) and the paywall.
   const [limitHit, setLimitHit] = useState<{ kind: 'solve' | 'chat'; limit: number; guest: boolean } | null>(null)
   const [paywallOpen, setPaywallOpen] = useState(false)
-  const sheetSwapRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  useEffect(() => () => {
-    if (sheetSwapRef.current) clearTimeout(sheetSwapRef.current)
-  }, [])
   // Today's metered usage ("2/5 azi" pill) — fed by the proxy's response
   // headers via src/ai/usage. Null until the first metered solve (or premium).
   const [usage, setUsage] = useState<DailyUsage | null>(null)
@@ -822,9 +817,9 @@ export default function SolverScreen({ entryAction, onEntryActionHandled, onChro
             hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel={t('history.title')}
-            style={styles.iconBtn}
+            style={[styles.iconBtn, { backgroundColor: c.surface, borderColor: c.border }]}
           >
-            <IconTile name="history" size={38} iconSize={18} tone="paper" />
+            <RezIcon name="history" size={19} color={c.textMuted} accent={c.accent} />
           </Press>
       </AppHeader>
 
@@ -838,9 +833,9 @@ export default function SolverScreen({ entryAction, onEntryActionHandled, onChro
             <View style={styles.heroHeading}>
               <View style={styles.heroHeadingCopy}>
                 <Txt size={9.5} color={c.accent} style={[styles.kicker, { fontFamily: theme.font.mono }]}>SOLVER MATEMATIC</Txt>
-                <Txt numberOfLines={1} style={[styles.heroTitle, { fontFamily: theme.font.display, color: c.text }]}>Pune problema aici.</Txt>
+                <Txt numberOfLines={1} style={[styles.heroTitle, { fontFamily: theme.font.display, color: c.text }]}>Pune problema pe masă.</Txt>
               </View>
-              <IconTile name="solve" size={43} iconSize={22} tone="violet" />
+              <RezIcon name="solve" size={27} color={c.accent} accent={c.accent} strokeWidth={1.9} />
             </View>
 
             <View style={[styles.scanStage, { backgroundColor: c.text, shadowColor: c.text }]}>
@@ -855,13 +850,11 @@ export default function SolverScreen({ entryAction, onEntryActionHandled, onChro
               </View>
 
               <View style={styles.scanBody}>
-                <View style={styles.scanPortalCluster}>
-                  <View pointerEvents="none" style={[styles.portalCorner, styles.portalTL]} />
-                  <View pointerEvents="none" style={[styles.portalCorner, styles.portalBR]} />
-                  <Press onPress={() => snap('camera')} accessibilityLabel="Scanează problema" style={styles.scanPortal}>
-                    <IconTile name="camera" size={64} iconSize={27} selected />
-                  </Press>
-                </View>
+                <Press onPress={() => snap('camera')} accessibilityLabel="Scanează problema" style={[styles.scanPortal, { backgroundColor: c.accent }]}>
+                  <View style={styles.scanRing}>
+                    <RezIcon name="camera" size={27} color="#fff" accent="#B8FFC9" />
+                  </View>
+                </Press>
                 <View style={styles.scanCopy}>
                   <Txt style={[styles.scanTitle, { fontFamily: theme.font.display }]}>Scanează. Rezolvă. Înțelege.</Txt>
                   <Txt numberOfLines={2} size={11.5} color="rgba(255,255,255,0.55)" style={styles.scanDescription}>Încadrează exercițiul complet; explicația vine pas cu pas.</Txt>
@@ -870,13 +863,12 @@ export default function SolverScreen({ entryAction, onEntryActionHandled, onChro
 
               <View style={styles.scanDock}>
                 <Press onPress={() => snap('camera')} containerStyle={styles.scanPrimarySlot} style={[styles.scanPrimary, { backgroundColor: c.accent }]}>
-                  <View style={styles.scanButtonGlyph}><RezIcon name="camera" size={15} color="#fff" accent="#9CFFCC" /></View>
-                  <Txt weight="bold" size={12.5} color="#fff" style={{ fontFamily: theme.font.displayMedium }}>Deschide camera</Txt>
+                  <Txt weight="bold" size={12.5} color="#fff">Deschide camera</Txt>
                   <RezIcon name="arrow" size={16} color="#fff" />
                 </Press>
                 <Press onPress={() => snap('library')} style={styles.galleryAction}>
-                  <View style={styles.galleryGlyph}><RezIcon name="gallery" size={16} color="#fff" accent="#A995FF" /></View>
-                  <Txt weight="semibold" size={11} color="rgba(255,255,255,0.72)" style={{ fontFamily: theme.font.displayMedium }}>Galerie</Txt>
+                  <RezIcon name="gallery" size={18} color="#fff" accent="#A995FF" />
+                  <Txt weight="semibold" size={11} color="rgba(255,255,255,0.72)">Galerie</Txt>
                 </Press>
               </View>
             </View>
@@ -941,9 +933,9 @@ export default function SolverScreen({ entryAction, onEntryActionHandled, onChro
               hitSlop={6}
               accessibilityRole="button"
               accessibilityLabel={t('a11y.camera')}
-              style={styles.camBtn}
+              style={[styles.camBtn, { backgroundColor: c.accentSoft }]}
             >
-              <IconTile name="camera" size={42} iconSize={18} tone="violet" />
+              <RezIcon name="camera" size={18} color={c.accent} accent={c.accent} />
             </Press>
             <TextInput
               ref={inputRef}
@@ -979,9 +971,18 @@ export default function SolverScreen({ entryAction, onEntryActionHandled, onChro
                   <View style={styles.stopSquare} />
                 </View>
               ) : input.trim() ? (
-                <IconTile name="send" size={42} iconSize={18} selected />
+                <LinearGradient
+                  colors={theme.gradient.brand as [string, string]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.sendFill}
+                >
+                  <RezIcon name="send" size={18} color={c.onAccent} accent={c.onAccent} />
+                </LinearGradient>
               ) : (
-                <IconTile name="send" size={42} iconSize={18} tone="paper" disabled />
+                <View style={[styles.sendFill, { backgroundColor: c.surfaceAlt }]}>
+                  <RezIcon name="send" size={18} color={c.textFaint} accent={c.textFaint} />
+                </View>
               )}
             </Press>
           </View>
@@ -1020,14 +1021,7 @@ export default function SolverScreen({ entryAction, onEntryActionHandled, onChro
         onClose={() => setLimitHit(null)}
         onPremium={() => {
           setLimitHit(null)
-          if (sheetSwapRef.current) clearTimeout(sheetSwapRef.current)
-          // The limit sheet leaves completely before Premium enters. Keeping
-          // one moving surface at a time avoids both visual collision and a
-          // double heavy mount on slower Android phones.
-          sheetSwapRef.current = setTimeout(() => {
-            sheetSwapRef.current = null
-            setPaywallOpen(true)
-          }, 300)
+          setPaywallOpen(true)
         }}
       />
       <PaywallSheet open={paywallOpen} onClose={() => setPaywallOpen(false)} />
@@ -1057,7 +1051,7 @@ function bubbleEnter(v: EntryAnimationsValues) {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   column: { flex: 1, width: '100%', maxWidth: 720, alignSelf: 'center' },
-  iconBtn: { height: 38, width: 38 },
+  iconBtn: { width: 38, height: 38, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   usagePill: {
     height: 26,
     alignSelf: 'center',
@@ -1088,20 +1082,15 @@ const styles = StyleSheet.create({
   scanStatus: { alignItems: 'center', flexDirection: 'row', gap: 7 },
   scanDot: { backgroundColor: '#9CFFCC', borderRadius: 4, height: 6, width: 6 },
   scanBody: { alignItems: 'center', flex: 1, flexDirection: 'row', gap: 15, paddingVertical: 9 },
-  scanPortal: { shadowColor: '#6847F5', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 17, elevation: 8 },
-  scanPortalCluster: { alignItems: 'center', height: 78, justifyContent: 'center', width: 78 },
-  portalCorner: { borderColor: 'rgba(169,149,255,0.62)', height: 14, position: 'absolute', width: 14 },
-  portalTL: { borderLeftWidth: 1.4, borderTopWidth: 1.4, left: 0, top: 0 },
-  portalBR: { borderBottomWidth: 1.4, borderRightWidth: 1.4, bottom: 0, right: 0 },
+  scanPortal: { alignItems: 'center', borderRadius: 32, height: 64, justifyContent: 'center', shadowColor: '#6847F5', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 17, width: 64 },
+  scanRing: { alignItems: 'center', borderColor: 'rgba(255,255,255,0.45)', borderRadius: 23, borderWidth: 1, height: 46, justifyContent: 'center', width: 46 },
   scanCopy: { flex: 1 },
   scanTitle: { color: '#fff', fontSize: 20, letterSpacing: -0.65, lineHeight: 23 },
   scanDescription: { lineHeight: 16.5, marginTop: 5, maxWidth: 230 },
   scanDock: { alignItems: 'center', borderTopColor: 'rgba(255,255,255,0.1)', borderTopWidth: 1, flexDirection: 'row', gap: 5, paddingTop: 10 },
   scanPrimarySlot: { flex: 1 },
-  scanPrimary: { alignItems: 'center', borderRadius: 14, flexDirection: 'row', gap: 7, height: 40, paddingHorizontal: 6 },
-  scanButtonGlyph: { alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.13)', borderRadius: 9, height: 28, justifyContent: 'center', width: 28 },
-  galleryAction: { alignItems: 'center', flexDirection: 'row', gap: 6, height: 40, justifyContent: 'center', paddingHorizontal: 5 },
-  galleryGlyph: { alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.07)', borderColor: 'rgba(255,255,255,0.08)', borderRadius: 9, borderWidth: 1, height: 28, justifyContent: 'center', width: 28 },
+  scanPrimary: { alignItems: 'center', borderRadius: 14, flexDirection: 'row', height: 40, justifyContent: 'space-between', paddingHorizontal: 13 },
+  galleryAction: { alignItems: 'center', flexDirection: 'row', gap: 6, height: 40, justifyContent: 'center', paddingHorizontal: 8 },
   examplesHead: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 },
   examples: { flexDirection: 'row', gap: 7, paddingTop: 7 },
   exampleSlot: { flex: 1 },
@@ -1125,7 +1114,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   fieldIdle: { minHeight: 58 },
-  camBtn: { height: 42, width: 42 },
+  camBtn: { width: 42, height: 42, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   input: { flex: 1, fontSize: 15.5, fontFamily: 'Inter_400Regular', maxHeight: 120, paddingVertical: 8, paddingTop: 9 },
   sendBtn: { width: 42, height: 42, borderRadius: 15, overflow: 'hidden' },
   sendFill: { width: 42, height: 42, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },

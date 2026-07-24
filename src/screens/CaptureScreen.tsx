@@ -26,7 +26,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTheme } from '../theme/ThemeProvider'
 import { useI18n } from '../i18n'
 import CrossFade from '../components/ui/CrossFade'
-import IconTile from '../components/ui/IconTile'
 import Press from '../components/ui/Press'
 import RezIcon from '../components/ui/RezIcon'
 import Txt from '../components/ui/Txt'
@@ -270,8 +269,6 @@ function CameraStage({
     if (!ready || busy || !cam.current) return
     setBusy(true)
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {})
-    shutter.stopAnimation()
-    flash.stopAnimation()
     Animated.sequence([
       Animated.timing(shutter, { toValue: 1, duration: 90, easing: Easing.out(Easing.quad), useNativeDriver: true }),
       Animated.spring(shutter, { toValue: 0, useNativeDriver: true, damping: 12, stiffness: 320 }),
@@ -306,8 +303,8 @@ function CameraStage({
     <View style={styles.flex}>
       {/* top chrome */}
       <View style={[styles.topBar, { paddingTop: insets.top + 6 }]}>
-        <Press onPress={onClose} hitSlop={10} accessibilityRole="button" accessibilityLabel={t('a11y.close')}>
-          <IconTile name="close" size={40} iconSize={18} tone="ink" />
+        <Press onPress={onClose} hitSlop={10} accessibilityRole="button" accessibilityLabel={t('a11y.close')} style={styles.chromeBtn}>
+          <RezIcon name="close" size={19} color={V.text} accent={V.accent} />
         </Press>
         <Txt size={15} color={V.text} style={[styles.chromeTitle, { fontFamily: theme.font.display }]}>
           {t('capture.title')}
@@ -317,9 +314,9 @@ function CameraStage({
           hitSlop={10}
           accessibilityRole="button"
           accessibilityLabel={t('a11y.torch')}
-          style={styles.chromeControl}
+          style={[styles.chromeBtn, torch && { backgroundColor: 'rgba(160,140,255,0.22)', borderColor: V.accent }]}
         >
-          <IconTile name="premium" size={40} iconSize={18} tone={torch ? 'violet' : 'ink'} selected={torch} />
+          <RezIcon name="premium" size={18} color={torch ? V.accent : V.text} accent={torch ? V.accent : V.text} />
         </Press>
       </View>
 
@@ -337,7 +334,7 @@ function CameraStage({
           />
         ) : live && perm ? (
           <View style={[styles.flex, styles.center, styles.deniedPad]}>
-            <IconTile name="camera-off" size={58} iconSize={27} tone="ink" />
+            <RezIcon name="camera-off" size={31} color={V.faint} accent={V.accent} />
             <Txt size={14} color={V.soft} style={styles.deniedTxt}>
               {t('capture.denied')}
             </Txt>
@@ -386,10 +383,10 @@ function CameraStage({
       {/* bottom controls: gallery · shutter · type-instead */}
       <View style={[styles.camBar, { paddingBottom: insets.bottom + 14 }]}>
         <View style={styles.side}>
-          <Press onPress={pick} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('hero.library')}>
-            <IconTile name="gallery" size={48} iconSize={21} tone="ink" />
+          <Press onPress={pick} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('hero.library')} style={styles.sideBtn}>
+            <RezIcon name="gallery" size={21} color={V.text} accent={V.accent} />
           </Press>
-          <Txt size={10.5} weight="semibold" color={V.faint} style={[styles.sideLbl, { fontFamily: theme.font.displayMedium }]}>
+          <Txt size={10.5} weight="semibold" color={V.faint} style={styles.sideLbl}>
             {t('capture.lblGallery')}
           </Txt>
         </View>
@@ -411,10 +408,10 @@ function CameraStage({
           </Animated.View>
         </Press>
         <View style={styles.side}>
-          <Press onPress={onTypeInstead} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('capture.typeInstead')}>
-            <IconTile name="write" size={48} iconSize={21} tone="ink" />
+          <Press onPress={onTypeInstead} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('capture.typeInstead')} style={styles.sideBtn}>
+            <RezIcon name="write" size={21} color={V.text} accent={V.accent} />
           </Press>
-          <Txt size={10.5} weight="semibold" color={V.faint} style={[styles.sideLbl, { fontFamily: theme.font.displayMedium }]}>
+          <Txt size={10.5} weight="semibold" color={V.faint} style={styles.sideLbl}>
             {t('capture.lblType')}
           </Txt>
         </View>
@@ -554,8 +551,9 @@ function TrimStage({
           hitSlop={10}
           accessibilityRole="button"
           accessibilityLabel={backIcon === 'x' ? t('a11y.close') : t('crop.retake')}
+          style={styles.chromeBtn}
         >
-          <IconTile name={backIcon === 'x' ? 'close' : 'back'} size={40} iconSize={18} tone="ink" />
+          <RezIcon name={backIcon === 'x' ? 'close' : 'back'} size={19} color={V.text} accent={V.accent} />
         </Press>
         <Txt size={15} color={V.text} style={[styles.chromeTitle, { fontFamily: theme.font.display }]}>
           {t('crop.title')}
@@ -621,8 +619,9 @@ function TrimStage({
           disabled={busy}
           accessibilityRole="button"
           accessibilityLabel={ghostLabel}
+          style={styles.ghostTile}
         >
-          <IconTile name={ghostIcon === 'image' ? 'gallery' : 'retry'} size={58} iconSize={22} tone="ink" />
+          <RezIcon name={ghostIcon === 'image' ? 'gallery' : 'retry'} size={19} color={V.soft} accent={V.accent} />
         </Press>
         {/* "Obturator": the camera's shutter disc lives INSIDE the solve bar —
             you press the shutter a second time and the problem gets solved.
@@ -664,7 +663,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 8,
   },
-  chromeControl: { height: 40, width: 40 },
+  chromeBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 13,
+    borderWidth: 1,
+    borderColor: V.line,
+    backgroundColor: V.fill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   chromeGhost: { width: 40, height: 40 },
   chromeTitle: { letterSpacing: -0.2 },
 
@@ -700,15 +708,24 @@ const styles = StyleSheet.create({
   },
   side: { alignItems: 'center', gap: 6, width: 60 },
   sideLbl: { letterSpacing: 0.3 },
+  sideBtn: {
+    width: 46,
+    height: 46,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: V.line,
+    backgroundColor: V.fill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   warming: { marginTop: 10 },
   flash: { backgroundColor: '#FFFFFF' },
   shutterRing: {
     width: 74,
     height: 74,
     borderRadius: 37,
-    borderWidth: 3,
-    borderColor: V.accent,
-    backgroundColor: 'rgba(160,140,255,0.12)',
+    borderWidth: 4,
+    borderColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -759,6 +776,16 @@ const styles = StyleSheet.create({
   },
   // "Obturator" bar — compact icon tile + a solve bar carrying the shutter disc.
   flexOne: { flex: 1 },
+  ghostTile: {
+    width: 58,
+    height: 58,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.16)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   solveBar: {
     flexDirection: 'row',
     alignItems: 'center',

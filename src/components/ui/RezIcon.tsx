@@ -4,9 +4,6 @@ export type RezIconName =
   | 'home'
   | 'solve'
   | 'practice'
-  | 'exam-en'
-  | 'exam-bac'
-  | 'math'
   | 'camera'
   | 'gallery'
   | 'write'
@@ -75,41 +72,17 @@ export default function RezIcon({ name, size = 20, color = '#15121F', accent = c
       case 'solve':
         return (
           <>
-            <Path d="M3.2 11.8h3.1l2.15 6.25L12.75 5h7.8" {...line} strokeWidth={2.05} />
-            <Path d="m14.2 16.1 2.05 2.05 4.2-4.5" {...line} stroke={accent} strokeWidth={2.1} />
-            <Rect x="18.35" y="4" width="2.7" height="2.7" rx="0.7" fill={accent} />
+            <Path d="M8 3.8H5.2a1.4 1.4 0 0 0-1.4 1.4V8M16 3.8h2.8a1.4 1.4 0 0 1 1.4 1.4V8M20.2 16v2.8a1.4 1.4 0 0 1-1.4 1.4H16M8 20.2H5.2a1.4 1.4 0 0 1-1.4-1.4V16" {...line} />
+            <Path d="m7.4 12.3 2.5 2.5 5.9-6" {...line} stroke={accent} strokeWidth={2.2} />
           </>
         )
       case 'practice':
         return (
           <>
-            <Path d="M3.8 5.4c3.1-.7 5.8.1 8.2 2.2v12c-2.4-2.1-5.1-2.8-8.2-2.1ZM20.2 5.4c-3.1-.7-5.8.1-8.2 2.2v12c2.4-2.1 5.1-2.8 8.2-2.1Z" {...line} />
-            <Path d="M7 9.1c1.3 0 2.3.3 3.2.9M17 9.1c-1.3 0-2.3.3-3.2.9" {...line} />
-            <Rect x="17.4" y="4.2" width="2.5" height="5.2" rx="0.8" fill={accent} />
-          </>
-        )
-      case 'exam-en':
-        return (
-          <>
-            <Path d="M3.7 5.6c3.2-.8 6 .1 8.3 2.2v11.7c-2.3-2-5.1-2.7-8.3-2ZM20.3 5.6c-3.2-.8-6 .1-8.3 2.2v11.7c2.3-2 5.1-2.7 8.3-2Z" {...line} />
-            <Path d="M7 9.6h2.6M14.4 9.6H17M7 12.6h2.6" {...line} />
-            <Circle cx="18.5" cy="15.5" r="1.35" {...signal} />
-          </>
-        )
-      case 'exam-bac':
-        return (
-          <>
-            <Path d="m3.1 9.2 8.9-5 8.9 5-8.9 5Z" {...line} />
-            <Path d="M6.3 11v5.1c3.8 2.7 7.6 2.7 11.4 0V11M20.9 9.2v6.3" {...line} />
-            <Circle cx="20.9" cy="17.6" r="1.35" {...signal} />
-          </>
-        )
-      case 'math':
-        return (
-          <>
-            <Path d="M4 19.5V4.5M3 16.5h17.5" {...line} />
-            <Path d="M6.2 15.2c2.2-7.5 6-7.5 8.2 0" {...line} stroke={accent} strokeWidth={2} />
-            <Path d="m17.4 4.8 1.5 1.5 2.2-2.4" {...line} stroke={accent} />
+            <Rect x="5.2" y="3.5" width="12.8" height="15.2" rx="2.2" {...line} />
+            <Path d="M8.2 7.6h5.5M8.2 11.3h7.1M8.2 15h4.4" {...line} />
+            <Circle cx="17.8" cy="17.8" r="2.7" fill={accent} />
+            <Path d="m16.6 17.8.8.8 1.6-1.8" fill="none" stroke="#fff" strokeWidth="1.15" strokeLinecap="round" strokeLinejoin="round" />
           </>
         )
       case 'camera':

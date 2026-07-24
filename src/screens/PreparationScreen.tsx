@@ -1,8 +1,6 @@
 import { StyleSheet, useWindowDimensions, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
-import * as Haptics from 'expo-haptics'
 import AppHeader from '../components/ui/AppHeader'
-import IconTile, { SelectionMark, type IconTileTone } from '../components/ui/IconTile'
 import Press from '../components/ui/Press'
 import RezIcon, { type RezIconName } from '../components/ui/RezIcon'
 import ScreenBackground from '../components/ui/ScreenBackground'
@@ -26,10 +24,10 @@ const profiles: { value: BacProfile; short: string }[] = [
   { value: 'Pedagogic', short: 'Pedagogic' },
 ]
 
-const modes: { icon: RezIconName; title: string; copy: string; tone: IconTileTone }[] = [
-  { icon: 'drill', title: 'Ghidat', copy: 'pas cu pas', tone: 'violet' },
-  { icon: 'simulate', title: 'Simulare', copy: 'ca la examen', tone: 'amber' },
-  { icon: 'learn', title: 'Studiază', copy: 'înțelegi metoda', tone: 'mint' },
+const modes: { icon: RezIconName; title: string; copy: string }[] = [
+  { icon: 'learn', title: 'Învață', copy: 'înțelegi metoda' },
+  { icon: 'drill', title: 'Exersează', copy: 'lucrezi ghidat' },
+  { icon: 'simulate', title: 'Simulează', copy: 'ca la examen' },
 ]
 
 export default function PreparationScreen({ goal, bacProfile, onSelectGoal, onSelectBacProfile, onOpenSettings, onSolve }: Props) {
@@ -39,16 +37,6 @@ export default function PreparationScreen({ goal, bacProfile, onSelectGoal, onSe
   const exam = goal ?? 'en'
   const isEn = exam === 'en'
   const compact = height < 760
-  const chooseExam = (next: Exclude<ExamGoal, null>) => {
-    if (next === exam) return
-    Haptics.selectionAsync().catch(() => {})
-    onSelectGoal(next)
-  }
-  const chooseProfile = (profile: BacProfile) => {
-    if (profile === bacProfile) return
-    Haptics.selectionAsync().catch(() => {})
-    onSelectBacProfile(profile)
-  }
 
   return (
     <ScreenBackground>
@@ -59,23 +47,17 @@ export default function PreparationScreen({ goal, bacProfile, onSelectGoal, onSe
             <Txt size={9.5} color={c.accent} style={[styles.eyebrow, { fontFamily: theme.font.mono }]}>PREGĂTIRE PERSONALIZATĂ</Txt>
             <Txt numberOfLines={1} maxFontSizeMultiplier={1.12} style={[styles.title, compact && styles.titleCompact, { color: c.text, fontFamily: theme.font.display }]}>Examenul, fără haos.</Txt>
           </View>
-          <IconTile name="practice" size={43} iconSize={22} tone="violet" />
+          <RezIcon name="spark" size={27} color={c.accent} accent={c.accent} />
         </View>
 
         <View style={[styles.switcher, { backgroundColor: c.surfaceAlt }]}>
-          <Press onPress={() => chooseExam('en')} containerStyle={styles.switchSlot} style={[styles.switch, isEn && { backgroundColor: c.text }]}>
-            <IconTile name="exam-en" size={30} iconSize={15} tone={isEn ? 'ink' : 'paper'} selected={isEn} />
-            <View style={styles.switchCopy}>
-              <Txt weight="bold" size={12} color={isEn ? '#fff' : c.textMuted} style={{ fontFamily: theme.font.displayMedium }}>Evaluare</Txt>
-              <Txt size={8.5} color={isEn ? '#A995FF' : c.textFaint} style={{ fontFamily: theme.font.mono }}>CLASA VIII</Txt>
-            </View>
+          <Press onPress={() => onSelectGoal('en')} containerStyle={styles.switchSlot} style={[styles.switch, isEn && { backgroundColor: c.text }]}>
+            <Txt size={9.5} color={isEn ? '#A995FF' : c.textFaint} style={{ fontFamily: theme.font.mono }}>VIII</Txt>
+            <Txt weight="bold" size={12.5} color={isEn ? '#fff' : c.textMuted}>Evaluare</Txt>
           </Press>
-          <Press onPress={() => chooseExam('bac')} containerStyle={styles.switchSlot} style={[styles.switch, !isEn && { backgroundColor: c.text }]}>
-            <IconTile name="exam-bac" size={30} iconSize={15} tone={!isEn ? 'ink' : 'paper'} selected={!isEn} />
-            <View style={styles.switchCopy}>
-              <Txt weight="bold" size={12} color={!isEn ? '#fff' : c.textMuted} style={{ fontFamily: theme.font.displayMedium }}>Bacalaureat</Txt>
-              <Txt size={8.5} color={!isEn ? '#A995FF' : c.textFaint} style={{ fontFamily: theme.font.mono }}>CLASA XII</Txt>
-            </View>
+          <Press onPress={() => onSelectGoal('bac')} containerStyle={styles.switchSlot} style={[styles.switch, !isEn && { backgroundColor: c.text }]}>
+            <Txt size={9.5} color={!isEn ? '#A995FF' : c.textFaint} style={{ fontFamily: theme.font.mono }}>XII</Txt>
+            <Txt weight="bold" size={12.5} color={!isEn ? '#fff' : c.textMuted}>Bacalaureat</Txt>
           </Press>
         </View>
 
@@ -110,8 +92,8 @@ export default function PreparationScreen({ goal, bacProfile, onSelectGoal, onSe
               {profiles.map(({ value, short }) => {
                 const active = value === bacProfile
                 return (
-                  <Press key={value} onPress={() => chooseProfile(value)} containerStyle={styles.profileSlot} style={[styles.profile, { borderColor: active ? c.accent : c.border, backgroundColor: active ? c.accentSoft : 'rgba(255,255,255,0.65)' }]}>
-                    <SelectionMark active={active} />
+                  <Press key={value} onPress={() => onSelectBacProfile(value)} containerStyle={styles.profileSlot} style={[styles.profile, { borderColor: active ? c.accent : c.border, backgroundColor: active ? c.accentSoft : 'rgba(255,255,255,0.65)' }]}>
+                    <View style={[styles.profileRadio, { borderColor: active ? c.accent : c.textFaint, backgroundColor: active ? c.accent : 'transparent' }]} />
                     <Txt numberOfLines={1} weight="semibold" size={10.5} color={active ? c.accent : c.textMuted}>{short}</Txt>
                   </Press>
                 )
@@ -121,26 +103,28 @@ export default function PreparationScreen({ goal, bacProfile, onSelectGoal, onSe
 
           <View style={styles.passportActions}>
             <Press onPress={() => onSolve('camera')} containerStyle={styles.startSlot} style={[styles.start, { backgroundColor: c.text }]}>
-              <IconTile name="camera" size={34} iconSize={17} selected />
-              <Txt weight="bold" size={13} color="#fff" style={[styles.startText, { fontFamily: theme.font.displayMedium }]}>Începe cu o problemă</Txt>
+              <View style={[styles.startIcon, { backgroundColor: c.accent }]}>
+                <RezIcon name="camera" size={18} color="#fff" accent="#B8FFC9" />
+              </View>
+              <Txt weight="bold" size={13} color="#fff" style={styles.startText}>Începe cu o problemă</Txt>
               <RezIcon name="arrow" size={17} color="#fff" />
             </Press>
-            <Press onPress={() => onSolve('type')} accessibilityLabel="Scrie o problemă" style={styles.writeAction}>
-              <IconTile name="write" size={48} iconSize={20} tone="paper" />
+            <Press onPress={() => onSolve('type')} accessibilityLabel="Scrie o problemă" style={[styles.writeAction, { backgroundColor: c.surface }]}>
+              <RezIcon name="write" size={19} color={c.text} accent={c.accent} />
             </Press>
           </View>
         </View>
 
         <View style={styles.modeHeading}>
-          <Txt style={[styles.sectionTitle, { color: c.text, fontFamily: theme.font.display }]}>Trei moduri de lucru</Txt>
-          <Txt size={10.5} color={c.textFaint}>același examen, alt ritm</Txt>
+          <Txt style={[styles.sectionTitle, { color: c.text, fontFamily: theme.font.display }]}>Cum lucrezi</Txt>
+          <Txt size={10.5} color={c.textFaint}>alegi ritmul potrivit</Txt>
         </View>
         <View style={styles.modeDeck}>
-          {modes.map((mode) => (
-            <View key={mode.title} style={[styles.mode, { backgroundColor: c.surface, borderColor: c.border }]}>
-              <IconTile name={mode.icon} size={32} iconSize={16} tone={mode.tone} />
-              <Txt weight="bold" size={11.5} color={c.text} style={[styles.modeTitle, { fontFamily: theme.font.displayMedium }]}>{mode.title}</Txt>
-              <Txt numberOfLines={1} size={9.5} color={c.textFaint}>{mode.copy}</Txt>
+          {modes.map((mode, index) => (
+            <View key={mode.title} style={[styles.mode, index === 1 && { backgroundColor: c.text }]}> 
+              <RezIcon name={mode.icon} size={21} color={index === 1 ? '#fff' : c.text} accent={c.accent} />
+              <Txt weight="bold" size={11.5} color={index === 1 ? '#fff' : c.text} style={styles.modeTitle}>{mode.title}</Txt>
+              <Txt numberOfLines={1} size={9.5} color={index === 1 ? 'rgba(255,255,255,0.54)' : c.textFaint}>{mode.copy}</Txt>
             </View>
           ))}
         </View>
@@ -166,8 +150,7 @@ const styles = StyleSheet.create({
   titleCompact: { fontSize: 26, lineHeight: 30 },
   switcher: { borderRadius: 17, flexDirection: 'row', gap: 3, marginTop: 11, padding: 3 },
   switchSlot: { flex: 1 },
-  switch: { alignItems: 'center', borderRadius: 15, flexDirection: 'row', gap: 8, height: 46, justifyContent: 'center' },
-  switchCopy: { gap: 1, minWidth: 72 },
+  switch: { alignItems: 'center', borderRadius: 14, flexDirection: 'row', gap: 8, height: 40, justifyContent: 'center' },
   passport: { borderRadius: 27, flex: 1, marginTop: 10, maxHeight: 310, minHeight: 247, overflow: 'hidden', padding: 17, shadowOffset: { width: 0, height: 11 }, shadowOpacity: 0.11, shadowRadius: 24, elevation: 6 },
   passportCompact: { minHeight: 230, padding: 14 },
   passportSignal: { bottom: 0, left: 0, position: 'absolute', top: 0, width: 5 },
@@ -184,17 +167,19 @@ const styles = StyleSheet.create({
   examCopy: { lineHeight: 17, marginTop: 4, maxWidth: 270 },
   profileGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginBottom: 8 },
   profileSlot: { width: '49%' },
-  profile: { alignItems: 'center', borderRadius: 12, borderWidth: 1, flexDirection: 'row', gap: 7, height: 34, paddingHorizontal: 7 },
+  profile: { alignItems: 'center', borderRadius: 11, borderWidth: 1, flexDirection: 'row', gap: 6, height: 30, paddingHorizontal: 8 },
+  profileRadio: { borderRadius: 999, borderWidth: 1.3, height: 9, width: 9 },
   passportActions: { alignItems: 'center', flexDirection: 'row', gap: 7 },
   startSlot: { flex: 1 },
   start: { alignItems: 'center', borderRadius: 16, flexDirection: 'row', height: 48, paddingHorizontal: 8 },
+  startIcon: { alignItems: 'center', borderRadius: 12, height: 34, justifyContent: 'center', width: 34 },
   startText: { flex: 1, marginLeft: 9 },
-  writeAction: { height: 48, width: 48 },
+  writeAction: { alignItems: 'center', borderRadius: 16, height: 48, justifyContent: 'center', width: 48 },
   modeHeading: { alignItems: 'baseline', flexDirection: 'row', justifyContent: 'space-between', marginTop: 13 },
   sectionTitle: { fontSize: 17, letterSpacing: -0.55 },
-  modeDeck: { flexDirection: 'row', gap: 7, marginTop: 7 },
-  mode: { borderRadius: 17, borderWidth: 1, flex: 1, minHeight: 78, padding: 9, shadowColor: '#15121F', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.025, shadowRadius: 8, elevation: 1 },
-  modeTitle: { marginBottom: 2, marginTop: 6 },
+  modeDeck: { flexDirection: 'row', gap: 6, marginTop: 7 },
+  mode: { backgroundColor: 'rgba(255,255,255,0.62)', borderRadius: 16, flex: 1, minHeight: 78, padding: 10 },
+  modeTitle: { marginBottom: 2, marginTop: 8 },
   integrity: { alignItems: 'center', flexDirection: 'row', gap: 7, justifyContent: 'center', minHeight: 27 },
   integrityText: { letterSpacing: -0.08 },
 })

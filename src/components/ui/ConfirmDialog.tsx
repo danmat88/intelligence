@@ -1,8 +1,8 @@
 import { StyleSheet, View } from 'react-native'
 import { useTheme } from '../../theme/ThemeProvider'
-import IconTile from './IconTile'
 import Overlay from './Overlay'
 import Press from './Press'
+import RezIcon from './RezIcon'
 import Txt from './Txt'
 
 /**
@@ -33,9 +33,9 @@ export default function ConfirmDialog({
   return (
     <Overlay open={open} onClose={onClose} align="center">
       <View style={[styles.card, { backgroundColor: c.bgElevated }]}>
-        <View pointerEvents="none" style={[styles.signal, { backgroundColor: c.danger }]} />
-        <IconTile name="alert" size={48} iconSize={22} tone="danger" />
-        <Txt size={9} color={c.danger} style={{ fontFamily: theme.font.mono, letterSpacing: 1.1 }}>ACȚIUNE SENSIBILĂ</Txt>
+        <View style={[styles.badge, { backgroundColor: c.text }]}>
+          <RezIcon name="alert" size={21} color="#fff" accent="#FFB4B8" />
+        </View>
         <Txt size={19} style={{ fontFamily: theme.font.display, letterSpacing: -0.3 }}>
           {title}
         </Txt>
@@ -44,7 +44,7 @@ export default function ConfirmDialog({
         </Txt>
         <View style={styles.row}>
           <Press onPress={onClose} scaleTo={0.97} containerStyle={styles.flex} style={[styles.btn, { backgroundColor: c.surfaceAlt }]}>
-            <Txt weight="semibold" size={14.5} color={c.textMuted} style={{ fontFamily: theme.font.displayMedium }}>
+            <Txt weight="semibold" size={14.5} color={c.textMuted}>
               {cancelLabel}
             </Txt>
           </Press>
@@ -57,7 +57,7 @@ export default function ConfirmDialog({
             containerStyle={styles.flex}
             style={[styles.btn, { backgroundColor: c.danger }]}
           >
-            <Txt weight="semibold" size={14.5} color="#FFFFFF" style={{ fontFamily: theme.font.displayMedium }}>
+            <Txt weight="semibold" size={14.5} color="#FFFFFF">
               {confirmLabel}
             </Txt>
           </Press>
@@ -72,7 +72,6 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 400,
     borderRadius: 30,
-    overflow: 'hidden',
     padding: 24,
     gap: 10,
     shadowColor: '#15121F',
@@ -81,7 +80,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 16 },
     elevation: 12,
   },
-  signal: { bottom: 0, left: 0, position: 'absolute', top: 0, width: 5 },
+  badge: { width: 46, height: 46, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   message: { lineHeight: 21 },
   row: { flexDirection: 'row', gap: 10, marginTop: 14 },
   flex: { flex: 1 },

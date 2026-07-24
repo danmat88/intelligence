@@ -2,16 +2,13 @@ import { useState, type ReactNode } from 'react'
 import { ActivityIndicator, Image, Linking, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { LinearGradient } from 'expo-linear-gradient'
-import * as Haptics from 'expo-haptics'
 import { useTheme } from '../theme/ThemeProvider'
 import { useI18n } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
-import IconTile from '../components/ui/IconTile'
 import Overlay from '../components/ui/Overlay'
 import Press from '../components/ui/Press'
 import RezIcon, { type RezIconName } from '../components/ui/RezIcon'
-import { SheetHeader, SheetSignals, SignatureHandle } from '../components/ui/SheetChrome'
 import { useToast } from '../components/ui/Toast'
 import Txt from '../components/ui/Txt'
 
@@ -60,9 +57,15 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
             { backgroundColor: c.bgElevated, borderColor: c.border, paddingBottom: insets.bottom + 20 },
           ]}
         >
-          <SheetSignals />
-          <SignatureHandle />
-          <SheetHeader title={t('settings.title')} icon="settings" onClose={onClose} closeLabel={t('a11y.close')} />
+          <View style={[styles.grab, { backgroundColor: c.border }]} />
+          <View style={styles.head}>
+            <Txt style={{ fontFamily: theme.font.display, fontSize: 22, letterSpacing: -0.4, color: c.text }}>
+              {t('settings.title')}
+            </Txt>
+            <Press onPress={onClose} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('a11y.close')} scaleTo={0.88} style={[styles.closeBtn, { backgroundColor: c.surfaceAlt }]}>
+              <RezIcon name="close" size={17} color={c.textMuted} accent={c.accent} />
+            </Press>
+          </View>
 
           {/* profile panel — for a guest this is the sign-in pitch instead */}
           {isGuest ? (
@@ -105,7 +108,7 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
                 <Image source={{ uri: user.photo }} style={styles.avatar} />
               ) : (
                 <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: c.accentSoft }]}>
-                  <IconTile name="user" size={40} iconSize={20} tone="violet" />
+                  <RezIcon name="user" size={22} color={c.accent} accent={c.accent} />
                 </View>
               )}
               <View style={styles.flex}>
@@ -125,10 +128,7 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
               icon="language"
               label={t('settings.language')}
               value={t('settings.language.value')}
-              onPress={() => {
-                Haptics.selectionAsync().catch(() => {})
-                setLang(lang === 'ro' ? 'en' : 'ro')
-              }}
+              onPress={() => setLang(lang === 'ro' ? 'en' : 'ro')}
               c={c}
             />
           </Group>
@@ -223,7 +223,9 @@ function Row({
 }) {
   return (
     <Press onPress={onPress} scaleTo={0.98} style={styles.row}>
-      <IconTile name={icon} size={32} iconSize={16} tone="paper" />
+      <View style={styles.rowIcon}>
+        <RezIcon name={icon} size={18} color={c.textMuted} accent={c.accent} />
+      </View>
       <Txt size={15} weight="medium" style={styles.flex}>
         {label}
       </Txt>
@@ -249,6 +251,9 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 16 },
     elevation: 14,
   },
+  grab: { alignSelf: 'center', width: 30, height: 3, borderRadius: 2, marginBottom: 11 },
+  head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 2, marginBottom: 12 },
+  closeBtn: { width: 36, height: 36, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   profile: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -279,10 +284,10 @@ const styles = StyleSheet.create({
   avatar: { width: 40, height: 40, borderRadius: 20 },
   avatarFallback: { alignItems: 'center', justifyContent: 'center' },
   sectionLabel: { letterSpacing: 1.15, marginTop: 13, marginBottom: 6, paddingHorizontal: 3 },
-  group: { borderWidth: 1, borderRadius: 20, overflow: 'hidden', shadowColor: '#15121F', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.025, shadowRadius: 10, elevation: 1 },
+  group: { borderWidth: 1, borderRadius: 17, overflow: 'hidden' },
   sep: { height: StyleSheet.hairlineWidth, marginLeft: 49 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 52, paddingHorizontal: 11, paddingVertical: 8 },
-  rowIcon: { width: 32, height: 32, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 48, paddingHorizontal: 11, paddingVertical: 8 },
+  rowIcon: { width: 29, height: 29, alignItems: 'center', justifyContent: 'center' },
   note: { paddingHorizontal: 6, paddingTop: 8, lineHeight: 16 },
   flex: { flex: 1 },
   dim: { opacity: 0.6 },

@@ -1,14 +1,11 @@
 import { useRef } from 'react'
-import { ActivityIndicator, Animated, Easing, StyleSheet, View } from 'react-native'
+import { ActivityIndicator, Animated, Easing, Pressable, StyleSheet, View } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { AntDesign } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
 import { useAuth } from '../auth/AuthProvider'
 import BrandMark from '../components/ui/BrandMark'
-import IconTile from '../components/ui/IconTile'
-import Press from '../components/ui/Press'
-import RezIcon from '../components/ui/RezIcon'
 import ScreenBackground from '../components/ui/ScreenBackground'
 import Txt from '../components/ui/Txt'
 
@@ -26,7 +23,6 @@ export default function WelcomeScreen() {
   // Revealed by BrandMark's onEntered, so the button appears after the lockup.
   const footer = useRef(new Animated.Value(0)).current
   const revealFooter = () => {
-    footer.stopAnimation()
     Animated.timing(footer, { toValue: 1, duration: 560, easing: Easing.bezier(0.22, 1, 0.36, 1), useNativeDriver: true }).start()
   }
 
@@ -46,15 +42,17 @@ export default function WelcomeScreen() {
             },
           ]}
         >
-          <Press
+          <Pressable
             onPress={signIn}
             disabled={signingIn}
-            style={[
+            style={({ pressed }) => [
               styles.googleBtn,
               {
                 backgroundColor: c.text,
                 borderColor: c.text,
                 borderRadius: 18,
+                opacity: pressed ? 0.75 : 1,
+                transform: [{ scale: pressed && !signingIn ? 0.98 : 1 }],
               },
             ]}
           >
@@ -62,14 +60,13 @@ export default function WelcomeScreen() {
               <ActivityIndicator color="#fff" />
             ) : (
               <>
-                <View style={styles.googleGlyph}><AntDesign name="google" size={18} color="#fff" /></View>
-                <Txt weight="bold" size={15.5} color="#fff" style={{ fontFamily: theme.font.displayMedium }}>
+                <AntDesign name="google" size={20} color="#fff" />
+                <Txt weight="bold" size={15.5} color="#fff">
                   Continuă cu Google
                 </Txt>
-                <View style={styles.ctaArrow}><RezIcon name="arrow" size={17} color="#9CFFCC" accent="#9CFFCC" /></View>
               </>
             )}
-          </Press>
+          </Pressable>
 
           {error ? (
             <Txt size={13} color={c.danger} style={styles.error}>
@@ -81,17 +78,16 @@ export default function WelcomeScreen() {
             </Txt>
           )}
 
-          <Press
+          <Pressable
             onPress={signInGuest}
             disabled={signingIn}
             hitSlop={8}
-            style={[styles.tryBtn, { backgroundColor: c.surface, borderColor: c.border }, signingIn && styles.disabled]}
+            style={({ pressed }) => [styles.tryBtn, { backgroundColor: c.surface, borderColor: c.border, opacity: pressed || signingIn ? 0.5 : 1 }]}
           >
-            <IconTile name="user" size={31} iconSize={15} tone="paper" />
-            <Txt weight="bold" size={14} color={c.text} style={{ fontFamily: theme.font.displayMedium }}>
+            <Txt weight="bold" size={14} color={c.text}>
               Încearcă fără cont
             </Txt>
-          </Press>
+          </Pressable>
         </Animated.View>
       </View>
     </ScreenBackground>
@@ -114,9 +110,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     elevation: 7,
   },
-  googleGlyph: { alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 11, height: 34, justifyContent: 'center', left: 10, position: 'absolute', width: 34 },
-  ctaArrow: { alignItems: 'center', justifyContent: 'center', position: 'absolute', right: 16 },
   error: { textAlign: 'center', lineHeight: 18, paddingHorizontal: 12 },
-  tryBtn: { alignItems: 'center', alignSelf: 'stretch', borderRadius: 18, borderWidth: 1, flexDirection: 'row', gap: 9, height: 52, justifyContent: 'center' },
-  disabled: { opacity: 0.55 },
+  tryBtn: { alignItems: 'center', alignSelf: 'stretch', borderRadius: 18, borderWidth: 1, height: 52, justifyContent: 'center' },
 })
