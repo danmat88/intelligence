@@ -4,7 +4,7 @@
     "slug": "intelligence",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icon-v2.png",
     "userInterfaceStyle": "light",
     "backgroundColor": "#F4F5FA",
     "ios": {
@@ -14,16 +14,16 @@
       "package": "com.rezolvo.app",
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "backgroundColor": "#F4F5FA",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#15121F",
+        "foregroundImage": "./assets/android-icon-foreground-v2.png",
+        "backgroundImage": "./assets/android-icon-background-v2.png",
+        "monochromeImage": "./assets/android-icon-monochrome-v2.png"
       },
       "predictiveBackGestureEnabled": false,
       "allowBackup": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon-v2.png"
     },
     "plugins": [
       "expo-asset",

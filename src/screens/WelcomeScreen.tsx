@@ -1,6 +1,5 @@
 import { useRef } from 'react'
 import { ActivityIndicator, Animated, Easing, Pressable, StyleSheet, View } from 'react-native'
-import { StatusBar } from 'expo-status-bar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { AntDesign } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
@@ -28,8 +27,6 @@ export default function WelcomeScreen() {
 
   return (
     <ScreenBackground>
-      <StatusBar style="dark" />
-
       <View style={[styles.wrap, { paddingTop: insets.top, paddingBottom: insets.bottom + 24 }]}>
         <BrandMark tagline="Matematica devine clară." onEntered={revealFooter} />
 

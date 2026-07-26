@@ -6,6 +6,7 @@ import { useTheme } from '../theme/ThemeProvider'
 import { useI18n, type StringKey } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import Overlay from '../components/ui/Overlay'
+import PanelHeader from '../components/ui/PanelHeader'
 import Press from '../components/ui/Press'
 import RezIcon, { type RezIconName } from '../components/ui/RezIcon'
 import Txt from '../components/ui/Txt'
@@ -54,9 +55,9 @@ export default function PaywallSheet({ open, onClose }: { open: boolean; onClose
   }
 
   const benefits: { icon: RezIconName; key: StringKey }[] = [
-    { icon: 'premium', key: 'paywall.benefit.unlimited' },
-    { icon: 'message', key: 'paywall.benefit.chat' },
-    { icon: 'search', key: 'paywall.benefit.mistake' },
+    { icon: 'quota', key: 'paywall.benefit.unlimited' },
+    { icon: 'chat-limit', key: 'paywall.benefit.chat' },
+    { icon: 'mistakes', key: 'paywall.benefit.mistake' },
   ]
 
   return (
@@ -67,29 +68,19 @@ export default function PaywallSheet({ open, onClose }: { open: boolean; onClose
           { backgroundColor: c.bgElevated, borderColor: c.border, paddingBottom: insets.bottom + 14 },
         ]}
       >
-        <View style={[styles.grab, { backgroundColor: c.border }]} />
-        <View style={styles.head}>
-          <Txt style={[styles.title, { fontFamily: theme.font.display, color: c.text }]}>
-            Rezolvo{' '}
-            <Txt style={{ fontFamily: theme.font.display, fontSize: 22, color: c.accent }}>Premium</Txt>
-          </Txt>
-          <Press
-            onPress={onClose}
-            hitSlop={8}
-            scaleTo={0.88}
-            accessibilityRole="button"
-            accessibilityLabel={t('a11y.close')}
-            style={[styles.closeBtn, { backgroundColor: c.surfaceAlt }]}
-          >
-            <RezIcon name="close" size={17} color={c.textMuted} accent={c.accent} />
-          </Press>
-        </View>
+        <PanelHeader
+          eyebrow="REZOLVO PREMIUM"
+          title="Mai mult spațiu de lucru"
+          icon="crown"
+          onClose={onClose}
+          closeLabel={t('a11y.close')}
+        />
 
         {tier === 'premium' ? (
           // Already entitled (fresh purchase or restored): celebrate, don't sell.
           <View style={styles.already}>
             <View style={[styles.alreadyBadge, { backgroundColor: c.successSoft }]}>
-              <RezIcon name="check" size={26} color={c.success} accent={c.success} />
+              <RezIcon name="verified" size={26} color={c.success} accent={c.success} />
             </View>
             <Txt size={14.5} color={c.textMuted} style={styles.alreadyTxt}>
               {t('paywall.already')}
@@ -168,7 +159,7 @@ export default function PaywallSheet({ open, onClose }: { open: boolean; onClose
                 end={{ x: 1, y: 1 }}
                 style={styles.cta}
               >
-                <RezIcon name="premium" size={18} color="#fff" accent="#fff" />
+                <RezIcon name="crown" size={18} color="#fff" accent="#fff" />
                 <Txt weight="bold" size={15} color="#fff">
                   {t('paywall.cta')}
                 </Txt>
@@ -204,10 +195,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 16 },
     elevation: 14,
   },
-  grab: { alignSelf: 'center', width: 34, height: 4, borderRadius: 2, marginBottom: 15 },
-  head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 13, paddingHorizontal: 2 },
-  title: { fontSize: 24, letterSpacing: -0.9 },
-  closeBtn: { width: 36, height: 36, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   benefits: { backgroundColor: '#15121F', borderRadius: 18, gap: 2, marginBottom: 13, paddingHorizontal: 12, paddingVertical: 8 },
   benefit: { flexDirection: 'row', alignItems: 'center', gap: 9, minHeight: 34 },
   benefitIcon: { width: 25, alignItems: 'center', justifyContent: 'center' },

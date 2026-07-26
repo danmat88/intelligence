@@ -12,8 +12,8 @@ function toastGlyph(icon: ToastIcon): RezIconName {
   if (icon === 'wifi-off') return 'offline'
   if (icon === 'clock') return 'history'
   if (icon === 'trash-2') return 'trash'
-  if (icon === 'download-cloud') return 'practice'
-  if (icon === 'info') return 'spark'
+  if (icon === 'download-cloud') return 'download'
+  if (icon === 'info') return 'info'
   return 'check'
 }
 

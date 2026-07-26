@@ -7,6 +7,7 @@ import { useI18n } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import Overlay from '../components/ui/Overlay'
+import PanelHeader from '../components/ui/PanelHeader'
 import Press from '../components/ui/Press'
 import RezIcon, { type RezIconName } from '../components/ui/RezIcon'
 import { useToast } from '../components/ui/Toast'
@@ -57,15 +58,13 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
             { backgroundColor: c.bgElevated, borderColor: c.border, paddingBottom: insets.bottom + 20 },
           ]}
         >
-          <View style={[styles.grab, { backgroundColor: c.border }]} />
-          <View style={styles.head}>
-            <Txt style={{ fontFamily: theme.font.display, fontSize: 22, letterSpacing: -0.4, color: c.text }}>
-              {t('settings.title')}
-            </Txt>
-            <Press onPress={onClose} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('a11y.close')} scaleTo={0.88} style={[styles.closeBtn, { backgroundColor: c.surfaceAlt }]}>
-              <RezIcon name="close" size={17} color={c.textMuted} accent={c.accent} />
-            </Press>
-          </View>
+          <PanelHeader
+            eyebrow="CONT ȘI PREFERINȚE"
+            title={t('settings.title')}
+            icon="settings"
+            onClose={onClose}
+            closeLabel={t('a11y.close')}
+          />
 
           {/* profile panel — for a guest this is the sign-in pitch instead */}
           {isGuest ? (
@@ -135,9 +134,9 @@ export default function SettingsModal({ open, onClose }: { open: boolean; onClos
 
           <SectionLabel text={t('settings.section.legal')} color={c.textFaint} monoStyle={mono} />
           <Group border={c.border} surface={c.surface}>
-            <Row icon="shield" label={t('settings.privacy')} onPress={() => Linking.openURL('https://rezolvo.web.app/privacy')} c={c} />
+            <Row icon="privacy" label={t('settings.privacy')} onPress={() => Linking.openURL('https://rezolvo.web.app/privacy')} c={c} />
             <Separator color={c.border} />
-            <Row icon="document" label={t('settings.terms')} onPress={() => Linking.openURL('https://rezolvo.web.app/terms')} c={c} />
+            <Row icon="terms" label={t('settings.terms')} onPress={() => Linking.openURL('https://rezolvo.web.app/terms')} c={c} />
           </Group>
 
           {/* Account actions only make sense for a real (signed-in) account:
@@ -251,9 +250,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 16 },
     elevation: 14,
   },
-  grab: { alignSelf: 'center', width: 30, height: 3, borderRadius: 2, marginBottom: 11 },
-  head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 2, marginBottom: 12 },
-  closeBtn: { width: 36, height: 36, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   profile: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -30,6 +30,7 @@ import CrossFade from './src/components/ui/CrossFade'
 import AppShell from './src/navigation/AppShell'
 import WelcomeScreen from './src/screens/WelcomeScreen'
 import BrandMark from './src/components/ui/BrandMark'
+import { OverlayHostProvider } from './src/components/ui/OverlayHost'
 
 /**
  * Boot choreography - one continuous scene, no cuts, no layout shift:
@@ -70,7 +71,10 @@ export default function App() {
 
   return (
     <SafeAreaProvider style={styles.boot}>
-      <SystemBars style="dark" />
+      <SystemBars
+        style={{ statusBar: 'dark', navigationBar: 'dark' }}
+        hidden={{ statusBar: false, navigationBar: false }}
+      />
       <ErrorBoundary>
         <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
           <ThemeProvider>
@@ -79,7 +83,9 @@ export default function App() {
                 <AuthProvider>
                   {/* A font failure must DEGRADE (system faces), never hold the
                       splash forever — ready would otherwise stay false. */}
-                  <Root fontsLoaded={fontsLoaded || !!fontError} />
+                  <OverlayHostProvider>
+                    <Root fontsLoaded={fontsLoaded || !!fontError} />
+                  </OverlayHostProvider>
                 </AuthProvider>
               </ToastProvider>
             </I18nProvider>

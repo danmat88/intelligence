@@ -4,6 +4,7 @@ import AppHeader from '../components/ui/AppHeader'
 import Press from '../components/ui/Press'
 import RezIcon, { type RezIconName } from '../components/ui/RezIcon'
 import ScreenBackground from '../components/ui/ScreenBackground'
+import ScreenIntro from '../components/ui/ScreenIntro'
 import Txt from '../components/ui/Txt'
 import { useTheme } from '../theme/ThemeProvider'
 import type { BacProfile, ExamGoal, SolveEntryKind } from '../navigation/types'
@@ -42,20 +43,16 @@ export default function PreparationScreen({ goal, bacProfile, onSelectGoal, onSe
     <ScreenBackground>
       <AppHeader onOpenSettings={onOpenSettings} />
       <View style={[styles.content, compact && styles.contentCompact]}>
-        <View style={styles.heading}>
-          <View style={styles.headingCopy}>
-            <Txt size={9.5} color={c.accent} style={[styles.eyebrow, { fontFamily: theme.font.mono }]}>PREGĂTIRE PERSONALIZATĂ</Txt>
-            <Txt numberOfLines={1} maxFontSizeMultiplier={1.12} style={[styles.title, compact && styles.titleCompact, { color: c.text, fontFamily: theme.font.display }]}>Examenul, fără haos.</Txt>
-          </View>
-          <RezIcon name="spark" size={27} color={c.accent} accent={c.accent} />
-        </View>
+        <ScreenIntro eyebrow="PREGĂTIRE PERSONALIZATĂ" title="Examenul, fără haos." icon={isEn ? 'exam-en' : 'exam-bac'} />
 
         <View style={[styles.switcher, { backgroundColor: c.surfaceAlt }]}>
           <Press onPress={() => onSelectGoal('en')} containerStyle={styles.switchSlot} style={[styles.switch, isEn && { backgroundColor: c.text }]}>
+            <RezIcon name="exam-en" size={16} color={isEn ? '#A995FF' : c.textFaint} accent={isEn ? '#A995FF' : c.textFaint} />
             <Txt size={9.5} color={isEn ? '#A995FF' : c.textFaint} style={{ fontFamily: theme.font.mono }}>VIII</Txt>
             <Txt weight="bold" size={12.5} color={isEn ? '#fff' : c.textMuted}>Evaluare</Txt>
           </Press>
           <Press onPress={() => onSelectGoal('bac')} containerStyle={styles.switchSlot} style={[styles.switch, !isEn && { backgroundColor: c.text }]}>
+            <RezIcon name="exam-bac" size={16} color={!isEn ? '#A995FF' : c.textFaint} accent={!isEn ? '#A995FF' : c.textFaint} />
             <Txt size={9.5} color={!isEn ? '#A995FF' : c.textFaint} style={{ fontFamily: theme.font.mono }}>XII</Txt>
             <Txt weight="bold" size={12.5} color={!isEn ? '#fff' : c.textMuted}>Bacalaureat</Txt>
           </Press>
@@ -131,7 +128,7 @@ export default function PreparationScreen({ goal, bacProfile, onSelectGoal, onSe
 
         {!compact && (
           <View style={styles.integrity}>
-            <RezIcon name="shield" size={16} color={c.accent} accent={c.accent} />
+            <RezIcon name="verified" size={16} color={c.accent} accent={c.accent} />
             <Txt numberOfLines={1} size={10.5} color={c.textMuted} style={styles.integrityText}>Progresul apare numai după exerciții verificate.</Txt>
           </View>
         )}
@@ -143,11 +140,6 @@ export default function PreparationScreen({ goal, bacProfile, onSelectGoal, onSe
 const styles = StyleSheet.create({
   content: { alignSelf: 'center', flex: 1, maxWidth: 720, paddingBottom: 9, paddingHorizontal: 18, width: '100%' },
   contentCompact: { paddingHorizontal: 16 },
-  heading: { alignItems: 'flex-end', flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 },
-  headingCopy: { flex: 1, paddingRight: 12 },
-  eyebrow: { letterSpacing: 1.08 },
-  title: { fontSize: 29, letterSpacing: -1.35, lineHeight: 35, marginTop: 4 },
-  titleCompact: { fontSize: 26, lineHeight: 30 },
   switcher: { borderRadius: 17, flexDirection: 'row', gap: 3, marginTop: 11, padding: 3 },
   switchSlot: { flex: 1 },
   switch: { alignItems: 'center', borderRadius: 14, flexDirection: 'row', gap: 8, height: 40, justifyContent: 'center' },

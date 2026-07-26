@@ -6,6 +6,7 @@ import { useTheme } from '../theme/ThemeProvider'
 import { useI18n } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import Overlay from '../components/ui/Overlay'
+import PanelHeader from '../components/ui/PanelHeader'
 import Press from '../components/ui/Press'
 import RezIcon from '../components/ui/RezIcon'
 import Txt from '../components/ui/Txt'
@@ -62,13 +63,14 @@ export default function LimitSheet({
           { backgroundColor: c.text, borderColor: 'rgba(255,255,255,0.10)', paddingBottom: insets.bottom + 18 },
         ]}
       >
-        <View style={[styles.grab, { backgroundColor: 'rgba(255,255,255,0.18)' }]} />
-        <View style={styles.badge}>
-          <RezIcon name={kind === 'chat' ? 'message' : 'solve'} size={25} color="#A995FF" accent="#A995FF" />
-        </View>
-        <Txt style={[styles.title, { fontFamily: theme.font.display, color: '#fff' }]}>
-          {t(kind === 'chat' ? 'limit.chat.title' : 'limit.title', { n: limit })}
-        </Txt>
+        <PanelHeader
+          eyebrow={kind === 'chat' ? 'ÎNTREBĂRI PE PROBLEMĂ' : 'LIMITĂ ZILNICĂ'}
+          title={t(kind === 'chat' ? 'limit.chat.title' : 'limit.title', { n: limit })}
+          icon={kind === 'chat' ? 'chat-limit' : 'quota'}
+          onClose={onClose}
+          closeLabel={t('a11y.close')}
+          dark
+        />
         <Txt size={13.5} color="rgba(255,255,255,0.62)" style={styles.sub}>
           {kind === 'chat' ? t('limit.chat.sub') : guest ? t('limit.sub.guest') : t('limit.sub.user')}
         </Txt>
@@ -86,7 +88,7 @@ export default function LimitSheet({
                 <ActivityIndicator size="small" color={c.onAccent} />
               ) : (
                 <>
-                  <RezIcon name="user" size={17} color={c.onAccent} accent="#B8FFC9" />
+                  <RezIcon name="login" size={17} color={c.onAccent} accent="#B8FFC9" />
                   <Txt weight="bold" size={15} color={c.onAccent}>
                     {t('limit.cta.signin')}
                   </Txt>
@@ -98,7 +100,7 @@ export default function LimitSheet({
               containerStyle={styles.stretch}
               style={styles.ctaGhost}
             >
-              <RezIcon name="premium" size={17} color="#A995FF" accent="#A995FF" />
+              <RezIcon name="crown" size={17} color="#A995FF" accent="#A995FF" />
               <Txt weight="semibold" size={14} color="#fff">
                 {t('limit.cta.premium')}
               </Txt>
@@ -113,7 +115,7 @@ export default function LimitSheet({
               end={{ x: 1, y: 1 }}
               style={styles.cta}
             >
-              <RezIcon name="premium" size={18} color="#fff" accent="#fff" />
+              <RezIcon name="crown" size={18} color="#fff" accent="#fff" />
               <Txt weight="bold" size={15} color="#fff">
                 {t('limit.cta.premium.main')}
               </Txt>
@@ -142,10 +144,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 18 },
     elevation: 16,
   },
-  grab: { alignSelf: 'center', width: 34, height: 4, borderRadius: 2, marginBottom: 20 },
-  badge: { width: 58, height: 58, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.09)' },
-  title: { fontSize: 24, letterSpacing: -0.8, textAlign: 'center', marginTop: 15 },
-  sub: { textAlign: 'center', marginTop: 8, marginBottom: 20, lineHeight: 20 },
+  sub: { textAlign: 'center', marginBottom: 20, lineHeight: 20, paddingHorizontal: 8 },
   stretch: { alignSelf: 'stretch' },
   ctaWrap: {
     borderRadius: 18,

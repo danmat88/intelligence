@@ -33,7 +33,7 @@ export default function InfoDialog({
     <Overlay open={open} onClose={onClose} align="center">
       <View style={[styles.card, { backgroundColor: c.bgElevated }]}>
         <View style={[styles.badge, { backgroundColor: c.text }]}>
-          <RezIcon name={tone === 'success' ? 'check' : 'alert'} size={21} color="#fff" accent={tone === 'success' ? '#9CFFCC' : '#FFCF70'} />
+          <RezIcon name={tone === 'success' ? 'verified' : 'alert'} size={21} color="#fff" accent={tone === 'success' ? '#9CFFCC' : '#FFCF70'} />
         </View>
         <Txt size={19} style={{ fontFamily: theme.font.display, letterSpacing: -0.3 }}>
           {title}

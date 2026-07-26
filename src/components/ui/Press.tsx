@@ -1,50 +1,61 @@
-import { useRef, type ReactNode } from 'react'
-import { Animated, Pressable, type PressableProps, type StyleProp, type ViewStyle } from 'react-native'
+import type { ReactNode } from 'react'
+import { Pressable, type PressableProps, type StyleProp, type ViewStyle } from 'react-native'
+import Animated, {
+  cancelAnimation,
+  Easing,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated'
 
 /**
- * The app's standard press feedback: a quick 0.96 scale + slight dim, spring
- * back on release. Motion-spec rule: buttons respond with depth, never with
- * an opacity-only blink. The visual style goes on the inner view; the
- * Pressable itself stays unstyled so hitSlop/layout behave like before.
+ * Tactile feedback entirely on the UI thread. Fast taps cancel the previous
+ * response instead of stacking animations and delaying the next action.
  */
 export default function Press({
   style,
   containerStyle,
-  scaleTo = 0.96,
+  scaleTo = 0.975,
   children,
   ...rest
 }: Omit<PressableProps, 'style' | 'children'> & {
   style?: StyleProp<ViewStyle>
-  /** Layout styles for the outer Pressable (flex/margins in a row). */
   containerStyle?: StyleProp<ViewStyle>
   scaleTo?: number
   children?: ReactNode
 }) {
-  const p = useRef(new Animated.Value(0)).current
+  const reduceMotion = useReducedMotion()
+  const pressed = useSharedValue(0)
+
+  const move = (to: number) => {
+    cancelAnimation(pressed)
+    pressed.value = reduceMotion
+      ? to
+      : withTiming(to, { duration: to ? 90 : 170, easing: Easing.out(Easing.cubic) })
+  }
+
+  const animated = useAnimatedStyle(() => ({
+    transform: [
+      { translateY: pressed.value * 1.25 },
+      { scale: 1 - pressed.value * (1 - scaleTo) },
+    ],
+  }))
+
   return (
     <Pressable
       {...rest}
       style={containerStyle}
-      onPressIn={(e) => {
-        Animated.spring(p, { toValue: 1, useNativeDriver: true, speed: 60, bounciness: 0 }).start()
-        rest.onPressIn?.(e)
+      onPressIn={(event) => {
+        if (!rest.disabled) move(1)
+        rest.onPressIn?.(event)
       }}
-      onPressOut={(e) => {
-        Animated.spring(p, { toValue: 0, useNativeDriver: true, speed: 30, bounciness: 5 }).start()
-        rest.onPressOut?.(e)
+      onPressOut={(event) => {
+        move(0)
+        rest.onPressOut?.(event)
       }}
     >
-      <Animated.View
-        style={[
-          style,
-          {
-            // Depth only — never dim: opacity on press reads as ghosting.
-            transform: [{ scale: p.interpolate({ inputRange: [0, 1], outputRange: [1, scaleTo] }) }],
-          },
-        ]}
-      >
-        {children}
-      </Animated.View>
+      <Animated.View style={[style, animated]}>{children}</Animated.View>
     </Pressable>
   )
 }

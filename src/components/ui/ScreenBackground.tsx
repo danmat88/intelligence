@@ -9,7 +9,7 @@ export default function ScreenBackground({ children, style, ...rest }: ViewProps
     <View style={[styles.root, { backgroundColor: theme.colors.bg }, style]} {...rest}>
       <LinearGradient
         pointerEvents="none"
-        colors={['#FAFAFD', '#F4F5FA', '#F0EFF8']}
+        colors={['#FAFAFD', '#F4F5FA', '#F4F5FA']}
         locations={[0, 0.58, 1]}
         style={StyleSheet.absoluteFill}
       />

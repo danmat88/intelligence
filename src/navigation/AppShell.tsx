@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { StyleSheet, View } from 'react-native'
+import { Keyboard, StyleSheet, View } from 'react-native'
 import HomeScreen from '../screens/HomeScreen'
 import PreparationScreen from '../screens/PreparationScreen'
 import SettingsModal from '../screens/SettingsModal'
@@ -14,11 +14,19 @@ export default function AppShell() {
   const [solverChrome, setSolverChrome] = useState<SolverChrome>('idle')
   const [solveEntry, setSolveEntry] = useState<SolveEntryAction | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const tabBarVisible = activeTab !== 'solve' || solverChrome === 'idle'
+  // Camera and crop are root layers above the shell, so opening them must not
+  // resize or animate the dock underneath. Only a solution thread actually
+  // changes the browsing shell's bottom-edge layout.
+  const tabBarVisible = activeTab !== 'solve' || solverChrome !== 'thread'
 
   const openSolver = useCallback((kind: SolveEntryKind) => {
     setSolveEntry({ id: Date.now(), kind })
     setActiveTab('solve')
+  }, [])
+
+  const changeTab = useCallback((tab: AppTab) => {
+    Keyboard.dismiss()
+    setActiveTab(tab)
   }, [])
 
   return (
@@ -52,10 +60,15 @@ export default function AppShell() {
           />
         </View>
       </View>
-      {tabBarVisible && <AppTabBar activeTab={activeTab} onChange={setActiveTab} />}
+      <AppTabBar activeTab={activeTab} onChange={changeTab} visible={tabBarVisible} />
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </View>
   )
 }
 
-const styles = StyleSheet.create({ root: { flex: 1 }, content: { flex: 1 }, layer: { flex: 1 }, hidden: { display: 'none' } })
+const styles = StyleSheet.create({
+  root: { flex: 1 },
+  content: { flex: 1 },
+  layer: { flex: 1 },
+  hidden: { display: 'none' },
+})

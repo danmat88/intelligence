@@ -5,7 +5,6 @@ import { LinearGradient } from 'expo-linear-gradient'
 import * as Clipboard from 'expo-clipboard'
 import * as Haptics from 'expo-haptics'
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
-import { StatusBar } from 'expo-status-bar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTheme } from '../theme/ThemeProvider'
 import CrossFade from '../components/ui/CrossFade'
@@ -19,7 +18,8 @@ import SymbolBar, { type MathKey } from '../components/ui/SymbolBar'
 import MathPreview from '../components/ui/MathPreview'
 import AppHeader from '../components/ui/AppHeader'
 import RezIcon from '../components/ui/RezIcon'
-import type { SolveEntryAction } from '../navigation/types'
+import ScreenIntro from '../components/ui/ScreenIntro'
+import type { SolveEntryAction, SolverChrome } from '../navigation/types'
 import { isMathInput, plainToLatex } from '../solve/mathInput'
 import type { CapturedImage } from '../solve/capture'
 import { solveImage, solveProblem, followUp, solveDeep, verifyAnswer } from '../solve/solve'
@@ -74,8 +74,6 @@ function errorResultMessage(text: string): string | null {
 }
 
 type T = (key: StringKey, vars?: Record<string, string | number>) => string
-
-export type SolverChrome = 'idle' | 'focused' | 'thread' | 'capture'
 
 type SolverScreenProps = {
   entryAction?: SolveEntryAction | null
@@ -176,7 +174,29 @@ export default function SolverScreen({ entryAction, onEntryActionHandled, onChro
   const [threadKey, setThreadKey] = useState('live-0')
   const empty = thread.length === 0
   const [inputFocused, setInputFocused] = useState(false)
-  const chrome: SolverChrome = capture ? 'capture' : !empty ? 'thread' : inputFocused ? 'focused' : 'idle'
+  const blockingOverlayOpen = historyOpen || !!limitHit || paywallOpen || verifyInfo
+  const [overlayHeld, setOverlayHeld] = useState(false)
+
+  useEffect(() => {
+    if (blockingOverlayOpen) {
+      setOverlayHeld(true)
+      return
+    }
+    if (!overlayHeld) return
+    const timer = setTimeout(() => setOverlayHeld(false), 330)
+    return () => clearTimeout(timer)
+  }, [blockingOverlayOpen, overlayHeld])
+
+  // Capture/crop live in the root layer above the entire shell. They must not
+  // mutate the shell chrome underneath; doing so made the dock collapse and
+  // rebuild around the external gallery picker.
+  const chrome: SolverChrome = blockingOverlayOpen || overlayHeld
+    ? 'overlay'
+    : !empty
+      ? 'thread'
+      : inputFocused
+        ? 'focused'
+        : 'idle'
 
   useEffect(() => {
     onChromeChange?.(chrome)
@@ -771,8 +791,6 @@ export default function SolverScreen({ entryAction, onEntryActionHandled, onChro
 
   return (
     <ScreenBackground>
-      <StatusBar style="dark" />
-
       <AppHeader onOpenSettings={onOpenSettings}>
           {/* Today's metered usage — the cap you can SEE coming. Tap explains;
               at the ceiling it opens the limit sheet (the honest upsell). */}
@@ -830,13 +848,7 @@ export default function SolverScreen({ entryAction, onEntryActionHandled, onChro
         <CrossFade dep={empty ? 'hero' : `thread:${threadKey}`} axis="x" style={styles.flex}>
         {empty ? (
           <View style={styles.heroWrap}>
-            <View style={styles.heroHeading}>
-              <View style={styles.heroHeadingCopy}>
-                <Txt size={9.5} color={c.accent} style={[styles.kicker, { fontFamily: theme.font.mono }]}>SOLVER MATEMATIC</Txt>
-                <Txt numberOfLines={1} style={[styles.heroTitle, { fontFamily: theme.font.display, color: c.text }]}>Pune problema pe masă.</Txt>
-              </View>
-              <RezIcon name="solve" size={27} color={c.accent} accent={c.accent} strokeWidth={1.9} />
-            </View>
+            <ScreenIntro eyebrow="SOLVER MATEMATIC" title="Pune problema pe masă." icon="workspace" />
 
             <View style={[styles.scanStage, { backgroundColor: c.text, shadowColor: c.text }]}>
               <LinearGradient colors={['#302842', '#15121F']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
@@ -1021,7 +1033,7 @@ export default function SolverScreen({ entryAction, onEntryActionHandled, onChro
         onClose={() => setLimitHit(null)}
         onPremium={() => {
           setLimitHit(null)
-          setPaywallOpen(true)
+          setTimeout(() => setPaywallOpen(true), 300)
         }}
       />
       <PaywallSheet open={paywallOpen} onClose={() => setPaywallOpen(false)} />
@@ -1072,10 +1084,6 @@ const styles = StyleSheet.create({
   },
 
   heroWrap: { flex: 1, paddingHorizontal: 18, paddingBottom: 4, paddingTop: 6 },
-  heroHeading: { alignItems: 'flex-end', flexDirection: 'row', justifyContent: 'space-between' },
-  heroHeadingCopy: { flex: 1, paddingRight: 12 },
-  kicker: { letterSpacing: 1.15 },
-  heroTitle: { fontSize: 29, letterSpacing: -1.35, lineHeight: 34, marginTop: 4 },
   scanStage: { borderRadius: 27, flex: 1, marginTop: 11, maxHeight: 250, minHeight: 205, overflow: 'hidden', padding: 16, shadowOpacity: 0.2, shadowRadius: 24, shadowOffset: { width: 0, height: 12 }, elevation: 8 },
   scanGlow: { backgroundColor: 'rgba(104,71,245,0.29)', borderRadius: 110, height: 220, position: 'absolute', right: -110, top: -80, width: 220 },
   scanTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },

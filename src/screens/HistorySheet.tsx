@@ -7,6 +7,7 @@ import { useTheme } from '../theme/ThemeProvider'
 import { useI18n } from '../i18n'
 import { useAuth } from '../auth/AuthProvider'
 import Overlay from '../components/ui/Overlay'
+import PanelHeader from '../components/ui/PanelHeader'
 import Press from '../components/ui/Press'
 import RezIcon, { type RezIconName } from '../components/ui/RezIcon'
 import { useToast } from '../components/ui/Toast'
@@ -230,13 +231,13 @@ export default function HistorySheet({
           },
         ]}
       >
-        <View style={[styles.grab, { backgroundColor: c.border }]} />
-        <View style={styles.head}>
-          <Txt style={[styles.title, { fontFamily: theme.font.display, color: c.text }]}>{t('history.title')}</Txt>
-          <Press onPress={onClose} hitSlop={8} scaleTo={0.88} accessibilityRole="button" accessibilityLabel={t('a11y.close')} style={[styles.closeBtn, { backgroundColor: c.surfaceAlt }]}>
-            <RezIcon name="close" size={17} color={c.textMuted} accent={c.accent} />
-          </Press>
-        </View>
+        <PanelHeader
+          eyebrow="ARHIVA TA"
+          title={t('history.title')}
+          icon="history"
+          onClose={onClose}
+          closeLabel={t('a11y.close')}
+        />
 
         {loaded && items.length === 0 ? (
           // Brand-new account: the panel keeps its size; the message owns it.
@@ -253,7 +254,7 @@ export default function HistorySheet({
             {/* stats — ghost values until the first snapshot lands */}
             <View style={styles.stats}>
               <StatTile
-                icon="check"
+                icon="verified"
                 value={loaded ? String(items.length) : null}
                 label={t('history.stat.solved')}
                 c={c}
@@ -261,7 +262,7 @@ export default function HistorySheet({
               />
               {(!loaded || streak > 0) && (
                 <StatTile
-                  icon="premium"
+                  icon="flame"
                   value={loaded ? String(streak) : null}
                   label={streak === 1 ? t('history.stat.streak.one') : t('history.stat.streak')}
                   c={c}
@@ -479,10 +480,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 16 },
     elevation: 14,
   },
-  grab: { alignSelf: 'center', width: 34, height: 4, borderRadius: 2, marginBottom: 15 },
-  head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 17, paddingHorizontal: 2 },
-  title: { fontSize: 24, letterSpacing: -0.8 },
-  closeBtn: { width: 36, height: 36, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 30, paddingBottom: 40 },
   emptyBadge: { width: 54, height: 54, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   emptyTxt: { marginTop: 12, textAlign: 'center' },

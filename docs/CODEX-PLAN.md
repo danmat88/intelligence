@@ -7,7 +7,7 @@
 > Update this document when a decision changes. Do not let implementation and
 > plan silently drift apart.
 
-Last updated: 22 July 2026
+Last updated: 26 July 2026
 
 ## 1. Product direction
 
@@ -72,7 +72,7 @@ tab bar stacked above a system bar.
 | --- | --- | --- | --- |
 | Acasă | Visible | Hidden | Visible |
 | Rezolvă idle | Visible | Solve input lives in page | Visible |
-| Rezolvă typing | Hidden | Keyboard/composer owns bottom | Visible |
+| Rezolvă typing | Visible | Keyboard/composer owns the resized viewport | Visible |
 | Active solution/thread | Hidden | Follow-up composer visible | Visible |
 | Pregătire browsing | Visible | Hidden | Visible |
 | Active exercise/test | Hidden | Contextual actions | Visible |
@@ -151,7 +151,8 @@ Idle state:
 
 Typing and active state:
 
-- focusing typed input enters a focused solve surface and hides app tabs;
+- focusing typed input enters a focused solve surface without remounting or
+  hiding the app dock; switching tabs dismisses the keyboard first;
 - an active solution/thread hides app tabs;
 - the solution document and follow-up composer own the bottom edge;
 - verification, correction, graphs, figures, sharing, reporting, persistence,
@@ -311,6 +312,17 @@ legacy warm-paper screens with redesigned product screens.
 - a code-native Rezolvo vector icon alphabet for product navigation and
   actions; retain third-party symbols only for protected brand marks such as
   Google, and never use emoji as interface icons;
+- one semantic action per icon: brand, solver, premium, torch, streak, limits,
+  downloads, legal documents and exam families must not borrow one another's
+  glyphs merely because they are visually convenient;
+- decorative corner brackets are reserved for the functional camera/crop
+  frame; they are not a repeated ornament on cards, buttons, sheets or tabs;
+- Acasă, Rezolvă and Pregătire share the exact same wordmark header and screen
+  intro geometry. Sheets share one contextual panel header, cover the app dock
+  and block all navigation until dismissed;
+- sheets and dialogs render through one application-level overlay host in the
+  same native window as the shell. They never open a second native modal
+  window or recolor the transparent Android system-navigation region;
 - accessible contrast, touch targets, font scaling and screen-reader labels.
 
 The target is a premium educational product, not a generic AI chat app and not
@@ -500,7 +512,9 @@ Decided:
 - The solver is preserved and serves both open solving and grounded teaching.
 - Official subject modes are Ghidat, Simulare and Studiază.
 - Progress is evidence-based and does not yet receive a primary tab.
-- The brand mark is the violet-to-indigo radical/check symbol.
+- The brand mark is the violet-to-indigo Rezolvo ribbon: an abstract lowercase
+  r resolving into an answer/check gesture, with equality bars integrated into
+  its negative space. It is distinct from the solver action icon.
 - The native splash stays warm paper; the mark enters in the animated
   JavaScript brand beat instead of appearing twice.
 - Billing and RevenueCat remain near launch, after premium UX is stable.
@@ -508,7 +522,17 @@ Decided:
   separate later migration on a laptop with enough native-build disk space.
 - The first shell uses a local typed tab controller rather than adding a native
   navigation dependency. The bottom bar owns only Acasă, Rezolvă and
-  Pregătire; the solver can temporarily hide it for focused work.
+  Pregătire. It remains mounted during typing and beneath transient panels,
+  which cover and block it until their exit animation is complete. It hides
+  only when an active solution/thread, exercise or camera owns the bottom edge.
+- All transient panels and dialogs use one root, single-window overlay host.
+  This keeps the edge-to-edge background and Android system-navigation region
+  visually stable while a panel is open and gives nested dialogs one stacking
+  and hardware-back contract.
+- Camera and crop are fullscreen root layers above the stable application
+  shell, never children constrained by a tab's content area. Opening the
+  system gallery does not resize, hide or animate the shell; the fullscreen
+  crop layer appears only after an image is actually returned.
 - The July shell mockup that mixed new Home/Preparation cards with the legacy
   solver presentation was rejected. All visible surfaces now follow the same
   porcelain/ink/violet system; only proven solver behavior is retained.

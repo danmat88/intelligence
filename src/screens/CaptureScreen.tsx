@@ -21,13 +21,14 @@ import RAnimated, {
 import { LinearGradient } from 'expo-linear-gradient'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import * as Haptics from 'expo-haptics'
-import { StatusBar } from 'expo-status-bar'
+import { SystemBars } from 'react-native-edge-to-edge'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTheme } from '../theme/ThemeProvider'
 import { useI18n } from '../i18n'
 import CrossFade from '../components/ui/CrossFade'
 import Press from '../components/ui/Press'
 import RezIcon from '../components/ui/RezIcon'
+import RootLayer from '../components/ui/RootLayer'
 import Txt from '../components/ui/Txt'
 import { cropAndPrepare, pickFromLibrary, type CapturedImage, type RawShot } from '../solve/capture'
 
@@ -195,34 +196,39 @@ export default function CaptureScreen({
   if (!mounted) return null
 
   return (
-    <RAnimated.View
-      entering={SlideInDown.duration(460).easing(VISOR_EASE)}
-      exiting={SlideOutDown.duration(380).easing(REasing.in(REasing.cubic))}
-      style={[StyleSheet.absoluteFill, styles.host]}
-    >
-      <StatusBar style="light" />
-      <CrossFade dep={stage} style={styles.flex} axis="x">
-        {stage === 'trim' && shot ? (
-          <TrimStage
-            shot={shot}
-            backIcon={entryRef.current === 'camera' ? 'arrow-left' : 'x'}
-            onBack={backFromTrim}
-            ghostLabel={shot.source === 'camera' ? t('crop.retake') : t('crop.chooseAnother')}
-            ghostIcon={shot.source === 'camera' ? 'rotate-ccw' : 'image'}
-            onGhost={shot.source === 'camera' ? retake : repick}
-            onUsePhoto={onUsePhoto}
-          />
-        ) : (
-          <CameraStage
-            live={camLive}
-            onShot={(s) => showTrim(s, 'camera')}
-            onPick={(s) => showTrim(s, 'library')}
-            onClose={onClose}
-            onTypeInstead={onTypeInstead}
-          />
-        )}
-      </CrossFade>
-    </RAnimated.View>
+    <RootLayer>
+      <RAnimated.View
+        entering={SlideInDown.duration(460).easing(VISOR_EASE)}
+        exiting={SlideOutDown.duration(380).easing(REasing.in(REasing.cubic))}
+        style={[StyleSheet.absoluteFill, styles.host]}
+      >
+        <SystemBars
+          style={{ statusBar: 'light', navigationBar: 'light' }}
+          hidden={{ statusBar: true, navigationBar: false }}
+        />
+        <CrossFade dep={stage} style={styles.flex} axis="x">
+          {stage === 'trim' && shot ? (
+            <TrimStage
+              shot={shot}
+              backIcon={entryRef.current === 'camera' ? 'arrow-left' : 'x'}
+              onBack={backFromTrim}
+              ghostLabel={shot.source === 'camera' ? t('crop.retake') : t('crop.chooseAnother')}
+              ghostIcon={shot.source === 'camera' ? 'rotate-ccw' : 'image'}
+              onGhost={shot.source === 'camera' ? retake : repick}
+              onUsePhoto={onUsePhoto}
+            />
+          ) : (
+            <CameraStage
+              live={camLive}
+              onShot={(s) => showTrim(s, 'camera')}
+              onPick={(s) => showTrim(s, 'library')}
+              onClose={onClose}
+              onTypeInstead={onTypeInstead}
+            />
+          )}
+        </CrossFade>
+      </RAnimated.View>
+    </RootLayer>
   )
 }
 
@@ -316,7 +322,7 @@ function CameraStage({
           accessibilityLabel={t('a11y.torch')}
           style={[styles.chromeBtn, torch && { backgroundColor: 'rgba(160,140,255,0.22)', borderColor: V.accent }]}
         >
-          <RezIcon name="premium" size={18} color={torch ? V.accent : V.text} accent={torch ? V.accent : V.text} />
+          <RezIcon name="flashlight" size={18} color={torch ? V.accent : V.text} accent={torch ? V.accent : V.text} />
         </Press>
       </View>
 

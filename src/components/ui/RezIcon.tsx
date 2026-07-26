@@ -35,6 +35,22 @@ export type RezIconName =
   | 'forward'
   | 'retry'
   | 'camera-off'
+  | 'workspace'
+  | 'compass'
+  | 'exam-en'
+  | 'exam-bac'
+  | 'verified'
+  | 'quota'
+  | 'chat-limit'
+  | 'crown'
+  | 'mistakes'
+  | 'flame'
+  | 'flashlight'
+  | 'privacy'
+  | 'terms'
+  | 'download'
+  | 'info'
+  | 'teacher'
 
 type Props = {
   name: RezIconName
@@ -274,6 +290,130 @@ export default function RezIcon({ name, size = 20, color = '#15121F', accent = c
           <>
             <Path d="M7 8.4h.3l1.4-2.2h6.6l1.4 2.2h3.1v8.8M17.2 19.5H5.9a1.7 1.7 0 0 1-1.7-1.7V9.2" {...line} />
             <Path d="M9.2 12.2a3.1 3.1 0 0 0 4.5 4M4.2 4.2l15.6 15.6" {...line} stroke={accent} />
+          </>
+        )
+      case 'workspace':
+        return (
+          <>
+            <Rect x="3.7" y="4.2" width="16.6" height="15.6" rx="3" {...line} />
+            <Path d="M7.2 9.2h4.2M7.2 13h9.6M7.2 16.8h6.1" {...line} />
+            <Circle cx="17.2" cy="8.2" r="1.55" {...signal} />
+          </>
+        )
+      case 'compass':
+        return (
+          <>
+            <Circle cx="12" cy="12" r="8.4" {...line} />
+            <Path d="m15.9 8.1-2.3 5.5-5.5 2.3 2.3-5.5Z" {...line} />
+            <Circle cx="12" cy="12" r="1.35" {...signal} />
+          </>
+        )
+      case 'exam-en':
+        return (
+          <>
+            <Path d="M4.2 5.4c2.9-.8 5.5-.3 7.8 1.3v12c-2.3-1.6-4.9-2.1-7.8-1.3ZM19.8 5.4c-2.9-.8-5.5-.3-7.8 1.3v12c2.3-1.6 4.9-2.1 7.8-1.3Z" {...line} />
+            <Path d="M7.2 9h1.7M7.2 12h1.7M15.1 9h1.7M15.1 12h1.7" {...line} />
+            <Circle cx="12" cy="5" r="1.25" {...signal} />
+          </>
+        )
+      case 'exam-bac':
+        return (
+          <>
+            <Path d="m3.5 8.2 8.5-4 8.5 4-8.5 4ZM6.2 10v4.7c3.7 2.4 7.9 2.4 11.6 0V10M20.5 8.2v6" {...line} />
+            <Circle cx="20.5" cy="16.6" r="1.35" {...signal} />
+          </>
+        )
+      case 'verified':
+        return (
+          <>
+            <Path d="M12 3.6c2.3 1.5 4.6 2.1 6.9 2.3v5.4c0 4.4-2.3 7.4-6.9 9.1-4.6-1.7-6.9-4.7-6.9-9.1V5.9c2.3-.2 4.6-.8 6.9-2.3Z" {...line} />
+            <Path d="m8.5 12.1 2.2 2.2 4.8-5" {...line} stroke={accent} strokeWidth={2.1} />
+          </>
+        )
+      case 'quota':
+        return (
+          <>
+            <Path d="M4.2 17.9a8.5 8.5 0 1 1 15.6 0" {...line} />
+            <Path d="m12 12 4.7-3.4M7.1 17.9h9.8" {...line} />
+            <Circle cx="12" cy="12" r="1.55" {...signal} />
+          </>
+        )
+      case 'chat-limit':
+        return (
+          <>
+            <Path d="M4.1 5.1h15.8v10.8H9.2L4.1 20Z" {...line} />
+            <Path d="M8 9h8M8 12.4h5" {...line} />
+            <Rect x="16.7" y="8.2" width="2.4" height="5.4" rx="1.2" fill={accent} />
+          </>
+        )
+      case 'crown':
+        return (
+          <>
+            <Path d="m4.2 7 4.1 4.2L12 4.3l3.7 6.9L19.8 7l-1.3 11H5.5Z" {...line} />
+            <Path d="M6 14.5h12" {...line} />
+            <Circle cx="12" cy="4.3" r="1.25" {...signal} />
+          </>
+        )
+      case 'mistakes':
+        return (
+          <>
+            <Path d="m5.1 15.2 8.8-9a2.2 2.2 0 0 1 3.1 0l.9.9a2.2 2.2 0 0 1 0 3.1l-8.8 9H5.1Z" {...line} />
+            <Path d="m11.4 8.8 5 5M5.1 19.2h13.8" {...line} />
+            <Circle cx="18.8" cy="5.2" r="1.25" {...signal} />
+          </>
+        )
+      case 'flame':
+        return (
+          <>
+            <Path d="M13 3.5c.7 3.2-.8 4.5-2 6.1-1.1-1-.9-2.1-.4-3.3-3.1 2.4-5 5-4.4 8.2.5 3.2 2.9 5.6 6.1 5.6 3.4 0 5.8-2.4 5.8-5.8 0-3.6-2.2-7.1-5.1-10.8Z" {...line} />
+            <Path d="M12.2 12.1c1.7 1.8 2 3.1 1.4 4.2-.4.8-1.1 1.2-2 1.2-1.5 0-2.4-1.1-2.1-2.5.2-1.1 1.1-2 2.7-2.9Z" fill={accent} />
+          </>
+        )
+      case 'flashlight':
+        return (
+          <>
+            <Path d="M8.2 4.2h7.6l-1.2 4.1H9.4ZM9.4 8.3h5.2v11.5H9.4Z" {...line} />
+            <Path d="M8.4 2.3h7.2M10.8 12.2h2.4" {...line} />
+            <Circle cx="12" cy="17" r="1.25" {...signal} />
+          </>
+        )
+      case 'privacy':
+        return (
+          <>
+            <Rect x="5" y="10" width="14" height="10" rx="2.2" {...line} />
+            <Path d="M8.2 10V7.5a3.8 3.8 0 0 1 7.6 0V10M12 14v2.4" {...line} />
+            <Circle cx="12" cy="14" r="1.25" {...signal} />
+          </>
+        )
+      case 'terms':
+        return (
+          <>
+            <Path d="M5.6 3.8h8.2l4.2 4.1v12.3H5.6Z" {...line} />
+            <Path d="M13.8 3.8v4.1H18M8.6 11.5H15M8.6 14.5h3.8M9 18.1c2.1-1.5 4.1-1.5 6 0" {...line} />
+            <Circle cx="17.7" cy="17.9" r="1.2" {...signal} />
+          </>
+        )
+      case 'download':
+        return (
+          <>
+            <Path d="M12 3.7v10.2M8.2 10.5l3.8 3.8 3.8-3.8M4.7 17v3.2h14.6V17" {...line} />
+            <Circle cx="19.3" cy="17" r="1.2" {...signal} />
+          </>
+        )
+      case 'info':
+        return (
+          <>
+            <Circle cx="12" cy="12" r="8.4" {...line} />
+            <Path d="M12 10.7v5.5" {...line} />
+            <Circle cx="12" cy="7.5" r="1.3" {...signal} />
+          </>
+        )
+      case 'teacher':
+        return (
+          <>
+            <Path d="M4.1 5h15.8v11H9.2l-5.1 4Z" {...line} />
+            <Path d="M8 9.2h3.1M8 12.3h7.8" {...line} />
+            <Circle cx="16.9" cy="8.2" r="1.3" {...signal} />
           </>
         )
     }
