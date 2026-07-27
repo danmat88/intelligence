@@ -929,9 +929,9 @@ export default function SolverScreen({
               </Press>
             </View>
 
-            <View style={[styles.scanStage, { backgroundColor: c.text, shadowColor: c.text }]}>
-              <LinearGradient colors={['#302842', '#15121F']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
-              <View pointerEvents="none" style={styles.scanGlow} />
+            <View style={[styles.scanStage, { backgroundColor: c.chalkDark, borderColor: c.text, shadowColor: c.text }]}>
+              <LinearGradient colors={['#227A69', '#103F3B']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+              <View pointerEvents="none" style={[styles.scanGlow, { backgroundColor: c.sunny }]} />
               <View style={styles.scanTop}>
                 <View style={styles.scanStatus}>
                   <View style={styles.scanDot} />
@@ -943,7 +943,7 @@ export default function SolverScreen({
               <View style={styles.scanBody}>
                 <Press onPress={() => snap('camera')} accessibilityLabel="Scanează problema" style={[styles.scanPortal, { backgroundColor: c.accent }]}>
                   <View style={styles.scanRing}>
-                    <RezIcon name="camera" size={27} color="#fff" accent="#B8FFC9" />
+                    <RezIcon name="camera" size={27} color="#fff" accent="#FFE69A" />
                   </View>
                 </Press>
                 <View style={styles.scanCopy}>
@@ -972,7 +972,7 @@ export default function SolverScreen({
                 </View>
                 <View style={styles.examples}>
                   {['2x² + 5x − 3 = 0', '|x − 3| ≤ 2'].map((ex, index) => (
-                    <Press key={ex} onPress={() => sendText(ex)} containerStyle={styles.exampleSlot} style={[styles.chip, { backgroundColor: c.surface }]}>
+                    <Press key={ex} onPress={() => sendText(ex)} containerStyle={styles.exampleSlot} style={[styles.chip, { backgroundColor: c.surface, borderColor: c.text }]}>
                       <Txt size={9.5} color={c.accent} style={{ fontFamily: theme.font.mono }}>0{index + 1}</Txt>
                       <Txt numberOfLines={1} size={11.5} color={c.text} style={[styles.exampleText, { fontFamily: theme.font.mono }]}>{ex}</Txt>
                       <RezIcon name="chevron" size={13} color={c.textFaint} />
@@ -1089,7 +1089,7 @@ export default function SolverScreen({
             </Pressable>
           ) : (
             <Txt size={10} color={c.textFaint} style={[styles.disc, { fontFamily: theme.font.mono }]}>
-              Rezolvo poate greși. Verifică rezultatele importante.
+              Profu’ de Mate poate greși. Verifică rezultatele importante.
             </Txt>
           )}
         </View>
@@ -1197,11 +1197,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
 
-  scanStage: { borderRadius: 27, flex: 1, marginTop: 11, maxHeight: 250, minHeight: 205, overflow: 'hidden', padding: 16, shadowOpacity: 0.2, shadowRadius: 24, shadowOffset: { width: 0, height: 12 }, elevation: 8 },
-  scanGlow: { backgroundColor: 'rgba(104,71,245,0.29)', borderRadius: 110, height: 220, position: 'absolute', right: -110, top: -80, width: 220 },
+  scanStage: { borderRadius: 27, borderWidth: 2.5, flex: 1, marginTop: 11, maxHeight: 250, minHeight: 205, overflow: 'hidden', padding: 16, shadowOpacity: 0.28, shadowRadius: 0, shadowOffset: { width: 5, height: 6 }, elevation: 8 },
+  scanGlow: { borderRadius: 110, height: 220, opacity: 0.14, position: 'absolute', right: -110, top: -80, width: 220 },
   scanTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   scanStatus: { alignItems: 'center', flexDirection: 'row', gap: 7 },
-  scanDot: { backgroundColor: '#9CFFCC', borderRadius: 4, height: 6, width: 6 },
+  scanDot: { backgroundColor: '#F6C953', borderRadius: 4, height: 6, width: 6 },
   scanBody: { alignItems: 'center', flex: 1, flexDirection: 'row', gap: 15, paddingVertical: 9 },
   scanPortal: { alignItems: 'center', borderRadius: 32, height: 64, justifyContent: 'center', shadowColor: '#6847F5', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 17, width: 64 },
   scanRing: { alignItems: 'center', borderColor: 'rgba(255,255,255,0.45)', borderRadius: 23, borderWidth: 1, height: 46, justifyContent: 'center', width: 46 },
@@ -1215,7 +1215,7 @@ const styles = StyleSheet.create({
   examplesHead: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 },
   examples: { flexDirection: 'row', gap: 7, paddingTop: 7 },
   exampleSlot: { flex: 1 },
-  chip: { alignItems: 'center', borderRadius: 14, flexDirection: 'row', gap: 7, height: 43, paddingHorizontal: 9 },
+  chip: { alignItems: 'center', borderRadius: 14, borderWidth: 1.5, flexDirection: 'row', gap: 7, height: 43, paddingHorizontal: 9 },
   exampleText: { flex: 1, letterSpacing: -0.2 },
 
   // composer
@@ -1228,7 +1228,7 @@ const styles = StyleSheet.create({
     borderRadius: 21,
     paddingVertical: 7,
     paddingHorizontal: 7,
-    shadowColor: '#15121F',
+    shadowColor: '#193149',
     shadowOpacity: 0.08,
     shadowRadius: 18,
     shadowOffset: { width: 0, height: 7 },

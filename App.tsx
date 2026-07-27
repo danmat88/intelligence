@@ -50,7 +50,7 @@ SplashScreen.setOptions({ fade: true, duration: 300 })
 // the native module.
 initAppCheck()
 
-const BOOT_BG = '#F4F5FA'
+const BOOT_BG = '#FFF8E7'
 
 export default function App() {
   const [fontsLoaded, fontError] = useFonts({

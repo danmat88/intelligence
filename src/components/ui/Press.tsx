@@ -16,7 +16,7 @@ import Animated, {
 export default function Press({
   style,
   containerStyle,
-  scaleTo = 0.975,
+  scaleTo = 0.965,
   children,
   ...rest
 }: Omit<PressableProps, 'style' | 'children'> & {

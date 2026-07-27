@@ -39,8 +39,8 @@ export default function ScreenIntro({
           {title}
         </Txt>
       </View>
-      <View style={[styles.iconStage, { backgroundColor: c.accentSoft }]}>
-        <RezIcon name={icon} size={23} color={c.accent} accent={c.accent} strokeWidth={1.85} />
+      <View style={[styles.iconStage, { backgroundColor: c.sunny, borderColor: c.text, shadowColor: c.text }]}>
+        <RezIcon name={icon} size={23} color={c.text} accent={c.accent} strokeWidth={1.95} />
       </View>
     </View>
   )
@@ -63,9 +63,14 @@ const styles = StyleSheet.create({
   titleCompact: { fontSize: 26, lineHeight: 30 },
   iconStage: {
     alignItems: 'center',
-    borderRadius: 17,
+    borderRadius: 15,
+    borderWidth: 2,
     height: 44,
     justifyContent: 'center',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 0,
+    transform: [{ rotate: '3deg' }],
     width: 44,
   },
 })

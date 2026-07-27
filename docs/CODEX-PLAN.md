@@ -1,6 +1,6 @@
-# Rezolvo — Codex Product & Redesign Plan
+# Profu’ de Mate — Codex Product & Redesign Plan
 
-> Canonical source for the next version of Rezolvo.
+> Canonical source for the next version of Profu’ de Mate.
 >
 > Every Codex session must read this file before changing product structure,
 > navigation, UI, EN/BAC practice, progress, monetization, or launch flow.
@@ -11,7 +11,7 @@ Last updated: 27 July 2026
 
 ## 1. Product direction
 
-Rezolvo evolves from a reliable camera-first AI math solver into a coherent
+Profu’ de Mate evolves from a reliable camera-first AI math solver into a coherent
 Romanian mathematics learning and exam-preparation product.
 
 The existing solve, verify, camera, history, account, persistence, metering,
@@ -86,7 +86,7 @@ navigation affordance.
 
 The application uses four coordinated chrome modes:
 
-1. Top-level browsing uses the identical Rezolvo wordmark/account header and
+1. Top-level browsing uses the identical Profu’ de Mate wordmark/account header and
    shared content grid on Acasă, Rezolvă idle and Pregătire.
 2. Nested and focused work uses a contextual Back/title/action header and hides
    the app dock.
@@ -110,7 +110,7 @@ Do not build the shell twice just to accommodate a later SDK migration.
 
 ### First session
 
-1. The learner understands in one screen that Rezolvo solves and teaches math.
+1. The learner understands in one screen that Profu’ de Mate solves and teaches math.
 2. They can immediately scan, upload or type a problem.
 3. They can choose **Evaluarea Națională** or **BAC** as a preparation goal.
 4. If BAC is chosen, they select the official mathematics profile/variant.
@@ -208,7 +208,7 @@ An official subject offers three distinct modes:
 2. **Simulare** — timed, exam-like flow with help restricted by mode.
 3. **Studiază** — inspect the subject, expected answers and rubric/barem.
 
-Official and Rezolvo-generated content must be labeled unambiguously.
+Official and Profu’ de Mate-generated content must be labeled unambiguously.
 
 ### Active exercise or test
 
@@ -301,30 +301,35 @@ ship a copied commercial corpus.
 
 Generated exercises must remain identifiable internally, be constrained by a
 reviewed template and have a separately verified answer. User-facing labels
-must distinguish official content from Rezolvo practice.
+must distinguish official content from Profu’ de Mate practice.
 
 ## 8. Design direction
 
-Rezolvo uses one complete visual system across every surface. Do not combine
-legacy warm-paper screens with redesigned product screens.
+Profu’ de Mate uses one complete cartoon-classroom visual system across every
+surface. Do not combine the former porcelain/violet identity with the new brand.
 
-- cool porcelain canvas with a restrained violet atmosphere;
-- near-black ink surfaces and a violet-to-indigo action signal;
+- warm exercise-book paper with a faint graph grid and restrained doodles;
+- navy ink outlines, tomato-red actions, school-bus yellow emphasis and chalk
+  green work surfaces;
 - Space Grotesk for expressive headings, Inter for UI/body and JetBrains Mono
   only where mathematical/code-like alignment benefits;
-- large editorial hierarchy with compact, functional chrome;
+- large, friendly editorial hierarchy with compact, functional chrome;
 - continuous surfaces instead of a dashboard made from equal card stacks;
 - the three top-level idle screens fit their primary choices in the available
   viewport without vertical or horizontal scrolling; scrolling is reserved
   for intrinsically long content such as a solution, history or result list;
 - one shared wordmark/account header and one floating three-destination dock;
 - every transient surface — settings, history, limits, subscription, dialogs,
-  toasts and math input tools — uses the same floating porcelain/ink language,
-  30 px outer geometry, compact dark controls and violet state signals;
+  toasts and math input tools — uses the same notebook/sticker language,
+  rounded outer geometry, compact ink controls and red/yellow/green state signals;
 - the open solver is a visual workbench: scanner stage, direct text entry and
-  a solution document, not a legacy chat screen inside a new tab;
+  a chalkboard-like scanner stage, direct text entry and a solution document,
+  not a legacy chat screen inside a new tab;
 - color communicates state and priority, not decoration;
-- a code-native Rezolvo vector icon alphabet for product navigation and
+- the generated professor mascot is the brand mark for the launcher, splash,
+  wordmark lockup and selected brand moments; it must not become decorative
+  clutter on every card;
+- a code-native Profu’ de Mate vector icon alphabet for product navigation and
   actions; retain third-party symbols only for protected brand marks such as
   Google, and never use emoji as interface icons;
 - one semantic action per icon: brand, solver, premium, torch, streak, limits,
@@ -340,12 +345,14 @@ legacy warm-paper screens with redesigned product screens.
   window or recolor the transparent Android system-navigation region;
 - accessible contrast, touch targets, font scaling and screen-reader labels.
 
-The target is a premium educational product, not a generic AI chat app and not
-a dashboard filled with decorative cards.
+The target is a distinctive, friendly educational product, not a generic AI
+chat app, a preschool toy or a dashboard filled with decorative cards.
 
-Motion remains calm and functional:
+Motion is playful, tactile and functional:
 
 - preserve the established opaque-push/soft-tail language;
+- controls may use a brief squash, press or small settling bounce;
+- brand entry may give the professor one purposeful settling movement;
 - avoid simultaneous zoom and opacity transitions;
 - transitions explain navigation or state change;
 - respect reduced motion;
@@ -527,11 +534,18 @@ Decided:
 - The solver is preserved and serves both open solving and grounded teaching.
 - Official subject modes are Ghidat, Simulare and Studiază.
 - Progress is evidence-based and does not yet receive a primary tab.
-- The brand mark is the violet-to-indigo Rezolvo ribbon: an abstract lowercase
-  r resolving into an answer/check gesture, with equality bars integrated into
-  its negative space. It is distinct from the solver action icon.
-- The native splash stays warm paper; the mark enters in the animated
-  JavaScript brand beat instead of appearing twice.
+- The public brand name is **Profu’ de Mate**. The stable Android package,
+  backend headers, storage keys and existing service URLs keep their current
+  technical identifiers until a separately planned migration requires change.
+- The brand mark is an original friendly older mathematics professor with a
+  curled moustache, glasses, red bow tie and teal waistcoat. He points to a
+  correctly labeled right triangle and `a² + b² = c²` on a chalkboard.
+- Launcher, adaptive, monochrome, store, favicon and splash assets derive from
+  that same complete professor-pointing-at-the-board artwork; the launcher does
+  not substitute a cropped bust or detached symbol. Platform-specific safe-area
+  padding keeps the full scene visible through rounded-square, circle and
+  squircle masks. The compact native splash hands off to the larger animated
+  JavaScript lockup.
 - Billing and RevenueCat remain near launch, after premium UX is stable.
 - Expo 54 remains the active product-development baseline. Expo 57 is a
   separate later migration on a laptop with enough native-build disk space.
@@ -556,7 +570,7 @@ Decided:
   crop layer appears only after an image is actually returned.
 - The July shell mockup that mixed new Home/Preparation cards with the legacy
   solver presentation was rejected. All visible surfaces now follow the same
-  porcelain/ink/violet system; only proven solver behavior is retained.
+  notebook/ink/chalk cartoon system; only proven solver behavior is retained.
 
 Open — decide before the affected phase:
 

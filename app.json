@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "Rezolvo",
+    "name": "Profu’ de Mate",
     "slug": "intelligence",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon-v2.png",
+    "icon": "./assets/profu-icon.png",
     "userInterfaceStyle": "light",
-    "backgroundColor": "#F4F5FA",
+    "backgroundColor": "#FFF8E7",
     "ios": {
       "supportsTablet": true
     },
@@ -14,16 +14,16 @@
       "package": "com.rezolvo.app",
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "backgroundColor": "#15121F",
-        "foregroundImage": "./assets/android-icon-foreground-v2.png",
-        "backgroundImage": "./assets/android-icon-background-v2.png",
-        "monochromeImage": "./assets/android-icon-monochrome-v2.png"
+        "backgroundColor": "#F6C953",
+        "foregroundImage": "./assets/profu-android-foreground.png",
+        "backgroundImage": "./assets/profu-android-background.png",
+        "monochromeImage": "./assets/profu-android-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
       "allowBackup": false
     },
     "web": {
-      "favicon": "./assets/favicon-v2.png"
+      "favicon": "./assets/profu-favicon.png"
     },
     "plugins": [
       "expo-asset",
@@ -35,20 +35,23 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#F4F5FA"
+          "backgroundColor": "#FFF8E7",
+          "image": "./assets/profu-splash-icon.png",
+          "imageWidth": 240,
+          "resizeMode": "contain"
         }
       ],
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow Rezolvo to use the camera to photograph math problems."
+          "cameraPermission": "Allow Profu’ de Mate to use the camera to photograph math problems."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow Rezolvo to access your photos to solve problems from images.",
-          "cameraPermission": "Allow Rezolvo to use the camera to snap math problems."
+          "photosPermission": "Allow Profu’ de Mate to access your photos to solve problems from images.",
+          "cameraPermission": "Allow Profu’ de Mate to use the camera to snap math problems."
         }
       ],
       [

@@ -45,7 +45,7 @@ export default function WelcomeScreen() {
             style={({ pressed }) => [
               styles.googleBtn,
               {
-                backgroundColor: c.text,
+                backgroundColor: c.chalkDark,
                 borderColor: c.text,
                 borderRadius: 18,
                 opacity: pressed ? 0.75 : 1,
@@ -101,10 +101,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    shadowColor: '#15121F',
-    shadowOpacity: 0.18,
-    shadowRadius: 22,
-    shadowOffset: { width: 0, height: 10 },
+    shadowColor: '#193149',
+    shadowOpacity: 0.22,
+    shadowRadius: 0,
+    shadowOffset: { width: 5, height: 6 },
     elevation: 7,
   },
   error: { textAlign: 'center', lineHeight: 18, paddingHorizontal: 12 },

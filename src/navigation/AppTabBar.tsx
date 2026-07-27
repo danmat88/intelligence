@@ -53,7 +53,7 @@ function AppTabBar({ activeTab, onChange, visible = true }: Props) {
       style={[styles.shell, { backgroundColor: c.bg }, shellMotion]}
     >
       <Animated.View style={[styles.stage, { paddingBottom: bottom }, dockMotion]}>
-        <View style={[styles.dock, { backgroundColor: c.text, shadowColor: c.text }]} accessibilityRole="tablist">
+        <View style={[styles.dock, { backgroundColor: c.text, borderColor: c.sunny, shadowColor: c.text }]} accessibilityRole="tablist">
           {tabs.map((tab) => {
             const active = activeTab === tab.key
             return (
@@ -64,9 +64,9 @@ function AppTabBar({ activeTab, onChange, visible = true }: Props) {
                 accessibilityLabel={tab.label}
                 accessibilityState={{ selected: active }}
                 containerStyle={styles.slot}
-                style={[styles.tab, active && { backgroundColor: c.surface }]}
+                style={[styles.tab, active && { backgroundColor: c.sunny }]}
               >
-                <RezIcon name={tab.icon} size={18} color={active ? c.text : 'rgba(255,255,255,0.48)'} accent={active ? c.accent : 'rgba(255,255,255,0.48)'} />
+                <RezIcon name={tab.icon} size={18} color={active ? c.text : 'rgba(255,255,255,0.58)'} accent={active ? c.accent : 'rgba(255,255,255,0.58)'} />
                 <Txt weight="bold" size={11.5} color={active ? c.text : 'rgba(255,255,255,0.56)'}>{tab.label}</Txt>
                 {active && <View style={[styles.activeSignal, { backgroundColor: c.accent }]} />}
               </Press>
@@ -85,18 +85,19 @@ const styles = StyleSheet.create({
   stage: { paddingHorizontal: 14, paddingTop: 7 },
   dock: {
     alignSelf: 'center',
+    borderWidth: 2,
     borderRadius: 23,
     flexDirection: 'row',
     gap: 4,
     maxWidth: 520,
     padding: 4,
-    shadowOpacity: 0.2,
-    shadowRadius: 22,
-    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.28,
+    shadowRadius: 0,
+    shadowOffset: { width: 4, height: 5 },
     elevation: 10,
     width: '100%',
   },
   slot: { flex: 1 },
   tab: { alignItems: 'center', borderRadius: 19, flexDirection: 'row', gap: 7, height: 48, justifyContent: 'center', overflow: 'hidden' },
-  activeSignal: { borderRadius: 999, bottom: 4, height: 3, position: 'absolute', width: 16 },
+  activeSignal: { borderRadius: 999, bottom: 4, height: 3, position: 'absolute', width: 18 },
 })

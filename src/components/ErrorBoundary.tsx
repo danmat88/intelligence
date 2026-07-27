@@ -55,7 +55,7 @@ export default class ErrorBoundary extends Component<{ children: ReactNode }, { 
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, backgroundColor: '#F4F5FA', alignItems: 'center', justifyContent: 'center', padding: 22 },
+  wrap: { flex: 1, backgroundColor: '#FFF8E7', alignItems: 'center', justifyContent: 'center', padding: 22 },
   card: {
     width: '100%',
     maxWidth: 420,

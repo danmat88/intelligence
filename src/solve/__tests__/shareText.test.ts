@@ -1,6 +1,6 @@
 import { latexToPlain, markdownToPlain, solutionShareText } from '../shareText'
 
-const LABELS = { problem: 'Problema', answer: 'Răspuns', signature: 'Rezolvat cu Rezolvo' }
+const LABELS = { problem: 'Problema', answer: 'Răspuns', signature: 'Rezolvat cu Profu’ de Mate' }
 
 describe('latexToPlain', () => {
   it('converts a simple fraction', () => {
@@ -71,7 +71,7 @@ describe('solutionShareText', () => {
         '',
         'Răspuns: x_1 = 1/2, x_2 = -3',
         '',
-        '— Rezolvat cu Rezolvo',
+        '— Rezolvat cu Profu’ de Mate',
       ].join('\n'),
     )
   })

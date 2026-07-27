@@ -57,7 +57,7 @@ const STRINGS = {
     'solution.verified': 'Verified',
     'verify.info.title.ok': 'Verified with code',
     'verify.info.body.ok':
-      'Rezolvo ran the actual computation in code (Python) and the result matches the answer shown. This is a machine check — not just the AI being confident.',
+      'Profu’ de Mate ran the actual computation in code (Python) and the result matches the answer shown. This is a machine check — not just the AI being confident.',
     'common.ok': 'Got it',
     // — actions
     'action.copy': 'Copy',
@@ -66,7 +66,7 @@ const STRINGS = {
     'action.report': 'Report',
     'action.reported': 'Report sent — thank you',
     'share.problem': 'Problem',
-    'share.signature': 'Solved with Rezolvo',
+    'share.signature': 'Solved with Profu’ de Mate',
     'doc.you': 'You',
     'doc.readAs': 'Read as',
     'doc.fix': 'Fix it',
@@ -175,7 +175,7 @@ const STRINGS = {
     'capture.lblGallery': 'Gallery',
     'capture.lblType': 'Type',
     'crop.hint': 'Drag the corners to frame the problem',
-    'capture.denied': 'Rezolvo needs the camera to photograph problems. Enable it in Settings.',
+    'capture.denied': 'Profu’ de Mate needs the camera to photograph problems. Enable it in Settings.',
     'capture.allow': 'Allow the camera',
     'capture.openSettings': 'Open settings',
     'capture.typeInstead': 'Type it instead',
@@ -227,7 +227,7 @@ const STRINGS = {
     'solution.verified': 'Verificat',
     'verify.info.title.ok': 'Verificat cu cod',
     'verify.info.body.ok':
-      'Rezolvo a rulat calculul efectiv în cod (Python), iar rezultatul coincide cu răspunsul afișat. E o verificare de mașină — nu doar părerea AI-ului.',
+      'Profu’ de Mate a rulat calculul efectiv în cod (Python), iar rezultatul coincide cu răspunsul afișat. E o verificare de mașină — nu doar părerea AI-ului.',
     'common.ok': 'Am înțeles',
     // — actions
     'action.copy': 'Copiază',
@@ -236,7 +236,7 @@ const STRINGS = {
     'action.report': 'Raportează',
     'action.reported': 'Raport trimis — mulțumim',
     'share.problem': 'Problema',
-    'share.signature': 'Rezolvat cu Rezolvo',
+    'share.signature': 'Rezolvat cu Profu’ de Mate',
     'doc.you': 'Tu',
     'doc.readAs': 'Am citit',
     'doc.fix': 'Corectează',
@@ -345,7 +345,7 @@ const STRINGS = {
     'capture.lblGallery': 'Galerie',
     'capture.lblType': 'Scrie',
     'crop.hint': 'Trage colțurile ca să încadrezi problema',
-    'capture.denied': 'Rezolvo are nevoie de cameră ca să fotografieze probleme. Activeaz-o în Setări.',
+    'capture.denied': 'Profu’ de Mate are nevoie de cameră ca să fotografieze probleme. Activeaz-o în Setări.',
     'capture.allow': 'Permite camera',
     'capture.openSettings': 'Deschide setările',
     'capture.typeInstead': 'Scrie în loc',

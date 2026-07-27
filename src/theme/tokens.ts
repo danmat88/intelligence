@@ -1,9 +1,9 @@
 /**
  * Design tokens — the single source of truth for the whole app's look.
- * Direction: "porcelain, ink, signal." A cool near-white canvas, deep ink
- * surfaces and one electric-violet signal make every screen recognizable as
- * Rezolvo. Space Grotesk carries display/headers, Inter runs the UI, JetBrains
- * Mono does technical labels; Fraunces is reserved for mathematical notation.
+ * Direction: "notebook, chalk, sticker." Warm exercise-book paper, navy ink,
+ * tomato actions, school-bus yellow and chalk green make Profu' de Mate feel
+ * like an animated classroom. Space Grotesk carries display/headers, Inter
+ * runs the UI, JetBrains Mono does labels and Fraunces carries math character.
  */
 
 export type Theme = {
@@ -19,6 +19,10 @@ export type Theme = {
     accent: string
     accentSoft: string
     onAccent: string
+    sunny: string
+    sunnySoft: string
+    chalk: string
+    chalkDark: string
     danger: string
     dangerSoft: string
     success: string
@@ -50,32 +54,35 @@ export type Theme = {
   }
 }
 
-// The one signature accent — electric blurple; the gradient runs violet → indigo.
-const BRAND = ['#8B6CFF', '#5737F6']
+const BRAND = ['#F06A4D', '#E84B3A']
 
 export const theme: Theme = {
   colors: {
-    bg: '#F4F5FA',
-    bgElevated: '#FCFCFF',
-    surface: '#FFFFFF',
-    surfaceAlt: '#EAEBF2',
-    border: 'rgba(21,18,31,0.09)',
-    text: '#15121F',
-    textMuted: '#656174',
-    textFaint: '#9C98AA',
-    accent: '#6847F5',
-    accentSoft: '#EEE9FF',
+    bg: '#FFF8E7',
+    bgElevated: '#FFFCF4',
+    surface: '#FFFEF8',
+    surfaceAlt: '#F7EAC7',
+    border: 'rgba(25,49,73,0.18)',
+    text: '#193149',
+    textMuted: '#5F6D72',
+    textFaint: '#8A948F',
+    accent: '#E9543D',
+    accentSoft: '#FFE0D4',
     onAccent: '#FFFFFF',
-    danger: '#E5484D',
-    dangerSoft: '#FDECEE',
-    success: '#078B61',
-    successSoft: '#E2F6EE',
+    sunny: '#F6C953',
+    sunnySoft: '#FFF0B8',
+    chalk: '#197565',
+    chalkDark: '#103F3B',
+    danger: '#D63C39',
+    dangerSoft: '#FDE5DE',
+    success: '#197565',
+    successSoft: '#DDF3E6',
   },
   gradient: {
     brand: BRAND,
-    surface: ['#FFFFFF', '#F2F0FA'],
+    surface: ['#FFFEF8', '#FFF1C8'],
   },
-  radius: { sm: 12, md: 16, lg: 22, xl: 30, pill: 999 },
+  radius: { sm: 12, md: 17, lg: 23, xl: 30, pill: 999 },
   space: (n: number) => n * 4,
   font: {
     regular: 'Inter_400Regular',

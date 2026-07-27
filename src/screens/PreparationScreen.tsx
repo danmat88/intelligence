@@ -46,27 +46,27 @@ export default function PreparationScreen({ goal, bacProfile, onSelectGoal, onSe
       <ScreenContent style={styles.content}>
         <ScreenIntro eyebrow="PREGĂTIRE PERSONALIZATĂ" title="Examenul, fără haos." icon={isEn ? 'exam-en' : 'exam-bac'} />
 
-        <View style={[styles.switcher, { backgroundColor: c.surfaceAlt }]}>
-          <Press onPress={() => onSelectGoal('en')} containerStyle={styles.switchSlot} style={[styles.switch, isEn && { backgroundColor: c.text }]}>
-            <RezIcon name="exam-en" size={16} color={isEn ? '#A995FF' : c.textFaint} accent={isEn ? '#A995FF' : c.textFaint} />
-            <Txt size={9.5} color={isEn ? '#A995FF' : c.textFaint} style={{ fontFamily: theme.font.mono }}>VIII</Txt>
-            <Txt weight="bold" size={12.5} color={isEn ? '#fff' : c.textMuted}>Evaluare</Txt>
+        <View style={[styles.switcher, { backgroundColor: c.sunnySoft, borderColor: c.text }]}>
+          <Press onPress={() => onSelectGoal('en')} containerStyle={styles.switchSlot} style={[styles.switch, isEn && { backgroundColor: c.sunny, borderColor: c.text }]}>
+            <RezIcon name="exam-en" size={16} color={isEn ? c.text : c.textFaint} accent={isEn ? c.accent : c.textFaint} />
+            <Txt size={9.5} color={isEn ? c.accent : c.textFaint} style={{ fontFamily: theme.font.mono }}>VIII</Txt>
+            <Txt weight="bold" size={12.5} color={isEn ? c.text : c.textMuted}>Evaluare</Txt>
           </Press>
-          <Press onPress={() => onSelectGoal('bac')} containerStyle={styles.switchSlot} style={[styles.switch, !isEn && { backgroundColor: c.text }]}>
-            <RezIcon name="exam-bac" size={16} color={!isEn ? '#A995FF' : c.textFaint} accent={!isEn ? '#A995FF' : c.textFaint} />
-            <Txt size={9.5} color={!isEn ? '#A995FF' : c.textFaint} style={{ fontFamily: theme.font.mono }}>XII</Txt>
-            <Txt weight="bold" size={12.5} color={!isEn ? '#fff' : c.textMuted}>Bacalaureat</Txt>
+          <Press onPress={() => onSelectGoal('bac')} containerStyle={styles.switchSlot} style={[styles.switch, !isEn && { backgroundColor: c.sunny, borderColor: c.text }]}>
+            <RezIcon name="exam-bac" size={16} color={!isEn ? c.text : c.textFaint} accent={!isEn ? c.accent : c.textFaint} />
+            <Txt size={9.5} color={!isEn ? c.accent : c.textFaint} style={{ fontFamily: theme.font.mono }}>XII</Txt>
+            <Txt weight="bold" size={12.5} color={!isEn ? c.text : c.textMuted}>Bacalaureat</Txt>
           </Press>
         </View>
 
-        <View style={[styles.passport, compact && styles.passportCompact, { backgroundColor: c.surface, shadowColor: c.text }]}>
-          <LinearGradient colors={isEn ? ['#F0ECFF', '#FCFCFF'] : ['#E9E9F3', '#FCFCFF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
-          <View style={[styles.passportSignal, { backgroundColor: isEn ? c.accent : c.text }]} />
-          <Txt pointerEvents="none" style={[styles.roman, compact && styles.romanCompact, { color: isEn ? 'rgba(104,71,245,0.07)' : 'rgba(21,18,31,0.06)', fontFamily: theme.font.display }]}>{isEn ? 'VIII' : 'XII'}</Txt>
+        <View style={[styles.passport, compact && styles.passportCompact, { backgroundColor: c.surface, borderColor: c.text, shadowColor: c.text }]}>
+          <LinearGradient colors={isEn ? ['#FFF0B8', '#FFFEF8'] : ['#FFE0D4', '#FFFEF8']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+          <View style={[styles.passportSignal, { backgroundColor: isEn ? c.sunny : c.accent }]} />
+          <Txt pointerEvents="none" style={[styles.roman, compact && styles.romanCompact, { color: isEn ? 'rgba(246,201,83,0.22)' : 'rgba(233,84,61,0.10)', fontFamily: theme.font.display }]}>{isEn ? 'VIII' : 'XII'}</Txt>
 
           <View style={styles.passportTop}>
             <View style={styles.examIdentity}>
-              <View style={[styles.examCode, { backgroundColor: isEn ? c.accent : c.text }]}>
+              <View style={[styles.examCode, { backgroundColor: isEn ? c.chalk : c.accent }]}>
                 <Txt weight="bold" size={9.5} color="#fff" style={{ fontFamily: theme.font.mono }}>{isEn ? 'EN' : 'BAC'}</Txt>
               </View>
               <View>
@@ -100,9 +100,9 @@ export default function PreparationScreen({ goal, bacProfile, onSelectGoal, onSe
           )}
 
           <View style={styles.passportActions}>
-            <Press onPress={() => onSolve('camera')} containerStyle={styles.startSlot} style={[styles.start, { backgroundColor: c.text }]}>
+            <Press onPress={() => onSolve('camera')} containerStyle={styles.startSlot} style={[styles.start, { backgroundColor: c.chalkDark, borderColor: c.text }]}>
               <View style={[styles.startIcon, { backgroundColor: c.accent }]}>
-                <RezIcon name="camera" size={18} color="#fff" accent="#B8FFC9" />
+                <RezIcon name="camera" size={18} color="#fff" accent="#FFE69A" />
               </View>
               <Txt weight="bold" size={13} color="#fff" style={styles.startText}>Începe cu o problemă</Txt>
               <RezIcon name="arrow" size={17} color="#fff" />
@@ -119,10 +119,19 @@ export default function PreparationScreen({ goal, bacProfile, onSelectGoal, onSe
         </View>
         <View style={styles.modeDeck}>
           {modes.map((mode, index) => (
-            <View key={mode.title} style={[styles.mode, index === 1 && { backgroundColor: c.text }]}> 
-              <RezIcon name={mode.icon} size={21} color={index === 1 ? '#fff' : c.text} accent={c.accent} />
+            <View
+              key={mode.title}
+              style={[
+                styles.mode,
+                {
+                  backgroundColor: index === 0 ? c.sunnySoft : index === 1 ? c.chalkDark : c.accentSoft,
+                  borderColor: c.text,
+                },
+              ]}
+            >
+              <RezIcon name={mode.icon} size={21} color={index === 1 ? '#fff' : c.text} accent={index === 0 ? c.chalk : c.accent} />
               <Txt weight="bold" size={11.5} color={index === 1 ? '#fff' : c.text} style={styles.modeTitle}>{mode.title}</Txt>
-              <Txt numberOfLines={1} size={9.5} color={index === 1 ? 'rgba(255,255,255,0.54)' : c.textFaint}>{mode.copy}</Txt>
+              <Txt numberOfLines={1} size={9.5} color={index === 1 ? 'rgba(255,255,255,0.64)' : c.textMuted}>{mode.copy}</Txt>
             </View>
           ))}
         </View>
@@ -140,10 +149,10 @@ export default function PreparationScreen({ goal, bacProfile, onSelectGoal, onSe
 
 const styles = StyleSheet.create({
   content: { paddingBottom: 9 },
-  switcher: { borderRadius: 17, flexDirection: 'row', gap: 3, marginTop: 11, padding: 3 },
+  switcher: { borderRadius: 17, borderWidth: 2, flexDirection: 'row', gap: 3, marginTop: 11, padding: 3 },
   switchSlot: { flex: 1 },
-  switch: { alignItems: 'center', borderRadius: 14, flexDirection: 'row', gap: 8, height: 40, justifyContent: 'center' },
-  passport: { borderRadius: 27, flex: 1, marginTop: 10, maxHeight: 310, minHeight: 247, overflow: 'hidden', padding: 17, shadowOffset: { width: 0, height: 11 }, shadowOpacity: 0.11, shadowRadius: 24, elevation: 6 },
+  switch: { alignItems: 'center', borderColor: 'transparent', borderRadius: 14, borderWidth: 2, flexDirection: 'row', gap: 8, height: 40, justifyContent: 'center' },
+  passport: { borderRadius: 27, borderWidth: 2.5, flex: 1, marginTop: 10, maxHeight: 310, minHeight: 247, overflow: 'hidden', padding: 17, shadowOffset: { width: 5, height: 6 }, shadowOpacity: 0.2, shadowRadius: 0, elevation: 6 },
   passportCompact: { minHeight: 230, padding: 14 },
   passportSignal: { bottom: 0, left: 0, position: 'absolute', top: 0, width: 5 },
   roman: { bottom: -30, fontSize: 145, letterSpacing: -10, position: 'absolute', right: -4 },
@@ -163,14 +172,14 @@ const styles = StyleSheet.create({
   profileRadio: { borderRadius: 999, borderWidth: 1.3, height: 9, width: 9 },
   passportActions: { alignItems: 'center', flexDirection: 'row', gap: 7 },
   startSlot: { flex: 1 },
-  start: { alignItems: 'center', borderRadius: 16, flexDirection: 'row', height: 48, paddingHorizontal: 8 },
+  start: { alignItems: 'center', borderRadius: 16, borderWidth: 2, flexDirection: 'row', height: 48, paddingHorizontal: 8 },
   startIcon: { alignItems: 'center', borderRadius: 12, height: 34, justifyContent: 'center', width: 34 },
   startText: { flex: 1, marginLeft: 9 },
   writeAction: { alignItems: 'center', borderRadius: 16, height: 48, justifyContent: 'center', width: 48 },
   modeHeading: { alignItems: 'baseline', flexDirection: 'row', justifyContent: 'space-between', marginTop: 13 },
   sectionTitle: { fontSize: 17, letterSpacing: -0.55 },
   modeDeck: { flexDirection: 'row', gap: 6, marginTop: 7 },
-  mode: { backgroundColor: 'rgba(255,255,255,0.62)', borderRadius: 16, flex: 1, minHeight: 78, padding: 10 },
+  mode: { borderRadius: 16, borderWidth: 2, flex: 1, minHeight: 78, padding: 10, transform: [{ rotate: '-0.6deg' }] },
   modeTitle: { marginBottom: 2, marginTop: 8 },
   integrity: { alignItems: 'center', flexDirection: 'row', gap: 7, justifyContent: 'center', minHeight: 27 },
   integrityText: { letterSpacing: -0.08 },
