@@ -35,10 +35,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#FFF8E7",
-          "image": "./assets/profu-splash-icon.png",
-          "imageWidth": 240,
-          "resizeMode": "contain"
+          "backgroundColor": "#FFF8E7"
         }
       ],
       [

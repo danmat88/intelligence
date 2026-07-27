@@ -540,12 +540,13 @@ Decided:
 - The brand mark is an original friendly older mathematics professor with a
   curled moustache, glasses, red bow tie and teal waistcoat. He points to a
   correctly labeled right triangle and `a² + b² = c²` on a chalkboard.
-- Launcher, adaptive, monochrome, store, favicon and splash assets derive from
-  that same complete professor-pointing-at-the-board artwork; the launcher does
-  not substitute a cropped bust or detached symbol. Platform-specific safe-area
+- Launcher, adaptive, monochrome, store and favicon assets derive from that
+  same complete professor-pointing-at-the-board artwork; the launcher does not
+  substitute a cropped bust or detached symbol. Platform-specific safe-area
   padding keeps the full scene visible through rounded-square, circle and
-  squircle masks. The compact native splash hands off to the larger animated
-  JavaScript lockup.
+  squircle masks. The native splash is deliberately only the warm cream brand
+  field; the retained mascot artwork first appears in the animated JavaScript
+  lockup.
 - Billing and RevenueCat remain near launch, after premium UX is stable.
 - Expo 54 remains the active product-development baseline. Expo 57 is a
   separate later migration on a laptop with enough native-build disk space.
