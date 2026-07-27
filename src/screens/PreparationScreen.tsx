@@ -4,6 +4,7 @@ import AppHeader from '../components/ui/AppHeader'
 import Press from '../components/ui/Press'
 import RezIcon, { type RezIconName } from '../components/ui/RezIcon'
 import ScreenBackground from '../components/ui/ScreenBackground'
+import ScreenContent from '../components/ui/ScreenContent'
 import ScreenIntro from '../components/ui/ScreenIntro'
 import Txt from '../components/ui/Txt'
 import { useTheme } from '../theme/ThemeProvider'
@@ -42,7 +43,7 @@ export default function PreparationScreen({ goal, bacProfile, onSelectGoal, onSe
   return (
     <ScreenBackground>
       <AppHeader onOpenSettings={onOpenSettings} />
-      <View style={[styles.content, compact && styles.contentCompact]}>
+      <ScreenContent style={styles.content}>
         <ScreenIntro eyebrow="PREGĂTIRE PERSONALIZATĂ" title="Examenul, fără haos." icon={isEn ? 'exam-en' : 'exam-bac'} />
 
         <View style={[styles.switcher, { backgroundColor: c.surfaceAlt }]}>
@@ -132,14 +133,13 @@ export default function PreparationScreen({ goal, bacProfile, onSelectGoal, onSe
             <Txt numberOfLines={1} size={10.5} color={c.textMuted} style={styles.integrityText}>Progresul apare numai după exerciții verificate.</Txt>
           </View>
         )}
-      </View>
+      </ScreenContent>
     </ScreenBackground>
   )
 }
 
 const styles = StyleSheet.create({
-  content: { alignSelf: 'center', flex: 1, maxWidth: 720, paddingBottom: 9, paddingHorizontal: 18, width: '100%' },
-  contentCompact: { paddingHorizontal: 16 },
+  content: { paddingBottom: 9 },
   switcher: { borderRadius: 17, flexDirection: 'row', gap: 3, marginTop: 11, padding: 3 },
   switchSlot: { flex: 1 },
   switch: { alignItems: 'center', borderRadius: 14, flexDirection: 'row', gap: 8, height: 40, justifyContent: 'center' },

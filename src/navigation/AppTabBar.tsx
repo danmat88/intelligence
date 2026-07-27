@@ -61,6 +61,7 @@ function AppTabBar({ activeTab, onChange, visible = true }: Props) {
                 key={tab.key}
                 onPress={() => onChange(tab.key)}
                 accessibilityRole="tab"
+                accessibilityLabel={tab.label}
                 accessibilityState={{ selected: active }}
                 containerStyle={styles.slot}
                 style={[styles.tab, active && { backgroundColor: c.surface }]}
@@ -96,6 +97,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   slot: { flex: 1 },
-  tab: { alignItems: 'center', borderRadius: 19, flexDirection: 'row', gap: 7, height: 47, justifyContent: 'center', overflow: 'hidden' },
+  tab: { alignItems: 'center', borderRadius: 19, flexDirection: 'row', gap: 7, height: 48, justifyContent: 'center', overflow: 'hidden' },
   activeSignal: { borderRadius: 999, bottom: 4, height: 3, position: 'absolute', width: 16 },
 })

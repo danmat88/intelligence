@@ -7,7 +7,7 @@
 > Update this document when a decision changes. Do not let implementation and
 > plan silently drift apart.
 
-Last updated: 26 July 2026
+Last updated: 27 July 2026
 
 ## 1. Product direction
 
@@ -83,6 +83,21 @@ Do not permanently hide Android system navigation or the status bar. Use an
 immersive treatment only where it materially helps, primarily camera/crop.
 Hardware back and Android predictive/system back must match the visible
 navigation affordance.
+
+The application uses four coordinated chrome modes:
+
+1. Top-level browsing uses the identical Rezolvo wordmark/account header and
+   shared content grid on Acasă, Rezolvă idle and Pregătire.
+2. Nested and focused work uses a contextual Back/title/action header and hides
+   the app dock.
+3. Sheets use the shared grip/icon/title/close panel header and cover the dock.
+4. Camera/crop uses minimal fullscreen controls.
+
+Back from an active solver solution returns to Rezolvă idle without deleting
+the retained thread. Rezolvă idle then exposes a clear **Continuă soluția**
+action. Android Back follows the same hierarchy: topmost overlay/camera first,
+keyboard before navigation, solution to solver idle, non-Home top-level
+destinations to Acasă, and system exit only from Acasă.
 
 Decision for the first redesign slice: use a small, typed local application
 shell on the stable Expo 54 baseline. It owns the three top-level destinations
@@ -525,6 +540,12 @@ Decided:
   Pregătire. It remains mounted during typing and beneath transient panels,
   which cover and block it until their exit animation is complete. It hides
   only when an active solution/thread, exercise or camera owns the bottom edge.
+- Top-level chrome is a closed contract: Acasă, Rezolvă idle and Pregătire
+  receive the same brand/account header with no destination-specific controls
+  injected into it. History and usage remain local Rezolvă actions.
+- Solver route state is separate from retained thread data. The visible and
+  Android Back controls leave an active solution for Rezolvă idle without
+  destroying it, and the idle workbench offers **Continuă soluția**.
 - All transient panels and dialogs use one root, single-window overlay host.
   This keeps the edge-to-edge background and Android system-navigation region
   visually stable while a panel is open and gives nested dialogs one stacking

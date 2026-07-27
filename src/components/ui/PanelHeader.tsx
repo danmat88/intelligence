@@ -39,7 +39,7 @@ export default function PanelHeader({
         </View>
         <Press
           onPress={onClose}
-          hitSlop={8}
+          hitSlop={6}
           scaleTo={0.88}
           accessibilityRole="button"
           accessibilityLabel={closeLabel}
@@ -54,10 +54,10 @@ export default function PanelHeader({
 
 const styles = StyleSheet.create({
   grab: { alignSelf: 'center', borderRadius: 2, height: 3, marginBottom: 12, width: 30 },
-  row: { alignItems: 'center', flexDirection: 'row', marginBottom: 14 },
-  icon: { alignItems: 'center', borderRadius: 13, height: 38, justifyContent: 'center', width: 38 },
+  row: { alignItems: 'center', flexDirection: 'row', marginBottom: 14, minHeight: 42 },
+  icon: { alignItems: 'center', borderRadius: 14, height: 42, justifyContent: 'center', width: 42 },
   copy: { flex: 1, marginLeft: 10 },
   eyebrow: { letterSpacing: 1.05 },
   title: { fontSize: 20, letterSpacing: -0.55, lineHeight: 23, marginTop: 1 },
-  close: { alignItems: 'center', borderRadius: 13, height: 38, justifyContent: 'center', width: 38 },
+  close: { alignItems: 'center', borderRadius: 14, height: 42, justifyContent: 'center', width: 42 },
 })

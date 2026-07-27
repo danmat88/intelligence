@@ -4,6 +4,7 @@ import AppHeader from '../components/ui/AppHeader'
 import Press from '../components/ui/Press'
 import RezIcon, { type RezIconName } from '../components/ui/RezIcon'
 import ScreenBackground from '../components/ui/ScreenBackground'
+import ScreenContent from '../components/ui/ScreenContent'
 import ScreenIntro from '../components/ui/ScreenIntro'
 import Txt from '../components/ui/Txt'
 import { useTheme } from '../theme/ThemeProvider'
@@ -32,7 +33,7 @@ export default function HomeScreen({ goal, onSelectGoal, onOpenPreparation, onOp
   return (
     <ScreenBackground>
       <AppHeader onOpenSettings={onOpenSettings} />
-      <View style={[styles.content, compact && styles.contentCompact]}>
+      <ScreenContent style={styles.content}>
         <ScreenIntro eyebrow="SPAȚIUL TĂU DE MATEMATICĂ" title="De unde începem?" icon="compass" />
 
         <View style={[styles.solveBoard, compact && styles.solveBoardCompact, { backgroundColor: c.text, shadowColor: c.text }]}>
@@ -114,7 +115,7 @@ export default function HomeScreen({ goal, onSelectGoal, onOpenPreparation, onOp
             ))}
           </View>
         )}
-      </View>
+      </ScreenContent>
     </ScreenBackground>
   )
 }
@@ -174,8 +175,7 @@ function GoalButton({
 }
 
 const styles = StyleSheet.create({
-  content: { alignSelf: 'center', flex: 1, maxWidth: 720, paddingBottom: 9, paddingHorizontal: 18, width: '100%' },
-  contentCompact: { paddingHorizontal: 16 },
+  content: { paddingBottom: 9 },
   solveBoard: { borderRadius: 27, height: 188, marginTop: 7, overflow: 'hidden', padding: 16, shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.19, shadowRadius: 25, elevation: 9 },
   solveBoardCompact: { height: 174, marginTop: 4, padding: 14 },
   boardGlow: { backgroundColor: 'rgba(124,92,255,0.28)', borderRadius: 120, height: 240, position: 'absolute', right: -120, top: -105, width: 240 },
