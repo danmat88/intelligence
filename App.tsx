@@ -99,6 +99,7 @@ export default function App() {
 function Root({ fontsLoaded }: { fontsLoaded: boolean }) {
   const { user, initializing } = useAuth()
   const ready = fontsLoaded && !initializing
+  const [nativeSplashHidden, setNativeSplashHidden] = useState(false)
   const [beatDone, setBeatDone] = useState(false)
   // Whether the session was already signed in at cold boot. Only that case gets
   // the brand beat; signing in from the welcome screen pushes straight to
@@ -106,8 +107,21 @@ function Root({ fontsLoaded }: { fontsLoaded: boolean }) {
   const bootedSignedIn = useRef<boolean | null>(null)
 
   useEffect(() => {
-    if (ready) SplashScreen.hideAsync().catch(() => {}) // fades into the JS frame below
-  }, [ready])
+    if (!ready || nativeSplashHidden) return
+
+    let active = true
+    SplashScreen.hideAsync()
+      .catch(() => {})
+      .finally(() => {
+        // Mount BrandMark only after the native layer has yielded. Otherwise
+        // its entrance animation can finish invisibly behind Android's splash.
+        if (active) setNativeSplashHidden(true)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [nativeSplashHidden, ready])
 
   // Once the app has been ready, a later not-ready spell means a session
   // switch (sign-out → fresh guest).
@@ -128,10 +142,10 @@ function Root({ fontsLoaded }: { fontsLoaded: boolean }) {
   if (!ready && wasReady.current && lastPhaseRef.current === 'app') {
     phase = 'app'
     content = <AppShell />
-  } else if (!ready) {
+  } else if (!ready || !nativeSplashHidden) {
     // Plain twin of the native splash, held until fonts + session are ready.
     phase = 'boot'
-    content = wasReady.current ? <BrandMark /> : null
+    content = null
   } else if (user && bootedSignedIn.current && !beatDone) {
     // Cold start while signed in: a brief brand beat, then the app.
     phase = 'beat'
