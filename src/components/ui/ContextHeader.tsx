@@ -14,11 +14,9 @@ type HeaderAction = {
 }
 
 /**
- * App bar for nested and focused work.
- *
- * It deliberately replaces the global wordmark/account header: once a learner
- * enters a solution or exercise, location and a reliable way back matter more
- * than global navigation.
+ * App bar for nested / focused work. Replaces AppHeader when the user enters
+ * a solution, exercise session or settings — location and a reliable back
+ * button matter more than global nav here.
  */
 export default function ContextHeader({
   eyebrow,
@@ -42,19 +40,20 @@ export default function ContextHeader({
       <View style={styles.inner}>
         <Press
           onPress={onBack}
+          pressDepth={2.5}
           hitSlop={6}
           accessibilityRole="button"
           accessibilityLabel={backLabel}
-          style={[styles.control, { backgroundColor: c.surface, borderColor: c.border }]}
+          style={[styles.control, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' }]}
         >
-          <RezIcon name="back" size={19} color={c.text} accent={c.accent} />
+          <RezIcon name="back" size={19} color={c.text} accent={c.bubblyRed} />
         </Press>
 
         <View style={styles.copy}>
           <Txt
             numberOfLines={1}
-            size={9}
-            color={c.accent}
+            size={10}
+            color={c.bubblyRed}
             style={[styles.eyebrow, { fontFamily: theme.font.mono }]}
           >
             {eyebrow}
@@ -71,16 +70,17 @@ export default function ContextHeader({
           <Press
             onPress={action.onPress}
             disabled={action.disabled}
+            pressDepth={2.5}
             hitSlop={6}
             accessibilityRole="button"
             accessibilityLabel={action.label}
             style={[
               styles.control,
-              { backgroundColor: c.text, borderColor: c.text },
+              { backgroundColor: c.bubblyRed, borderColor: c.bubblyRedDark, borderBottomColor: c.bubblyRedDark },
               action.disabled && styles.disabled,
             ]}
           >
-            <RezIcon name={action.icon} size={18} color="#FFFFFF" accent="#A995FF" />
+            <RezIcon name={action.icon} size={18} color="#FFFFFF" accent={c.bubblyYellow} />
           </Press>
         ) : (
           <View style={styles.controlPlaceholder} />
@@ -93,7 +93,7 @@ export default function ContextHeader({
 const styles = StyleSheet.create({
   host: {
     flexShrink: 0,
-    paddingBottom: 8,
+    paddingBottom: 10,
     paddingHorizontal: APP_GUTTER,
   },
   inner: {
@@ -101,34 +101,35 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     flexDirection: 'row',
     maxWidth: APP_CONTENT_MAX_WIDTH,
-    minHeight: 42,
+    minHeight: 46,
     width: '100%',
   },
   control: {
     alignItems: 'center',
-    borderRadius: 14,
-    borderWidth: 1,
-    height: 42,
+    borderRadius: 15,
+    borderWidth: 2,
+    borderBottomWidth: 3.5,
+    height: 44,
     justifyContent: 'center',
-    width: 42,
+    width: 44,
   },
   controlPlaceholder: {
-    height: 42,
-    width: 42,
+    height: 44,
+    width: 44,
   },
   copy: {
     alignItems: 'center',
     flex: 1,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
   },
   eyebrow: {
-    letterSpacing: 1.05,
+    letterSpacing: 1.2,
   },
   title: {
-    fontSize: 17.5,
-    letterSpacing: -0.55,
-    lineHeight: 21,
-    marginTop: 1,
+    fontSize: 18,
+    letterSpacing: -0.5,
+    lineHeight: 22,
+    marginTop: 2,
   },
   disabled: {
     opacity: 0.38,

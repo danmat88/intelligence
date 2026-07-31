@@ -1,23 +1,38 @@
 import { StyleSheet, View, type ViewProps } from 'react-native'
-import { LinearGradient } from 'expo-linear-gradient'
+import Svg, { Defs, Line, Pattern, Rect } from 'react-native-svg'
 import { useTheme } from '../../theme/ThemeProvider'
-import GraphPaper from './GraphPaper'
 
-/** One continuous warm notebook canvas shared by the entire interface. */
+/**
+ * Cartoon exercise-book background surface: warm paper background (#FFF8E7),
+ * authentic math graph grid lines (#EADFCD), red margin guideline, and sunny ambient glow.
+ */
 export default function ScreenBackground({ children, style, ...rest }: ViewProps) {
   const { theme } = useTheme()
+
   return (
     <View style={[styles.root, { backgroundColor: theme.colors.bg }, style]} {...rest}>
-      <LinearGradient
+      <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+        <Svg width="100%" height="100%">
+          <Defs>
+            <Pattern id="mathGrid" width="24" height="24" patternUnits="userSpaceOnUse">
+              <Line x1="0" y1="24" x2="24" y2="24" stroke="#EADFCD" strokeWidth="1" />
+              <Line x1="24" y1="0" x2="24" y2="24" stroke="#EADFCD" strokeWidth="1" />
+            </Pattern>
+          </Defs>
+          <Rect width="100%" height="100%" fill="url(#mathGrid)" />
+        </Svg>
+      </View>
+
+      <View pointerEvents="none" style={styles.notebookMargin} />
+
+      <View
         pointerEvents="none"
-        colors={['#FFFCF3', '#FFF8E7', '#FFF1CE']}
-        locations={[0, 0.62, 1]}
-        style={StyleSheet.absoluteFill}
+        style={[styles.sun, { backgroundColor: theme.colors.sunnySoft }]}
       />
-      <GraphPaper color="rgba(25,49,73,0.035)" />
-      <View pointerEvents="none" style={[styles.doodle, styles.doodleTop, { borderColor: theme.colors.sunny }]} />
-      <View pointerEvents="none" style={[styles.doodle, styles.doodleBottom, { borderColor: theme.colors.accent }]} />
-      <View pointerEvents="none" style={[styles.glow, { backgroundColor: theme.colors.sunnySoft }]} />
+      <View
+        pointerEvents="none"
+        style={[styles.chalkGlow, { backgroundColor: theme.colors.chalkDark }]}
+      />
       <View style={styles.content}>{children}</View>
     </View>
   )
@@ -25,25 +40,32 @@ export default function ScreenBackground({ children, style, ...rest }: ViewProps
 
 const styles = StyleSheet.create({
   root: { flex: 1, overflow: 'hidden' },
-  glow: {
+  notebookMargin: {
+    borderRightColor: 'rgba(232, 75, 58, 0.22)',
+    borderRightWidth: 1.5,
+    bottom: 0,
+    left: 20,
     position: 'absolute',
-    width: 380,
-    height: 380,
-    borderRadius: 190,
-    opacity: 0.5,
-    top: -230,
-    right: -170,
+    top: 0,
+    width: 1,
   },
-  doodle: {
-    borderRadius: 999,
-    borderWidth: 9,
-    height: 54,
-    opacity: 0.13,
+  sun: {
+    borderRadius: 180,
+    height: 280,
+    opacity: 0.38,
     position: 'absolute',
-    transform: [{ rotate: '-8deg' }],
-    width: 54,
+    right: -130,
+    top: -150,
+    width: 280,
   },
-  doodleTop: { left: -18, top: 150 },
-  doodleBottom: { bottom: 118, right: -21 },
-  content: { flex: 1, zIndex: 1 },
+  chalkGlow: {
+    borderRadius: 200,
+    bottom: -180,
+    height: 300,
+    left: -160,
+    opacity: 0.04,
+    position: 'absolute',
+    width: 300,
+  },
+  content: { flex: 1 },
 })

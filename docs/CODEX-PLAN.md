@@ -7,7 +7,7 @@
 > Update this document when a decision changes. Do not let implementation and
 > plan silently drift apart.
 
-Last updated: 27 July 2026
+Last updated: 29 July 2026
 
 ## 1. Product direction
 
@@ -31,30 +31,42 @@ Public v1 scope:
 - BAC reuses the validated learning, test, scoring and progress architecture.
 - The app does not ask for age. Exam, class and BAC profile are content choices.
 
-Existing English localization may remain temporarily while the interface is
-rebuilt, but new v1 product work is Romanian-first and must not depend on an
-English equivalent. Removing stale English strings is cleanup, not a blocker
-for the first learning slice.
+The shipped interface and AI contract are Romanian-only. Legacy English
+catalog entries are dead migration data and must not be reachable by any
+learner-facing flow.
 
 ## 2. Product architecture
 
-The first redesigned shell has three primary destinations:
+The redesigned application has five clear top-level destinations:
 
-1. **Acasă** — the learner's current goal and next useful action.
-2. **Rezolvă** — free-form camera, gallery or typed mathematics help.
-3. **Pregătire** — structured EN/BAC learning, practice and simulations.
+1. **Azi** — the learner's exact continuation, one evidence-backed
+   recommendation and current goal.
+2. **Subiecte** — the official EN/BAC archive, organized by exam, profile,
+   year, session and document type.
+3. **Rezolvă** — the central destination for camera, gallery and typed open
+   problems, followed by full, guided, hint-only or verification help.
+4. **Exersează** — chapters, competencies, configurable tests, generated
+   validated practice and new exam simulations.
+5. **Caiet** — solved problems, saved work, official papers, tests, mistakes
+   and evidence-backed progress.
 
 Account, legal, subscription and settings remain behind the profile control in
 the header. They are not primary tabs.
 
-Progress initially appears where it helps a decision: on Acasă, inside an exam
-dashboard and in Profile. It becomes a fourth tab only after real usage proves
-that it deserves a permanent destination. Do not create an empty Progress tab.
+The first-use product explanation and EN/BAC/general choice form a dedicated
+onboarding flow. They do not remain on Acasă after completion. A learner may
+open Rezolvă before choosing an exam goal.
+
+Progress appears only where it helps a decision: on Acasă, inside an exam
+dashboard and in Caietul meu. Caietul must remain useful even before progress
+exists by owning solved problems, saved work and attempts. Do not create a
+separate empty Progress destination.
 
 ### The solver has two roles
 
-1. In **Rezolvă**, it is an open tool for any mathematics problem.
-2. In **Pregătire**, its parsing, explanation, verification and follow-up
+1. In the global **Rezolvă** flow, it is an open tool for any mathematics
+   problem.
+2. In **Subiecte** and **Exersează**, its parsing, explanation, verification and follow-up
    capabilities power a guided teacher that knows the current exercise,
    competency, answer, rubric and attempt state.
 
@@ -64,20 +76,28 @@ losing test context. Shared engine does not require identical screens.
 
 ## 3. Navigation behavior
 
-Use a bottom application tab bar on top-level surfaces. It must be edge-to-edge
-and visually absorb the Android gesture inset so it reads as one surface, not a
-tab bar stacked above a system bar.
+Use one shared application frame with a brand/profile header, a content region
+and compact five-position bottom navigation. **Rezolvă** occupies the exact
+middle position and is visually dominant. Selecting it opens the focused input
+flow; active input, camera, review and solution states hide the browsing
+navigation. The old three-tab shell and its always-mounted `SolverScreen`
+contract are rejected.
 
-| Context | App tab bar | Bottom input/control | Status bar |
+The bottom surface must be edge-to-edge and visually absorb the Android gesture
+inset so it reads as one surface rather than navigation stacked above a system
+bar.
+
+| Context | App navigation | Bottom input/control | Status bar |
 | --- | --- | --- | --- |
-| Acasă | Visible | Hidden | Visible |
-| Rezolvă idle | Visible | Solve input lives in page | Visible |
-| Rezolvă typing | Visible | Keyboard/composer owns the resized viewport | Visible |
+| Azi | Visible | Hidden | Visible |
+| Subiecte browsing | Visible | Hidden | Visible |
+| Exersează browsing | Visible | Hidden | Visible |
+| Caiet | Visible | Hidden | Visible |
+| Rezolvă input/review | Hidden | Contextual action or keyboard | Visible |
 | Active solution/thread | Hidden | Follow-up composer visible | Visible |
-| Pregătire browsing | Visible | Hidden | Visible |
 | Active exercise/test | Hidden | Contextual actions | Visible |
 | Camera/crop | Hidden | Hidden | Hidden |
-| Settings/paywall sheet | Covered by sheet | Hidden | Visible |
+| Settings/paywall panel | Covered by panel | Hidden | Visible |
 
 Do not permanently hide Android system navigation or the status bar. Use an
 immersive treatment only where it materially helps, primarily camera/crop.
@@ -86,35 +106,37 @@ navigation affordance.
 
 The application uses four coordinated chrome modes:
 
-1. Top-level browsing uses the identical Profu’ de Mate wordmark/account header and
-   shared content grid on Acasă, Rezolvă idle and Pregătire.
+1. Top-level browsing uses the identical Profu’ de Mate wordmark/account header
+   on Acasă, Pregătire and Caietul meu.
 2. Nested and focused work uses a contextual Back/title/action header and hides
-   the app dock.
-3. Sheets use the shared grip/icon/title/close panel header and cover the dock.
+   application navigation.
+3. Account, settings, limits and subscription use focused stack routes with
+   contextual back navigation. Short confirmations may use dialogs.
 4. Camera/crop uses minimal fullscreen controls.
 
-Back from an active solver solution returns to Rezolvă idle without deleting
-the retained thread. Rezolvă idle then exposes a clear **Continuă soluția**
-action. Android Back follows the same hierarchy: topmost overlay/camera first,
-keyboard before navigation, solution to solver idle, non-Home top-level
+Back from an active solution leaves the focused route without deleting its
+saved work. The latest solution can be resumed from Acasă or Caietul meu.
+Android Back follows the same hierarchy: topmost overlay/camera first, keyboard
+before navigation, focused solve or exercise to its origin, non-Home browsing
 destinations to Acasă, and system exit only from Acasă.
 
-Decision for the first redesign slice: use a small, typed local application
-shell on the stable Expo 54 baseline. It owns the three top-level destinations
-and keeps the solver mounted while a learner switches tabs; no new native
-navigation dependency or development build is required for this slice. Its
-explicit tab/chrome contract leaves room for nested practice routes later.
-Do not build the shell twice just to accommodate a later SDK migration.
+The replacement navigation contract must model browsing destinations, focused
+flows and overlays separately. Solver session data lives outside the route
+component so correct persistence never depends on keeping one giant screen
+mounted.
 
 ## 4. Core learner journeys
 
 ### First session
 
-1. The learner understands in one screen that Profu’ de Mate solves and teaches math.
+1. The learner understands in one screen that Profu’ de Mate can solve,
+   explain, verify, prepare for exams and retain useful work.
 2. They can immediately scan, upload or type a problem.
 3. They can choose **Evaluarea Națională** or **BAC** as a preparation goal.
 4. If BAC is chosen, they select the official mathematics profile/variant.
-5. The app recommends one concrete starting action, not a blank dashboard.
+5. They may choose **Vreau doar ajutor la matematică** without selecting an
+   exam.
+6. The app recommends one concrete starting action, not a blank dashboard.
 
 Account creation must not block the first successful solve or the first useful
 practice interaction. Preserve anonymous-first authentication.
@@ -134,13 +156,14 @@ or first practice set.
 
 ### Acasă
 
-Home is adaptive, not a grid of shortcuts that duplicates the tab bar.
+Home is adaptive, not a grid of shortcuts that duplicates application
+navigation.
 
 New learner state:
 
-- concise product promise;
+- concise product promise and an honest overview of the product's capabilities;
 - primary **Rezolvă acum** action;
-- EN/BAC preparation choice;
+- EN/BAC/**Doar ajutor la matematică** choice;
 - small proof of how guidance works.
 
 Returning learner state:
@@ -155,37 +178,66 @@ Returning learner state:
 
 ### Rezolvă
 
-Preserve the existing solver engine and its reliability contracts.
+Preserve the reliable solver engine and its contracts, but replace the existing
+`SolverScreen` presentation and monolithic ownership of the entire flow.
 
-Idle state:
+Entry and review:
 
-- camera is the primary action;
-- gallery and typed input are clear alternatives;
-- the input is part of the page rather than permanently stacked above tabs;
-- examples guide without cluttering the screen.
+- pressing the global **Rezolvă** action opens a focused full-screen route;
+- camera is the primary input method, with gallery and a spacious typed
+  mathematics editor as explicit alternatives;
+- there are no quick examples, suggestion chips or decorative fake prompts;
+- camera and gallery input pass through a clear crop/review/retake step;
+- typed input has a purpose-built mathematics toolbar and never looks like a
+  cramped chat composer;
+- exam/class context can be inherited or added, but never blocks an open solve;
+- the final action is unambiguous: **Rezolvă problema**.
 
-Typing and active state:
+Active state:
 
-- focusing typed input enters a focused solve surface without remounting or
-  hiding the app dock; switching tabs dismisses the keyboard first;
-- an active solution/thread hides app tabs;
-- the solution document and follow-up composer own the bottom edge;
+- the solution is an instructional notebook document rather than a sequence of
+  generic chat bubbles;
+- its stable anatomy is **Problema**, **Observația-cheie**, **Metoda**,
+  **Rezolvare pas cu pas**, **Verificare** and **Răspuns final**, omitting
+  sections only when they genuinely do not apply;
+- the solution document and **Întreabă-l pe Profu’** composer own the bottom
+  edge;
 - verification, correction, graphs, figures, sharing, reporting, persistence,
-  limits, cancellation and retry behavior must not regress.
+  limits, cancellation and retry behavior must not regress;
+- leaving a solution saves it in Caietul meu and permits later continuation.
 
-### Pregătire
+### Subiecte și Exersează
 
-The landing page lets the learner choose or resume an exam goal.
+Exersează opens directly in the learner's saved exam goal. It does not repeat
+the large EN/BAC choice already completed on Acasă or in onboarding. Changing
+the goal is a secondary action in the exam header.
 
-Evaluarea Națională initially exposes:
+Exersează presents **Antrenament** and **Simulare** as two mutually exclusive
+work modes at the same hierarchy. The learner chooses the mode first, then sees
+only the controls relevant to that mode. The screen ends in one primary action;
+it does not show a test action and a second competing simulation card at the
+same time.
 
-- **Continuă**;
-- test rapid;
-- capitole și competențe;
-- subiecte oficiale;
-- simulare completă;
-- greșelile mele;
-- progres relevant.
+Its primary information architecture is:
+
+1. **Subiecte oficiale** — the archive, grouped by year and then by exam
+   session, national simulation and official model; every entry pairs the
+   subject with its marking scheme and source provenance.
+2. **Simulări** — complete timed papers matching the selected exam and, for
+   BAC, the selected mathematics programme.
+3. **Teste pe capitole** — substantial validated practice grouped by curriculum
+   chapter and competency, not three-item demonstrations presented as a product.
+4. **Greșelile mele** — exercises derived from the learner's actual attempts.
+5. **Planul meu** — continuation and evidence-backed recommendations.
+
+A short diagnostic may be offered once as an optional placement tool. It is
+never the primary preparation catalogue and never substitutes for the archive,
+chapter practice or full simulations.
+
+Evaluarea Națională exposes the current official year plus archived years,
+beginning with the years available from the Ministry's official archive.
+Each year distinguishes the final examination, reserve subject where published,
+national simulation and official model.
 
 BAC uses the same anatomy after the EN slice is proven, with an explicit
 mathematics profile/variant choice:
@@ -194,6 +246,10 @@ mathematics profile/variant choice:
 - M_șt-nat;
 - M_tehnologic;
 - M_pedagogic.
+
+BAC archive filters every paper by the chosen programme and clearly separates
+the special, June and August sessions, reserve subjects, national simulations
+and official models where published.
 
 ### Chapter and competency
 
@@ -210,6 +266,11 @@ An official subject offers three distinct modes:
 
 Official and Profu’ de Mate-generated content must be labeled unambiguously.
 
+The archive does not open a generic document-details screen. Every paper card
+exposes the three modes directly, so the learner makes one meaningful choice
+and enters the first exercise. The selected mode remains visible in the
+focused header and Back returns directly to the archive.
+
 ### Active exercise or test
 
 The focused screen contains only what supports the attempt:
@@ -219,7 +280,14 @@ The focused screen contains only what supports the attempt:
 - answer/work input appropriate to the problem;
 - **Indiciu**, **Întreabă profesorul** and **Verifică**;
 - visible test progress and time only when relevant;
-- no primary app tab bar.
+- no primary application navigation.
+
+Teacher help stays inside the active exercise. It opens an inline contextual
+panel grounded in the exact statement, competency, expected answer and the
+learner's current work. It never navigates into the global solver, discards the
+answer or replaces the exercise with a generic chat. The panel gives one
+useful observation and one next-step question at a time; the reviewed hint and
+worked solution remain explicit separate actions.
 
 ### Results
 
@@ -314,17 +382,22 @@ surface. Do not combine the former porcelain/violet identity with the new brand.
 - Space Grotesk for expressive headings, Inter for UI/body and JetBrains Mono
   only where mathematical/code-like alignment benefits;
 - large, friendly editorial hierarchy with compact, functional chrome;
+- headings use a restrained mobile scale so the decision, controls and primary
+  action remain visible together on a 393 dp Android viewport;
 - continuous surfaces instead of a dashboard made from equal card stacks;
-- the three top-level idle screens fit their primary choices in the available
+- the four top-level browsing destinations fit their primary choices in the available
   viewport without vertical or horizontal scrolling; scrolling is reserved
   for intrinsically long content such as a solution, history or result list;
-- one shared wordmark/account header and one floating three-destination dock;
-- every transient surface — settings, history, limits, subscription, dialogs,
-  toasts and math input tools — uses the same notebook/sticker language,
+- one shared wordmark/account header, navigation for Azi/Subiecte/Exersează/
+  Caiet and one unmistakable centered Rezolvă action;
+- every secondary surface — settings, limits, subscription, dialogs, toasts
+  and math input tools — uses the same classroom language,
   rounded outer geometry, compact ink controls and red/yellow/green state signals;
-- the open solver is a visual workbench: scanner stage, direct text entry and
-  a chalkboard-like scanner stage, direct text entry and a solution document,
-  not a legacy chat screen inside a new tab;
+- the open solver is a focused workflow: source selection, camera/gallery
+  review or direct mathematics entry, then an instructional solution document;
+  it is not a legacy chat screen inside a tab;
+- the camera is the sole dark product surface and uses chalk green, cream and
+  school-bus yellow rather than the retired violet palette;
 - color communicates state and priority, not decoration;
 - the generated professor mascot is the brand mark for the launcher, splash,
   wordmark lockup and selected brand moments; it must not become decorative
@@ -337,16 +410,32 @@ surface. Do not combine the former porcelain/violet identity with the new brand.
   glyphs merely because they are visually convenient;
 - decorative corner brackets are reserved for the functional camera/crop
   frame; they are not a repeated ornament on cards, buttons, sheets or tabs;
-- Acasă, Rezolvă and Pregătire share the exact same wordmark header and screen
-  intro geometry. Sheets share one contextual panel header, cover the app dock
-  and block all navigation until dismissed;
-- sheets and dialogs render through one application-level overlay host in the
-  same native window as the shell. They never open a second native modal
-  window or recolor the transparent Android system-navigation region;
+- Azi, Subiecte, Exersează and Caiet share the exact same wordmark header and
+  screen-intro geometry. Sheets share one contextual panel header, cover
+  application navigation and block all navigation until dismissed;
+- dialogs render through one application-level overlay host in the same native
+  window as the shell. They never open a second native modal window or recolor
+  the transparent Android system-navigation region;
 - accessible contrast, touch targets, font scaling and screen-reader labels.
 
 The target is a distinctive, friendly educational product, not a generic AI
 chat app, a preschool toy or a dashboard filled with decorative cards.
+
+All product screens compose the same small set of layout primitives:
+
+- `ScreenHeading` for a compact eyebrow, decision-oriented title and optional
+  description;
+- `SegmentedControl` only for mutually exclusive views at the same hierarchy;
+- `PrimaryAction` for the single next action;
+- `ProgressMeter` for measured progress;
+- `EmptyState` for an honest explanation and, where useful, one recovery
+  action.
+
+Feature-specific components own presentation, while screens orchestrate state
+and navigation. AI calls, persistence and scoring never live inside decorative
+cards. The solver input is split into source selection and typed editor
+components; official work uses separate choice, figure, teacher and solution
+components.
 
 Motion is playful, tactile and functional:
 
@@ -379,6 +468,12 @@ Romanian is the v1 product language. Existing localization infrastructure may
 remain during migration, but it must not make Romanian copy inconsistent or
 force new English content work.
 
+Every user-facing string, fallback, permission explanation, account flow,
+limit, paywall and error is Romanian. Every AI system prompt requires natural
+Romanian explanations and Romanian school terminology and notation. The model
+must not answer in English merely because the input, OCR output or upstream
+error contains English.
+
 ## 10. Expo and native strategy
 
 Current state:
@@ -405,15 +500,16 @@ Billing is intentionally late, but not a launch-day afterthought.
 
 Current foundation:
 
-- daily caps, limit UI, paywall UI, tier subscription and RevenueCat webhook
-  foundations exist;
-- the client purchase adapter is still a stub;
+- daily caps and the honest limit UI exist;
+- unused client billing stubs and the non-functional paywall were removed;
+  purchasing stays absent until Google Play and RevenueCat are configured;
 - App Check is monitor-only until explicitly enforced.
 
 Sequence:
 
 1. Finalize product architecture and primary UX.
-2. Build and validate Acasă, Rezolvă integration and the first EN slice.
+2. Build and validate Acasă, Caietul meu, the focused Rezolvă flow and the
+   first EN slice.
 3. Stabilize premium feature boundaries from real product behavior.
 4. Enforce App Check after real-build token verification.
 5. Configure Google Play products and RevenueCat.
@@ -432,13 +528,15 @@ clear pricing and account recovery must never be dark-patterned.
 - [x] Confirm Romania-only, Romanian, mathematics, EN + BAC direction.
 - [x] Confirm EN as the first complete vertical slice.
 - [x] Define the three product areas and the solver's dual role.
-- [ ] Record current on-device flows, failures and screenshots.
+- [x] Record the July rebuild on-device flows, failures and screenshots on a
+  1080 × 2400 Android device.
 - [ ] Reconcile remaining stale documentation with implementation.
 - [x] Keep Expo 54 as the active redesign baseline; defer Expo 57 to a
   separate laptop migration.
-- [x] Use the typed local application shell for the three top-level
-  destinations on Expo 54; defer a navigation-library decision for future
-  nested learning routes.
+- [x] Reject the July three-tab shell and define Acasă, Pregătire and Caietul
+  meu as browsing destinations with Rezolvă as a focused global action.
+- [ ] Select and prove the replacement hierarchical route implementation on
+  Expo 54 before expanding nested learning routes.
 - [ ] Confirm the EN curriculum source/version and content workflow.
 
 ### Phase T — Expo 57 technical boundary
@@ -454,8 +552,10 @@ include new navigation, product UI or curriculum work.
 ### Phase B — design system and application shell
 
 - Consolidate design tokens and reusable header/navigation primitives.
-- Implement Acasă, Rezolvă and Pregătire destinations.
-- Implement contextual tab-bar visibility, back and safe-area behavior.
+- Replace the old three-tab shell with Acasă, Pregătire and Caietul meu plus
+  the global Rezolvă action.
+- Implement contextual navigation visibility, focused routes, back and
+  safe-area behavior.
 - Preserve boot/auth behavior and solver state.
 
 ### Phase C — Acasă
@@ -466,9 +566,11 @@ include new navigation, product UI or curriculum work.
 
 ### Phase D — solver integration
 
-- Place the current solver under Rezolvă without rewriting its engine.
-- Transition idle → focused input → active thread without data loss.
-- Hide tabs when the thread/composer owns the bottom edge.
+- Extract the reliable solver/session engine from the current monolithic screen.
+- Build source selection → camera/gallery/type → review → solve → structured
+  solution without data loss.
+- Hide application navigation throughout the focused solve flow.
+- Remove quick examples and enforce Romanian AI output.
 - Device-verify keyboard, back, camera, history and account changes.
 
 ### Phase E — EN complete vertical slice
@@ -528,12 +630,32 @@ Decided:
 - Public v1 is Romanian, mathematics-only and built for Romania.
 - Both Evaluarea Națională and BAC belong in the product.
 - EN is the first complete implementation slice; BAC follows on shared systems.
-- The three tabs are Acasă, Rezolvă and Pregătire.
+- Top-level destinations are Azi, Subiecte, Rezolvă, Exersează and Caiet.
+- Rezolvă occupies the exact center position and enters a focused full-screen
+  workflow; browsing navigation is hidden after entry.
+- The old three-tab shell and legacy `SolverScreen` layout are rejected.
 - Bottom navigation appears only on top-level browsing surfaces.
 - System status/navigation remain available outside purposeful immersive screens.
 - The solver is preserved and serves both open solving and grounded teaching.
 - Official subject modes are Ghidat, Simulare and Studiază.
-- Progress is evidence-based and does not yet receive a primary tab.
+- Official subjects are authored as structured, code-native mathematical
+  content: prompt blocks, formulas, answer controls, accessible figures,
+  expected answers, hint ladders, worked solutions and scoring rubrics.
+  No PDF or PDF viewer ships in the learner-facing application. Official PDFs
+  may be used only as temporary build-time transcription sources and are
+  excluded from the final application bundle. Provenance and the original
+  Ministry source URL stay attached to every structured paper.
+- Official work resumes at the exact exercise with elapsed time and answers.
+  A timed simulation hides hints and solutions until submission, then scores
+  deterministic items automatically and clearly identifies any rubric items
+  that still require separate verification.
+- Profu’ practice and simulations are built from deterministic reviewed
+  templates with independently known accepted answers. Simulations hide hints
+  and per-item feedback until the final result.
+- Exersează uses one Antrenament/Simulare selector and one final primary action;
+  inactive-mode controls and competing start cards are hidden.
+- Progress is evidence-based and does not yet receive a separate primary
+  destination beyond Caietul meu.
 - The public brand name is **Profu’ de Mate**. The stable Android package,
   backend headers, storage keys and existing service URLs keep their current
   technical identifiers until a separately planned migration requires change.
@@ -550,23 +672,28 @@ Decided:
 - Billing and RevenueCat remain near launch, after premium UX is stable.
 - Expo 54 remains the active product-development baseline. Expo 57 is a
   separate later migration on a laptop with enough native-build disk space.
-- The first shell uses a local typed tab controller rather than adding a native
-  navigation dependency. The bottom bar owns only Acasă, Rezolvă and
-  Pregătire. It remains mounted during typing and beneath transient panels,
-  which cover and block it until their exit animation is complete. It hides
-  only when an active solution/thread, exercise or camera owns the bottom edge.
-- Top-level chrome is a closed contract: Acasă, Rezolvă idle and Pregătire
-  receive the same brand/account header with no destination-specific controls
-  injected into it. History and usage remain local Rezolvă actions.
-- Solver route state is separate from retained thread data. The visible and
-  Android Back controls leave an active solution for Rezolvă idle without
-  destroying it, and the idle workbench offers **Continuă soluția**.
+- Top-level chrome is a closed contract: Azi, Subiecte, Exersează and Caiet
+  receive the same brand/account header; the Rezolvă entry uses focused chrome.
+- Solver route state is separate from retained problem, solution and follow-up
+  data. Leaving a focused route never destroys saved work.
+- The first-use Acasă state explains all important capabilities and collects
+  EN, BAC profile or **Doar ajutor la matematică** without blocking a solve.
+- Quick examples are not part of the solve entry experience.
+- The complete public product and AI explanation layer are Romanian-first;
+  temporary English UI or model output is a migration defect.
 - All transient panels and dialogs use one root, single-window overlay host.
   This keeps the edge-to-edge background and Android system-navigation region
   visually stable while a panel is open and gives nested dialogs one stacking
   and hardware-back contract.
+- First-use explanation and goal selection are a dedicated onboarding flow,
+  not permanent Home content. Account, settings, limit and subscription
+  destinations are focused screens; overlays are reserved for short,
+  reversible confirmations.
+- No visible control may exist only to announce that its feature will be built
+  later. Incomplete destinations stay out of navigation until their end-to-end
+  path is functional.
 - Camera and crop are fullscreen root layers above the stable application
-  shell, never children constrained by a tab's content area. Opening the
+  shell, never children constrained by a browsing screen's content area. Opening the
   system gallery does not resize, hide or animate the shell; the fullscreen
   crop layer appears only after an image is actually returned.
 - The July shell mockup that mixed new Home/Preparation cards with the legacy
@@ -580,19 +707,23 @@ Open — decide before the affected phase:
 - Exact answer-input model for the first EN exercise types.
 - Free versus Premium boundaries for Pregătire and progress.
 - The evidence threshold for a readiness/mastery summary.
-- When Progress earns a fourth primary tab.
+- Whether real evidence eventually warrants a separate Progress destination
+  beyond Caietul meu.
 
 ## 15. First implementation target
 
-On the stable Expo 54 baseline, the first product code change is
-the application shell and state contract—not the entire learning platform at
-once:
+On the stable Expo 54 baseline, the first product code change replaces the
+rejected shell and establishes the new route/session boundary:
 
 - preserve current boot/auth flow;
-- expose Acasă, Rezolvă and Pregătire as top-level destinations;
-- keep the existing `SolverScreen` functional under Rezolvă;
-- prove tab visibility and Android safe-area/keyboard/back behavior;
-- use honest local placeholder states only for navigation scaffolding;
+- expose Azi, Subiecte, Rezolvă, Exersează and Caiet as the five top-level
+  destinations, with Rezolvă centered;
+- move solver session behavior behind a stable state boundary and replace its
+  visible input/solution layout;
+- prove navigation visibility and Android safe-area/keyboard/back behavior;
+- migrate every touched surface and server prompt to Romanian;
+- use honest empty states only; no quick examples, fake progress or generated
+  curriculum;
 - do not ship fake progress, generated curriculum or billing changes in this
   slice.
 
@@ -607,3 +738,14 @@ defined in Phase E.
 - Update decisions here in the same commit that changes their implementation.
 - If code and this plan disagree, stop and resolve the discrepancy explicitly.
 - Never silently reinterpret an open decision as settled.
+
+## 17. July rebuild audit
+
+The mixed July implementation was audited and rejected as a complete product
+refactor. The evidence, replacement boundary and acceptance rules are recorded
+in `docs/REFACTOR-AUDIT.md`.
+
+The rebuild preserves validated service and data contracts, but replaces every
+visible product surface. Existing screen components are migration sources, not
+the target UI, and are removed when their behavior has moved behind the new
+feature boundary.

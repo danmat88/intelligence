@@ -20,7 +20,13 @@
         "monochromeImage": "./assets/profu-android-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "allowBackup": false
+      "allowBackup": false,
+      "blockedPermissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.SYSTEM_ALERT_WINDOW"
+      ]
     },
     "web": {
       "favicon": "./assets/profu-favicon.png"
@@ -41,14 +47,14 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow Profu’ de Mate to use the camera to photograph math problems."
+          "cameraPermission": "Permite aplicației Profu’ de Mate să folosească camera pentru a fotografia probleme de matematică."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow Profu’ de Mate to access your photos to solve problems from images.",
-          "cameraPermission": "Allow Profu’ de Mate to use the camera to snap math problems."
+          "photosPermission": "Permite aplicației Profu’ de Mate să acceseze fotografiile pentru a rezolva probleme din imagini.",
+          "cameraPermission": "Permite aplicației Profu’ de Mate să folosească camera pentru a fotografia probleme de matematică."
         }
       ],
       [

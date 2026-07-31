@@ -27,6 +27,15 @@ export type Theme = {
     dangerSoft: string
     success: string
     successSoft: string
+    bubblyRed: string
+    bubblyRedDark: string
+    bubblyGreen: string
+    bubblyGreenDark: string
+    bubblyBlue: string
+    bubblyBlueDark: string
+    bubblyYellow: string
+    bubblyYellowDark: string
+    cardEdge: string
   }
   /** Multi-stop gradients (arrays of colour stops). */
   gradient: {
@@ -62,10 +71,10 @@ export const theme: Theme = {
     bgElevated: '#FFFCF4',
     surface: '#FFFEF8',
     surfaceAlt: '#F7EAC7',
-    border: 'rgba(25,49,73,0.18)',
+    border: 'rgba(25,49,73,0.35)',
     text: '#193149',
     textMuted: '#5F6D72',
-    textFaint: '#8A948F',
+    textFaint: '#6F7B76',
     accent: '#E9543D',
     accentSoft: '#FFE0D4',
     onAccent: '#FFFFFF',
@@ -75,8 +84,17 @@ export const theme: Theme = {
     chalkDark: '#103F3B',
     danger: '#D63C39',
     dangerSoft: '#FDE5DE',
-    success: '#197565',
+    success: '#58CC02',
     successSoft: '#DDF3E6',
+    bubblyRed: '#FF4B4B',
+    bubblyRedDark: '#EA2B2B',
+    bubblyGreen: '#58CC02',
+    bubblyGreenDark: '#46A302',
+    bubblyBlue: '#1CB0F6',
+    bubblyBlueDark: '#1899D6',
+    bubblyYellow: '#FFC800',
+    bubblyYellowDark: '#E5B200',
+    cardEdge: '#E5E5E5',
   },
   gradient: {
     brand: BRAND,

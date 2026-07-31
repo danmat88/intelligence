@@ -1,17 +1,18 @@
 import { useRef } from 'react'
-import { ActivityIndicator, Animated, Easing, Pressable, StyleSheet, View } from 'react-native'
+import { ActivityIndicator, Animated, Easing, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { AntDesign } from '@expo/vector-icons'
 import { useTheme } from '../theme/ThemeProvider'
 import { useAuth } from '../auth/AuthProvider'
 import BrandMark from '../components/ui/BrandMark'
+import Press from '../components/ui/Press'
+import RezIcon from '../components/ui/RezIcon'
 import ScreenBackground from '../components/ui/ScreenBackground'
 import Txt from '../components/ui/Txt'
 
 /**
- * Sign-in gate shown before the chat. The shared brand mark enters first (same
- * mark as the boot beat, so nothing changes shape or jumps), and only once it
- * has landed does the "Continue with Google" button settle in beneath it.
+ * Sign-in gate — the very first screen a new user sees.
+ * Two 3D Duolingo push-down buttons: Google (dark ink) and Guest (white).
+ * Animated footer slides up after BrandMark finishes its entrance.
  */
 export default function WelcomeScreen() {
   const { theme } = useTheme()
@@ -19,72 +20,74 @@ export default function WelcomeScreen() {
   const insets = useSafeAreaInsets()
   const { signIn, signInGuest, signingIn, error } = useAuth()
 
-  // Revealed by BrandMark's onEntered, so the button appears after the lockup.
   const footer = useRef(new Animated.Value(0)).current
   const revealFooter = () => {
-    Animated.timing(footer, { toValue: 1, duration: 560, easing: Easing.bezier(0.22, 1, 0.36, 1), useNativeDriver: true }).start()
+    Animated.timing(footer, {
+      toValue: 1,
+      duration: 620,
+      easing: Easing.bezier(0.22, 1, 0.36, 1),
+      useNativeDriver: true,
+    }).start()
   }
 
   return (
     <ScreenBackground>
-      <View style={[styles.wrap, { paddingTop: insets.top, paddingBottom: insets.bottom + 24 }]}>
+      <View style={[styles.wrap, { paddingTop: insets.top, paddingBottom: insets.bottom + 28 }]}>
         <BrandMark tagline="Matematica devine clară." onEntered={revealFooter} />
 
-        {/* Slides up from below the screen edge, fully opaque — no fade. */}
         <Animated.View
           style={[
             styles.footer,
             {
-              transform: [{ translateY: footer.interpolate({ inputRange: [0, 1], outputRange: [220, 0] }) }],
+              opacity: footer,
+              transform: [{ translateY: footer.interpolate({ inputRange: [0, 1], outputRange: [180, 0] }) }],
             },
           ]}
         >
-          <Pressable
+          {/* ─── Google Sign-In ─── */}
+          <Press
             onPress={signIn}
             disabled={signingIn}
-            style={({ pressed }) => [
-              styles.googleBtn,
-              {
-                backgroundColor: c.chalkDark,
-                borderColor: c.text,
-                borderRadius: 18,
-                opacity: pressed ? 0.75 : 1,
-                transform: [{ scale: pressed && !signingIn ? 0.98 : 1 }],
-              },
-            ]}
+            pressDepth={5}
+            style={[styles.googleBtn, { backgroundColor: c.chalkDark, borderColor: '#0A2926', borderBottomColor: '#071F1D' }]}
           >
             {signingIn ? (
               <ActivityIndicator color="#fff" />
             ) : (
               <>
-                <AntDesign name="google" size={20} color="#fff" />
-                <Txt weight="bold" size={15.5} color="#fff">
+                <View style={styles.googleCircle}>
+                  <Txt weight="extrabold" size={16} color={c.chalkDark} style={styles.googleG}>G</Txt>
+                </View>
+                <Txt weight="bold" size={16} color="#FFFFFF">
                   Continuă cu Google
                 </Txt>
               </>
             )}
-          </Pressable>
+          </Press>
 
+          {/* ─── Status message ─── */}
           {error ? (
-            <Txt size={13} color={c.danger} style={styles.error}>
+            <Txt size={13} color={c.danger} style={styles.hint}>
               {error}
             </Txt>
           ) : (
-            <Txt size={13} color={c.textFaint} style={styles.error}>
+            <Txt size={13} color={c.textFaint} style={styles.hint}>
               Poți începe imediat. Contul îți păstrează problemele.
             </Txt>
           )}
 
-          <Pressable
+          {/* ─── Guest mode ─── */}
+          <Press
             onPress={signInGuest}
             disabled={signingIn}
-            hitSlop={8}
-            style={({ pressed }) => [styles.tryBtn, { backgroundColor: c.surface, borderColor: c.border, opacity: pressed || signingIn ? 0.5 : 1 }]}
+            pressDepth={3.5}
+            style={[styles.guestBtn, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' }]}
           >
-            <Txt weight="bold" size={14} color={c.text}>
+            <RezIcon name="solve" size={18} color={c.text} accent={c.bubblyRed} />
+            <Txt weight="bold" size={14.5} color={c.text}>
               Încearcă fără cont
             </Txt>
-          </Pressable>
+          </Press>
         </Animated.View>
       </View>
     </ScreenBackground>
@@ -93,20 +96,45 @@ export default function WelcomeScreen() {
 
 const styles = StyleSheet.create({
   wrap: { flex: 1, paddingHorizontal: 28 },
-  footer: { width: '100%', maxWidth: 420, alignSelf: 'center', gap: 12 },
+  footer: { width: '100%', maxWidth: 420, alignSelf: 'center', gap: 14 },
+
+  // Google button — dark ink 3D push-down
   googleBtn: {
-    height: 56,
-    borderWidth: 1,
-    flexDirection: 'row',
     alignItems: 'center',
+    borderRadius: 20,
+    borderWidth: 2,
+    borderBottomWidth: 5.5,
+    flexDirection: 'row',
+    gap: 11,
     justifyContent: 'center',
-    gap: 10,
-    shadowColor: '#193149',
-    shadowOpacity: 0.22,
-    shadowRadius: 0,
-    shadowOffset: { width: 5, height: 6 },
-    elevation: 7,
+    minHeight: 58,
   },
-  error: { textAlign: 'center', lineHeight: 18, paddingHorizontal: 12 },
-  tryBtn: { alignItems: 'center', alignSelf: 'stretch', borderRadius: 18, borderWidth: 1, height: 52, justifyContent: 'center' },
+  googleCircle: {
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    height: 28,
+    justifyContent: 'center',
+    width: 28,
+  },
+  googleG: { textAlign: 'center' },
+
+  // Hint text
+  hint: {
+    lineHeight: 18,
+    paddingHorizontal: 16,
+    textAlign: 'center',
+  },
+
+  // Guest button — light 3D push-down
+  guestBtn: {
+    alignItems: 'center',
+    borderRadius: 20,
+    borderWidth: 2,
+    borderBottomWidth: 5,
+    flexDirection: 'row',
+    gap: 9,
+    justifyContent: 'center',
+    minHeight: 54,
+  },
 })

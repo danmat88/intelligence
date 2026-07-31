@@ -27,10 +27,11 @@ import { AuthProvider, useAuth } from './src/auth/AuthProvider'
 import ErrorBoundary from './src/components/ErrorBoundary'
 import { ToastProvider } from './src/components/ui/Toast'
 import CrossFade from './src/components/ui/CrossFade'
-import AppShell from './src/navigation/AppShell'
+import AppNavigator from './src/navigation/AppNavigator'
 import WelcomeScreen from './src/screens/WelcomeScreen'
 import BrandMark from './src/components/ui/BrandMark'
 import { OverlayHostProvider } from './src/components/ui/OverlayHost'
+import { ProductProvider } from './src/product/ProductProvider'
 
 /**
  * Boot choreography - one continuous scene, no cuts, no layout shift:
@@ -40,7 +41,7 @@ import { OverlayHostProvider } from './src/components/ui/OverlayHost'
  *    there is no separate placeholder icon, so the mark never changes.
  * 3. Signed out -> straight to the sign-in screen (the mark enters, then the
  *    button settles in under it). Signed in on a cold start -> a brief brand
- *    beat, then the chat cross-fades in.
+ *    beat, then the Romanian learning workspace cross-fades in.
  */
 SplashScreen.preventAutoHideAsync().catch(() => {})
 SplashScreen.setOptions({ fade: true, duration: 300 })
@@ -83,9 +84,11 @@ export default function App() {
                 <AuthProvider>
                   {/* A font failure must DEGRADE (system faces), never hold the
                       splash forever — ready would otherwise stay false. */}
-                  <OverlayHostProvider>
-                    <Root fontsLoaded={fontsLoaded || !!fontError} />
-                  </OverlayHostProvider>
+                  <ProductProvider>
+                    <OverlayHostProvider>
+                      <Root fontsLoaded={fontsLoaded || !!fontError} />
+                    </OverlayHostProvider>
+                  </ProductProvider>
                 </AuthProvider>
               </ToastProvider>
             </I18nProvider>
@@ -141,7 +144,7 @@ function Root({ fontsLoaded }: { fontsLoaded: boolean }) {
   let content: ReactNode
   if (!ready && wasReady.current && lastPhaseRef.current === 'app') {
     phase = 'app'
-    content = <AppShell />
+    content = <AppNavigator />
   } else if (!ready || !nativeSplashHidden) {
     // Plain twin of the native splash, held until fonts + session are ready.
     phase = 'boot'
@@ -156,7 +159,7 @@ function Root({ fontsLoaded }: { fontsLoaded: boolean }) {
     // stays truthy, the phase stays 'app', and the solver never remounts —
     // work stays on screen.
     phase = 'app'
-    content = <AppShell />
+    content = <AppNavigator />
   } else {
     phase = 'welcome'
     content = <WelcomeScreen />

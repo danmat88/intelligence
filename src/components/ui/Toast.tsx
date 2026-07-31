@@ -75,7 +75,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             },
           ]}
         >
-          <RezIcon name={toastGlyph(msg.icon)} size={15} color="#A995FF" accent="#A995FF" />
+          <RezIcon name={toastGlyph(msg.icon)} size={15} color="#F6C953" accent="#F6C953" />
           <Txt size={13.5} weight="medium" color="#fff">
             {msg.text}
           </Txt>
@@ -88,7 +88,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               hitSlop={10}
               style={({ pressed }) => [styles.action, { borderColor: c.border, opacity: pressed ? 0.6 : 1 }]}
             >
-              <Txt size={13} weight="bold" color="#A995FF">
+              <Txt size={13} weight="bold" color="#F6C953">
                 {msg.action.label}
               </Txt>
             </Pressable>
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     borderRadius: 17,
     paddingHorizontal: 15,
     paddingVertical: 12,
-    shadowColor: '#15121F',
+    shadowColor: '#193149',
     shadowOpacity: 0.22,
     shadowRadius: 24,
     shadowOffset: { width: 0, height: 8 },

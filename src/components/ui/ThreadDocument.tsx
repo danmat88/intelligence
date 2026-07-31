@@ -103,59 +103,57 @@ body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-
 .lbl{font-family:'JB',monospace;font-weight:600;font-size:9.5px;letter-spacing:.15em;text-transform:uppercase}
 
 /* — problem header: the page's title, underlined like a notebook — */
-.prob{background:#15121F;color:#fff;border-radius:24px;padding:18px 18px 19px;margin:2px 0 22px;box-shadow:0 14px 32px rgba(21,18,31,.18)}
-.prob .lbl{color:#A995FF;display:flex;align-items:center;gap:8px}
-.prob .src{margin-left:auto;color:rgba(255,255,255,.42);letter-spacing:.08em}
+/* — problem header: 3D Duolingo chalkboard surface — */
+.prob{background:#103F3B;color:#fff;border-radius:24px;border:2px solid #0A2926;border-bottom:5px solid #071F1D;padding:18px 18px 19px;margin:2px 0 22px}
+.prob .lbl{color:#FFC800;display:flex;align-items:center;gap:8px}
+.prob .src{margin-left:auto;color:rgba(255,255,255,.55);letter-spacing:.08em}
 .prob .ptx{font-size:19px;margin-top:11px;overflow-x:auto;overflow-y:hidden}
 .prob .katex{color:#fff}
 /* The photo box is reserved at its EXACT aspect ratio before the image
    loads — the layout is final from the first pixel, the photo materialises
    into it (no push-down, no jump). */
-.imgbox{position:relative;border-radius:16px;overflow:hidden;margin-top:12px;background:#2A2635}
+.imgbox{position:relative;border-radius:18px;border:2px solid #0A2926;border-bottom:3.5px solid #071F1D;overflow:hidden;margin-top:12px;background:#0A2926}
 .imgbox img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .18s ease}
 .imgbox img.ld{opacity:1}
 /* the confirm-what-I-read loop: the problem as the AI understood it, typeset */
 .pread{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:11px}
-.pread .rl{font-family:'JB',monospace;font-weight:600;font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;color:rgba(255,255,255,.45);flex:0 0 auto}
+.pread .rl{font-family:'JB',monospace;font-weight:600;font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;color:rgba(255,255,255,.55);flex:0 0 auto}
 .pread .rm{font-size:17px;overflow-x:auto;overflow-y:hidden;flex:1;min-width:60%}
-.pread .pfix{font-family:'IN';font-weight:600;font-size:11px;color:#fff;background:rgba(255,255,255,.12);border-radius:999px;padding:6px 11px;cursor:pointer;flex:0 0 auto}
+.pread .pfix{font-family:'IN';font-weight:600;font-size:11px;color:#fff;background:rgba(255,255,255,.18);border-radius:999px;padding:6px 11px;cursor:pointer;flex:0 0 auto}
 
-/* — solution: borderless panels breathing on the paper — */
+/* — solution: 3D Duolingo step cards — */
 .sec{margin-top:16px}
 .sec>.lbl{color:${c.textFaint};display:block;margin-bottom:7px;padding-left:2px}
 .panel{background:transparent;border-radius:0;padding:0 2px;box-shadow:none}
-.step{display:grid;grid-template-columns:30px 1fr;gap:13px;padding:16px 0;cursor:pointer}
-.step+.step{border-top:1px solid ${c.border}}
-.step .no{width:28px;height:28px;border-radius:10px;background:#15121F;color:#fff;font-family:'JB',monospace;font-weight:600;font-size:11px;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:background .25s,color .25s}
-.step.asked .no{background:${c.accent};color:#fff}
+.step{display:grid;grid-template-columns:32px 1fr;gap:13px;padding:16px 0;cursor:pointer}
+.step+.step{border-top:1.5px dashed ${c.border}}
+.step .no{width:30px;height:30px;border-radius:12px;border:1.8px solid #E5B200;border-bottom:3.5px solid #E5B200;background:#FFC800;color:#193149;font-family:'JB',monospace;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:background .25s,color .25s}
+.step.asked .no{background:${c.bubblyRed};border-color:${c.bubblyRedDark};border-bottom-color:${c.bubblyRedDark};color:#fff}
 .step .math{font-size:16.5px;overflow-x:auto;overflow-y:hidden;padding-top:2px}
-.step .why{font-size:12px;color:${c.textMuted};margin-top:5px;line-height:1.5}
-/* — answer box: CALM by default (variant A — paper + a blurple accent edge).
-   Green is EARNED: only a code-verified answer turns green (.ans.verified),
-   with the tick + light sweep. Never a triumphant green on an unchecked answer. */
-.ans{display:flex;gap:12px;align-items:center;background:#15121F;border:none;border-radius:20px;padding:17px 17px;margin-top:14px;position:relative;overflow:hidden;box-shadow:0 12px 28px rgba(21,18,31,.16)}
-.ans .tick{display:none;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.22);align-items:center;justify-content:center;flex:0 0 auto}
-.ans .tick svg{width:14px;height:14px;stroke:#fff;stroke-width:2.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
-.ans .ak{display:block;color:rgba(255,255,255,.48)}
-.ans .math,.ans .katex{color:#fff;font-size:18px;margin-top:2px;overflow-x:auto;overflow-y:hidden}
-.ans.verified{background:linear-gradient(135deg,#0E9F6E,#0B8259);border:1px solid transparent;box-shadow:0 10px 26px rgba(14,159,110,.28)}
+.step .why{font-size:12.5px;color:${c.textMuted};margin-top:5px;line-height:1.5}
+.ans{display:flex;gap:12px;align-items:center;background:#103F3B;border:2px solid #0A2926;border-bottom:5px solid #071F1D;border-radius:22px;padding:17px 17px;margin-top:14px;position:relative;overflow:hidden}
+.ans .tick{display:none;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.25);align-items:center;justify-content:center;flex:0 0 auto}
+.ans .tick svg{width:15px;height:15px;stroke:#fff;stroke-width:2.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ans .ak{display:block;color:rgba(255,255,255,.60)}
+.ans .math,.ans .katex{color:#fff;font-size:18.5px;margin-top:2px;overflow-x:auto;overflow-y:hidden}
+.ans.verified{background:#58CC02;border:2px solid #46A302;border-bottom:5px solid #368202}
 .ans.verified .tick{display:flex}
-.ans.verified .ak{color:rgba(255,255,255,.75)}
+.ans.verified .ak{color:rgba(255,255,255,.85)}
 .ans.verified .math,.ans.verified .katex{color:#fff}
 .vline{height:26px;display:flex;align-items:center;justify-content:flex-end;margin:9px 2px 0}
-.vstat{display:inline-flex;align-items:center;gap:6px;font-family:'JB',monospace;font-weight:600;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:${c.textFaint};background:#fff;border:1px solid rgba(26,22,38,.1);border-radius:999px;padding:5px 10px}
+.vstat{display:inline-flex;align-items:center;gap:6px;font-family:'JB',monospace;font-weight:600;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:${c.textFaint};background:#fff;border:1.5px solid #E5E5E5;border-radius:999px;padding:5px 10px}
 .vstat .dot{width:6px;height:6px;border-radius:50%;background:${c.accent};animation:vpulse 1.1s ease-in-out infinite}
 @keyframes vpulse{0%,100%{opacity:.25}50%{opacity:1}}
-.vbadge{display:inline-flex;align-items:center;gap:5px;font-family:'JB',monospace;font-weight:600;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#0E9F6E;background:#fff;border-radius:999px;padding:5px 11px;box-shadow:0 2px 10px rgba(14,159,110,.3);cursor:pointer}
-.graph{border:1px solid ${c.border};border-radius:16px;background:#fff;padding:14px 14px 10px;margin-top:12px}
+.vbadge{display:inline-flex;align-items:center;gap:5px;font-family:'JB',monospace;font-weight:600;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#58CC02;background:#fff;border:1.8px solid #46A302;border-radius:999px;padding:5px 11px;cursor:pointer}
+.graph{border:2px solid #E5E5E5;border-bottom:4px solid #D0D0D0;border-radius:20px;background:#fff;padding:14px 14px 10px;margin-top:12px}
 .graph .glabel{font-family:'JB',monospace;font-weight:600;font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:${c.textFaint};margin-bottom:8px}
 .graph svg{width:100%;height:auto;display:block;overflow:visible}
 .grid-l{stroke:rgba(26,22,38,.05);stroke-width:1}
 .axis{stroke:rgba(26,22,38,.2);stroke-width:1.4;fill:none}
 .curve{fill:none;stroke:url(#cg);stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
-.root{fill:#0E9F6E;stroke:#fff;stroke-width:2.5}
-.rootlbl{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:12.5px;fill:#0E9F6E}
-.band{fill:rgba(14,159,110,.13);stroke:none}
+.root{fill:#58CC02;stroke:#fff;stroke-width:2.5}
+.rootlbl{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:12.5px;fill:#58CC02}
+.band{fill:rgba(88,204,2,.13);stroke:none}
 .fig-c{fill:none;stroke:${c.accent};stroke-width:2.4}
 .fig-s{stroke:${c.accent};stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
 .fig-r{fill:none;stroke:${c.accent};stroke-width:1.5;opacity:.65}
@@ -165,16 +163,16 @@ body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-
 .nl-axis{stroke:${c.textMuted};stroke-width:1.4;fill:none}
 .nl-tick{stroke:${c.textFaint};stroke-width:1}
 .nl-lbl{font-family:'JB',monospace;font-size:8px;fill:${c.textFaint}}
-.nl-seg{stroke:#0E9F6E;stroke-width:3.6;stroke-linecap:round}
-.nl-arrow{fill:none;stroke:#0E9F6E;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
-.nl-closed{fill:#0E9F6E;stroke:#fff;stroke-width:1.5}
-.nl-open{fill:#fff;stroke:#0E9F6E;stroke-width:2.2}
-.nl-plbl{font-family:Georgia,serif;font-style:italic;font-size:11px;fill:#0E9F6E}
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
-.fu{font-family:'IN';font-weight:600;font-size:12.5px;color:#fff;border:none;background:#15121F;border-radius:14px;padding:11px 15px;cursor:pointer}
-.fu.alt{color:${c.accent};background:${c.accentSoft}}
+.nl-seg{stroke:#58CC02;stroke-width:3.6;stroke-linecap:round}
+.nl-arrow{fill:none;stroke:#58CC02;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.nl-closed{fill:#58CC02;stroke:#fff;stroke-width:1.5}
+.nl-open{fill:#fff;stroke:#58CC02;stroke-width:2.2}
+.nl-plbl{font-family:Georgia,serif;font-style:italic;font-size:11px;fill:#58CC02}
+.chips{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.fu{font-family:'IN';font-weight:700;font-size:13px;color:#fff;border:2px solid #EA2B2B;border-bottom:3.5px solid #EA2B2B;background:#FF4B4B;border-radius:16px;padding:11px 16px;cursor:pointer}
+.fu.alt{color:#193149;background:#FFC800;border:2px solid #E5B200;border-bottom:3.5px solid #E5B200}
 .acts{display:flex;gap:8px;margin-top:10px}
-.act{display:inline-flex;align-items:center;gap:6px;font-family:'IN';font-weight:600;font-size:11.5px;color:${c.textMuted};background:#fff;border:1px solid rgba(26,22,38,.1);border-radius:12px;padding:7px 12px;cursor:pointer}
+.act{display:inline-flex;align-items:center;gap:6px;font-family:'IN';font-weight:600;font-size:11.5px;color:${c.textMuted};background:#fff;border:1.8px solid #E5E5E5;border-bottom:3px solid #D0D0D0;border-radius:14px;padding:7px 13px;cursor:pointer}
 .act svg{width:12px;height:12px;stroke:currentColor;stroke-width:2.1;fill:none;stroke-linecap:round;stroke-linejoin:round}
 
 /* — annotations: the user's questions as post-its — */

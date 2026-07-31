@@ -29,7 +29,7 @@ export default function PanelHeader({
       <View style={[styles.grab, { backgroundColor: dark ? 'rgba(255,255,255,0.18)' : c.border }]} />
       <View style={styles.row}>
         <View style={[styles.icon, { backgroundColor: dark ? 'rgba(255,255,255,0.09)' : c.accentSoft }]}>
-          <RezIcon name={icon} size={19} color={dark ? '#A995FF' : c.accent} accent={dark ? '#A995FF' : c.accent} />
+          <RezIcon name={icon} size={19} color={dark ? c.sunny : c.accent} accent={dark ? c.sunny : c.accent} />
         </View>
         <View style={styles.copy}>
           <Txt size={9} color={muted} style={[styles.eyebrow, { fontFamily: theme.font.mono }]}>

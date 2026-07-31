@@ -24,6 +24,8 @@ export default function Txt({ weight = 'regular', size, color, style, ...rest }:
   return (
     <Text
       maxFontSizeMultiplier={1.3}
+      textBreakStrategy="simple"
+      android_hyphenationFrequency="none"
       style={[
         { fontFamily: theme.font[weight], color: color ?? theme.colors.text },
         size != null ? { fontSize: size } : null,

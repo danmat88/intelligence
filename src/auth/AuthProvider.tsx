@@ -113,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AuthContextValue>(() => {
     const signIn = async () => {
       if (!WEB_CLIENT_ID) {
-        setError('Google Sign-In is not configured yet (EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID is missing).')
+        setError('Conectarea cu Google nu este configurată încă. Lipsește cheia publică necesară.')
         return
       }
       setSigningIn(true)
@@ -129,7 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // RNFirebase's native credential requires BOTH tokens; the signIn()
           // response only carries idToken, so fetch the pair via getTokens()
           const { idToken, accessToken } = await GoogleSignin.getTokens()
-          if (!idToken) throw new Error('Google returned no ID token - check the Web client ID.')
+          if (!idToken) throw new Error('Google nu a returnat dovada de autentificare necesară.')
           const credential = GoogleAuthProvider.credential(idToken, accessToken)
           const current = getAuth().currentUser
           if (current?.isAnonymous) {
@@ -189,11 +189,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (isErrorWithCode(e)) {
           if (e.code === statusCodes.IN_PROGRESS) return
           if (e.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-            setError('Google Play Services is not available on this device.')
+            setError('Serviciile Google Play nu sunt disponibile pe acest dispozitiv.')
             return
           }
         }
-        setError(e instanceof Error ? e.message : 'Sign-in failed. Please try again.')
+        reportNonFatal(e, 'google-sign-in')
+        setError('Conectarea nu a reușit. Încearcă din nou.')
       } finally {
         setSigningIn(false)
       }
@@ -208,7 +209,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await signInAnonymously(getAuth())
         // onAuthStateChanged updates `user`
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Could not start a guest session. Please try again.')
+        reportNonFatal(e, 'guest-sign-in')
+        setError('Nu am putut porni sesiunea fără cont. Încearcă din nou.')
       } finally {
         setSigningIn(false)
       }

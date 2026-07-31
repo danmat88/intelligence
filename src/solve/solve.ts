@@ -10,8 +10,7 @@ import { definitiveVerdict, getSolveJson, isHardProblem, withJsonFlags, type Che
 //   school problem. DEEP (pro) is the silent safety net: if the fast model
 //   errors out or emits broken JSON, we escalate once and the user just sees a
 //   slightly slower solve. DEEP is also the future premium/verification engine.
-// `langName` ("Romanian"/"English") localizes every human-readable string the
-// model produces; the math itself stays LaTeX.
+// Every learner-facing answer is contractually Romanian; the math stays LaTeX.
 // PINNED to exact GA ids, not `-latest` aliases: the aliases hot-swap silently,
 // and one such swap put verification on Gemini 3.5 Flash (~45s/check). Measured
 // July 2026: 3.1 flash-lite ~1.6s solve / ~6-10s verify, 3.1 pro ~8s. 3.5 Flash
@@ -63,11 +62,11 @@ async function withFallback(
 // Every solve-path request carries purpose=solve + the problem's stable id, so
 // the proxy's daily cap charges ONE slot per problem no matter how many
 // requests the flow fans into (escalation, correction re-solve, retry).
-function solveCall(langName: string, signal?: AbortSignal, image?: CapturedImage, problemId?: string) {
+function solveCall(signal?: AbortSignal, image?: CapturedImage, problemId?: string) {
   return async (model: string) => {
     const { text } = await ai.generate(image ? SOLVE_USER_PROMPT : '', {
       ...(image ? { image: { base64: image.base64, mimeType: image.mimeType } } : {}),
-      system: SOLVE_JSON_SYSTEM.replaceAll('{LANG}', langName),
+      system: SOLVE_JSON_SYSTEM,
       model,
       ...SOLVE,
       purpose: 'solve',
@@ -79,15 +78,15 @@ function solveCall(langName: string, signal?: AbortSignal, image?: CapturedImage
 }
 
 /** First solve from a photo → structured JSON solution. */
-export async function solveImage(image: CapturedImage, langName: string, signal?: AbortSignal, problemId?: string): Promise<string> {
-  return withFallback(solveCall(langName, signal, image, problemId), looksLikeValidSolve, signal)
+export async function solveImage(image: CapturedImage, signal?: AbortSignal, problemId?: string): Promise<string> {
+  return withFallback(solveCall(signal, image, problemId), looksLikeValidSolve, signal)
 }
 
 /** First solve from a typed problem → structured JSON solution. */
-export async function solveProblem(problem: string, langName: string, signal?: AbortSignal, problemId?: string): Promise<string> {
+export async function solveProblem(problem: string, signal?: AbortSignal, problemId?: string): Promise<string> {
   const call = async (model: string) => {
     const { text } = await ai.generate(problem, {
-      system: SOLVE_JSON_SYSTEM.replaceAll('{LANG}', langName),
+      system: SOLVE_JSON_SYSTEM,
       model,
       ...SOLVE,
       purpose: 'solve',
@@ -107,13 +106,12 @@ export async function solveProblem(problem: string, langName: string, signal?: A
  *  knows to re-read the givens instead of repeating the same misread. */
 export async function solveDeep(
   problem: string,
-  langName: string,
   signal?: AbortSignal,
   hint?: string,
   problemId?: string,
 ): Promise<string> {
   const { text } = await ai.generate(hint ? problem + hint : problem, {
-    system: SOLVE_JSON_SYSTEM.replaceAll('{LANG}', langName),
+    system: SOLVE_JSON_SYSTEM,
     model: DEEP,
     ...SOLVE,
     purpose: 'solve',
@@ -171,11 +169,11 @@ export async function verifyAnswer(problemText: string, solutionRaw: string, sig
 /** A follow-up about the current problem → conversational Markdown + LaTeX.
  *  Carries the problem's id: follow-ups are metered per problem per day
  *  (generous — 10 — but bounded, so chat can't become an unmetered solver). */
-export async function followUp(turns: ChatTurn[], langName: string, signal?: AbortSignal, problemId?: string): Promise<string> {
+export async function followUp(turns: ChatTurn[], signal?: AbortSignal, problemId?: string): Promise<string> {
   return withFallback(
     async (model) => {
       const { text } = await ai.chat(turns, {
-        system: FOLLOWUP_SYSTEM.replaceAll('{LANG}', langName),
+        system: FOLLOWUP_SYSTEM,
         model,
         temperature: 0.4,
         maxTokens: 1500,

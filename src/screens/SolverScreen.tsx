@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Keyboard, Pressable, Share, StyleSheet, TextInput, View } from 'react-native'
+import { Keyboard, Pressable, ScrollView, Share, StyleSheet, TextInput, View } from 'react-native'
 import ReAnimated, { Easing as REasing, withTiming, type EntryAnimationsValues } from 'react-native-reanimated'
 import { LinearGradient } from 'expo-linear-gradient'
 import * as Clipboard from 'expo-clipboard'
@@ -7,6 +7,8 @@ import * as Haptics from 'expo-haptics'
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTheme } from '../theme/ThemeProvider'
+import SolverSourcePicker from '../features/solver/input/SolverSourcePicker'
+import TypedProblemEditor from '../features/solver/input/TypedProblemEditor'
 import CrossFade from '../components/ui/CrossFade'
 import Press from '../components/ui/Press'
 import ScreenBackground from '../components/ui/ScreenBackground'
@@ -16,11 +18,9 @@ import InfoDialog from '../components/ui/InfoDialog'
 import ThreadDocument, { type DocLabels } from '../components/ui/ThreadDocument'
 import SymbolBar, { type MathKey } from '../components/ui/SymbolBar'
 import MathPreview from '../components/ui/MathPreview'
-import AppHeader from '../components/ui/AppHeader'
 import ContextHeader from '../components/ui/ContextHeader'
 import RezIcon from '../components/ui/RezIcon'
 import ScreenContent, { APP_CONTENT_MAX_WIDTH } from '../components/ui/ScreenContent'
-import ScreenIntro from '../components/ui/ScreenIntro'
 import type { SolveEntryAction, SolverChrome, SolverSurface } from '../navigation/types'
 import { isMathInput, plainToLatex } from '../solve/mathInput'
 import type { CapturedImage } from '../solve/capture'
@@ -38,10 +38,8 @@ import { reportNonFatal } from '../lib/report'
 import { useOnline } from '../lib/connectivity'
 import { track } from '../lib/analytics'
 import { uploadProblemImage, deleteProblemImages, saveLocalCopy, resolveImageUri } from '../solve/imageStore'
-import HistorySheet from './HistorySheet'
 import CaptureScreen from './CaptureScreen'
 import LimitSheet from './LimitSheet'
-import PaywallSheet from './PaywallSheet'
 
 type Turn = {
   id: string
@@ -79,12 +77,14 @@ type T = (key: StringKey, vars?: Record<string, string | number>) => string
 
 type SolverScreenProps = {
   entryAction?: SolveEntryAction | null
+  initialProblem?: Problem | null
+  initialDraft?: string
   onEntryActionHandled?: () => void
   onChromeChange?: (chrome: SolverChrome) => void
-  onOpenSettings: () => void
   surface: SolverSurface
   onOpenThread: () => void
-  onBackToIdle: () => void
+  onShowEntry: () => void
+  onExit: () => void
 }
 
 /** Map a raw error to a calm, human message (localized via `t`). */
@@ -111,26 +111,26 @@ function friendlyError(e: unknown, t: T): string {
  */
 export default function SolverScreen({
   entryAction,
+  initialProblem,
+  initialDraft,
   onEntryActionHandled,
   onChromeChange,
-  onOpenSettings,
   surface,
   onOpenThread,
-  onBackToIdle,
+  onShowEntry,
+  onExit,
 }: SolverScreenProps) {
   const { theme } = useTheme()
   const c = theme.colors
   const insets = useSafeAreaInsets()
   const { user, signIn, error: authError, carried, clearCarried } = useAuth()
-  const { t, langName } = useI18n()
+  const { t } = useI18n()
   const toast = useToast()
   const [thread, setThread] = useState<Turn[]>([])
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
-  const [historyOpen, setHistoryOpen] = useState(false)
   // The daily-cap upsell (server said DAILY_LIMIT/CHAT_LIMIT) and the paywall.
   const [limitHit, setLimitHit] = useState<{ kind: 'solve' | 'chat'; limit: number; guest: boolean } | null>(null)
-  const [paywallOpen, setPaywallOpen] = useState(false)
   // Today's metered usage ("2/5 azi" pill) — fed by the proxy's response
   // headers via src/ai/usage. Null until the first metered solve (or premium).
   const [usage, setUsage] = useState<DailyUsage | null>(null)
@@ -188,8 +188,15 @@ export default function SolverScreen({
   const hasThread = thread.length > 0
   const showThread = surface === 'thread' && hasThread
   const [inputFocused, setInputFocused] = useState(false)
-  const blockingOverlayOpen = historyOpen || !!limitHit || paywallOpen || verifyInfo
+  const [entryMode, setEntryMode] = useState<'source' | 'type'>('source')
+  const blockingOverlayOpen = !!limitHit || verifyInfo
   const [overlayHeld, setOverlayHeld] = useState(false)
+
+  useEffect(() => {
+    if (!initialDraft?.trim()) return
+    setInput(initialDraft.trim())
+    setEntryMode('type')
+  }, [initialDraft])
 
   useEffect(() => {
     if (blockingOverlayOpen) {
@@ -209,20 +216,20 @@ export default function SolverScreen({
     : showThread
       ? 'thread'
       : inputFocused
-        ? 'focused'
-        : 'idle'
+        ? 'typing'
+        : 'entry'
 
   useEffect(() => {
     onChromeChange?.(chrome)
   }, [chrome, onChromeChange])
 
-  useEffect(() => () => onChromeChange?.('idle'), [onChromeChange])
+  useEffect(() => () => onChromeChange?.('entry'), [onChromeChange])
 
   // System/visible Back returns to the solver landing page without clearing
   // the retained solution. A follow-up draft belongs to the focused thread,
-  // so it does not leak into the new-problem field on the idle surface.
+  // so it does not leak into the new-problem entry surface.
   useEffect(() => {
-    if (surface !== 'idle' || !hasThread) return
+    if (surface !== 'entry' || !hasThread) return
     Keyboard.dismiss()
     setInput('')
     setSelection(undefined)
@@ -300,10 +307,10 @@ export default function SolverScreen({
         setProblemMeta(null)
         setThreadKey(`live-${Date.now()}`)
         commit([])
-        onBackToIdle()
+        onShowEntry()
       }
     }
-  }, [user?.id, commit, onBackToIdle])
+  }, [user?.id, commit, onShowEntry])
 
   // Save the finished problem to Firestore (create on first solve, then update).
   // Fire-and-forget — a failed write must never disrupt solving.
@@ -396,8 +403,8 @@ export default function SolverScreen({
             // Be honest about the extra work — the pill says "re-solving".
             setVerifyingMap((m) => ({ ...m, [id]: 'recheck' }))
             const deepRaw = image
-              ? await solveImage(image, langName, ctrl.signal, capId)
-              : await solveDeep(source, langName, ctrl.signal, CORRECTION_HINT, capId)
+              ? await solveImage(image, ctrl.signal, capId)
+              : await solveDeep(source, ctrl.signal, CORRECTION_HINT, capId)
             if (ctrl.signal.aborted) return
             const v2 = isStructuredSolution(deepRaw) ? await verifyAnswer(source || restated, deepRaw, ctrl.signal) : 'unverifiable'
             if (ctrl.signal.aborted) return
@@ -424,7 +431,7 @@ export default function SolverScreen({
         })
       }
     },
-    [commit, persist, langName],
+    [commit, persist],
   )
 
   const run = useCallback(
@@ -466,7 +473,7 @@ export default function SolverScreen({
         if (ctrl.signal.aborted) {
           // User cancelled — quietly drop the attempt, back to where they were.
           commit(base)
-          if (base.length === 0) onBackToIdle()
+          if (base.length === 0) onShowEntry()
           return
         }
         if (e instanceof DailyLimitError) {
@@ -474,7 +481,7 @@ export default function SolverScreen({
           // the thread. The question returns to the composer (typed text is
           // never lost) and the upsell sheet takes it from here.
           commit(base)
-          if (base.length === 0) onBackToIdle()
+          if (base.length === 0) onShowEntry()
           if (userTurn.text) setInput((v) => v || userTurn.text)
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {})
           track('limit_hit', { kind: e.info.kind, guest: e.info.guest })
@@ -491,7 +498,7 @@ export default function SolverScreen({
         setSending(false)
       }
     },
-    [commit, onBackToIdle, onOpenThread, persist, t, verifyFlow],
+    [commit, onOpenThread, onShowEntry, persist, t, verifyFlow],
   )
 
   const cancelRun = useCallback(() => {
@@ -503,8 +510,8 @@ export default function SolverScreen({
     // Nothing is lost on Stop: the question returns to the composer.
     if (lastUser?.text) setInput((v) => v || lastUser.text)
     setSending(false)
-    if (base.length === 0) onBackToIdle()
-  }, [commit, onBackToIdle])
+    if (base.length === 0) onShowEntry()
+  }, [commit, onShowEntry])
 
   // Retry the failed request exactly as sent — never make the user retype.
   const retryLast = useCallback(() => {
@@ -533,8 +540,9 @@ export default function SolverScreen({
     explainCountsRef.current = {}
     setThreadKey(`live-${Date.now()}`)
     commit([])
-    onBackToIdle()
-  }, [commit, onBackToIdle])
+    setEntryMode('source')
+    onShowEntry()
+  }, [commit, onShowEntry])
 
   const sendText = useCallback(
     (raw: string) => {
@@ -551,7 +559,7 @@ export default function SolverScreen({
       Keyboard.dismiss()
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
       setInput('')
-      const isFirst = surface === 'idle'
+      const isFirst = surface === 'entry'
       if (isFirst && threadRef.current.length > 0) reset()
       track(isFirst ? 'solve_start' : 'chat_send', isFirst ? { source: 'text' } : undefined)
       const turns: ChatTurn[] = [...priorTurns(), { role: 'user', text }]
@@ -563,12 +571,12 @@ export default function SolverScreen({
         { id: turnId, role: 'user', text },
         (sig) =>
           isFirst
-            ? solveProblem(text, langName, sig, turnId)
-            : followUp(turns, langName, sig, problemIdRef.current ?? undefined),
+            ? solveProblem(text, sig, turnId)
+            : followUp(turns, sig, problemIdRef.current ?? undefined),
         isFirst ? text : undefined, // machine-check first solves only
       )
     },
-    [sending, online, toast, t, run, priorTurns, langName, reset, surface],
+    [sending, online, toast, t, run, priorTurns, reset, surface],
   )
 
   const loadProblem = useCallback(
@@ -616,6 +624,13 @@ export default function SolverScreen({
     [commit, sending, cancelRun, onOpenThread],
   )
 
+  const openedInitialProblemRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!initialProblem || openedInitialProblemRef.current === initialProblem.id) return
+    openedInitialProblemRef.current = initialProblem.id
+    loadProblem(initialProblem)
+  }, [initialProblem, loadProblem])
+
   const handleChip = useCallback(
     (id: string) => {
       // No dead taps: busy means FEEDBACK, never silence.
@@ -648,26 +663,25 @@ export default function SolverScreen({
         const asked = (explainCountsRef.current[n] = (explainCountsRef.current[n] ?? 0) + 1)
         const ask =
           asked <= 1
-            ? `Explain step ${n} again, more simply — I don't get that move.`
+            ? `Explică din nou pasul ${n}, mai simplu. Nu înțeleg transformarea făcută.`
             : asked === 2
-              ? `You already explained step ${n} and I STILL don't get it. Explain it in a COMPLETELY different way than before — simplest possible words, and include a tiny concrete example with real numbers.`
-              : `The student has now heard two explanations of step ${n} and still doesn't get it. STOP re-explaining. Switch method like a good teacher: give ONE similar but noticeably EASIER mini-problem that isolates the same move, walk through it together in short encouraging lines, and END by connecting it back to step ${n} of the original problem.`
+              ? `Ai explicat deja pasul ${n}, dar încă nu îl înțeleg. Explică-l într-un mod complet diferit, cu cele mai simple cuvinte și cu un exemplu foarte scurt folosind numere concrete.`
+              : `Am primit deja două explicații pentru pasul ${n} și încă nu îl înțeleg. Schimbă metoda: dă-mi o singură mini-problemă asemănătoare, dar mult mai ușoară, care izolează aceeași idee. Rezolv-o împreună cu mine în replici scurte și încurajatoare, apoi leagă ideea de pasul ${n} din problema inițială.`
         const label = asked >= 3 ? t('turn.practiceStep', { n }) : t('turn.explainStep', { n })
         run({ id: uid(), role: 'user', text: label }, (sig) =>
-          followUp([...priorTurns(), { role: 'user', text: ask }], langName, sig, problemIdRef.current ?? undefined),
+          followUp([...priorTurns(), { role: 'user', text: ask }], sig, problemIdRef.current ?? undefined),
         )
         return
       }
       run({ id: uid(), role: 'user', text: t('turn.similar') }, (sig) =>
         followUp(
-          [...priorTurns(), { role: 'user', text: 'Give me a similar problem to practice — just the problem, no solution.' }],
-          langName,
+          [...priorTurns(), { role: 'user', text: 'Dă-mi o problemă asemănătoare pentru exersare, doar enunțul, fără soluție.' }],
           sig,
           problemIdRef.current ?? undefined,
         ),
       )
     },
-    [sending, run, reset, priorTurns, user, t, langName, toast],
+    [sending, run, reset, priorTurns, user, t, toast],
   )
 
   // Open the in-app capture flow (Rezolvo's own camera + trim — never the
@@ -708,16 +722,17 @@ export default function SolverScreen({
       // never the (possibly misread) restatement.
       run(
         { id: turnId, role: 'user', text: '', imageUri: img.uri, imageW: img.width, imageH: img.height },
-        (sig) => solveImage(img, langName, sig, turnId),
+        (sig) => solveImage(img, sig, turnId),
         '',
         img,
       )
     },
-    [run, reset, langName, user, persist],
+    [run, reset, user, persist],
   )
 
   const typeInstead = useCallback(() => {
     setCapture(null)
+    setEntryMode('type')
     // focus once the visor has slid away, so the keyboard rises over Home
     setTimeout(() => inputRef.current?.focus(), 280)
   }, [])
@@ -842,8 +857,8 @@ export default function SolverScreen({
         <ContextHeader
           eyebrow="REZOLVĂ"
           title={contextTitle}
-          onBack={onBackToIdle}
-          backLabel="Înapoi la Rezolvă"
+          onBack={onExit}
+          backLabel="Înapoi în aplicație"
           action={{
             icon: 'plus',
             label: 'Problemă nouă',
@@ -852,7 +867,15 @@ export default function SolverScreen({
           }}
         />
       ) : (
-        <AppHeader onOpenSettings={onOpenSettings} />
+        <ContextHeader
+          eyebrow="REZOLVĂ"
+          title={entryMode === 'type' ? 'Scrie problema' : 'Alege sursa'}
+          onBack={entryMode === 'type' ? () => {
+            Keyboard.dismiss()
+            setEntryMode('source')
+          } : onExit}
+          backLabel={entryMode === 'type' ? 'Înapoi la surse' : 'Înapoi în aplicație'}
+        />
       )}
 
       <KeyboardAvoidingView style={styles.flex} behavior="padding" keyboardVerticalOffset={-insets.bottom}>
@@ -861,126 +884,109 @@ export default function SolverScreen({
             navigation — one opaque surface slides out, the next slides in. */}
         <CrossFade dep={showThread ? `thread:${threadKey}` : 'hero'} axis="x" style={styles.flex}>
         {!showThread ? (
-          <ScreenContent style={styles.heroWrap}>
-            <ScreenIntro eyebrow="SOLVER MATEMATIC" title="Pune problema aici." icon="workspace" />
+          <ScreenContent style={styles.entryWrap}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={styles.entryScroll}
+            >
+              <View style={styles.entryIntro}>
+                <Txt style={[styles.entryTitle, { color: c.text, fontFamily: theme.font.display }]}>
+                  {entryMode === 'source' ? 'Rezolvă orice problemă' : 'Scrie enunțul complet'}
+                </Txt>
+                <Txt size={13.5} color={c.textMuted} style={styles.entryDescription}>
+                  {entryMode === 'source'
+                    ? 'Fotografiază, alege o imagine sau scrie enunțul.'
+                    : 'Include toate datele și cerința. Bara matematică te ajută cu expresiile.'}
+                </Txt>
+              </View>
 
-            <View style={styles.solverTools}>
-              {hasThread ? (
-                <Press
-                  onPress={onOpenThread}
-                  containerStyle={styles.resumeSlot}
-                  accessibilityRole="button"
-                  accessibilityLabel="Continuă ultima soluție"
-                  style={[styles.resumeAction, { backgroundColor: c.surface, borderColor: c.border }]}
-                >
-                  <View style={[styles.toolIcon, { backgroundColor: c.accentSoft }]}>
-                    <RezIcon name="document" size={18} color={c.accent} accent={c.accent} />
-                  </View>
-                  <View style={styles.toolCopy}>
-                    <Txt numberOfLines={1} weight="bold" size={12.5} color={c.text}>
-                      Continuă soluția
-                    </Txt>
-                    <Txt numberOfLines={1} size={9.5} color={c.textFaint}>
-                      {sending ? 'Rezolvare în curs' : activeTopic || 'Problema curentă'}
-                      {usage && isFromToday(usage.at) ? `  ·  ${t('usage.pill', { used: usage.used, limit: usage.limit })}` : ''}
-                    </Txt>
-                  </View>
-                  <RezIcon name="chevron" size={14} color={c.textFaint} />
-                </Press>
-              ) : usage && isFromToday(usage.at) ? (
-                <Press
-                  onPress={openUsage}
-                  containerStyle={styles.resumeSlot}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('usage.pill', { used: usage.used, limit: usage.limit })}
-                  style={[
-                    styles.resumeAction,
-                    {
-                      backgroundColor: usage.used >= usage.limit ? c.accentSoft : c.surface,
-                      borderColor: usage.used >= usage.limit ? c.accent : c.border,
-                    },
-                  ]}
-                >
-                  <View style={[styles.toolIcon, { backgroundColor: c.accentSoft }]}>
-                    <RezIcon name="quota" size={18} color={c.accent} accent={c.accent} />
-                  </View>
-                  <View style={styles.toolCopy}>
-                    <Txt weight="bold" size={12} color={usage.used >= usage.limit ? c.accent : c.text}>
-                      {t('usage.pill', { used: usage.used, limit: usage.limit })}
-                    </Txt>
-                    <Txt numberOfLines={1} size={9.5} color={c.textFaint}>utilizare astăzi</Txt>
-                  </View>
-                </Press>
-              ) : (
-                <View style={[styles.resumeSlot, styles.idleNote]}>
-                  <RezIcon name="spark" size={17} color={c.accent} accent={c.accent} />
-                  <Txt numberOfLines={1} size={10.5} color={c.textMuted}>Poză, galerie sau text</Txt>
+              {(netDown || !online) && (
+                <View style={[styles.netBar, { backgroundColor: c.dangerSoft }]}>
+                  <RezIcon name="offline" size={14} color={c.danger} accent={c.danger} />
+                  <Txt size={12} weight="semibold" color={c.danger}>
+                    {t('net.offline')}
+                  </Txt>
                 </View>
               )}
 
-              <Press
-                onPress={() => setHistoryOpen(true)}
-                accessibilityRole="button"
-                accessibilityLabel={t('history.title')}
-                style={[styles.historyAction, { backgroundColor: c.surface, borderColor: c.border }]}
-              >
-                <RezIcon name="history" size={18} color={c.text} accent={c.accent} />
-                <Txt weight="semibold" size={10.5} color={c.textMuted}>Istoric</Txt>
-              </Press>
-            </View>
-
-            <View style={[styles.scanStage, { backgroundColor: c.chalkDark, borderColor: c.text, shadowColor: c.text }]}>
-              <LinearGradient colors={['#227A69', '#103F3B']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
-              <View pointerEvents="none" style={[styles.scanGlow, { backgroundColor: c.sunny }]} />
-              <View style={styles.scanTop}>
-                <View style={styles.scanStatus}>
-                  <View style={styles.scanDot} />
-                  <Txt size={9.5} color="rgba(255,255,255,0.54)" style={{ fontFamily: theme.font.mono, letterSpacing: 1.1 }}>CAMERĂ PREGĂTITĂ</Txt>
-                </View>
-                <Txt size={9.5} color="rgba(255,255,255,0.3)" style={{ fontFamily: theme.font.mono }}>AUTO-CROP</Txt>
-              </View>
-
-              <View style={styles.scanBody}>
-                <Press onPress={() => snap('camera')} accessibilityLabel="Scanează problema" style={[styles.scanPortal, { backgroundColor: c.accent }]}>
-                  <View style={styles.scanRing}>
-                    <RezIcon name="camera" size={27} color="#fff" accent="#FFE69A" />
-                  </View>
-                </Press>
-                <View style={styles.scanCopy}>
-                  <Txt style={[styles.scanTitle, { fontFamily: theme.font.display }]}>Scanează. Rezolvă. Înțelege.</Txt>
-                  <Txt numberOfLines={2} size={11.5} color="rgba(255,255,255,0.55)" style={styles.scanDescription}>Încadrează exercițiul complet; explicația vine pas cu pas.</Txt>
-                </View>
-              </View>
-
-              <View style={styles.scanDock}>
-                <Press onPress={() => snap('camera')} containerStyle={styles.scanPrimarySlot} style={[styles.scanPrimary, { backgroundColor: c.accent }]}>
-                  <Txt weight="bold" size={12.5} color="#fff">Deschide camera</Txt>
-                  <RezIcon name="arrow" size={16} color="#fff" />
-                </Press>
-                <Press onPress={() => snap('library')} style={styles.galleryAction}>
-                  <RezIcon name="gallery" size={18} color="#fff" accent="#A995FF" />
-                  <Txt weight="semibold" size={11} color="rgba(255,255,255,0.72)">Galerie</Txt>
-                </Press>
-              </View>
-            </View>
-
-            {!hasThread && (
+              {entryMode === 'source' ? (
+                <SolverSourcePicker
+                  hasOpenSolution={hasThread}
+                  solving={sending}
+                  activeTopic={activeTopic ?? undefined}
+                  onContinue={onOpenThread}
+                  onCamera={() => snap('camera')}
+                  onLibrary={() => snap('library')}
+                  onType={typeInstead}
+                />
+              ) : (
               <>
-                <View style={styles.examplesHead}>
-                  <Txt size={9.5} color={c.textFaint} style={{ fontFamily: theme.font.mono, letterSpacing: 1 }}>EXEMPLE RAPIDE</Txt>
-                  <Txt size={10.5} color={c.textFaint}>atinge pentru a testa</Txt>
+                <TypedProblemEditor
+                  inputRef={inputRef}
+                  value={input}
+                  focused={inputFocused}
+                  selection={selection}
+                  previewLatex={previewLatex}
+                  onChange={(value) => {
+                    setInput(value)
+                    setSelection(undefined)
+                  }}
+                  onFocus={() => setInputFocused(true)}
+                  onBlur={() => setInputFocused(false)}
+                  onSelectionChange={(event) => {
+                    selRef.current = event.nativeEvent.selection
+                  }}
+                  onInsertSymbol={insertKey}
+                  onSubmit={() => sendText(input)}
+                />
+
+              {!inputFocused && <View style={styles.entryFooter}>
+                <View style={styles.notebookNote}>
+                  <RezIcon name="document" size={16} color={c.textMuted} accent={c.accent} />
+                  <Txt size={10.5} color={c.textMuted}>
+                    Rezolvările sunt salvate în Caietul meu.
+                  </Txt>
                 </View>
-                <View style={styles.examples}>
-                  {['2x² + 5x − 3 = 0', '|x − 3| ≤ 2'].map((ex, index) => (
-                    <Press key={ex} onPress={() => sendText(ex)} containerStyle={styles.exampleSlot} style={[styles.chip, { backgroundColor: c.surface, borderColor: c.text }]}>
-                      <Txt size={9.5} color={c.accent} style={{ fontFamily: theme.font.mono }}>0{index + 1}</Txt>
-                      <Txt numberOfLines={1} size={11.5} color={c.text} style={[styles.exampleText, { fontFamily: theme.font.mono }]}>{ex}</Txt>
-                      <RezIcon name="chevron" size={13} color={c.textFaint} />
-                    </Press>
-                  ))}
-                </View>
+                {usage && isFromToday(usage.at) && (
+                  <Press
+                    onPress={openUsage}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('usage.pill', { used: usage.used, limit: usage.limit })}
+                    style={[
+                      styles.usagePill,
+                      {
+                        backgroundColor: usage.used >= usage.limit ? c.accentSoft : c.surface,
+                        borderColor: usage.used >= usage.limit ? c.accent : c.border,
+                      },
+                    ]}
+                  >
+                    <RezIcon name="quota" size={15} color={c.accent} accent={c.accent} />
+                    <Txt
+                      weight="bold"
+                      size={10.5}
+                      color={usage.used >= usage.limit ? c.accent : c.textMuted}
+                    >
+                      {t('usage.pill', { used: usage.used, limit: usage.limit })}
+                    </Txt>
+                  </Press>
+                )}
+              </View>}
+
+              {user?.isAnonymous ? (
+                <Pressable onPress={signIn} hitSlop={6}>
+                  <Txt size={10.5} weight="semibold" color={c.accent} style={styles.disc}>
+                    Conectează-te pentru a păstra problemele rezolvate
+                  </Txt>
+                </Pressable>
+              ) : (
+                <Txt size={10} color={c.textFaint} style={[styles.disc, { fontFamily: theme.font.mono }]}>
+                  Profu’ de Mate poate greși. Verifică rezultatele importante.
+                </Txt>
+              )}
               </>
-            )}
+              )}
+            </ScrollView>
           </ScreenContent>
         ) : (
           // The conversation as ONE living document (no bubbles): problem as
@@ -1009,7 +1015,7 @@ export default function SolverScreen({
         )}
         </CrossFade>
 
-        <View style={[styles.composerWrap, { paddingBottom: insets.bottom + 8 }]}>
+        {showThread && <View style={[styles.composerWrap, { paddingBottom: insets.bottom + 8 }]}>
           {(netDown || !online) && (
             <ReAnimated.View entering={bubbleEnter} style={[styles.netBar, { backgroundColor: c.dangerSoft }]}>
               <RezIcon name="offline" size={14} color={c.danger} accent={c.danger} />
@@ -1021,17 +1027,8 @@ export default function SolverScreen({
           {/* What you'll send, typeset — the same converter that renders it
               in the document, so the preview IS the result. */}
           {!!previewLatex && <MathPreview latex={previewLatex} label={t('composer.preview')} />}
-          {(showThread || inputFocused || !!input.trim()) && <SymbolBar onInsert={insertKey} />}
-          <View style={[styles.field, !showThread && styles.fieldIdle, { backgroundColor: c.surface, borderColor: inputFocused ? c.accent : c.border }]}>
-            <Press
-              onPress={() => snap('camera')}
-              hitSlop={6}
-              accessibilityRole="button"
-              accessibilityLabel={t('a11y.camera')}
-              style={[styles.camBtn, { backgroundColor: c.accentSoft }]}
-            >
-              <RezIcon name="camera" size={18} color={c.accent} accent={c.accent} />
-            </Press>
+          {(inputFocused || !!input.trim()) && <SymbolBar onInsert={insertKey} />}
+          <View style={[styles.field, { backgroundColor: c.surface, borderColor: inputFocused ? c.accent : c.border }]}>
             <TextInput
               ref={inputRef}
               style={[styles.input, { color: c.text }]}
@@ -1092,20 +1089,10 @@ export default function SolverScreen({
               Profu’ de Mate poate greși. Verifică rezultatele importante.
             </Txt>
           )}
-        </View>
+        </View>}
         </View>
       </KeyboardAvoidingView>
 
-      <HistorySheet
-        open={historyOpen}
-        onClose={() => setHistoryOpen(false)}
-        onSelect={loadProblem}
-        // The open problem was deleted from history: unlink its stale id, or
-        // every later persist would silently write into a dead document.
-        onDeleted={(id) => {
-          if (problemIdRef.current === id) problemIdRef.current = null
-        }}
-      />
       {/* The freemium moment: today's solves are done — sign in (guests) or
           go Premium. NO blurred steps anywhere; the cap is the only wall. */}
       <LimitSheet
@@ -1114,12 +1101,8 @@ export default function SolverScreen({
         limit={limitHit?.limit ?? 5}
         guest={limitHit?.guest ?? true}
         onClose={() => setLimitHit(null)}
-        onPremium={() => {
-          setLimitHit(null)
-          setTimeout(() => setPaywallOpen(true), 300)
-        }}
+        onPremium={() => setLimitHit(null)}
       />
-      <PaywallSheet open={paywallOpen} onClose={() => setPaywallOpen(false)} />
       {/* The trust pitch, told at the moment of trust: what "Verified" means. */}
       <InfoDialog
         open={verifyInfo}
@@ -1146,77 +1129,121 @@ function bubbleEnter(v: EntryAnimationsValues) {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   column: { flex: 1, width: '100%', maxWidth: APP_CONTENT_MAX_WIDTH, alignSelf: 'center' },
-  heroWrap: { paddingBottom: 4, paddingTop: 6 },
-  solverTools: {
-    alignItems: 'center',
+  entryWrap: { paddingHorizontal: 0 },
+  entryScroll: {
+    paddingBottom: 22,
+    paddingHorizontal: 18,
+    paddingTop: 12,
+  },
+  entryIntro: { paddingBottom: 13 },
+  entryTitle: { fontSize: 25, letterSpacing: -0.85, lineHeight: 30 },
+  entryDescription: { lineHeight: 19, marginTop: 5, maxWidth: 520 },
+  orRow: { alignItems: 'center', flexDirection: 'row', gap: 10, marginVertical: 15 },
+  orLine: { flex: 1, height: StyleSheet.hairlineWidth },
+  photoMethods: {
     flexDirection: 'row',
-    gap: 8,
-    marginTop: 7,
+    gap: 9,
+    marginTop: 12,
   },
-  resumeSlot: {
-    flex: 1,
-    minWidth: 0,
-  },
-  resumeAction: {
+  photoPrimarySlot: { flex: 1 },
+  photoPrimary: {
     alignItems: 'center',
-    borderRadius: 15,
-    borderWidth: 1,
+    borderRadius: 22,
+    borderWidth: 2,
     flexDirection: 'row',
-    gap: 8,
-    height: 46,
-    paddingHorizontal: 6,
-    paddingRight: 10,
+    gap: 12,
+    minHeight: 100,
+    overflow: 'hidden',
+    padding: 14,
+    shadowOffset: { width: 4, height: 5 },
+    shadowOpacity: 0.24,
+    shadowRadius: 0,
   },
-  idleNote: {
+  photoIcon: {
     alignItems: 'center',
-    flexDirection: 'row',
-    gap: 7,
-    height: 46,
-    paddingHorizontal: 5,
-  },
-  toolIcon: {
-    alignItems: 'center',
-    borderRadius: 11,
-    height: 34,
+    borderRadius: 18,
+    height: 52,
     justifyContent: 'center',
-    width: 34,
+    width: 52,
   },
-  toolCopy: {
-    flex: 1,
-    gap: 1,
-    minWidth: 0,
+  photoCopy: { flex: 1, gap: 2, minWidth: 0 },
+  galleryCard: {
+    alignItems: 'center',
+    borderRadius: 22,
+    borderWidth: 2,
+    justifyContent: 'center',
+    minHeight: 100,
+    paddingHorizontal: 10,
+    shadowOffset: { width: 3, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 0,
+    width: 104,
   },
-  historyAction: {
+  galleryIcon: {
     alignItems: 'center',
     borderRadius: 15,
-    borderWidth: 1,
+    height: 42,
+    justifyContent: 'center',
+    marginBottom: 6,
+    width: 42,
+  },
+  galleryCaption: { marginTop: 1, textAlign: 'center' },
+  typeCard: {
+    borderRadius: 22,
+    borderWidth: 2,
+    marginTop: 13,
+    padding: 12,
+    shadowOffset: { width: 4, height: 5 },
+    shadowOpacity: 0.18,
+    shadowRadius: 0,
+  },
+  typeHead: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 9,
+    marginBottom: 9,
+  },
+  typeIcon: {
+    alignItems: 'center',
+    borderRadius: 12,
+    height: 38,
+    justifyContent: 'center',
+    width: 38,
+  },
+  typeFooter: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 10,
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  typeHint: {
+    flex: 1,
+    lineHeight: 14,
+  },
+  entryFooter: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+  notebookNote: {
+    alignItems: 'center',
     flexDirection: 'row',
     gap: 6,
-    height: 46,
-    justifyContent: 'center',
+    flex: 1,
+    minHeight: 40,
+  },
+  usagePill: {
+    alignItems: 'center',
+    borderRadius: 14,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 5,
+    height: 40,
     paddingHorizontal: 10,
   },
-
-  scanStage: { borderRadius: 27, borderWidth: 2.5, flex: 1, marginTop: 11, maxHeight: 250, minHeight: 205, overflow: 'hidden', padding: 16, shadowOpacity: 0.28, shadowRadius: 0, shadowOffset: { width: 5, height: 6 }, elevation: 8 },
-  scanGlow: { borderRadius: 110, height: 220, opacity: 0.14, position: 'absolute', right: -110, top: -80, width: 220 },
-  scanTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  scanStatus: { alignItems: 'center', flexDirection: 'row', gap: 7 },
-  scanDot: { backgroundColor: '#F6C953', borderRadius: 4, height: 6, width: 6 },
-  scanBody: { alignItems: 'center', flex: 1, flexDirection: 'row', gap: 15, paddingVertical: 9 },
-  scanPortal: { alignItems: 'center', borderRadius: 32, height: 64, justifyContent: 'center', shadowColor: '#6847F5', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 17, width: 64 },
-  scanRing: { alignItems: 'center', borderColor: 'rgba(255,255,255,0.45)', borderRadius: 23, borderWidth: 1, height: 46, justifyContent: 'center', width: 46 },
-  scanCopy: { flex: 1 },
-  scanTitle: { color: '#fff', fontSize: 20, letterSpacing: -0.65, lineHeight: 23 },
-  scanDescription: { lineHeight: 16.5, marginTop: 5, maxWidth: 230 },
-  scanDock: { alignItems: 'center', borderTopColor: 'rgba(255,255,255,0.1)', borderTopWidth: 1, flexDirection: 'row', gap: 5, paddingTop: 10 },
-  scanPrimarySlot: { flex: 1 },
-  scanPrimary: { alignItems: 'center', borderRadius: 14, flexDirection: 'row', height: 40, justifyContent: 'space-between', paddingHorizontal: 13 },
-  galleryAction: { alignItems: 'center', flexDirection: 'row', gap: 6, height: 40, justifyContent: 'center', paddingHorizontal: 8 },
-  examplesHead: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 },
-  examples: { flexDirection: 'row', gap: 7, paddingTop: 7 },
-  exampleSlot: { flex: 1 },
-  chip: { alignItems: 'center', borderRadius: 14, borderWidth: 1.5, flexDirection: 'row', gap: 7, height: 43, paddingHorizontal: 9 },
-  exampleText: { flex: 1, letterSpacing: -0.2 },
 
   // composer
   composerWrap: { paddingHorizontal: 14, paddingTop: 6 },
@@ -1224,31 +1251,44 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: 8,
-    borderWidth: 1,
-    borderRadius: 21,
+    borderWidth: 2,
+    borderBottomWidth: 4,
+    borderColor: '#E5E5E5',
+    borderBottomColor: '#D0D0D0',
+    borderRadius: 22,
     paddingVertical: 7,
-    paddingHorizontal: 7,
-    shadowColor: '#193149',
-    shadowOpacity: 0.08,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 7 },
-    elevation: 4,
+    paddingHorizontal: 9,
+    backgroundColor: '#FFFFFF',
   },
-  fieldIdle: { minHeight: 58 },
-  camBtn: { width: 42, height: 42, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   input: { flex: 1, fontSize: 15.5, fontFamily: 'Inter_400Regular', maxHeight: 120, paddingVertical: 8, paddingTop: 9 },
-  sendBtn: { width: 42, height: 42, borderRadius: 15, overflow: 'hidden' },
-  sendFill: { width: 42, height: 42, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
-  stopSquare: { width: 11, height: 11, borderRadius: 2.5, backgroundColor: '#FFFFFF' },
-  netBar: {
-    alignSelf: 'center',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-    paddingVertical: 7,
-    paddingHorizontal: 13,
-    borderRadius: 999,
-    marginBottom: 8,
-  },
   disc: { textAlign: 'center', marginTop: 7 },
+
+  netBar: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 7,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    marginBottom: 10,
+  },
+  sendBtn: {
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    alignSelf: 'flex-end' as const,
+    marginBottom: 2,
+  },
+  sendFill: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  stopSquare: {
+    width: 14,
+    height: 14,
+    borderRadius: 3,
+    backgroundColor: '#FFFFFF',
+  },
 })

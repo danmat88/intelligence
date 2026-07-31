@@ -6,23 +6,33 @@ import Animated, {
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated'
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 
 /**
  * Tactile feedback entirely on the UI thread. Fast taps cancel the previous
  * response instead of stacking animations and delaying the next action.
+ *
+ * Layout and visuals intentionally live on the same native node. Keeping flex,
+ * percentage width or absolute positioning on an animated child makes the
+ * outer Pressable collapse to its intrinsic size, which in turn clips labels
+ * and breaks sibling layout.
  */
 export default function Press({
   style,
   containerStyle,
-  scaleTo = 0.965,
+  scaleTo = 0.98,
+  pressDepth = 3.5,
   children,
   ...rest
 }: Omit<PressableProps, 'style' | 'children'> & {
   style?: StyleProp<ViewStyle>
   containerStyle?: StyleProp<ViewStyle>
   scaleTo?: number
+  pressDepth?: number
   children?: ReactNode
 }) {
   const reduceMotion = useReducedMotion()
@@ -32,20 +42,24 @@ export default function Press({
     cancelAnimation(pressed)
     pressed.value = reduceMotion
       ? to
-      : withTiming(to, { duration: to ? 90 : 170, easing: Easing.out(Easing.cubic) })
+      : withSpring(to, {
+          damping: 18,
+          stiffness: 350,
+          mass: 0.4,
+        })
   }
 
   const animated = useAnimatedStyle(() => ({
     transform: [
-      { translateY: pressed.value * 1.25 },
+      { translateY: pressed.value * pressDepth },
       { scale: 1 - pressed.value * (1 - scaleTo) },
     ],
   }))
 
   return (
-    <Pressable
+    <AnimatedPressable
       {...rest}
-      style={containerStyle}
+      style={[style, containerStyle, animated]}
       onPressIn={(event) => {
         if (!rest.disabled) move(1)
         rest.onPressIn?.(event)
@@ -55,7 +69,7 @@ export default function Press({
         rest.onPressOut?.(event)
       }}
     >
-      <Animated.View style={[style, animated]}>{children}</Animated.View>
-    </Pressable>
+      {children}
+    </AnimatedPressable>
   )
 }

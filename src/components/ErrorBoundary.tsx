@@ -40,7 +40,7 @@ export default class ErrorBoundary extends Component<{ children: ReactNode }, { 
           <View style={styles.badge}>
             <Text style={styles.badgeLabel}>!</Text>
           </View>
-          <Text style={styles.eyebrow}>REZOLVO</Text>
+          <Text style={styles.eyebrow}>PROFU’ DE MATE</Text>
           <Text style={styles.title}>A apărut o problemă</Text>
           <Text style={styles.body}>
             Eroarea a fost raportată automat. Repornește aplicația ca să continui — rezolvările tale sunt în siguranță.
@@ -60,21 +60,21 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 420,
     overflow: 'hidden',
-    backgroundColor: '#FCFCFF',
+    backgroundColor: '#FFFEF8',
     borderRadius: 30,
     padding: 24,
-    shadowColor: '#15121F',
+    shadowColor: '#193149',
     shadowOpacity: 0.16,
     shadowRadius: 30,
     shadowOffset: { width: 0, height: 14 },
     elevation: 10,
   },
-  signal: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 5, backgroundColor: '#6847F5' },
-  badge: { width: 48, height: 48, borderRadius: 16, backgroundColor: '#15121F', alignItems: 'center', justifyContent: 'center' },
+  signal: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 5, backgroundColor: '#E9543D' },
+  badge: { width: 48, height: 48, borderRadius: 16, backgroundColor: '#193149', alignItems: 'center', justifyContent: 'center' },
   badgeLabel: { color: '#FFFFFF', fontSize: 24, fontWeight: '800', lineHeight: 28 },
-  eyebrow: { marginTop: 22, color: '#6847F5', fontSize: 11, fontWeight: '800', letterSpacing: 1.8 },
-  title: { marginTop: 7, color: '#15121F', fontSize: 24, fontWeight: '800', letterSpacing: -0.5 },
-  body: { marginTop: 10, color: '#656174', fontSize: 15, lineHeight: 22 },
-  btn: { marginTop: 24, backgroundColor: '#15121F', borderRadius: 16, paddingHorizontal: 24, paddingVertical: 15, alignItems: 'center' },
+  eyebrow: { marginTop: 22, color: '#E9543D', fontSize: 11, fontWeight: '800', letterSpacing: 1.8 },
+  title: { marginTop: 7, color: '#193149', fontSize: 24, fontWeight: '800', letterSpacing: -0.5 },
+  body: { marginTop: 10, color: '#5F6D72', fontSize: 15, lineHeight: 22 },
+  btn: { marginTop: 24, backgroundColor: '#193149', borderRadius: 16, paddingHorizontal: 24, paddingVertical: 15, alignItems: 'center' },
   btnLabel: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
 })

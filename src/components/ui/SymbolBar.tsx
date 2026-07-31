@@ -1,10 +1,10 @@
-import { ScrollView, StyleSheet, View } from 'react-native'
+import { Platform, ScrollView, StyleSheet, View } from 'react-native'
 import { useTheme } from '../../theme/ThemeProvider'
 import Press from './Press'
 import Txt from './Txt'
 
 /**
- * The math key row. TEMPLATE keys (violet) insert a whole structure and park
+ * The math key row. Template keys use the accent colour, insert a whole structure and park
  * the caret inside it — tap "fraction" and you get `()/()` with the cursor in
  * the numerator. Symbol keys insert a character. Everything the student types
  * stays plain text (native keyboard, nothing to clip or break); the preview
@@ -21,11 +21,11 @@ export type MathKey = {
 }
 
 const KEYS: (MathKey & { label: string; sup?: string })[] = [
-  { label: '▯/▯', insert: '()/()', back: 4, tpl: true },
-  { label: '▯²', insert: '^2', back: 0, tpl: true },
-  { label: '▯ⁿ', insert: '^', back: 0, tpl: true },
-  { label: '√▯', insert: 'sqrt()', back: 1, tpl: true },
-  { label: '∛▯', insert: 'cbrt()', back: 1, tpl: true },
+  { label: 'a/b', insert: '()/()', back: 4, tpl: true },
+  { label: 'x²', insert: '^2', back: 0, tpl: true },
+  { label: 'xⁿ', insert: '^', back: 0, tpl: true },
+  { label: '√x', insert: 'sqrt()', back: 1, tpl: true },
+  { label: '∛x', insert: 'cbrt()', back: 1, tpl: true },
   { label: '( )', insert: '()', back: 1, tpl: true },
   { label: 'x', insert: 'x', back: 0 },
   { label: 'y', insert: 'y', back: 0 },
@@ -81,14 +81,17 @@ export default function SymbolBar({ onInsert }: { onInsert: (key: MathKey) => vo
 const styles = StyleSheet.create({
   row: { gap: 7, paddingHorizontal: 2, paddingBottom: 8 },
   key: {
-    minWidth: 42,
-    height: 38,
-    borderRadius: 14,
+    minWidth: 40,
+    height: 36,
+    borderRadius: 12,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 9,
   },
   center: { alignItems: 'center', justifyContent: 'center' },
-  glyph: { includeFontPadding: false },
+  glyph: {
+    fontFamily: Platform.select({ android: 'sans-serif', ios: 'System' }),
+    includeFontPadding: false,
+  },
 })

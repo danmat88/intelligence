@@ -61,7 +61,7 @@ export function createGeminiClient(config: GeminiConfig): AIClient {
   async function authHeaders(): Promise<Record<string, string>> {
     if (config.getAuthToken) {
       const token = await config.getAuthToken()
-      if (!token) throw new Error('Not signed in. Please sign in and try again.')
+      if (!token) throw new Error('Nu ești conectat. Conectează-te și încearcă din nou.')
       const h: Record<string, string> = { Authorization: `Bearer ${token}` }
       const device = await config.getDeviceId?.().catch(() => null)
       if (device) h['X-Rezolvo-Device'] = device

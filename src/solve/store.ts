@@ -58,7 +58,7 @@ export function toStoredTurns(
     imageW?: number
     imageH?: number
   }[],
-  photoLabel = 'Photo problem',
+  photoLabel = 'Problemă din poză',
 ): StoredTurn[] {
   return turns
     .filter((t) => !!t.text || !!t.imageUri)

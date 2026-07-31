@@ -65,7 +65,7 @@ type Props = {
  * signal are shared across the shell, while every symbol is drawn as vector
  * paths so it remains sharp at accessibility and tablet sizes.
  */
-export default function RezIcon({ name, size = 20, color = '#15121F', accent = color, strokeWidth = 1.8 }: Props) {
+export default function RezIcon({ name, size = 20, color = '#193149', accent = color, strokeWidth = 1.8 }: Props) {
   const line = {
     fill: 'none',
     stroke: color,

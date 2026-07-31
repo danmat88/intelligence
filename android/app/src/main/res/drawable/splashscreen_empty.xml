@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Deliberately empty splash icon: the native splash is a bare brand-paper
+     surface; the Rezolvo mark enters ONLY in the JS brand beat, so boot reads
+     as one continuous scene (paper -> mark draws itself -> app). Android 12+
+     would fall back to the launcher icon if no icon were set at all. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+  <solid android:color="@android:color/transparent" />
+</shape>
