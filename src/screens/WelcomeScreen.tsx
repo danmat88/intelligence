@@ -101,13 +101,13 @@ const styles = StyleSheet.create({
   // Google button — dark ink 3D push-down
   googleBtn: {
     alignItems: 'center',
-    borderRadius: 20,
-    borderWidth: 2,
-    borderBottomWidth: 5.5,
+    borderRadius: 22,
+    borderWidth: 3,
+    borderBottomWidth: 8,
     flexDirection: 'row',
-    gap: 11,
+    gap: 12,
     justifyContent: 'center',
-    minHeight: 58,
+    minHeight: 64,
   },
   googleCircle: {
     alignItems: 'center',
@@ -129,12 +129,12 @@ const styles = StyleSheet.create({
   // Guest button — light 3D push-down
   guestBtn: {
     alignItems: 'center',
-    borderRadius: 20,
-    borderWidth: 2,
-    borderBottomWidth: 5,
+    borderRadius: 22,
+    borderWidth: 3,
+    borderBottomWidth: 8,
     flexDirection: 'row',
-    gap: 9,
+    gap: 10,
     justifyContent: 'center',
-    minHeight: 54,
+    minHeight: 64,
   },
 })

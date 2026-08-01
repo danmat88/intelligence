@@ -6,7 +6,6 @@ import Press from '../components/ui/Press'
 import RezIcon, { type RezIconName } from '../components/ui/RezIcon'
 import ScreenBackground from '../components/ui/ScreenBackground'
 import ScreenContent from '../components/ui/ScreenContent'
-import ScreenHeading from '../components/ui/ScreenHeading'
 import Txt from '../components/ui/Txt'
 import { useProduct, type LearningGoal } from '../product/ProductProvider'
 import { useTheme } from '../theme/ThemeProvider'
@@ -101,116 +100,172 @@ function HomeContent({
       ? 'Evaluare Națională'
       : goal === 'bac'
         ? `BAC · ${bacProfile}`
-        : 'Ajutor la matematică'
-
-  const nextTitle = !examGoal
-    ? 'Rezolvă problema de acum'
-    : !latestAttempt
-      ? 'Începe primul test'
-      : hasMistakes
-        ? 'Reia greșelile ultimului test'
-        : 'Continuă cu un test nou'
-  const nextDetail = !examGoal
-    ? 'Fotografie, galerie sau text'
-    : !latestAttempt
-      ? 'Aflăm de unde merită să începi'
-      : `${configuredSetFromId(latestAttempt.setId)?.title ?? 'Ultimul test'} · ${latestAttempt.score}/${latestAttempt.total}`
-  const nextAction = !examGoal
-    ? () => onSolve()
-    : hasMistakes
-      ? onOpenMistakes
-      : onOpenPreparation
+        : 'Matematică'
 
   return (
-    <>
-      <ScreenHeading
-        eyebrow="BUN VENIT"
-        title="Ce facem azi?"
-        description="Un pas clar, bazat pe ce ai lucrat deja."
-      />
-
-      {/* ─── Goal Pill ─── */}
-      <Press
-        onPress={onOpenSettings}
-        pressDepth={2.5}
-        accessibilityLabel={`Obiectiv curent: ${goalTitle}. Schimbă obiectivul`}
-        style={[styles.goal, { backgroundColor: c.bubblyYellow, borderColor: c.bubblyYellowDark, borderBottomColor: c.bubblyYellowDark }]}
-      >
-        <RezIcon
-          name={goal === 'en' ? 'exam-en' : goal === 'bac' ? 'exam-bac' : 'workspace'}
-          size={18}
-          color={c.text}
-          accent={c.bubblyRed}
-        />
-        <Txt numberOfLines={1} weight="bold" size={13} color={c.text} style={styles.flex}>
-          {goalTitle}
-        </Txt>
-        <Txt weight="bold" size={12} color={c.bubblyRedDark}>Schimbă</Txt>
-      </Press>
-
-      {/* ─── Focus Card (Next Step) ─── */}
-      <Press
-        onPress={nextAction}
-        pressDepth={4}
-        accessibilityRole="button"
-        style={[styles.focusCard, { backgroundColor: c.chalkDark, borderColor: '#0A2926', borderBottomColor: '#071F1D' }]}
-      >
-        <View style={[styles.focusIcon, { backgroundColor: c.bubblyYellow, borderColor: c.bubblyYellowDark, borderBottomColor: c.bubblyYellowDark }]}>
-          <RezIcon
-            name={!examGoal ? 'solve' : hasMistakes ? 'retry' : 'compass'}
-            size={26}
-            color={c.text}
-            accent={c.bubblyRed}
-          />
-        </View>
-        <View style={styles.focusCopy}>
-          <Txt weight="bold" size={10.5} color={c.bubblyYellow} style={styles.kicker}>URMĂTORUL PAS</Txt>
-          <Txt style={[styles.focusTitle, { fontFamily: theme.font.display }]}>{nextTitle}</Txt>
-          <Txt numberOfLines={2} size={12.5} color="rgba(255,255,255,0.85)" style={styles.focusDetail}>
-            {nextDetail}
+    <View style={styles.dashboard}>
+      {/* HUD Bar - Compact horizontal layout */}
+      <View style={styles.hud}>
+        <View style={styles.hudText}>
+          <Txt weight="extrabold" size={24} color={c.text} style={{ fontFamily: theme.font.display, letterSpacing: -0.5 }}>
+            Pregătirea ta
+          </Txt>
+          <Txt weight="bold" size={13} color={c.textMuted}>
+            Ce rezolvăm astăzi?
           </Txt>
         </View>
-        <View style={[styles.focusArrow, { backgroundColor: c.bubblyRed, borderColor: c.bubblyRedDark, borderBottomColor: c.bubblyRedDark }]}>
-          <RezIcon name="arrow" size={20} color="#FFFFFF" />
-        </View>
-      </Press>
+        <Press
+          onPress={onOpenSettings}
+          pressDepth={3}
+          style={[styles.goalBadge, { backgroundColor: c.sunny, borderColor: c.border, borderBottomColor: c.border }]}
+        >
+          <RezIcon name={goal === 'en' ? 'exam-en' : goal === 'bac' ? 'exam-bac' : 'workspace'} size={16} color={c.text} accent={c.text} />
+          <Txt weight="extrabold" size={11} color={c.text}>{goalTitle}</Txt>
+        </Press>
+      </View>
 
-      {/* ─── Quick Actions ─── */}
-      <View style={styles.quickRow}>
-        <QuickAction
-          icon="camera"
-          title="Fotografiază"
-          detail="Poză nouă"
-          accentBg={c.accentSoft}
-          accentIcon={c.accent}
-          onPress={() => onSolve('camera')}
+      {/* Primary Hero: Rezolvă o problemă */}
+      <View style={[styles.mainHero, { backgroundColor: c.accent, borderColor: c.border, borderBottomColor: c.border }]}>
+        <View style={styles.heroHeader}>
+          <View style={[styles.heroIconBadge, { backgroundColor: c.sunny, borderColor: c.border, borderBottomColor: c.border }]}>
+            <RezIcon name="solve" size={28} color={c.text} accent={c.text} />
+          </View>
+          <View style={styles.heroTitles}>
+            <Txt weight="extrabold" size={11} color={c.sunny} style={{ letterSpacing: 1.5, textTransform: 'uppercase' }}>
+              PROBLEMĂ NOUĂ
+            </Txt>
+            <Txt weight="extrabold" size={22} color="#FFFFFF" style={{ fontFamily: theme.font.display }}>
+              Adaugă o problemă
+            </Txt>
+            <Txt size={12.5} color="rgba(255,255,255,0.9)" weight="bold" style={{ marginTop: 2 }}>
+              Află răspunsul și explicațiile complete.
+            </Txt>
+          </View>
+        </View>
+        
+        <View style={styles.heroActions}>
+          <Press
+            onPress={() => onSolve('camera')}
+            pressDepth={4}
+            style={[styles.heroButton, { flex: 1, backgroundColor: c.sunny, borderColor: c.border, borderBottomColor: c.border }]}
+          >
+            <RezIcon name="camera" size={22} color={c.text} />
+            <Txt weight="extrabold" size={16} color={c.text} style={{ fontFamily: theme.font.display }}>FOTO</Txt>
+          </Press>
+          <Press
+            onPress={() => onSolve('type')}
+            pressDepth={4}
+            style={[styles.heroButton, { flex: 1, backgroundColor: c.surface, borderColor: c.border, borderBottomColor: c.border }]}
+          >
+            <RezIcon name="write" size={22} color={c.text} />
+            <Txt weight="extrabold" size={16} color={c.text} style={{ fontFamily: theme.font.display }}>TEXT</Txt>
+          </Press>
+        </View>
+      </View>
+
+      {/* Practice & Exam Grid */}
+      <View style={styles.grid}>
+        <ModeCard
+          icon="drill"
+          title="Exersează"
+          subtitle="Teste & antrenament"
+          color={c.bubblyYellow}
+          textColor={c.text}
+          onPress={onOpenPreparation}
         />
-        <QuickAction
-          icon={examGoal ? 'document' : 'write'}
-          title={examGoal ? 'Subiecte' : 'Scrie'}
-          detail={examGoal ? 'Arhiva oficială' : 'Editor matematic'}
-          accentBg={c.sunnySoft}
-          accentIcon={c.bubblyYellowDark}
-          onPress={examGoal ? onOpenSubjects : () => onSolve('type')}
+        <ModeCard
+          icon="document"
+          title="Arhiva"
+          subtitle="Subiecte oficiale"
+          color={c.bubblyBlue}
+          textColor="#FFFFFF"
+          onPress={onOpenSubjects}
         />
       </View>
-    </>
+
+      {/* Smart Continue / Mistakes Section */}
+      {examGoal && (
+        <View style={styles.smartSection}>
+          <Txt weight="extrabold" size={14} color={c.text} style={{ fontFamily: theme.font.display, marginLeft: 4, marginBottom: 8, letterSpacing: -0.2 }}>
+            CONTINUĂ PREGĂTIREA
+          </Txt>
+          {hasMistakes ? (
+            <Press
+              onPress={onOpenMistakes}
+              pressDepth={4}
+              style={[styles.smartCard, { backgroundColor: c.chalk, borderColor: c.border, borderBottomColor: c.border }]}
+            >
+              <View style={[styles.smartIcon, { backgroundColor: c.dangerSoft, borderColor: c.border, borderBottomColor: c.border }]}>
+                <RezIcon name="retry" size={24} color={c.danger} accent={c.danger} />
+              </View>
+              <View style={styles.smartCopy}>
+                <Txt weight="extrabold" size={16} color={c.text} style={{ fontFamily: theme.font.display }}>
+                  Recapitulare greșeli
+                </Txt>
+                <Txt size={12.5} color={c.textMuted} weight="bold">
+                  Ai câteva exerciții de revizuit din ultimul test.
+                </Txt>
+              </View>
+              <RezIcon name="arrow" size={20} color={c.textMuted} />
+            </Press>
+          ) : latestAttempt ? (
+            <Press
+              onPress={onOpenPreparation}
+              pressDepth={4}
+              style={[styles.smartCard, { backgroundColor: c.surface, borderColor: c.border, borderBottomColor: c.border }]}
+            >
+              <View style={[styles.smartIcon, { backgroundColor: c.sunnySoft, borderColor: c.border, borderBottomColor: c.border }]}>
+                <RezIcon name="compass" size={24} color={c.text} accent={c.text} />
+              </View>
+              <View style={styles.smartCopy}>
+                <Txt weight="extrabold" size={16} color={c.text} style={{ fontFamily: theme.font.display }}>
+                  Continuă cu un test nou
+                </Txt>
+                <Txt size={12.5} color={c.textMuted} weight="bold">
+                  {configuredSetFromId(latestAttempt.setId)?.title ?? 'Ultimul test'} rezolvat corect.
+                </Txt>
+              </View>
+              <RezIcon name="arrow" size={20} color={c.textMuted} />
+            </Press>
+          ) : (
+            <Press
+              onPress={onOpenPreparation}
+              pressDepth={4}
+              style={[styles.smartCard, { backgroundColor: c.surface, borderColor: c.border, borderBottomColor: c.border }]}
+            >
+              <View style={[styles.smartIcon, { backgroundColor: c.sunnySoft, borderColor: c.border, borderBottomColor: c.border }]}>
+                <RezIcon name="compass" size={24} color={c.text} accent={c.text} />
+              </View>
+              <View style={styles.smartCopy}>
+                <Txt weight="extrabold" size={16} color={c.text} style={{ fontFamily: theme.font.display }}>
+                  Începe primul test
+                </Txt>
+                <Txt size={12.5} color={c.textMuted} weight="bold">
+                  Aflăm împreună de unde merită să începi.
+                </Txt>
+              </View>
+              <RezIcon name="arrow" size={20} color={c.textMuted} />
+            </Press>
+          )}
+        </View>
+      )}
+    </View>
   )
 }
 
-function QuickAction({
+function ModeCard({
   icon,
   title,
-  detail,
-  accentBg,
-  accentIcon,
+  subtitle,
+  color,
+  textColor,
   onPress,
 }: {
   icon: RezIconName
   title: string
-  detail: string
-  accentBg: string
-  accentIcon: string
+  subtitle: string
+  color: string
+  textColor: string
   onPress: () => void
 }) {
   const { theme } = useTheme()
@@ -218,107 +273,117 @@ function QuickAction({
   return (
     <Press
       onPress={onPress}
-      pressDepth={3}
-      containerStyle={styles.quickSlot}
-      style={[styles.quick, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' }]}
+      pressDepth={5}
+      containerStyle={styles.modeSlot}
+      style={[styles.modeCard, { backgroundColor: color, borderColor: c.border, borderBottomColor: c.border }]}
     >
-      <View style={[styles.quickIcon, { backgroundColor: accentBg, borderColor: c.cardEdge }]}>
-        <RezIcon name={icon} size={22} color={c.text} accent={accentIcon} />
+      <View style={styles.modeCardHeader}>
+        <View style={[styles.modeIconBox, { backgroundColor: 'rgba(255,255,255,0.25)' }]}>
+          <RezIcon name={icon} size={28} color={textColor} accent={textColor} />
+        </View>
       </View>
-      <View style={styles.quickCopy}>
-        <Txt weight="bold" size={14} color={c.text}>{title}</Txt>
-        <Txt numberOfLines={1} size={11.5} color={c.textMuted}>{detail}</Txt>
+      <View style={styles.modeCardCopy}>
+        <Txt weight="extrabold" size={18} color={textColor} style={{ fontFamily: theme.font.display }}>
+          {title}
+        </Txt>
+        <Txt size={12} weight="bold" color={textColor} style={{ opacity: 0.85, marginTop: 1 }}>
+          {subtitle}
+        </Txt>
       </View>
-      <RezIcon name="chevron" size={15} color={c.textFaint} />
     </Press>
   )
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  page: { gap: 14, paddingBottom: 20, paddingTop: 5 },
-
-  // Goal pill
-  goal: {
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    borderRadius: 99,
-    borderWidth: 2,
-    borderBottomWidth: 3.5,
+  page: { paddingBottom: 24, paddingTop: 12, paddingHorizontal: 16 },
+  dashboard: { gap: 20 },
+  
+  hud: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  hudText: { gap: 2, flex: 1 },
+  goalBadge: {
     flexDirection: 'row',
-    gap: 9,
-    minHeight: 42,
-    paddingHorizontal: 14,
-  },
-
-  // Focus card
-  focusCard: {
     alignItems: 'center',
-    borderRadius: 24,
-    borderWidth: 2,
-    borderBottomWidth: 5.5,
-    flexDirection: 'row',
-    gap: 14,
-    minHeight: 120,
-    padding: 18,
-  },
-  focusIcon: {
-    alignItems: 'center',
-    borderRadius: 20,
-    borderWidth: 2,
-    borderBottomWidth: 4,
-    height: 56,
-    justifyContent: 'center',
-    width: 56,
-  },
-  focusCopy: {
-    flex: 1,
-    gap: 2,
-  },
-  focusArrow: {
-    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 18,
-    borderWidth: 2,
-    borderBottomWidth: 4,
-    height: 48,
-    justifyContent: 'center',
-    width: 48,
+    borderWidth: 3,
+    borderBottomWidth: 6,
+    maxWidth: 150,
   },
-  focusTitle: {
-    color: '#FFFFFF',
-    fontSize: 21,
-    letterSpacing: -0.5,
-    lineHeight: 26,
-  },
-  focusDetail: {
-    lineHeight: 17,
-    marginTop: 2,
-  },
-  kicker: { letterSpacing: 1 },
 
-  // Quick actions
-  quickRow: { flexDirection: 'row', gap: 12 },
-  quickSlot: { flex: 1 },
-  quick: {
-    alignItems: 'center',
+  mainHero: {
+    borderRadius: 32,
+    borderWidth: 3,
+    borderBottomWidth: 8,
+    padding: 20,
+    gap: 20,
+  },
+  heroHeader: { flexDirection: 'row', gap: 14, alignItems: 'center' },
+  heroIconBadge: {
+    width: 60,
+    height: 60,
     borderRadius: 22,
-    borderWidth: 2,
-    borderBottomWidth: 4.5,
+    borderWidth: 3,
+    borderBottomWidth: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  heroTitles: { flex: 1, gap: 1 },
+  heroActions: {
     flexDirection: 'row',
     gap: 12,
-    minHeight: 78,
-    paddingHorizontal: 14,
   },
-  quickIcon: {
+  heroButton: {
+    flexDirection: 'row',
+    borderRadius: 20,
+    borderWidth: 3,
+    borderBottomWidth: 6,
+    height: 56,
     alignItems: 'center',
-    borderRadius: 16,
-    borderWidth: 1.5,
-    height: 46,
     justifyContent: 'center',
-    width: 46,
+    gap: 8,
   },
-  quickCopy: {
-    flex: 1,
-    gap: 2,
+
+  grid: { flexDirection: 'row', gap: 14 },
+  modeSlot: { flex: 1 },
+  modeCard: {
+    borderRadius: 28,
+    borderWidth: 3,
+    borderBottomWidth: 8,
+    padding: 16,
+    minHeight: 140,
+    justifyContent: 'space-between',
   },
+  modeCardHeader: { alignItems: 'flex-start' },
+  modeIconBox: {
+    width: 52,
+    height: 52,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modeCardCopy: { marginTop: 12 },
+
+  smartSection: { marginTop: 4 },
+  smartCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 26,
+    borderWidth: 3,
+    borderBottomWidth: 8,
+    gap: 14,
+  },
+  smartIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 20,
+    borderWidth: 3,
+    borderBottomWidth: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  smartCopy: { flex: 1, gap: 2 },
 })
+

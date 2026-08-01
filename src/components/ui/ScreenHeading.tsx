@@ -47,6 +47,6 @@ const styles = StyleSheet.create({
   row: { alignItems: 'flex-end', flexDirection: 'row', gap: 12, justifyContent: 'space-between', paddingBottom: 4 },
   copy: { flex: 1, minWidth: 0 },
   eyebrow: { letterSpacing: 1.3 },
-  title: { fontSize: 29, letterSpacing: -0.9, lineHeight: 35, marginTop: 3 },
+  title: { fontSize: 34, letterSpacing: -1.2, lineHeight: 38, marginTop: 4 },
   description: { lineHeight: 20, marginTop: 5, maxWidth: 560 },
 })

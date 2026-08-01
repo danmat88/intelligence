@@ -19,6 +19,12 @@ import {
   Fraunces_600SemiBold,
   Fraunces_600SemiBold_Italic,
 } from '@expo-google-fonts/fraunces'
+import {
+  Nunito_600SemiBold,
+  Nunito_700Bold,
+  Nunito_800ExtraBold,
+  Nunito_900Black,
+} from '@expo-google-fonts/nunito'
 import { JetBrainsMono_500Medium, JetBrainsMono_600SemiBold } from '@expo-google-fonts/jetbrains-mono'
 import { initAppCheck } from './src/lib/appcheck'
 import { ThemeProvider } from './src/theme/ThemeProvider'
@@ -66,6 +72,10 @@ export default function App() {
     Fraunces_500Medium,
     Fraunces_600SemiBold,
     Fraunces_600SemiBold_Italic,
+    Nunito_600SemiBold,
+    Nunito_700Bold,
+    Nunito_800ExtraBold,
+    Nunito_900Black,
     JetBrainsMono_500Medium,
     JetBrainsMono_600SemiBold,
   })

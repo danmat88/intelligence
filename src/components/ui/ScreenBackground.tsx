@@ -1,5 +1,5 @@
 import { StyleSheet, View, type ViewProps } from 'react-native'
-import Svg, { Defs, Line, Pattern, Rect } from 'react-native-svg'
+import Svg, { Defs, Circle, Pattern, Rect } from 'react-native-svg'
 import { useTheme } from '../../theme/ThemeProvider'
 
 /**
@@ -14,16 +14,13 @@ export default function ScreenBackground({ children, style, ...rest }: ViewProps
       <View pointerEvents="none" style={StyleSheet.absoluteFill}>
         <Svg width="100%" height="100%">
           <Defs>
-            <Pattern id="mathGrid" width="24" height="24" patternUnits="userSpaceOnUse">
-              <Line x1="0" y1="24" x2="24" y2="24" stroke="#EADFCD" strokeWidth="1" />
-              <Line x1="24" y1="0" x2="24" y2="24" stroke="#EADFCD" strokeWidth="1" />
+            <Pattern id="polkaDots" width="22" height="22" patternUnits="userSpaceOnUse">
+              <Circle cx="3" cy="3" r="2.5" fill="rgba(0,0,0,0.035)" />
             </Pattern>
           </Defs>
-          <Rect width="100%" height="100%" fill="url(#mathGrid)" />
+          <Rect width="100%" height="100%" fill="url(#polkaDots)" />
         </Svg>
       </View>
-
-      <View pointerEvents="none" style={styles.notebookMargin} />
 
       <View
         pointerEvents="none"
@@ -40,15 +37,6 @@ export default function ScreenBackground({ children, style, ...rest }: ViewProps
 
 const styles = StyleSheet.create({
   root: { flex: 1, overflow: 'hidden' },
-  notebookMargin: {
-    borderRightColor: 'rgba(232, 75, 58, 0.22)',
-    borderRightWidth: 1.5,
-    bottom: 0,
-    left: 20,
-    position: 'absolute',
-    top: 0,
-    width: 1,
-  },
   sun: {
     borderRadius: 180,
     height: 280,

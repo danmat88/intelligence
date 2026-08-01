@@ -46,7 +46,7 @@ export default function TypedProblemEditor({
         style={[
           styles.editor,
           focused && styles.editorFocused,
-          { backgroundColor: c.surface, borderColor: focused ? c.accent : c.border },
+          { backgroundColor: c.surface, borderColor: c.border, borderBottomColor: c.border },
         ]}
       >
         <TextInput
@@ -80,12 +80,16 @@ export default function TypedProblemEditor({
         accessibilityLabel="Rezolvă problema scrisă"
         style={[
           styles.submit,
-          { backgroundColor: canSubmit ? c.accent : c.surfaceAlt },
+          {
+            backgroundColor: canSubmit ? c.accent : c.surfaceAlt,
+            borderColor: c.border,
+            borderBottomColor: c.border,
+          },
           !canSubmit && styles.disabled,
         ]}
       >
-        <RezIcon name="solve" size={19} color={canSubmit ? '#FFFFFF' : c.textFaint} accent={c.sunny} />
-        <Txt weight="bold" size={14} color={canSubmit ? '#FFFFFF' : c.textFaint}>
+        <RezIcon name="solve" size={24} color={canSubmit ? '#FFFFFF' : c.textFaint} accent={c.text} />
+        <Txt weight="extrabold" size={17} color={canSubmit ? '#FFFFFF' : c.textFaint} style={{ fontFamily: theme.font.display }}>
           Rezolvă problema
         </Txt>
       </Press>
@@ -95,17 +99,19 @@ export default function TypedProblemEditor({
 
 const styles = StyleSheet.create({
   section: { gap: 8 },
-  editor: { borderRadius: 17, borderWidth: 1.5, minHeight: 132, overflow: 'hidden' },
-  editorFocused: { minHeight: 108 },
-  input: { flex: 1, fontSize: 16, lineHeight: 23, minHeight: 132, padding: 14 },
-  inputFocused: { minHeight: 108 },
+  editor: { borderRadius: 24, borderWidth: 3, borderBottomWidth: 8, minHeight: 160, overflow: 'hidden' },
+  editorFocused: { minHeight: 140 },
+  input: { flex: 1, fontSize: 18, lineHeight: 26, minHeight: 160, padding: 18 },
+  inputFocused: { minHeight: 140 },
   submit: {
     alignItems: 'center',
-    borderRadius: 16,
+    borderRadius: 26,
+    borderWidth: 3,
+    borderBottomWidth: 8,
     flexDirection: 'row',
-    gap: 8,
+    gap: 12,
     justifyContent: 'center',
-    minHeight: 52,
+    minHeight: 72,
   },
   disabled: { opacity: 0.72 },
 })

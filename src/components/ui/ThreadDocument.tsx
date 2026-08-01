@@ -104,7 +104,7 @@ body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-
 
 /* — problem header: the page's title, underlined like a notebook — */
 /* — problem header: 3D Duolingo chalkboard surface — */
-.prob{background:#103F3B;color:#fff;border-radius:24px;border:2px solid #0A2926;border-bottom:5px solid #071F1D;padding:18px 18px 19px;margin:2px 0 22px}
+.prob{background:#103F3B;color:#fff;border-radius:26px;border:3px solid #0A2926;border-bottom:7px solid #071F1D;padding:18px 18px 19px;margin:2px 0 22px}
 .prob .lbl{color:#FFC800;display:flex;align-items:center;gap:8px}
 .prob .src{margin-left:auto;color:rgba(255,255,255,.55);letter-spacing:.08em}
 .prob .ptx{font-size:19px;margin-top:11px;overflow-x:auto;overflow-y:hidden}
@@ -112,7 +112,7 @@ body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-
 /* The photo box is reserved at its EXACT aspect ratio before the image
    loads — the layout is final from the first pixel, the photo materialises
    into it (no push-down, no jump). */
-.imgbox{position:relative;border-radius:18px;border:2px solid #0A2926;border-bottom:3.5px solid #071F1D;overflow:hidden;margin-top:12px;background:#0A2926}
+.imgbox{position:relative;border-radius:18px;border:3px solid #0A2926;border-bottom:5px solid #071F1D;overflow:hidden;margin-top:12px;background:#0A2926}
 .imgbox img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .18s ease}
 .imgbox img.ld{opacity:1}
 /* the confirm-what-I-read loop: the problem as the AI understood it, typeset */
@@ -127,16 +127,16 @@ body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-
 .panel{background:transparent;border-radius:0;padding:0 2px;box-shadow:none}
 .step{display:grid;grid-template-columns:32px 1fr;gap:13px;padding:16px 0;cursor:pointer}
 .step+.step{border-top:1.5px dashed ${c.border}}
-.step .no{width:30px;height:30px;border-radius:12px;border:1.8px solid #E5B200;border-bottom:3.5px solid #E5B200;background:#FFC800;color:#193149;font-family:'JB',monospace;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:background .25s,color .25s}
+.step .no{width:32px;height:32px;border-radius:12px;border:2.5px solid #E5B200;border-bottom:5px solid #E5B200;background:#FFC800;color:#193149;font-family:'JB',monospace;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:background .25s,color .25s}
 .step.asked .no{background:${c.bubblyRed};border-color:${c.bubblyRedDark};border-bottom-color:${c.bubblyRedDark};color:#fff}
 .step .math{font-size:16.5px;overflow-x:auto;overflow-y:hidden;padding-top:2px}
 .step .why{font-size:12.5px;color:${c.textMuted};margin-top:5px;line-height:1.5}
-.ans{display:flex;gap:12px;align-items:center;background:#103F3B;border:2px solid #0A2926;border-bottom:5px solid #071F1D;border-radius:22px;padding:17px 17px;margin-top:14px;position:relative;overflow:hidden}
+.ans{display:flex;gap:12px;align-items:center;background:#103F3B;border:3px solid #0A2926;border-bottom:7px solid #071F1D;border-radius:24px;padding:17px 17px;margin-top:14px;position:relative;overflow:hidden}
 .ans .tick{display:none;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.25);align-items:center;justify-content:center;flex:0 0 auto}
 .ans .tick svg{width:15px;height:15px;stroke:#fff;stroke-width:2.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .ans .ak{display:block;color:rgba(255,255,255,.60)}
 .ans .math,.ans .katex{color:#fff;font-size:18.5px;margin-top:2px;overflow-x:auto;overflow-y:hidden}
-.ans.verified{background:#58CC02;border:2px solid #46A302;border-bottom:5px solid #368202}
+.ans.verified{background:#58CC02;border:3px solid #46A302;border-bottom:7px solid #368202}
 .ans.verified .tick{display:flex}
 .ans.verified .ak{color:rgba(255,255,255,.85)}
 .ans.verified .math,.ans.verified .katex{color:#fff}
@@ -145,7 +145,7 @@ body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-
 .vstat .dot{width:6px;height:6px;border-radius:50%;background:${c.accent};animation:vpulse 1.1s ease-in-out infinite}
 @keyframes vpulse{0%,100%{opacity:.25}50%{opacity:1}}
 .vbadge{display:inline-flex;align-items:center;gap:5px;font-family:'JB',monospace;font-weight:600;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#58CC02;background:#fff;border:1.8px solid #46A302;border-radius:999px;padding:5px 11px;cursor:pointer}
-.graph{border:2px solid #E5E5E5;border-bottom:4px solid #D0D0D0;border-radius:20px;background:#fff;padding:14px 14px 10px;margin-top:12px}
+.graph{border:3px solid #E5E5E5;border-bottom:5px solid #D0D0D0;border-radius:20px;background:#fff;padding:14px 14px 10px;margin-top:12px}
 .graph .glabel{font-family:'JB',monospace;font-weight:600;font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:${c.textFaint};margin-bottom:8px}
 .graph svg{width:100%;height:auto;display:block;overflow:visible}
 .grid-l{stroke:rgba(26,22,38,.05);stroke-width:1}
@@ -169,10 +169,10 @@ body{font-family:'IN',system-ui,sans-serif;font-weight:400;color:${c.text};font-
 .nl-open{fill:#fff;stroke:#58CC02;stroke-width:2.2}
 .nl-plbl{font-family:Georgia,serif;font-style:italic;font-size:11px;fill:#58CC02}
 .chips{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
-.fu{font-family:'IN';font-weight:700;font-size:13px;color:#fff;border:2px solid #EA2B2B;border-bottom:3.5px solid #EA2B2B;background:#FF4B4B;border-radius:16px;padding:11px 16px;cursor:pointer}
-.fu.alt{color:#193149;background:#FFC800;border:2px solid #E5B200;border-bottom:3.5px solid #E5B200}
+.fu{font-family:'IN';font-weight:700;font-size:13px;color:#fff;border:3px solid #EA2B2B;border-bottom:5px solid #EA2B2B;background:#FF4B4B;border-radius:18px;padding:11px 16px;cursor:pointer}
+.fu.alt{color:#193149;background:#FFC800;border:3px solid #E5B200;border-bottom:5px solid #E5B200}
 .acts{display:flex;gap:8px;margin-top:10px}
-.act{display:inline-flex;align-items:center;gap:6px;font-family:'IN';font-weight:600;font-size:11.5px;color:${c.textMuted};background:#fff;border:1.8px solid #E5E5E5;border-bottom:3px solid #D0D0D0;border-radius:14px;padding:7px 13px;cursor:pointer}
+.act{display:inline-flex;align-items:center;gap:6px;font-family:'IN';font-weight:600;font-size:11.5px;color:${c.textMuted};background:#fff;border:2.5px solid #E5E5E5;border-bottom:4px solid #D0D0D0;border-radius:14px;padding:7px 13px;cursor:pointer}
 .act svg{width:12px;height:12px;stroke:currentColor;stroke-width:2.1;fill:none;stroke-linecap:round;stroke-linejoin:round}
 
 /* — annotations: the user's questions as post-its — */

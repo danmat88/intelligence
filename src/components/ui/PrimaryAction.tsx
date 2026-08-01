@@ -35,13 +35,7 @@ export default function PrimaryAction({
         ? c.bubblyGreen
         : c.bubblyRed
 
-  const edgeColor = disabled
-    ? c.border
-    : tone === 'ink'
-      ? c.bubblyBlueDark
-      : tone === 'chalk'
-        ? c.bubblyGreenDark
-        : c.bubblyRedDark
+  const edgeColor = c.border
 
   const foreground = disabled ? c.textFaint : '#FFFFFF'
 
@@ -49,7 +43,7 @@ export default function PrimaryAction({
     <Press
       onPress={onPress}
       disabled={disabled}
-      pressDepth={5}
+      pressDepth={7}
       accessibilityRole="button"
       style={[
         styles.action,
@@ -64,7 +58,7 @@ export default function PrimaryAction({
         <RezIcon name={icon} size={22} color={foreground} accent={disabled ? c.textFaint : c.bubblyYellow} />
       </View>
       <View style={styles.copy}>
-        <Txt weight="bold" size={16} color={foreground}>{title}</Txt>
+        <Txt weight="extrabold" size={17} color={foreground} style={{ fontFamily: theme.font.display }}>{title}</Txt>
         {!!detail && (
           <Txt size={12} color={disabled ? c.textFaint : 'rgba(255,255,255,0.88)'} style={styles.detail}>
             {detail}
@@ -81,9 +75,9 @@ export default function PrimaryAction({
 const styles = StyleSheet.create({
   action: {
     alignItems: 'center',
-    borderRadius: 22,
-    borderWidth: 2,
-    borderBottomWidth: 5.5,
+    borderRadius: 26,
+    borderWidth: 3,
+    borderBottomWidth: 8,
     flexDirection: 'row',
     gap: 14,
     minHeight: 68,

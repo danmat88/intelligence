@@ -17,18 +17,18 @@ export default function Card({ tone = 'white', style, children }: Props) {
   const getColors = () => {
     switch (tone) {
       case 'chalk':
-        return { bg: c.chalkDark, border: '#0A2926', edge: '#071F1D' }
+        return { bg: c.chalk, border: c.border, edge: c.border }
       case 'yellow':
-        return { bg: c.bubblyYellow, border: c.bubblyYellowDark, edge: c.bubblyYellowDark }
+        return { bg: c.bubblyYellow, border: c.border, edge: c.border }
       case 'blue':
-        return { bg: c.bubblyBlue, border: c.bubblyBlueDark, edge: c.bubblyBlueDark }
+        return { bg: c.bubblyBlue, border: c.border, edge: c.border }
       case 'red':
-        return { bg: c.bubblyRed, border: c.bubblyRedDark, edge: c.bubblyRedDark }
+        return { bg: c.bubblyRed, border: c.border, edge: c.border }
       case 'soft':
-        return { bg: c.sunnySoft, border: '#E5C470', edge: '#D6B35E' }
+        return { bg: c.sunnySoft, border: c.border, edge: c.border }
       case 'white':
       default:
-        return { bg: c.surface, border: c.cardEdge, edge: '#D0D0D0' }
+        return { bg: c.surface, border: c.border, edge: c.border }
     }
   }
 
@@ -53,9 +53,9 @@ export default function Card({ tone = 'white', style, children }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 24,
-    borderWidth: 2,
-    borderBottomWidth: 4.5,
-    padding: 16,
+    borderRadius: 26,
+    borderWidth: 3,
+    borderBottomWidth: 8,
+    padding: 20,
   },
 })

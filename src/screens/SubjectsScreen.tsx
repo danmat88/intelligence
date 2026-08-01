@@ -64,10 +64,10 @@ export default function SubjectsScreen({ onOpenSettings, onOpenPaper }: Props) {
           <Press
             onPress={onOpenSettings}
             pressDepth={2.5}
-            style={[styles.profile, { backgroundColor: c.sunnySoft, borderColor: c.bubblyYellowDark, borderBottomColor: c.bubblyYellowDark }]}
+            style={[styles.profile, { backgroundColor: c.sunnySoft, borderColor: c.border, borderBottomColor: c.border }]}
           >
-            <View style={[styles.profileIcon, { backgroundColor: c.bubblyYellow, borderColor: c.bubblyYellowDark }]}>
-              <RezIcon name="exam-bac" size={18} color={c.text} accent={c.bubblyRed} />
+            <View style={[styles.profileIcon, { backgroundColor: c.sunny, borderColor: c.border, borderBottomColor: c.border }]}>
+              <RezIcon name="exam-bac" size={24} color={c.text} accent={c.accent} />
             </View>
             <View style={styles.profileCopy}>
               <Txt size={11} weight="bold" color={c.textMuted}>Programa curentă</Txt>
@@ -96,12 +96,12 @@ export default function SubjectsScreen({ onOpenSettings, onOpenPaper }: Props) {
             years.map((year) => (
               <View key={year} style={styles.yearGroup}>
                 <View style={styles.yearRow}>
-                  <View style={[styles.yearBadge, { backgroundColor: c.bubblyYellow, borderColor: c.bubblyYellowDark }]}>
-                    <Txt weight="bold" size={14} color={c.text} style={{ fontFamily: theme.font.mono }}>
+                  <View style={[styles.yearBadge, { backgroundColor: c.sunny, borderColor: c.border, borderBottomColor: c.border }]}>
+                    <Txt weight="extrabold" size={16} color={c.text} style={{ fontFamily: theme.font.display }}>
                       {year}
                     </Txt>
                   </View>
-                  <View style={[styles.yearLine, { backgroundColor: c.cardEdge }]} />
+                  <View style={[styles.yearLine, { backgroundColor: c.border }]} />
                 </View>
                 {papers.filter((paper) => paper.year === year).map((paper) => (
                   <PaperCard key={paper.id} paper={paper} onOpen={onOpenPaper} />
@@ -126,10 +126,10 @@ function PaperCard({
   const c = theme.colors
   const exerciseCount = paper.sections.reduce((total, section) => total + section.exercises.length, 0)
   return (
-    <View style={[styles.paper, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' }]}>
+    <View style={[styles.paper, { backgroundColor: c.surface, borderColor: c.border, borderBottomColor: c.border }]}>
       <View style={styles.paperHead}>
-        <View style={[styles.paperIcon, { backgroundColor: c.sunnySoft, borderColor: c.bubblyYellowDark }]}>
-          <RezIcon name="document" size={24} color={c.text} accent={c.bubblyRed} />
+        <View style={[styles.paperIcon, { backgroundColor: c.sunnySoft, borderColor: c.border, borderBottomColor: c.border }]}>
+          <RezIcon name="document" size={28} color={c.text} accent={c.text} />
         </View>
         <View style={styles.paperCopy}>
           <Txt weight="bold" size={16} color={c.text}>{paper.session}</Txt>
@@ -137,12 +137,12 @@ function PaperCard({
             {exerciseCount} exerciții  ·  {paper.durationMinutes} min  ·  100 puncte
           </Txt>
         </View>
-        <View style={[styles.official, { backgroundColor: c.successSoft, borderColor: c.bubblyGreenDark }]}>
-          <RezIcon name="verified" size={14} color={c.bubblyGreen} />
-          <Txt weight="bold" size={9.5} color={c.bubblyGreenDark}>OFICIAL</Txt>
+        <View style={[styles.official, { backgroundColor: c.bubblyGreen, borderColor: c.border, borderBottomColor: c.border }]}>
+          <RezIcon name="verified" size={16} color="#FFFFFF" />
+          <Txt weight="extrabold" size={10.5} color="#FFFFFF">OFICIAL</Txt>
         </View>
       </View>
-      <View style={[styles.modes, { borderTopColor: c.cardEdge }]}>
+      <View style={[styles.modes, { borderTopColor: c.border }]}>
         <ModeButton icon="teacher" label="Ghidat" sub="Cu ajutor" featured onPress={() => onOpen(paper, 'guided')} />
         <ModeButton icon="simulate" label="Simulare" sub="Cronometrat" onPress={() => onOpen(paper, 'simulation')} />
         <ModeButton icon="learn" label="Studiază" sub="Doar citești" onPress={() => onOpen(paper, 'study')} />
@@ -174,13 +174,13 @@ function ModeButton({
       style={[
         styles.modeButton,
         featured
-          ? { backgroundColor: c.bubblyRed, borderColor: c.bubblyRedDark, borderBottomColor: c.bubblyRedDark }
-          : { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' },
+          ? { backgroundColor: c.accent, borderColor: c.border, borderBottomColor: c.border }
+          : { backgroundColor: c.surface, borderColor: c.border, borderBottomColor: c.border },
       ]}
     >
-      <RezIcon name={icon} size={18} color={featured ? '#FFFFFF' : c.text} accent={featured ? c.bubblyYellow : c.bubblyRed} />
-      <Txt weight="bold" size={12.5} color={featured ? '#FFFFFF' : c.text}>{label}</Txt>
-      <Txt size={9.5} color={featured ? 'rgba(255,255,255,0.8)' : c.textMuted}>{sub}</Txt>
+      <RezIcon name={icon} size={22} color={featured ? '#FFFFFF' : c.text} accent={featured ? '#FFFFFF' : c.text} />
+      <Txt weight="extrabold" size={14} color={featured ? '#FFFFFF' : c.text} style={{ fontFamily: theme.font.display }}>{label}</Txt>
+      <Txt size={11} color={featured ? 'rgba(255,255,255,0.8)' : c.textMuted} weight="bold">{sub}</Txt>
     </Press>
   )
 }
@@ -192,22 +192,23 @@ const styles = StyleSheet.create({
   // Profile pill — full-width card
   profile: {
     alignItems: 'center',
-    borderRadius: 20,
-    borderWidth: 2,
-    borderBottomWidth: 4,
+    borderRadius: 24,
+    borderWidth: 3,
+    borderBottomWidth: 8,
     flexDirection: 'row',
     gap: 12,
     marginBottom: 4,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
   profileIcon: {
     alignItems: 'center',
-    borderRadius: 14,
-    borderWidth: 1.5,
-    height: 42,
+    borderRadius: 18,
+    borderWidth: 3,
+    borderBottomWidth: 6,
+    height: 48,
     justifyContent: 'center',
-    width: 42,
+    width: 48,
   },
   profileCopy: { flex: 1, gap: 1 },
 
@@ -221,11 +222,12 @@ const styles = StyleSheet.create({
   },
   yearBadge: {
     alignItems: 'center',
-    borderRadius: 12,
-    borderWidth: 1.5,
+    borderRadius: 16,
+    borderWidth: 3,
+    borderBottomWidth: 6,
     justifyContent: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
   yearLine: {
     flex: 1,
@@ -235,40 +237,42 @@ const styles = StyleSheet.create({
 
   // Paper card
   paper: {
-    borderRadius: 24,
-    borderWidth: 2,
-    borderBottomWidth: 5,
+    borderRadius: 28,
+    borderWidth: 3,
+    borderBottomWidth: 10,
     overflow: 'hidden',
   },
   paperHead: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: 13,
-    padding: 16,
+    gap: 16,
+    padding: 20,
   },
   paperIcon: {
     alignItems: 'center',
-    borderRadius: 17,
-    borderWidth: 1.5,
-    height: 50,
+    borderRadius: 20,
+    borderWidth: 3,
+    borderBottomWidth: 6,
+    height: 56,
     justifyContent: 'center',
-    width: 50,
+    width: 56,
   },
   paperCopy: { flex: 1, gap: 3 },
   paperMeta: { lineHeight: 16 },
   official: {
     alignItems: 'center',
     borderRadius: 99,
-    borderWidth: 1.5,
+    borderWidth: 3,
+    borderBottomWidth: 6,
     flexDirection: 'row',
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
 
   // Mode buttons
   modes: {
-    borderTopWidth: 2,
+    borderTopWidth: 3,
     flexDirection: 'row',
     gap: 8,
     padding: 10,
@@ -276,13 +280,13 @@ const styles = StyleSheet.create({
   modeSlot: { flex: 1 },
   modeButton: {
     alignItems: 'center',
-    borderRadius: 16,
-    borderWidth: 2,
-    borderBottomWidth: 4,
-    gap: 2,
+    borderRadius: 20,
+    borderWidth: 3,
+    borderBottomWidth: 8,
+    gap: 4,
     justifyContent: 'center',
-    minHeight: 64,
-    paddingVertical: 8,
+    minHeight: 76,
+    paddingVertical: 10,
     width: '100%',
   },
 })

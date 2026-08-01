@@ -159,10 +159,10 @@ export default function NotebookScreen({
               onPress={onSolve}
               pressDepth={3}
               accessibilityLabel="Rezolvă o problemă nouă"
-              style={[styles.add, { backgroundColor: c.bubblyRed, borderColor: c.bubblyRedDark, borderBottomColor: c.bubblyRedDark }]}
+              style={[styles.add, { backgroundColor: c.accent, borderColor: c.border, borderBottomColor: c.border }]}
             >
-              <RezIcon name="solve" size={16} color="#FFFFFF" accent={c.bubblyYellow} />
-              <Txt weight="bold" size={12} color="#FFFFFF">Rezolvă</Txt>
+              <RezIcon name="solve" size={20} color="#FFFFFF" accent={c.text} />
+              <Txt weight="extrabold" size={14} color="#FFFFFF" style={{ fontFamily: theme.font.display }}>REZOLVĂ</Txt>
             </Press>
           }
         />
@@ -192,10 +192,10 @@ export default function NotebookScreen({
               keyExtractor={(item) => item.competency}
               contentContainerStyle={styles.list}
               renderItem={({ item }) => (
-                <View style={[styles.progressCard, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' }]}>
+                <View style={[styles.progressCard, { backgroundColor: c.surface, borderColor: c.border, borderBottomColor: c.border }]}>
                   <View style={styles.progressTop}>
                     <View style={styles.progressCopy}>
-                      <Txt weight="bold" size={14} color={c.text}>{item.competency}</Txt>
+                      <Txt weight="extrabold" size={16} color={c.text} style={{ fontFamily: theme.font.display }}>{item.competency}</Txt>
                       <Txt size={11.5} color={c.textMuted}>
                         {item.correct} {item.correct === 1 ? 'răspuns corect' : 'răspunsuri corecte'} din{' '}
                         {item.attempts} {item.attempts === 1 ? 'încercare' : 'încercări'}
@@ -203,9 +203,9 @@ export default function NotebookScreen({
                     </View>
                     <View style={[styles.percentBadge, {
                       backgroundColor: item.percent >= 70 ? c.successSoft : item.percent >= 40 ? c.sunnySoft : c.dangerSoft,
-                      borderColor: item.percent >= 70 ? c.bubblyGreenDark : item.percent >= 40 ? c.bubblyYellowDark : c.bubblyRedDark,
+                      borderColor: c.border, borderBottomColor: c.border,
                     }]}>
-                      <Txt weight="bold" size={14} color={c.text} style={{ fontFamily: theme.font.mono }}>
+                      <Txt weight="extrabold" size={16} color={c.text} style={{ fontFamily: theme.font.mono }}>
                         {item.percent}%
                       </Txt>
                     </View>
@@ -236,10 +236,10 @@ export default function NotebookScreen({
                 <Press
                   onPress={() => onOpenPractice(item.attempt.exam, item.attempt.setId, item.exercise.id)}
                   pressDepth={2}
-                  style={[styles.itemCard, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' }]}
+                  style={[styles.itemCard, { backgroundColor: c.surface, borderColor: c.border, borderBottomColor: c.border }]}
                 >
-                  <View style={[styles.itemIcon, { backgroundColor: c.dangerSoft, borderColor: c.bubblyRedDark }]}>
-                    <RezIcon name="retry" size={20} color={c.danger} accent={c.danger} />
+                  <View style={[styles.itemIcon, { backgroundColor: c.dangerSoft, borderColor: c.border, borderBottomColor: c.border }]}>
+                    <RezIcon name="retry" size={24} color={c.danger} accent={c.danger} />
                   </View>
                   <View style={styles.itemCopy}>
                     <Txt numberOfLines={2} weight="semibold" size={13.5} color={c.text}>
@@ -279,13 +279,13 @@ export default function NotebookScreen({
                       onPress={() => onOpenOfficialAttempt(attempt)}
                       pressDepth={2}
                       accessibilityLabel={`${attempt.completedAt ? 'Revizuiește' : 'Continuă'} ${attempt.session}`}
-                      style={[styles.itemCard, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' }]}
+                      style={[styles.itemCard, { backgroundColor: c.surface, borderColor: c.border, borderBottomColor: c.border }]}
                     >
-                      <View style={[styles.itemIcon, { backgroundColor: attempt.completedAt ? c.successSoft : c.accentSoft, borderColor: attempt.completedAt ? c.bubblyGreenDark : c.bubblyRedDark }]}>
-                        <RezIcon name={attempt.completedAt ? 'verified' : 'document'} size={20} color={attempt.completedAt ? c.chalk : c.accent} accent={c.accent} />
+                      <View style={[styles.itemIcon, { backgroundColor: attempt.completedAt ? c.successSoft : c.accentSoft, borderColor: c.border, borderBottomColor: c.border }]}>
+                        <RezIcon name={attempt.completedAt ? 'verified' : 'document'} size={24} color={attempt.completedAt ? c.chalk : c.accent} accent={c.accent} />
                       </View>
                       <View style={styles.itemCopy}>
-                        <Txt numberOfLines={1} weight="bold" size={14} color={c.text}>
+                        <Txt numberOfLines={1} weight="extrabold" size={15} color={c.text} style={{ fontFamily: theme.font.display }}>
                           {attempt.exam === 'en' ? 'Evaluare Națională' : 'Bacalaureat'} · {attempt.year}
                         </Txt>
                         <Txt numberOfLines={1} size={11.5} color={c.textMuted}>
@@ -299,14 +299,14 @@ export default function NotebookScreen({
                 }
                 const attempt = item.attempt
                 return (
-                  <View style={[styles.itemCard, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' }]}>
-                    <View style={[styles.itemIcon, { backgroundColor: c.sunnySoft, borderColor: c.bubblyYellowDark }]}>
-                      <Txt weight="bold" size={13} color={c.text} style={{ fontFamily: theme.font.mono }}>
+                  <View style={[styles.itemCard, { backgroundColor: c.surface, borderColor: c.border, borderBottomColor: c.border }]}>
+                    <View style={[styles.itemIcon, { backgroundColor: c.sunnySoft, borderColor: c.border, borderBottomColor: c.border }]}>
+                      <Txt weight="extrabold" size={14} color={c.text} style={{ fontFamily: theme.font.mono }}>
                         {attempt.score}/{attempt.total}
                       </Txt>
                     </View>
                     <View style={styles.itemCopy}>
-                      <Txt numberOfLines={1} weight="bold" size={14} color={c.text}>
+                      <Txt numberOfLines={1} weight="extrabold" size={15} color={c.text} style={{ fontFamily: theme.font.display }}>
                         {attempt.exam === 'en' ? 'Evaluare Națională' : 'Bacalaureat'}
                       </Txt>
                       <Txt numberOfLines={1} size={11.5} color={c.textMuted}>
@@ -333,16 +333,16 @@ export default function NotebookScreen({
           />
         ) : (
           <>
-            <View style={[styles.summaryBanner, { backgroundColor: c.sunnySoft, borderColor: c.bubblyYellowDark }]}>
-              <RezIcon name="document" size={16} color={c.text} accent={c.bubblyRed} />
-              <Txt weight="bold" size={13} color={c.text}>
+            <View style={[styles.summaryBanner, { backgroundColor: c.sunnySoft, borderColor: c.border, borderBottomColor: c.border }]}>
+              <RezIcon name="document" size={20} color={c.text} accent={c.text} />
+              <Txt weight="extrabold" size={14} color={c.text} style={{ fontFamily: theme.font.display }}>
                 {problems.length} {problems.length === 1 ? 'problemă salvată' : 'probleme salvate'}
               </Txt>
             </View>
 
             {problems.length >= 4 && (
-              <View style={[styles.search, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' }]}>
-                <RezIcon name="search" size={18} color={c.textFaint} accent={c.bubblyRed} />
+              <View style={[styles.search, { backgroundColor: c.surface, borderColor: c.border, borderBottomColor: c.border }]}>
+                <RezIcon name="search" size={20} color={c.textFaint} accent={c.text} />
                 <TextInput
                   value={query}
                   onChangeText={setQuery}
@@ -372,19 +372,19 @@ export default function NotebookScreen({
               renderItem={({ item }) => (
                 <Press
                   onPress={() => onOpenProblem(item)}
-                  pressDepth={2}
-                  style={[styles.itemCard, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' }]}
+                  pressDepth={4}
+                  style={[styles.itemCard, { backgroundColor: c.surface, borderColor: c.border, borderBottomColor: c.border }]}
                 >
-                  <View style={[styles.itemIcon, { backgroundColor: isPhotoProblem(item) ? c.accentSoft : c.sunnySoft, borderColor: isPhotoProblem(item) ? c.bubblyRedDark : c.bubblyYellowDark }]}>
+                  <View style={[styles.itemIcon, { backgroundColor: isPhotoProblem(item) ? c.accentSoft : c.sunnySoft, borderColor: c.border, borderBottomColor: c.border }]}>
                     <RezIcon
                       name={isPhotoProblem(item) ? 'camera' : 'write'}
-                      size={20}
+                      size={24}
                       color={c.text}
-                      accent={c.bubblyRed}
+                      accent={c.text}
                     />
                   </View>
                   <View style={styles.itemCopy}>
-                    <Txt numberOfLines={2} weight="semibold" size={14} color={c.text}>
+                    <Txt numberOfLines={2} weight="extrabold" size={15} color={c.text} style={{ fontFamily: theme.font.display }}>
                       {item.topic || cleanTitle(item.title)}
                     </Txt>
                     <View style={styles.meta}>
@@ -424,14 +424,14 @@ const styles = StyleSheet.create({
   // Add button
   add: {
     alignItems: 'center',
-    borderRadius: 16,
-    borderWidth: 2,
-    borderBottomWidth: 3.5,
+    borderRadius: 22,
+    borderWidth: 3,
+    borderBottomWidth: 6,
     flexDirection: 'row',
-    gap: 6,
-    height: 44,
+    gap: 8,
+    height: 52,
     justifyContent: 'center',
-    paddingHorizontal: 14,
+    paddingHorizontal: 20,
   },
 
   // Center loading
@@ -440,25 +440,26 @@ const styles = StyleSheet.create({
   // Summary banner
   summaryBanner: {
     alignItems: 'center',
-    borderRadius: 16,
-    borderWidth: 1.5,
+    borderRadius: 22,
+    borderWidth: 3,
+    borderBottomWidth: 6,
     flexDirection: 'row',
-    gap: 8,
-    marginTop: 4,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    gap: 12,
+    marginTop: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
   },
 
   // Search
   search: {
     alignItems: 'center',
-    borderRadius: 20,
-    borderWidth: 2,
-    borderBottomWidth: 4,
+    borderRadius: 24,
+    borderWidth: 3,
+    borderBottomWidth: 6,
     flexDirection: 'row',
-    gap: 10,
-    minHeight: 52,
-    paddingHorizontal: 14,
+    gap: 12,
+    minHeight: 64,
+    paddingHorizontal: 20,
   },
   searchInput: { flex: 1, fontSize: 14.5, paddingVertical: 0 },
 
@@ -469,22 +470,23 @@ const styles = StyleSheet.create({
   // Item card — used for problems, tests, mistakes
   itemCard: {
     alignItems: 'center',
-    borderRadius: 20,
-    borderWidth: 2,
-    borderBottomWidth: 4,
+    borderRadius: 26,
+    borderWidth: 3,
+    borderBottomWidth: 8,
     flexDirection: 'row',
-    gap: 12,
-    minHeight: 72,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    gap: 14,
+    minHeight: 88,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
   },
   itemIcon: {
     alignItems: 'center',
-    borderRadius: 16,
-    borderWidth: 1.5,
-    height: 48,
+    borderRadius: 20,
+    borderWidth: 3,
+    borderBottomWidth: 6,
+    height: 60,
     justifyContent: 'center',
-    width: 48,
+    width: 60,
   },
   itemCopy: { flex: 1, gap: 3 },
   meta: { flexDirection: 'row', gap: 6 },
@@ -492,10 +494,10 @@ const styles = StyleSheet.create({
 
   // Progress card
   progressCard: {
-    borderRadius: 20,
-    borderWidth: 2,
-    borderBottomWidth: 4,
-    padding: 14,
+    borderRadius: 26,
+    borderWidth: 3,
+    borderBottomWidth: 8,
+    padding: 20,
   },
   progressTop: {
     alignItems: 'center',
@@ -505,12 +507,13 @@ const styles = StyleSheet.create({
   progressCopy: { flex: 1, gap: 2 },
   percentBadge: {
     alignItems: 'center',
-    borderRadius: 14,
-    borderWidth: 1.5,
+    borderRadius: 16,
+    borderWidth: 3,
+    borderBottomWidth: 6,
     justifyContent: 'center',
-    minWidth: 52,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    minWidth: 56,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   progressTrack: { marginTop: 10 },
 })

@@ -314,9 +314,9 @@ const styles = StyleSheet.create({
 
   // Guest card
   guestCard: {
-    borderRadius: 24,
-    borderWidth: 2,
-    borderBottomWidth: 5,
+    borderRadius: 26,
+    borderWidth: 3,
+    borderBottomWidth: 8,
     gap: 16,
     padding: 20,
   },
@@ -328,10 +328,11 @@ const styles = StyleSheet.create({
   guestAvatar: {
     alignItems: 'center',
     borderRadius: 22,
-    borderWidth: 2,
-    height: 56,
+    borderWidth: 3,
+    borderBottomWidth: 6,
+    height: 60,
     justifyContent: 'center',
-    width: 56,
+    width: 60,
   },
   guestInfo: {
     flex: 1,
@@ -342,13 +343,13 @@ const styles = StyleSheet.create({
   },
   googleBtn: {
     alignItems: 'center',
-    borderRadius: 18,
-    borderWidth: 2,
-    borderBottomWidth: 5,
+    borderRadius: 20,
+    borderWidth: 3,
+    borderBottomWidth: 8,
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
     justifyContent: 'center',
-    minHeight: 52,
+    minHeight: 64,
   },
   googleCircle: {
     alignItems: 'center',
@@ -364,9 +365,9 @@ const styles = StyleSheet.create({
 
   // Signed-in identity
   identityCard: {
-    borderRadius: 24,
-    borderWidth: 2,
-    borderBottomWidth: 5,
+    borderRadius: 26,
+    borderWidth: 3,
+    borderBottomWidth: 8,
     padding: 18,
   },
   identityRow: {
@@ -378,10 +379,11 @@ const styles = StyleSheet.create({
   avatarFallback: {
     alignItems: 'center',
     borderRadius: 22,
-    borderWidth: 2,
-    height: 52,
+    borderWidth: 3,
+    borderBottomWidth: 6,
+    height: 56,
     justifyContent: 'center',
-    width: 52,
+    width: 56,
   },
 
   // Section labels
@@ -393,9 +395,9 @@ const styles = StyleSheet.create({
 
   // Grouped card container for settings rows
   groupCard: {
-    borderRadius: 22,
-    borderWidth: 2,
-    borderBottomWidth: 4.5,
+    borderRadius: 26,
+    borderWidth: 3,
+    borderBottomWidth: 8,
     overflow: 'hidden',
   },
 
@@ -408,14 +410,14 @@ const styles = StyleSheet.create({
   },
   goalOption: {
     alignItems: 'center',
-    borderRadius: 16,
-    borderWidth: 2,
-    borderBottomWidth: 3.5,
+    borderRadius: 18,
+    borderWidth: 3,
+    borderBottomWidth: 6,
     flexDirection: 'row',
     gap: 7,
-    minHeight: 44,
-    paddingHorizontal: 13,
-    paddingVertical: 6,
+    minHeight: 52,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
   },
 
   // BAC profile
@@ -441,11 +443,12 @@ const styles = StyleSheet.create({
   },
   profileDot: {
     alignItems: 'center',
-    borderRadius: 12,
-    borderWidth: 1.5,
-    height: 28,
+    borderRadius: 14,
+    borderWidth: 3,
+    borderBottomWidth: 4,
+    height: 32,
     justifyContent: 'center',
-    width: 28,
+    width: 32,
   },
 
   // Settings rows
@@ -474,10 +477,11 @@ const styles = StyleSheet.create({
   versionPill: {
     alignItems: 'center',
     borderRadius: 99,
-    borderWidth: 1.5,
+    borderWidth: 3,
+    borderBottomWidth: 5,
     flexDirection: 'row',
     gap: 5,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
   },
 })

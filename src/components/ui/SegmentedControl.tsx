@@ -29,7 +29,7 @@ export default function SegmentedControl<T extends string>({
     <View
       accessibilityRole="radiogroup"
       accessibilityLabel={accessibilityLabel}
-      style={[styles.track, { backgroundColor: '#F0E6CE', borderColor: '#D6C9AA' }]}
+      style={[styles.track, { backgroundColor: c.surfaceAlt, borderColor: c.border }]}
     >
       {segments.map((segment) => {
         const selected = segment.value === value
@@ -45,10 +45,10 @@ export default function SegmentedControl<T extends string>({
               styles.segment,
               selected
                 ? {
-                    backgroundColor: c.bubblyYellow,
-                    borderColor: c.bubblyYellowDark,
-                    borderBottomColor: c.bubblyYellowDark,
-                    borderBottomWidth: 3.5,
+                    backgroundColor: c.sunny,
+                    borderColor: c.border,
+                    borderBottomColor: c.border,
+                    borderBottomWidth: 6,
                   }
                 : { borderColor: 'transparent' },
             ]}
@@ -56,8 +56,9 @@ export default function SegmentedControl<T extends string>({
             <Txt
               numberOfLines={1}
               weight="bold"
-              size={13}
+              size={14}
               color={selected ? c.text : c.textMuted}
+              style={selected ? { fontFamily: theme.font.display } : {}}
             >
               {segment.label}
             </Txt>
@@ -70,8 +71,9 @@ export default function SegmentedControl<T extends string>({
 
 const styles = StyleSheet.create({
   track: {
-    borderRadius: 18,
-    borderWidth: 2,
+    borderRadius: 24,
+    borderWidth: 3,
+    borderBottomWidth: 8,
     flexDirection: 'row',
     gap: 5,
     padding: 5,
@@ -79,10 +81,10 @@ const styles = StyleSheet.create({
   slot: { flex: 1 },
   segment: {
     alignItems: 'center',
-    borderRadius: 13,
-    borderWidth: 2,
+    borderRadius: 18,
+    borderWidth: 3,
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: 52,
     paddingHorizontal: 10,
   },
 })

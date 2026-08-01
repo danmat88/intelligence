@@ -35,14 +35,14 @@ export default function SolverSourcePicker({
           accessibilityLabel="Continuă ultima soluție"
           style={[
             styles.continueCard,
-            { backgroundColor: c.sunnySoft, borderColor: c.text, shadowColor: c.text },
+            { backgroundColor: c.sunnySoft, borderColor: c.border, borderBottomColor: c.border },
           ]}
         >
-          <View style={[styles.toolIcon, { backgroundColor: c.sunny }]}>
+          <View style={[styles.toolIcon, { backgroundColor: c.sunny, borderColor: c.border, borderBottomColor: c.border }]}>
             <RezIcon name="document" size={19} color={c.text} accent={c.accent} />
           </View>
           <View style={styles.copy}>
-            <Txt numberOfLines={1} weight="bold" size={13.5} color={c.text}>
+            <Txt numberOfLines={1} weight="extrabold" size={14.5} color={c.text} style={{ fontFamily: theme.font.display }}>
               Continuă soluția deschisă
             </Txt>
             <Txt numberOfLines={1} size={10.5} color={c.textMuted}>
@@ -58,14 +58,14 @@ export default function SolverSourcePicker({
           onPress={onCamera}
           accessibilityRole="button"
           accessibilityLabel="Fotografiază problema"
-          style={[styles.primary, { backgroundColor: c.chalkDark }]}
+          style={[styles.primary, { backgroundColor: c.chalk, borderColor: c.border, borderBottomColor: c.border }]}
         >
-          <View style={[styles.icon, { backgroundColor: c.sunny }]}>
-            <RezIcon name="camera" size={23} color={c.text} accent={c.accent} />
+          <View style={[styles.icon, { backgroundColor: c.sunny, borderColor: c.border, borderBottomColor: c.border }]}>
+            <RezIcon name="camera" size={28} color={c.text} accent={c.text} />
           </View>
           <View style={styles.copy}>
-            <Txt weight="bold" size={15} color="#FFFFFF">Fotografiază</Txt>
-            <Txt size={11.5} color="rgba(255,255,255,0.7)">Încadrează enunțul complet</Txt>
+            <Txt weight="extrabold" size={18} color="#FFFFFF" style={{ fontFamily: theme.font.display, letterSpacing: 0.5 }}>FOTOGRAFIAZĂ</Txt>
+            <Txt size={13} color="rgba(255,255,255,0.9)" weight="bold">Încadrează enunțul complet</Txt>
           </View>
           <RezIcon name="arrow" size={18} color="#FFFFFF" />
         </Press>
@@ -112,13 +112,13 @@ function SourceButton({
       accessibilityRole="button"
       accessibilityLabel={icon === 'gallery' ? 'Alege o imagine din galerie' : 'Scrie problema'}
       containerStyle={styles.secondarySlot}
-      style={[styles.secondary, { backgroundColor: c.surface, borderColor: c.border }]}
+      style={[styles.secondary, { backgroundColor: c.surface, borderColor: c.border, borderBottomColor: c.border }]}
     >
-      <View style={[styles.icon, { backgroundColor: background }]}>
-        <RezIcon name={icon} size={22} color={icon === 'gallery' ? c.accent : c.text} accent={c.accent} />
+      <View style={[styles.icon, { backgroundColor: background, borderColor: c.border, borderBottomColor: c.border }]}>
+        <RezIcon name={icon} size={26} color={c.text} accent={c.text} />
       </View>
-      <Txt weight="bold" size={13} color={c.text}>{title}</Txt>
-      <Txt size={10.5} color={c.textMuted}>{detail}</Txt>
+      <Txt weight="extrabold" size={14} color={c.text} style={{ fontFamily: theme.font.display }}>{title}</Txt>
+      <Txt size={11.5} color={c.textMuted} weight="bold">{detail}</Txt>
     </Press>
   )
 }
@@ -127,38 +127,39 @@ const styles = StyleSheet.create({
   copy: { flex: 1, gap: 1, minWidth: 0 },
   continueCard: {
     alignItems: 'center',
-    borderRadius: 17,
-    borderWidth: 2,
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 10,
-    minHeight: 54,
-    padding: 7,
-    paddingRight: 12,
-    shadowOffset: { width: 3, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 0,
-  },
-  toolIcon: { alignItems: 'center', borderRadius: 12, height: 38, justifyContent: 'center', width: 38 },
-  actions: { gap: 9 },
-  primary: {
-    alignItems: 'center',
-    borderRadius: 18,
+    borderRadius: 24,
+    borderWidth: 3,
+    borderBottomWidth: 6,
     flexDirection: 'row',
     gap: 12,
-    minHeight: 72,
-    paddingHorizontal: 14,
+    marginTop: 10,
+    minHeight: 64,
+    padding: 10,
+    paddingRight: 14,
   },
-  secondaryRow: { flexDirection: 'row', gap: 9 },
+  toolIcon: { alignItems: 'center', borderRadius: 16, borderWidth: 3, borderBottomWidth: 5, height: 48, justifyContent: 'center', width: 48 },
+  actions: { gap: 12 },
+  primary: {
+    alignItems: 'center',
+    borderRadius: 32,
+    borderWidth: 3,
+    borderBottomWidth: 10,
+    flexDirection: 'row',
+    gap: 16,
+    minHeight: 96,
+    paddingHorizontal: 20,
+  },
+  secondaryRow: { flexDirection: 'row', gap: 12 },
   secondarySlot: { flex: 1 },
   secondary: {
     alignItems: 'center',
-    borderRadius: 17,
-    borderWidth: 1.5,
-    gap: 3,
+    borderRadius: 26,
+    borderWidth: 3,
+    borderBottomWidth: 8,
+    gap: 6,
     justifyContent: 'center',
-    minHeight: 112,
-    padding: 10,
+    minHeight: 140,
+    padding: 14,
   },
-  icon: { alignItems: 'center', borderRadius: 13, height: 42, justifyContent: 'center', width: 42 },
+  icon: { alignItems: 'center', borderRadius: 20, borderWidth: 3, borderBottomWidth: 6, height: 56, justifyContent: 'center', width: 56 },
 })

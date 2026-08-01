@@ -51,19 +51,33 @@ export default function MainNavigation({
         accessibilityLabel={options?.tabBarAccessibilityLabel ?? item.label}
         accessibilityState={{ selected: focused }}
         containerStyle={styles.slot}
-        style={styles.destination}
+        style={[
+          styles.destination,
+          focused && {
+            backgroundColor: c.sunnySoft,
+            borderColor: c.border,
+            borderWidth: 3,
+            borderBottomWidth: 5,
+            borderRadius: 99,
+          },
+          !focused && { borderColor: 'transparent', borderWidth: 3, borderBottomWidth: 5, borderRadius: 99 }
+        ]}
       >
         <RezIcon
           name={item.icon}
-          size={20}
-          color={focused ? c.accent : c.textFaint}
-          accent={focused ? c.accent : c.textFaint}
-          strokeWidth={focused ? 2.1 : 1.8}
+          size={focused ? 22 : 20}
+          color={focused ? c.text : c.textFaint}
+          accent={focused ? c.bubblyRed : c.textFaint}
+          strokeWidth={focused ? 2.5 : 2}
         />
-        <Txt weight={focused ? 'bold' : 'semibold'} size={10.5} color={focused ? c.text : c.textFaint}>
+        <Txt
+          weight={focused ? 'bold' : 'semibold'}
+          size={focused ? 11.5 : 10.5}
+          color={focused ? c.text : c.textFaint}
+          style={focused ? { fontFamily: theme.font.display, letterSpacing: -0.2 } : {}}
+        >
           {item.label}
         </Txt>
-        {focused && <View style={[styles.active, { backgroundColor: c.accent }]} />}
       </Press>
     )
   }
@@ -74,9 +88,9 @@ export default function MainNavigation({
         styles.host,
         {
           backgroundColor: c.bgElevated,
-          borderTopColor: c.text,
-          borderTopWidth: 2,
-          paddingBottom: Math.max(insets.bottom, 8),
+          borderTopColor: c.border,
+          borderTopWidth: 3,
+          paddingBottom: Math.max(insets.bottom, 12),
         },
       ]}
     >
@@ -86,14 +100,14 @@ export default function MainNavigation({
         <View style={styles.solveSlot}>
           <Press
             onPress={onSolve}
-            pressDepth={4}
+            pressDepth={6}
             accessibilityRole="button"
             accessibilityLabel="Rezolvă o problemă"
-            style={[styles.solve, { backgroundColor: c.bubblyRed, borderColor: c.bubblyRedDark, borderBottomColor: c.bubblyRedDark }]}
+            style={[styles.solve, { backgroundColor: c.accent, borderColor: c.border, borderBottomColor: c.border }]}
           >
-            <RezIcon name="solve" size={25} color="#FFFFFF" accent={c.bubblyYellow} strokeWidth={2.1} />
+            <RezIcon name="solve" size={28} color="#FFFFFF" accent={c.bubblyYellow} strokeWidth={2.5} />
           </Press>
-          <Txt weight="bold" size={11} color={c.text}>Rezolvă</Txt>
+          <Txt weight="bold" size={12} color={c.text} style={{ fontFamily: theme.font.display, letterSpacing: -0.2 }}>Rezolvă</Txt>
         </View>
         {renderDestination('Exerseaza')}
         {renderDestination('Caiet')}
@@ -104,10 +118,10 @@ export default function MainNavigation({
 
 const styles = StyleSheet.create({
   host: {
-    borderTopWidth: 2,
+    borderTopWidth: 3,
     flexShrink: 0,
-    paddingHorizontal: 4,
-    paddingTop: 4,
+    paddingHorizontal: 8,
+    paddingTop: 8,
   },
   inner: {
     alignItems: 'center',
@@ -120,8 +134,8 @@ const styles = StyleSheet.create({
   slot: { flex: 1 },
   destination: {
     alignItems: 'center',
-    gap: 3,
-    height: 52,
+    gap: 2,
+    height: 56,
     justifyContent: 'center',
     minWidth: 54,
   },
@@ -132,15 +146,15 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 24,
   },
-  solveSlot: { alignItems: 'center', flex: 1, gap: 2, minWidth: 58 },
+  solveSlot: { alignItems: 'center', flex: 1.2, gap: 4, minWidth: 64 },
   solve: {
     alignItems: 'center',
-    borderRadius: 20,
-    borderWidth: 2,
-    borderBottomWidth: 5.5,
-    height: 52,
+    borderRadius: 99,
+    borderWidth: 3,
+    borderBottomWidth: 8,
+    height: 64,
     justifyContent: 'center',
-    marginTop: -15,
-    width: 56,
+    marginTop: -22,
+    width: 64,
   },
 })
