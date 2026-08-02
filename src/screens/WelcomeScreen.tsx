@@ -1,18 +1,18 @@
-import { useRef } from 'react'
-import { ActivityIndicator, Animated, Easing, StyleSheet, View } from 'react-native'
+import { ActivityIndicator, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTheme } from '../theme/ThemeProvider'
 import { useAuth } from '../auth/AuthProvider'
-import BrandMark from '../components/ui/BrandMark'
+import BrandLockup from '../components/ui/BrandLockup'
+import Entrance from '../components/ui/Entrance'
 import Press from '../components/ui/Press'
 import RezIcon from '../components/ui/RezIcon'
 import ScreenBackground from '../components/ui/ScreenBackground'
 import Txt from '../components/ui/Txt'
 
 /**
- * Sign-in gate — the very first screen a new user sees.
- * Two 3D Duolingo push-down buttons: Google (dark ink) and Guest (white).
- * Animated footer slides up after BrandMark finishes its entrance.
+ * First onboarding step for signed-out users. The brand occupies the exact
+ * same header position as onboarding and the workspace, so the launch lockup
+ * can land here without a cut or a duplicated logo.
  */
 export default function WelcomeScreen() {
   const { theme } = useTheme()
@@ -20,31 +20,20 @@ export default function WelcomeScreen() {
   const insets = useSafeAreaInsets()
   const { signIn, signInGuest, signingIn, error } = useAuth()
 
-  const footer = useRef(new Animated.Value(0)).current
-  const revealFooter = () => {
-    Animated.timing(footer, {
-      toValue: 1,
-      duration: 620,
-      easing: Easing.bezier(0.22, 1, 0.36, 1),
-      useNativeDriver: true,
-    }).start()
-  }
-
   return (
     <ScreenBackground>
-      <View style={[styles.wrap, { paddingTop: insets.top, paddingBottom: insets.bottom + 28 }]}>
-        <BrandMark tagline="Matematica devine clară." onEntered={revealFooter} />
+      <View style={[styles.wrap, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 28 }]}>
+        <BrandLockup />
 
-        <Animated.View
-          style={[
-            styles.footer,
-            {
-              opacity: footer,
-              transform: [{ translateY: footer.interpolate({ inputRange: [0, 1], outputRange: [180, 0] }) }],
-            },
-          ]}
-        >
-          {/* ─── Google Sign-In ─── */}
+        <View style={styles.body}>
+          <Entrance delay={80}>
+            <Txt style={[styles.title, { color: c.text, fontFamily: theme.font.display }]}>Hai să începem.</Txt>
+            <Txt size={15} color={c.textMuted} style={styles.copy}>
+              Intră cu Google ca să-ți păstrezi munca sau încearcă aplicația imediat.
+            </Txt>
+          </Entrance>
+
+          <Entrance delay={150} style={styles.actions}>
           <Press
             onPress={signIn}
             disabled={signingIn}
@@ -65,7 +54,6 @@ export default function WelcomeScreen() {
             )}
           </Press>
 
-          {/* ─── Status message ─── */}
           {error ? (
             <Txt size={13} color={c.danger} style={styles.hint}>
               {error}
@@ -76,7 +64,6 @@ export default function WelcomeScreen() {
             </Txt>
           )}
 
-          {/* ─── Guest mode ─── */}
           <Press
             onPress={signInGuest}
             disabled={signingIn}
@@ -88,20 +75,24 @@ export default function WelcomeScreen() {
               Încearcă fără cont
             </Txt>
           </Press>
-        </Animated.View>
+          </Entrance>
+        </View>
       </View>
     </ScreenBackground>
   )
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, paddingHorizontal: 28 },
-  footer: { width: '100%', maxWidth: 420, alignSelf: 'center', gap: 14 },
+  wrap: { flex: 1, paddingHorizontal: 18 },
+  body: { flex: 1, justifyContent: 'center', marginTop: 16 },
+  title: { fontSize: 35, letterSpacing: -1.25, lineHeight: 40, textAlign: 'center' },
+  copy: { alignSelf: 'center', lineHeight: 21, marginTop: 8, maxWidth: 380, textAlign: 'center' },
+  actions: { alignSelf: 'center', gap: 14, marginTop: 34, maxWidth: 420, width: '100%' },
 
   // Google button — dark ink 3D push-down
   googleBtn: {
     alignItems: 'center',
-    borderRadius: 22,
+    borderRadius: 24,
     borderWidth: 3,
     borderBottomWidth: 8,
     flexDirection: 'row',
@@ -129,7 +120,7 @@ const styles = StyleSheet.create({
   // Guest button — light 3D push-down
   guestBtn: {
     alignItems: 'center',
-    borderRadius: 22,
+    borderRadius: 24,
     borderWidth: 3,
     borderBottomWidth: 8,
     flexDirection: 'row',

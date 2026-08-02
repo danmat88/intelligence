@@ -1,0 +1,155 @@
+{
+    "id": "II",
+    "title": "SUBIECTUL al II-lea",
+    "instructions": "Încercuiește litera corespunzătoare răspunsului corect.",
+    "points": 30,
+    "exercises": [
+        {
+            "id": "en26m-II-1",
+            "number": "1",
+            "points": 5,
+            "competency": "Geometrie plană",
+            "prompt": "În figura alăturată, punctele $A$, $B$, $C$ și $D$ sunt coliniare, în această ordine, astfel încât $CD = 3\\text{ cm}$, $BD = 3 \\cdot CD$ și $AD = 3 \\cdot BD$. Lungimea segmentului $AC$ este egală cu:",
+            "options": [
+                {"id": "a", "label": "$27\\text{ cm}$"},
+                {"id": "b", "label": "$24\\text{ cm}$"},
+                {"id": "c", "label": "$21\\text{ cm}$"},
+                {"id": "d", "label": "$18\\text{ cm}$"}
+            ],
+            "correctOption": "b",
+            "expectedAnswer": "$24\\text{ cm}$",
+            "hint": "Exprimă lungimea segmentului $AC$ ca diferența dintre $AD$ și $CD$.",
+            "solution": [
+                "Din $BD = 3 \\cdot CD$ și $CD = 3\\text{ cm}$, obținem $BD = 3 \\cdot 3 = 9\\text{ cm}$.",
+                "Din $AD = 3 \\cdot BD$, obținem $AD = 3 \\cdot 9 = 27\\text{ cm}$.",
+                "Deoarece punctele $A$, $B$, $C$, $D$ sunt coliniare în această ordine, $AC = AD - CD$.",
+                "$AC = 27\\text{ cm} - 3\\text{ cm} = 24\\text{ cm}$."
+            ],
+            "figureDescription": "Un segment de dreaptă pe care sunt marcate, în ordine, punctele A, B, C și D.",
+            "figure": {
+                "kind": "segment",
+                "points": [
+                    {"label": "A", "position": 0},
+                    {"label": "B", "position": 18},
+                    {"label": "C", "position": 24},
+                    {"label": "D", "position": 27}
+                ],
+                "measures": []
+            }
+        },
+        {
+            "id": "en26m-II-2",
+            "number": "2",
+            "points": 5,
+            "competency": "Unghiuri",
+            "prompt": "În figura alăturată sunt reprezentate unghiurile adiacente suplementare $AOC$ și $COB$. Semidreapta $OM$ este bisectoarea unghiului $AOC$, iar măsura unghiului $MOC$ este egală cu $35^\\circ$. Măsura unghiului $BOC$ este egală cu:",
+            "options": [
+                {"id": "a", "label": "$35^\\circ$"},
+                {"id": "b", "label": "$70^\\circ$"},
+                {"id": "c", "label": "$110^\\circ$"},
+                {"id": "d", "label": "$145^\\circ$"}
+            ],
+            "correctOption": "c",
+            "expectedAnswer": "$110^\\circ$",
+            "hint": "Folosește faptul că unghiurile suplementare au suma măsurilor egală cu $180^\\circ$.",
+            "solution": [
+                "Deoarece $OM$ este bisectoarea unghiului $AOC$, avem $\\angle AOC = 2 \\cdot \\angle MOC$.",
+                "$\\angle AOC = 2 \\cdot 35^\\circ = 70^\\circ$.",
+                "Unghiurile $AOC$ și $COB$ sunt suplementare, deci $\\angle AOC + \\angle BOC = 180^\\circ$.",
+                "$\\angle BOC = 180^\\circ - 70^\\circ = 110^\\circ$."
+            ],
+            "figureDescription": "O dreaptă pe care se află punctele A, O, B în această ordine. Din punctul O pornesc semidreptele OM și OC, astfel încât OM se află în interiorul unghiului AOC."
+        },
+        {
+            "id": "en26m-II-3",
+            "number": "3",
+            "points": 5,
+            "competency": "Relații metrice în triunghiul dreptunghic",
+            "prompt": "În figura alăturată este reprezentat triunghiul $ABC$ dreptunghic în $C$, cu $AB = 12\\text{ cm}$ și măsura unghiului $B$ egală cu $30^\\circ$. Proiecția punctului $C$ pe dreapta $AB$ este punctul $D$. Lungimea segmentului $CD$ este egală cu:",
+            "options": [
+                {"id": "a", "label": "$3\\text{ cm}$"},
+                {"id": "b", "label": "$2\\sqrt{3}\\text{ cm}$"},
+                {"id": "c", "label": "$3\\sqrt{3}\\text{ cm}$"},
+                {"id": "d", "label": "$6\\text{ cm}$"}
+            ],
+            "correctOption": "c",
+            "expectedAnswer": "$3\\sqrt{3}\\text{ cm}$",
+            "hint": "Calculează lungimea catetei $AC$ folosind teorema unghiului de $30^\\circ$, apoi aplică funcțiile trigonometrice în triunghiul dreptunghic $ADC$.",
+            "solution": [
+                "În triunghiul dreptunghic $ABC$, $\\angle C = 90^\\circ$ și $\\angle B = 30^\\circ$. Conform teoremei unghiului de $30^\\circ$, cateta opusă este jumătate din ipotenuză: $AC = \\frac{AB}{2} = \\frac{12}{2} = 6\\text{ cm}$.",
+                "Măsura unghiului $A$ este $180^\\circ - 90^\\circ - 30^\\circ = 60^\\circ$.",
+                "În triunghiul dreptunghic $ADC$ (deoarece $CD \\perp AB$), $\\sin A = \\frac{CD}{AC}$.",
+                "$\\sin 60^\\circ = \\frac{\\sqrt{3}}{2}$, deci $CD = AC \\cdot \\frac{\\sqrt{3}}{2} = 6 \\cdot \\frac{\\sqrt{3}}{2} = 3\\sqrt{3}\\text{ cm}$."
+            ],
+            "figureDescription": "Un triunghi dreptunghic ABC cu unghiul drept în C. Din C este dusă înălțimea CD pe ipotenuza AB."
+        },
+        {
+            "id": "en26m-II-4",
+            "number": "4",
+            "points": 5,
+            "competency": "Arii",
+            "prompt": "În figura alăturată este reprezentat paralelogramul $ABCD$, cu aria egală cu $96\\text{ cm}^2$. Punctele $E$ și $F$ sunt mijloacele laturilor $AB$, respectiv $AD$. Aria triunghiului $AEF$ este egală cu:",
+            "options": [
+                {"id": "a", "label": "$12\\text{ cm}^2$"},
+                {"id": "b", "label": "$24\\text{ cm}^2$"},
+                {"id": "c", "label": "$48\\text{ cm}^2$"},
+                {"id": "d", "label": "$72\\text{ cm}^2$"}
+            ],
+            "correctOption": "a",
+            "expectedAnswer": "$12\\text{ cm}^2$",
+            "hint": "Compară aria triunghiului $AEF$ cu aria triunghiului $ABD$, știind că $E$ și $F$ sunt mijloacele laturilor.",
+            "solution": [
+                "Diagonala $BD$ împarte paralelogramul în două triunghiuri de arii egale, deci aria triunghiului $ABD$ este $\\frac{96}{2} = 48\\text{ cm}^2$.",
+                "În triunghiul $ABD$, $E$ și $F$ sunt mijloacele laturilor $AB$, respectiv $AD$. Astfel, triunghiul $AEF$ este asemenea cu triunghiul $ABD$ cu raportul de asemănare $k = \\frac{1}{2}$.",
+                "Raportul ariilor a două triunghiuri asemenea este egal cu pătratul raportului de asemănare: $\\frac{\\text{Aria}(AEF)}{\\text{Aria}(ABD)} = k^2 = \\left(\\frac{1}{2}\\right)^2 = \\frac{1}{4}$.",
+                "$\\text{Aria}(AEF) = \\frac{1}{4} \\cdot 48 = 12\\text{ cm}^2$."
+            ],
+            "figureDescription": "Un paralelogram ABCD. Punctul E este pe latura AB, iar punctul F este pe latura AD. Este desenat triunghiul AEF."
+        },
+        {
+            "id": "en26m-II-5",
+            "number": "5",
+            "points": 5,
+            "competency": "Cercul",
+            "prompt": "În figura alăturată este reprezentat cercul cu centrul în punctul $O$, iar $AB$ și $CD$ sunt diametre. Arcul $AD$ are măsura egală cu $52^\\circ$. Măsura unghiului $BDC$ este egală cu:",
+            "options": [
+                {"id": "a", "label": "$26^\\circ$"},
+                {"id": "b", "label": "$30^\\circ$"},
+                {"id": "c", "label": "$52^\\circ$"},
+                {"id": "d", "label": "$60^\\circ$"}
+            ],
+            "correctOption": "a",
+            "expectedAnswer": "$26^\\circ$",
+            "hint": "Găsește măsura arcului $BC$ folosind unghiurile la centru, apoi aplică teorema unghiului înscris în cerc.",
+            "solution": [
+                "Măsura arcului $AD$ este $52^\\circ$, deci unghiul la centru $\\angle AOD$ are măsura de $52^\\circ$.",
+                "Unghiurile $\\angle AOD$ și $\\angle BOC$ sunt opuse la vârf, deci $\\angle BOC = \\angle AOD = 52^\\circ$.",
+                "Măsura arcului $BC$ este egală cu măsura unghiului la centru $\\angle BOC$, adică $52^\\circ$.",
+                "Unghiul $\\angle BDC$ este un unghi înscris în cerc care subîntinde arcul $BC$. Măsura sa este jumătate din măsura arcului: $\\angle BDC = \\frac{52^\\circ}{2} = 26^\\circ$."
+            ],
+            "figureDescription": "Un cerc cu centrul O. AB și CD sunt două diametre care se intersectează în O. Este desenată coarda BD."
+        },
+        {
+            "id": "en26m-II-6",
+            "number": "6",
+            "points": 5,
+            "competency": "Corpuri geometrice",
+            "prompt": "În figura alăturată este reprezentată prisma dreaptă $ABCA'B'C'$, cu baza triunghiul echilateral $ABC$, $AA' = 2\\sqrt{3}\\text{ cm}$ și $AB = 4\\text{ cm}$. Volumul prismei $ABCA'B'C'$ este egal cu:",
+            "options": [
+                {"id": "a", "label": "$4\\sqrt{3}\\text{ cm}^3$"},
+                {"id": "b", "label": "$8\\text{ cm}^3$"},
+                {"id": "c", "label": "$8\\sqrt{3}\\text{ cm}^3$"},
+                {"id": "d", "label": "$24\\text{ cm}^3$"}
+            ],
+            "correctOption": "d",
+            "expectedAnswer": "$24\\text{ cm}^3$",
+            "hint": "Calculează aria bazei (triunghi echilateral) și înmulțește-o cu înălțimea prismei.",
+            "solution": [
+                "Baza prismei este triunghiul echilateral $ABC$ cu latura $AB = 4\\text{ cm}$.",
+                "Aria bazei este $\\mathcal{A}_{bază} = \\frac{l^2\\sqrt{3}}{4} = \\frac{4^2\\sqrt{3}}{4} = \\frac{16\\sqrt{3}}{4} = 4\\sqrt{3}\\text{ cm}^2$.",
+                "Volumul prismei este $\\mathcal{V} = \\mathcal{A}_{bază} \\cdot h = 4\\sqrt{3} \\cdot 2\\sqrt{3} = 8 \\cdot 3 = 24\\text{ cm}^3$."
+            ],
+            "figureDescription": "O prismă triunghiulară dreaptă ABCA'B'C', cu bazele triunghiuri echilaterale ABC și A'B'C'."
+        }
+    ]
+}

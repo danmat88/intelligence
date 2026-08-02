@@ -1,0 +1,86 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Rezolvați următoarele exerciții:",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac26-th-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Progresii aritmetice",
+      "prompt": "Determinați termenul $a_3$ al progresiei aritmetice $(a_n)_{n \\ge 1}$ în care $a_1 = 10$ și $a_2 = 18$.",
+      "expectedAnswer": "$26$",
+      "hint": "Folosiți formula rației unei progresii aritmetice, $r = a_2 - a_1$, și apoi calculați $a_3 = a_2 + r$.",
+      "solution": [
+        "$r = a_2 - a_1 = 8$, unde $r$ este rația progresiei aritmetice",
+        "$a_3 = 18 + 8 = 26$"
+      ]
+    },
+    {
+      "id": "bac26-th-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Funcții și evaluare",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 2x - 2$. Arătați că $f(4) - f(3) - f(2) = 0$.",
+      "expectedAnswer": "$0$",
+      "hint": "Calculați valorile funcției $f$ pentru $x=4$, $x=3$ și $x=2$, apoi înlocuiți-le în expresia dată.",
+      "solution": [
+        "$f(4) = 6$, $f(3) = 4$, $f(2) = 2$",
+        "$f(4) - f(3) - f(2) = 6 - 4 - 2 = 0$"
+      ]
+    },
+    {
+      "id": "bac26-th-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Ecuații exponențiale",
+      "prompt": "Rezolvați în mulțimea numerelor reale ecuația $7^{3-x} = 7^{4x-2}$.",
+      "expectedAnswer": "$x = 1$",
+      "hint": "Deoarece bazele sunt egale, puteți egala exponenții.",
+      "solution": [
+        "$3 - x = 4x - 2$",
+        "$x = 1$"
+      ]
+    },
+    {
+      "id": "bac26-th-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Probabilități",
+      "prompt": "Determinați probabilitatea ca, alegând un număr $n$ din mulțimea numerelor naturale de o cifră, acesta să verifice inegalitatea $20 - 2n < 15$.",
+      "expectedAnswer": "$\\frac{7}{10}$",
+      "hint": "Rezolvați inegalitatea pentru a găsi cazurile favorabile din mulțimea numerelor naturale de o cifră.",
+      "solution": [
+        "Mulțimea numerelor naturale de o cifră are $10$ elemente, deci sunt $10$ cazuri posibile.",
+        "În mulțimea numerelor naturale de o cifră sunt $7$ numere $n$ pentru care $20 - 2n < 15$, deci sunt $7$ cazuri favorabile, de unde obținem $p = \\frac{7}{10}$."
+      ]
+    },
+    {
+      "id": "bac26-th-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Geometrie analitică",
+      "prompt": "În reperul cartezian $xOy$ se consideră punctele $A(1,1)$, $M(2,4)$ și $B(a,b)$, unde $a$ și $b$ sunt numere reale. Determinați numerele reale $a$ și $b$, știind că punctul $M$ este mijlocul segmentului $AB$.",
+      "expectedAnswer": "$a = 3$ și $b = 7$",
+      "hint": "Folosiți formulele pentru coordonatele mijlocului unui segment: $x_M = \\frac{x_A + x_B}{2}$ și $y_M = \\frac{y_A + y_B}{2}$.",
+      "solution": [
+        "$\\frac{1 + a}{2} = 2$, $\\frac{1 + b}{2} = 4$",
+        "$a = 3$ și $b = 7$"
+      ]
+    },
+    {
+      "id": "bac26-th-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Trigonometrie",
+      "prompt": "Se consideră triunghiul $ABC$, dreptunghic în $A$, cu $AB = 15$ și măsura unghiului $B$ egală cu $30^\\circ$. Arătați că $BC = 10\\sqrt{3}$.",
+      "expectedAnswer": "$10\\sqrt{3}$",
+      "hint": "Într-un triunghi dreptunghic, cosinusul unui unghi ascuțit este raportul dintre cateta alăturată și ipotenuză.",
+      "solution": [
+        "$\\cos B = \\frac{AB}{BC}$, deci $\\frac{\\sqrt{3}}{2} = \\frac{15}{BC}$",
+        "$BC = \\frac{2 \\cdot 15}{\\sqrt{3}} = 10\\sqrt{3}$"
+      ]
+    }
+  ]
+}

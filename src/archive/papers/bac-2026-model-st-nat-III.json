@@ -1,0 +1,98 @@
+{
+  "id": "III",
+  "title": "SUBIECTUL III",
+  "instructions": "Rezolvați următoarele probleme.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac26m-sn-III-1",
+      "number": "III.1.a",
+      "points": 5,
+      "competency": "Derivarea funcțiilor compuse",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = e^x(x^2 + x - 1)$.\n\na) Arătați că $f'(x) = e^x(x^2 + 3x)$, $x \\in \\mathbb{R}$.",
+      "expectedAnswer": "$f'(x) = e^x(x^2 + 3x)$",
+      "hint": "Aplicați regula de derivare a produsului a două funcții: $(u \\cdot v)' = u'v + uv'$.",
+      "solution": [
+        "$f'(x) = (e^x)'(x^2 + x - 1) + e^x(x^2 + x - 1)'$",
+        "$= e^x(x^2 + x - 1) + e^x(2x + 1)$",
+        "$= e^x(x^2 + x - 1 + 2x + 1) = e^x(x^2 + 3x)$, pentru orice $x \\in \\mathbb{R}$."
+      ]
+    },
+    {
+      "id": "bac26m-sn-III-2",
+      "number": "III.1.b",
+      "points": 5,
+      "competency": "Calculul limitelor de funcții",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = e^x(x^2 + x - 1)$.\n\nb) Arătați că $\\lim_{x \\to 0} \\frac{e^x + f(x)}{f'(x)} = \\frac{1}{3}$.",
+      "expectedAnswer": "$\\frac{1}{3}$",
+      "hint": "Înlocuiți expresiile pentru $f(x)$ și $f'(x)$, dați factor comun pe $e^x$ și simplificați fracția înainte de a calcula limita.",
+      "solution": [
+        "$\\lim_{x \\to 0} \\frac{e^x + f(x)}{f'(x)} = \\lim_{x \\to 0} \\frac{e^x + e^x(x^2 + x - 1)}{e^x(x^2 + 3x)}$",
+        "$= \\lim_{x \\to 0} \\frac{e^x(1 + x^2 + x - 1)}{e^x(x^2 + 3x)} = \\lim_{x \\to 0} \\frac{x^2 + x}{x^2 + 3x}$",
+        "$= \\lim_{x \\to 0} \\frac{x(x + 1)}{x(x + 3)} = \\lim_{x \\to 0} \\frac{x + 1}{x + 3} = \\frac{1}{3}$."
+      ]
+    },
+    {
+      "id": "bac26m-sn-III-3",
+      "number": "III.1.c",
+      "points": 5,
+      "competency": "Studiul monotoniei și inegalități",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = e^x(x^2 + x - 1)$.\n\nc) Demonstrați că $e^{x+3}(x^2 + x - 1) \\le 5$, pentru orice $x \\in (-\\infty, 0]$.",
+      "expectedAnswer": "Inegalitatea este demonstrată.",
+      "hint": "Studiați semnul derivatei $f'(x)$ pentru a determina punctele de extrem și monotonia funcției pe intervalul $(-\\infty, 0]$.",
+      "solution": [
+        "$f'(x) = 0 \\Leftrightarrow x^2 + 3x = 0 \\Rightarrow x = -3$ sau $x = 0$.",
+        "Pentru orice $x \\in (-\\infty, -3]$, $f'(x) \\ge 0$, deci $f$ este crescătoare pe $(-\\infty, -3]$.",
+        "Pentru orice $x \\in [-3, 0]$, $f'(x) \\le 0$, deci $f$ este descrescătoare pe $[-3, 0]$.",
+        "Rezultă că $f(x) \\le f(-3)$, pentru orice $x \\in (-\\infty, 0]$.",
+        "Cum $f(-3) = e^{-3}((-3)^2 - 3 - 1) = \\frac{5}{e^3}$, obținem $e^x(x^2 + x - 1) \\le \\frac{5}{e^3}$.",
+        "Înmulțind inegalitatea cu $e^3$, obținem $e^{x+3}(x^2 + x - 1) \\le 5$, pentru orice $x \\in (-\\infty, 0]$."
+      ]
+    },
+    {
+      "id": "bac26m-sn-III-4",
+      "number": "III.2.a",
+      "points": 5,
+      "competency": "Calculul integralelor definite",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = x + \\sqrt{2x^2 + 1}$.\n\na) Arătați că $\\int_3^5 (f(x) - \\sqrt{2x^2 + 1}) dx = 8$.",
+      "expectedAnswer": "$8$",
+      "hint": "Înlocuiți expresia funcției $f(x)$ în integrală și reduceți termenii asemenea.",
+      "solution": [
+        "$\\int_3^5 (f(x) - \\sqrt{2x^2 + 1}) dx = \\int_3^5 (x + \\sqrt{2x^2 + 1} - \\sqrt{2x^2 + 1}) dx$",
+        "$= \\int_3^5 x dx = \\left. \\frac{x^2}{2} \\right|_3^5$",
+        "$= \\frac{25}{2} - \\frac{9}{2} = \\frac{16}{2} = 8$."
+      ]
+    },
+    {
+      "id": "bac26m-sn-III-5",
+      "number": "III.2.b",
+      "points": 5,
+      "competency": "Integrarea prin substituție",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = x + \\sqrt{2x^2 + 1}$.\n\nb) Arătați că $\\int_1^2 \\frac{x}{(f(x) - x)^2} dx = \\frac{\\ln 3}{4}$.",
+      "expectedAnswer": "$\\frac{\\ln 3}{4}$",
+      "hint": "Observați că numitorul se simplifică la $2x^2 + 1$, iar numărătorul $x$ poate fi scris în funcție de derivata numitorului.",
+      "solution": [
+        "$\\int_1^2 \\frac{x}{(f(x) - x)^2} dx = \\int_1^2 \\frac{x}{(\\sqrt{2x^2 + 1})^2} dx = \\int_1^2 \\frac{x}{2x^2 + 1} dx$",
+        "$= \\frac{1}{4} \\int_1^2 \\frac{(2x^2 + 1)'}{2x^2 + 1} dx = \\left. \\frac{1}{4} \\ln(2x^2 + 1) \\right|_1^2$",
+        "$= \\frac{1}{4} (\\ln 9 - \\ln 3) = \\frac{1}{4} \\ln \\frac{9}{3} = \\frac{\\ln 3}{4}$."
+      ]
+    },
+    {
+      "id": "bac26m-sn-III-6",
+      "number": "III.2.c",
+      "points": 5,
+      "competency": "Aplicații ale integralei definite: volume",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = x + \\sqrt{2x^2 + 1}$.\n\nc) Determinați numărul real $a$ pentru care volumul corpului obținut prin rotația graficului funcției $g : [0, 2] \\to \\mathbb{R}$, $g(x) = f(x)$ în jurul axei $Ox$ este egal cu $\\frac{a\\pi}{3}$.",
+      "expectedAnswer": "$a = 56$",
+      "hint": "Folosiți formula volumului $V = \\pi \\int_0^2 g^2(x) dx$ și dezvoltați pătratul binomului.",
+      "solution": [
+        "$V = \\pi \\int_0^2 g^2(x) dx = \\pi \\int_0^2 (x + \\sqrt{2x^2 + 1})^2 dx$",
+        "$= \\pi \\int_0^2 (x^2 + 2x\\sqrt{2x^2 + 1} + 2x^2 + 1) dx = \\pi \\int_0^2 (3x^2 + 1 + 2x\\sqrt{2x^2 + 1}) dx$",
+        "$= \\pi \\left( \\left. x^3 \\right|_0^2 + \\left. x \\right|_0^2 + \\frac{1}{2} \\int_0^2 \\sqrt{2x^2 + 1} \\cdot (2x^2 + 1)' dx \\right)$",
+        "$= \\pi \\left( 10 + \\left. \\frac{(2x^2 + 1)\\sqrt{2x^2 + 1}}{3} \\right|_0^2 \\right)$",
+        "$= \\pi \\left( 10 + \\frac{9 \\cdot 3}{3} - \\frac{1 \\cdot 1}{3} \\right) = \\pi \\left( 10 + 9 - \\frac{1}{3} \\right) = \\frac{56\\pi}{3}$",
+        "Din $\\frac{56\\pi}{3} = \\frac{a\\pi}{3}$, obținem $a = 56$."
+      ]
+    }
+  ]
+}

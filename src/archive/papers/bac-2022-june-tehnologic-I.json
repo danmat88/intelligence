@@ -1,0 +1,68 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Rezolvați următoarele exerciții.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac22j-th-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Ordinea operațiilor",
+      "prompt": "Arătați că $5 - 3 \\cdot \\left(1 + \\frac{1}{3}\\right) = 1$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Calculează mai întâi expresia din paranteză.",
+      "solution": ["$5 - 3\\left(1+\\frac13\\right)=5-3\\cdot\\frac43$", "$=5-4=1$."]
+    },
+    {
+      "id": "bac22j-th-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Funcție afină",
+      "prompt": "Se consideră funcția $f:\\mathbb{R}\\to\\mathbb{R}$, $f(x)=x-4$. Determinați numărul real $a$ pentru care $f(a)=2$.",
+      "expectedAnswer": "$a=6$",
+      "hint": "Înlocuiește argumentul funcției cu $a$.",
+      "solution": ["$f(a)=a-4$, deci $a-4=2$.", "Rezultă $a=6$."]
+    },
+    {
+      "id": "bac22j-th-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Ecuații iraționale",
+      "prompt": "Rezolvați în mulțimea numerelor reale ecuația $\\sqrt{4+2x}=2$.",
+      "expectedAnswer": "$x=0$",
+      "hint": "Ridică la pătrat după ce observi condiția de existență.",
+      "solution": ["Ecuația implică $4+2x=4$.", "$2x=0$, deci $x=0$, care verifică ecuația."]
+    },
+    {
+      "id": "bac22j-th-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Procente",
+      "prompt": "Un produs costă $90$ de lei. Determinați prețul produsului după o scumpire cu $10\\%$.",
+      "expectedAnswer": "$99$ de lei",
+      "hint": "Calculează 10% din preț și adaugă majorarea.",
+      "solution": ["$\\frac{10}{100}\\cdot90=9$ lei.", "Prețul după scumpire este $90+9=99$ lei."]
+    },
+    {
+      "id": "bac22j-th-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Coordonate",
+      "prompt": "În reperul cartezian $xOy$ se consideră punctele $A(1,4)$, $B(5,0)$ și $M(a,b)$, unde $a$ și $b$ sunt numere reale. Determinați numerele reale $a$ și $b$, știind că punctul $M$ este mijlocul segmentului $AB$.",
+      "expectedAnswer": "$a=3$, $b=2$",
+      "hint": "Coordonatele mijlocului sunt mediile aritmetice ale coordonatelor extremităților.",
+      "solution": ["$a=\\frac{1+5}{2}=3$ și $b=\\frac{4+0}{2}=2$."]
+    },
+    {
+      "id": "bac22j-th-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Trigonometrie",
+      "prompt": "Se consideră triunghiul $ABC$ dreptunghic în $A$, în care măsura unghiului $C$ este egală cu $30^\\circ$ și $AB=3$. Arătați că $BC=6$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Folosește sinusul unghiului $C$.",
+      "solution": ["$\\sin C=\\frac{AB}{BC}$, deci $\\frac12=\\frac3{BC}$.", "Rezultă $BC=6$."]
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Toate subiectele sunt obligatorii. Se acordă zece puncte din oficiu. Timpul de lucru efectiv este de trei ore.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac23j-sn-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Calcul cu radicali",
+      "prompt": "Arătați că $4 - 6\\sqrt{3} + 3(2\\sqrt{3} - 1) = 1$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Desfaceți paranteza înmulțind pe 3 cu fiecare termen din interior.",
+      "solution": [
+        "$4 - 6\\sqrt{3} + 3(2\\sqrt{3} - 1) = 4 - 6\\sqrt{3} + 6\\sqrt{3} - 3$",
+        "$= 4 - 3 = 1$"
+      ]
+    },
+    {
+      "id": "bac23j-sn-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Ecuații cu funcții",
+      "prompt": "Se consideră funcțiile $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 5x - 3$ și $g : \\mathbb{R} \\to \\mathbb{R}$, $g(x) = 2x + 3$. Determinați numărul real $a$ pentru care $f(a) = g(a)$.",
+      "expectedAnswer": "$a = 2$",
+      "hint": "Egalați expresiile celor două funcții evaluate în $a$ și rezolvați ecuația de gradul întâi rezultată.",
+      "solution": [
+        "Din $f(a) = g(a)$ obținem $5a - 3 = 2a + 3$.",
+        "$5a - 2a = 3 + 3 \\implies 3a = 6$",
+        "$a = 2$"
+      ]
+    },
+    {
+      "id": "bac23j-sn-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Ecuații exponențiale",
+      "prompt": "Rezolvați în mulțimea numerelor reale ecuația $2^{2x+1} \\cdot 2^3 = 1$.",
+      "expectedAnswer": "$x = -2$",
+      "hint": "Folosiți proprietățile puterilor pentru a scrie membrul stâng ca o singură putere a lui 2, iar pe 1 ca $2^0$.",
+      "solution": [
+        "$2^{2x+1} \\cdot 2^3 = 2^{2x+1+3} = 2^{2x+4}$",
+        "Ecuația devine $2^{2x+4} = 2^0$, de unde obținem $2x + 4 = 0$.",
+        "$x = -2$"
+      ]
+    },
+    {
+      "id": "bac23j-sn-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Combinatorică",
+      "prompt": "Determinați câte numere naturale, de două cifre distincte, se pot forma cu cifre din mulțimea $A = \\{3, 4, 5, 6\\}$.",
+      "expectedAnswer": "$12$ numere",
+      "hint": "Gândiți-vă în câte moduri puteți alege prima cifră și, având în vedere că cifrele trebuie să fie distincte, în câte moduri o puteți alege pe a doua.",
+      "solution": [
+        "Cifra zecilor se poate alege în $4$ moduri (oricare din elementele mulțimii $A$).",
+        "Pentru fiecare alegere a cifrei zecilor, cifra unităților se poate alege în câte $3$ moduri (elementele rămase în $A$, deoarece cifrele trebuie să fie distincte).",
+        "Conform regulii produsului, se pot forma $4 \\cdot 3 = 12$ numere."
+      ]
+    },
+    {
+      "id": "bac23j-sn-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Geometrie analitică",
+      "prompt": "În reperul cartezian $xOy$ se consideră punctele $A(4, 0)$, $B(0, 2)$, $C(3, 3)$ și $M$, mijlocul segmentului $AB$. Arătați că segmentele $MO$ și $MC$ au lungimile egale.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Determinați mai întâi coordonatele punctului $M$ folosind formula pentru mijlocul unui segment, apoi calculați lungimile $MO$ și $MC$.",
+      "solution": [
+        "Coordonatele mijlocului $M$ al segmentului $AB$ sunt $x_M = \\frac{4 + 0}{2} = 2$ și $y_M = \\frac{0 + 2}{2} = 1$, deci $M(2, 1)$.",
+        "Lungimea segmentului $MO$ este $MO = \\sqrt{(2 - 0)^2 + (1 - 0)^2} = \\sqrt{5}$.",
+        "Lungimea segmentului $MC$ este $MC = \\sqrt{(3 - 2)^2 + (3 - 1)^2} = \\sqrt{1^2 + 2^2} = \\sqrt{5}$.",
+        "Deoarece $MO = \\sqrt{5}$ și $MC = \\sqrt{5}$, rezultă că $MO = MC$."
+      ]
+    },
+    {
+      "id": "bac23j-sn-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Calcul trigonometric",
+      "prompt": "Se consideră $E(x) = 2\\sin x \\sin 2x - \\cos x$, unde $x$ este număr real. Arătați că $E\\left(\\frac{\\pi}{6}\\right) = 0$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Înlocuiți $x$ cu $\\frac{\\pi}{6}$ în expresia lui $E(x)$ și folosiți valorile funcțiilor trigonometrice pentru unghiurile uzuale.",
+      "solution": [
+        "$E\\left(\\frac{\\pi}{6}\\right) = 2\\sin\\frac{\\pi}{6} \\sin\\left(2 \\cdot \\frac{\\pi}{6}\\right) - \\cos\\frac{\\pi}{6} = 2\\sin\\frac{\\pi}{6} \\sin\\frac{\\pi}{3} - \\cos\\frac{\\pi}{6}$",
+        "Știm că $\\sin\\frac{\\pi}{6} = \\frac{1}{2}$, $\\sin\\frac{\\pi}{3} = \\frac{\\sqrt{3}}{2}$ și $\\cos\\frac{\\pi}{6} = \\frac{\\sqrt{3}}{2}$.",
+        "Înlocuind, obținem $E\\left(\\frac{\\pi}{6}\\right) = 2 \\cdot \\frac{1}{2} \\cdot \\frac{\\sqrt{3}}{2} - \\frac{\\sqrt{3}}{2} = \\frac{\\sqrt{3}}{2} - \\frac{\\sqrt{3}}{2} = 0$."
+      ]
+    }
+  ]
+}

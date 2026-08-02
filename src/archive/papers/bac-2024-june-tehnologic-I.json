@@ -1,0 +1,91 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Toate subiectele sunt obligatorii. Se acordă zece puncte din oficiu. Timpul de lucru efectiv este de trei ore.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac24j-th-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Operații cu numere reale",
+      "prompt": "Arătați că $\\frac{12}{5} \\cdot \\left(\\frac{1}{2} + \\frac{1}{3}\\right) = 2$.",
+      "expectedAnswer": "2",
+      "hint": "Aduceți fracțiile din paranteză la același numitor.",
+      "solution": [
+        "$\\frac{12}{5} \\cdot \\left(\\frac{1}{2} + \\frac{1}{3}\\right) = \\frac{12}{5} \\cdot \\left(\\frac{3}{6} + \\frac{2}{6}\\right) =$",
+        "$= \\frac{12}{5} \\cdot \\frac{5}{6} = 2$"
+      ]
+    },
+    {
+      "id": "bac24j-th-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Funcții",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 5x + 1$. Determinați numărul real $a$ pentru care $f(a) = 6$.",
+      "expectedAnswer": "a = 1",
+      "hint": "Calculați $f(a)$ înlocuind pe $x$ cu $a$ în expresia funcției și egalați rezultatul cu $6$.",
+      "solution": [
+        "$f(a) = 5a + 1$, pentru orice număr real $a$.",
+        "$5a + 1 = 6$, de unde obținem $a = 1$."
+      ]
+    },
+    {
+      "id": "bac24j-th-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Ecuații iraționale",
+      "prompt": "Rezolvați în mulțimea numerelor reale ecuația $\\sqrt{4x + 1} = 3$.",
+      "expectedAnswer": "x = 2",
+      "hint": "Ridicați la pătrat ambii membri ai ecuației pentru a elimina radicalul.",
+      "solution": [
+        "Prin ridicare la pătrat, obținem $4x + 1 = 9$.",
+        "De unde obținem $4x = 8$.",
+        "$x = 2$, care convine."
+      ]
+    },
+    {
+      "id": "bac24j-th-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Probabilități",
+      "prompt": "Determinați probabilitatea ca, alegând un număr din mulțimea $A = \\{10, 20, 30, 40, 50, 60, 70, 80, 90\\}$, acesta să fie divizibil cu $20$.",
+      "expectedAnswer": "\\frac{4}{9}",
+      "hint": "Probabilitatea este raportul dintre numărul cazurilor favorabile și numărul cazurilor posibile.",
+      "solution": [
+        "Mulțimea $A$ are $9$ elemente, deci sunt $9$ cazuri posibile.",
+        "Numerele din mulțimea $A$ care sunt divizibile cu $20$ sunt $20$, $40$, $60$ și $80$, deci sunt $4$ cazuri favorabile.",
+        "Probabilitatea este $p = \\frac{\\text{nr. cazuri favorabile}}{\\text{nr. cazuri posibile}} = \\frac{4}{9}$."
+      ]
+    },
+    {
+      "id": "bac24j-th-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Geometrie analitică",
+      "prompt": "În reperul cartezian $xOy$ se consideră punctele $A(2,0)$, $B(8,8)$ și $C(11,4)$. Arătați că $AB = 2BC$.",
+      "expectedAnswer": "Demonstrația este completă.",
+      "hint": "Folosiți formula distanței dintre două puncte: $d(M,N) = \\sqrt{(x_N - x_M)^2 + (y_N - y_M)^2}$.",
+      "solution": [
+        "$BC = \\sqrt{(11 - 8)^2 + (4 - 8)^2} = \\sqrt{3^2 + (-4)^2} = \\sqrt{9 + 16} = \\sqrt{25} = 5$",
+        "$AB = \\sqrt{(8 - 2)^2 + (8 - 0)^2} = \\sqrt{6^2 + 8^2} = \\sqrt{36 + 64} = \\sqrt{100} = 10$",
+        "Deoarece $10 = 2 \\cdot 5$, rezultă că $AB = 2BC$."
+      ]
+    },
+    {
+      "id": "bac24j-th-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Trigonometrie",
+      "prompt": "Arătați că $1 + \\sin 30^\\circ = 2 \\sin 60^\\circ \\cdot \\cos 30^\\circ$.",
+      "expectedAnswer": "Demonstrația este completă.",
+      "hint": "Înlocuiți valorile funcțiilor trigonometrice: $\\sin 30^\\circ = \\frac{1}{2}$, $\\sin 60^\\circ = \\frac{\\sqrt{3}}{2}$ și $\\cos 30^\\circ = \\frac{\\sqrt{3}}{2}$.",
+      "solution": [
+        "$\\sin 30^\\circ = \\frac{1}{2}$, $\\sin 60^\\circ = \\frac{\\sqrt{3}}{2}$, $\\cos 30^\\circ = \\frac{\\sqrt{3}}{2}$",
+        "$1 + \\sin 30^\\circ = 1 + \\frac{1}{2} = \\frac{3}{2}$",
+        "$2 \\sin 60^\\circ \\cdot \\cos 30^\\circ = 2 \\cdot \\frac{\\sqrt{3}}{2} \\cdot \\frac{\\sqrt{3}}{2} = 2 \\cdot \\frac{3}{4} = \\frac{3}{2}$",
+        "Așadar, $1 + \\sin 30^\\circ = 2 \\sin 60^\\circ \\cdot \\cos 30^\\circ$."
+      ]
+    }
+  ]
+}

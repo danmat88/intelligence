@@ -1,0 +1,87 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Toate subiectele sunt obligatorii. Se acordă zece puncte din oficiu. Timpul de lucru efectiv este de trei ore.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac24j-pd-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Progresii geometrice",
+      "prompt": "Se consideră progresia geometrică $(b_n)_{n \\ge 1}$ cu $b_1 = 4$ și $b_2 = 8$. Calculați $b_3$.",
+      "expectedAnswer": "16",
+      "hint": "Determinați rația progresiei geometrice împărțind al doilea termen la primul, apoi înmulțiți al doilea termen cu rația.",
+      "solution": [
+        "Rația progresiei este $q = \\frac{b_2}{b_1} = 2$.",
+        "$b_3 = b_2 \\cdot q = 16$."
+      ]
+    },
+    {
+      "id": "bac24j-pd-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Funcții",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 7x + 2$. Determinați numărul real $a$ pentru care $f(a) = 9$.",
+      "expectedAnswer": "a = 1",
+      "hint": "Înlocuiți $x$ cu $a$ în expresia funcției și rezolvați ecuația rezultată.",
+      "solution": [
+        "$f(a) = 7a + 2$, pentru orice număr real $a$.",
+        "$7a + 2 = 9$, de unde obținem $a = 1$."
+      ]
+    },
+    {
+      "id": "bac24j-pd-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Ecuații logaritmice",
+      "prompt": "Rezolvați în mulțimea numerelor reale ecuația $\\log_2(2x + 3) = \\log_2(3x + 1)$.",
+      "expectedAnswer": "x = 2",
+      "hint": "Din egalitatea logaritmilor cu aceeași bază rezultă egalitatea argumentelor. Nu uitați să verificați dacă soluția obținută convine.",
+      "solution": [
+        "Din egalitatea logaritmilor rezultă $2x + 3 = 3x + 1$.",
+        "$x = 2$, care convine."
+      ]
+    },
+    {
+      "id": "bac24j-pd-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Procente",
+      "prompt": "După o scumpire cu $25\\%$, prețul unui obiect a crescut cu $50$ de lei. Determinați prețul obiectului înainte de scumpire.",
+      "expectedAnswer": "200 de lei",
+      "hint": "Scrieți creșterea de preț ca un procent din prețul inițial și egalați cu valoarea dată.",
+      "solution": [
+        "$\\frac{25}{100} \\cdot x = 50$, unde $x$ este prețul obiectului înainte de scumpire.",
+        "$x = 200$ de lei."
+      ]
+    },
+    {
+      "id": "bac24j-pd-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Geometrie analitică",
+      "prompt": "În reperul cartezian $xOy$ se consideră punctele $A(0,4)$, $B(8,4)$ și $C(4,0)$. Demonstrați că $BM = CM$, unde punctul $M$ este mijlocul segmentului $AB$.",
+      "expectedAnswer": "BM = CM",
+      "hint": "Determinați coordonatele mijlocului $M$ al segmentului $AB$, apoi calculați lungimile segmentelor $BM$ și $CM$ folosind formula distanței dintre două puncte.",
+      "solution": [
+        "Coordonatele mijlocului $M$ al segmentului $AB$ sunt $x_M = \\frac{0+8}{2} = 4$ și $y_M = \\frac{4+4}{2} = 4$, deci $M(4,4)$.",
+        "$BM = \\sqrt{(4-8)^2 + (4-4)^2} = 4$.",
+        "$CM = \\sqrt{(4-4)^2 + (0-4)^2} = 4$, deci $BM = CM$."
+      ]
+    },
+    {
+      "id": "bac24j-pd-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Geometrie plană",
+      "prompt": "Se consideră triunghiul $ABC$, dreptunghic în $A$, cu $AB = 12$ și $BC = 13$. Arătați că perimetrul triunghiului $ABC$ este egal cu $30$.",
+      "expectedAnswer": "30",
+      "hint": "Folosiți teorema lui Pitagora pentru a afla lungimea catetei $AC$, apoi adunați lungimile celor trei laturi.",
+      "solution": [
+        "Aplicând teorema lui Pitagora în triunghiul $ABC$, obținem $AC = \\sqrt{BC^2 - AB^2} = \\sqrt{13^2 - 12^2} = 5$.",
+        "$P_{\\Delta ABC} = AB + BC + AC = 12 + 13 + 5 = 30$."
+      ]
+    }
+  ]
+}

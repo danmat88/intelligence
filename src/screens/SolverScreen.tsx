@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Keyboard, Pressable, ScrollView, Share, StyleSheet, TextInput, View } from 'react-native'
+import { ActivityIndicator, Keyboard, Pressable, ScrollView, Share, StyleSheet, TextInput, View } from 'react-native'
 import ReAnimated, { Easing as REasing, withTiming, type EntryAnimationsValues } from 'react-native-reanimated'
 import { LinearGradient } from 'expo-linear-gradient'
 import * as Clipboard from 'expo-clipboard'
@@ -15,6 +15,7 @@ import ScreenBackground from '../components/ui/ScreenBackground'
 import { useToast } from '../components/ui/Toast'
 import Txt from '../components/ui/Txt'
 import InfoDialog from '../components/ui/InfoDialog'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
 import ThreadDocument, { type DocLabels } from '../components/ui/ThreadDocument'
 import SymbolBar, { type MathKey } from '../components/ui/SymbolBar'
 import MathPreview from '../components/ui/MathPreview'
@@ -24,7 +25,19 @@ import ScreenContent, { APP_CONTENT_MAX_WIDTH } from '../components/ui/ScreenCon
 import type { SolveEntryAction, SolverChrome, SolverSurface } from '../navigation/types'
 import { isMathInput, plainToLatex } from '../solve/mathInput'
 import type { CapturedImage } from '../solve/capture'
-import { solveImage, solveProblem, followUp, solveDeep, verifyAnswer } from '../solve/solve'
+import {
+  createSimilarProblem,
+  followUp,
+  followUpGuided,
+  readProblemImage,
+  reviewWork,
+  reviewWorkImage,
+  solveDeep,
+  solveImage,
+  solveProblem,
+  startGuidedProblem,
+  verifyAnswer,
+} from '../solve/solve'
 import { CORRECTION_HINT } from '../solve/prompt'
 import { latexToPlain, solutionShareText } from '../solve/shareText'
 import { getSolveJson, isAbstractProof, isStructuredSolution, withJsonFlags } from '../solve/verdict'
@@ -49,7 +62,6 @@ type Turn = {
   imageUri?: string
   /** Firebase Storage object + tokened URL once the parallel upload lands. */
   imagePath?: string
-  imageUrl?: string
   /** Photo dimensions, so the document reserves the exact box up front. */
   imageW?: number
   imageH?: number
@@ -85,6 +97,16 @@ type SolverScreenProps = {
   onOpenThread: () => void
   onShowEntry: () => void
   onExit: () => void
+}
+
+type SolveIntent = 'guided' | 'solution' | 'review'
+
+type PendingProblem = {
+  turnId: string
+  problem: string
+  source: 'text' | 'photo'
+  image?: CapturedImage
+  containsWork: boolean
 }
 
 /** Map a raw error to a calm, human message (localized via `t`). */
@@ -145,6 +167,9 @@ export default function SolverScreen({
   const inputRef = useRef<TextInput>(null)
   const threadRef = useRef<Turn[]>([])
   const problemIdRef = useRef<string | null>(null)
+  const capIdRef = useRef<string | null>(null)
+  const activeProblemRef = useRef('')
+  const activeImageRef = useRef<CapturedImage | null>(null)
   const abortRef = useRef<AbortController | null>(null)
   // The background verification's own kill switch — separate from the solve's.
   const verifyAbortRef = useRef<AbortController | null>(null)
@@ -162,7 +187,7 @@ export default function SolverScreen({
   } | null>(null)
   // Cloud copies of problem photos, keyed by turn id (upload runs in
   // parallel with the solve; persist() picks these up when they land).
-  const uploadsRef = useRef<Record<string, { path: string; url: string }>>({})
+  const uploadsRef = useRef<Record<string, { path: string }>>({})
   // Chip bulletproofing: debounce accidental double-taps, and count how many
   // times each step was explained so re-taps escalate instead of repeating.
   const lastChipRef = useRef<{ id: string; at: number }>({ id: '', at: 0 })
@@ -189,8 +214,17 @@ export default function SolverScreen({
   const showThread = surface === 'thread' && hasThread
   const [inputFocused, setInputFocused] = useState(false)
   const [entryMode, setEntryMode] = useState<'source' | 'type'>('source')
-  const blockingOverlayOpen = !!limitHit || verifyInfo
+  const [pendingProblem, setPendingProblem] = useState<PendingProblem | null>(null)
+  const [preparingPhoto, setPreparingPhoto] = useState(false)
+  const prepareAbortRef = useRef<AbortController | null>(null)
+  const [selectedIntent, setSelectedIntent] = useState<SolveIntent | null>(null)
+  const [threadIntent, setThreadIntent] = useState<SolveIntent>('solution')
+  const [workInput, setWorkInput] = useState('')
+  const [confirmReveal, setConfirmReveal] = useState(false)
+  const blockingOverlayOpen = !!limitHit || verifyInfo || confirmReveal
   const [overlayHeld, setOverlayHeld] = useState(false)
+
+  useEffect(() => () => prepareAbortRef.current?.abort(), [])
 
   useEffect(() => {
     if (!initialDraft?.trim()) return
@@ -292,6 +326,9 @@ export default function SolverScreen({
     if (prevUidRef.current !== user?.id) {
       prevUidRef.current = user?.id
       problemIdRef.current = null
+      capIdRef.current = null
+      activeProblemRef.current = ''
+      activeImageRef.current = null
       // The pill's count belongs to the OLD account (guest counts survive on
       // the install key, but the next metered solve repopulates it anyway).
       clearDailyUsage()
@@ -324,7 +361,7 @@ export default function SolverScreen({
           .filter((x) => !x.pending && !x.error)
           .map((x) => {
             const up = uploadsRef.current[x.id]
-            return up ? { ...x, imagePath: up.path, imageUrl: up.url } : x
+            return up ? { ...x, imagePath: up.path } : x
           }),
         t('turn.photoProblem'),
       )
@@ -385,7 +422,7 @@ export default function SolverScreen({
         commit(threadRef.current.map((x) => (x.id === id ? { ...x, text } : x)))
       }
       try {
-        const v = await verifyAnswer(problemText, turn.text, ctrl.signal)
+        const v = await verifyAnswer(problemText, turn.text, ctrl.signal, capId)
         if (ctrl.signal.aborted) return
         track('verify_result', { verdict: v })
         if (v === 'correct') {
@@ -406,7 +443,9 @@ export default function SolverScreen({
               ? await solveImage(image, ctrl.signal, capId)
               : await solveDeep(source, ctrl.signal, CORRECTION_HINT, capId)
             if (ctrl.signal.aborted) return
-            const v2 = isStructuredSolution(deepRaw) ? await verifyAnswer(source || restated, deepRaw, ctrl.signal) : 'unverifiable'
+            const v2 = isStructuredSolution(deepRaw)
+              ? await verifyAnswer(source || restated, deepRaw, ctrl.signal, capId)
+              : 'unverifiable'
             if (ctrl.signal.aborted) return
             // Only ever earn a VERIFIED (green) badge — never a scary
             // "unconfirmed" warning we can't back. If the strong re-solve
@@ -534,15 +573,129 @@ export default function SolverScreen({
 
   const reset = useCallback(() => {
     Keyboard.dismiss() // fresh problem, fresh screen — no keyboard left over the hero
+    prepareAbortRef.current?.abort()
+    prepareAbortRef.current = null
     verifyAbortRef.current?.abort() // a verification of the old thread is moot now
     problemIdRef.current = null
+    capIdRef.current = null
+    activeProblemRef.current = ''
+    activeImageRef.current = null
     setProblemMeta(null)
+    setPendingProblem(null)
+    setPreparingPhoto(false)
+    setSelectedIntent(null)
+    setThreadIntent('solution')
+    setWorkInput('')
+    setConfirmReveal(false)
     explainCountsRef.current = {}
     setThreadKey(`live-${Date.now()}`)
     commit([])
     setEntryMode('source')
     onShowEntry()
   }, [commit, onShowEntry])
+
+  const prepareTypedProblem = useCallback((raw: string) => {
+    const problem = raw.trim()
+    if (!problem || sending) return
+    if (!online) {
+      toast.show(t('err.network'), 'wifi-off')
+      return
+    }
+    Keyboard.dismiss()
+    if (threadRef.current.length > 0) reset()
+    const turnId = uid()
+    capIdRef.current = turnId
+    setInput('')
+    setSelection(undefined)
+    setInputFocused(false)
+    setSelectedIntent(null)
+    setWorkInput('')
+    setPendingProblem({ turnId, problem, source: 'text', containsWork: false })
+  }, [online, reset, sending, t, toast])
+
+  const startPendingProblem = useCallback((intent: SolveIntent) => {
+    const pending = pendingProblem
+    if (!pending || sending) return
+    if (intent === 'review' && !pending.containsWork && !workInput.trim()) {
+      setSelectedIntent('review')
+      return
+    }
+
+    Keyboard.dismiss()
+    setSelectedIntent(intent)
+    setThreadIntent(intent)
+    setPendingProblem(null)
+    setWorkInput('')
+    capIdRef.current = pending.turnId
+    activeProblemRef.current = pending.problem
+    activeImageRef.current = pending.image ?? null
+
+    const userTurn: Turn = {
+      id: pending.turnId,
+      role: 'user',
+      text: intent === 'review' && workInput.trim()
+        ? `${pending.problem}\n\nLucrarea mea:\n${workInput.trim()}`
+        : pending.problem,
+      ...(pending.image
+        ? { imageUri: pending.image.uri, imageW: pending.image.width, imageH: pending.image.height }
+        : null),
+    }
+
+    if (pending.image) {
+      saveLocalCopy(pending.turnId, pending.image.uri).catch(() => {})
+      if (user) {
+        uploadProblemImage(user.id, pending.turnId, pending.image.uri)
+          .then((savedImage) => {
+            uploadsRef.current[pending.turnId] = savedImage
+            persist(threadRef.current)
+          })
+          .catch((error) => reportNonFatal(error, 'photo-upload'))
+      }
+    }
+
+    track('solve_start', { source: pending.source, intent })
+    if (intent === 'guided') {
+      run(
+        userTurn,
+        (signal) => startGuidedProblem(pending.problem, signal, pending.turnId, pending.image),
+      )
+      return
+    }
+    if (intent === 'review') {
+      const work = workInput.trim()
+      run(
+        userTurn,
+        (signal) => pending.image
+          ? reviewWorkImage(pending.problem, pending.image, work, signal, pending.turnId)
+          : reviewWork(pending.problem, work, signal, pending.turnId),
+      )
+      return
+    }
+    run(
+      userTurn,
+      (signal) => pending.image
+        ? solveImage(pending.image, signal, pending.turnId, pending.problem)
+        : solveProblem(pending.problem, signal, pending.turnId),
+      pending.problem,
+      pending.image,
+    )
+  }, [pendingProblem, persist, run, sending, user, workInput])
+
+  const revealFullSolution = useCallback(() => {
+    const problemTurn = threadRef.current.find((turn) => turn.role === 'user' && turn.text.trim())
+    const problem = activeProblemRef.current.trim() || problemTurn?.text.trim() || ''
+    if (!problem || sending) return
+    const capId = capIdRef.current ?? problemTurn?.id
+    setThreadIntent('solution')
+    setConfirmReveal(false)
+    run(
+      { id: uid(), role: 'user', text: 'Arată soluția completă.' },
+      (signal) => activeImageRef.current
+        ? solveImage(activeImageRef.current, signal, capId, problem)
+        : solveProblem(problem, signal, capId),
+      problem,
+    )
+  }, [run, sending])
 
   const sendText = useCallback(
     (raw: string) => {
@@ -554,14 +707,17 @@ export default function SolverScreen({
         toast.show(t('err.network'), 'wifi-off')
         return
       }
+      const isFirst = surface === 'entry'
+      if (isFirst) {
+        prepareTypedProblem(text)
+        return
+      }
       // Sending = done typing: drop the keyboard so the solution gets the
       // whole screen (the pending card and the answer land in full view).
       Keyboard.dismiss()
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
       setInput('')
-      const isFirst = surface === 'entry'
-      if (isFirst && threadRef.current.length > 0) reset()
-      track(isFirst ? 'solve_start' : 'chat_send', isFirst ? { source: 'text' } : undefined)
+      track('chat_send')
       const turns: ChatTurn[] = [...priorTurns(), { role: 'user', text }]
       // The user turn's id doubles as the problem's daily-cap id — every
       // request of this problem (escalation, correction re-solve, retry)
@@ -569,14 +725,12 @@ export default function SolverScreen({
       const turnId = uid()
       run(
         { id: turnId, role: 'user', text },
-        (sig) =>
-          isFirst
-            ? solveProblem(text, sig, turnId)
-            : followUp(turns, sig, problemIdRef.current ?? undefined),
-        isFirst ? text : undefined, // machine-check first solves only
+        (sig) => threadIntent === 'solution'
+          ? followUp(turns, sig, problemIdRef.current ?? capIdRef.current ?? undefined)
+          : followUpGuided(turns, sig, problemIdRef.current ?? capIdRef.current ?? undefined),
       )
     },
-    [sending, online, toast, t, run, priorTurns, reset, surface],
+    [sending, online, toast, t, run, priorTurns, surface, prepareTypedProblem, threadIntent],
   )
 
   const loadProblem = useCallback(
@@ -598,15 +752,17 @@ export default function SolverScreen({
       // one surface carrying its inert cards. WebViews light up on landing.
       setTimeout(async () => {
         problemIdRef.current = p.id
+        capIdRef.current = p.id
+        activeProblemRef.current = p.turns.find((turn) => turn.role === 'user')?.text ?? ''
+        activeImageRef.current = null
         const turns = await Promise.all(
           p.turns.map(async (t) => ({
             id: uid(),
             role: t.role,
             text: t.text,
             // LOCAL file when it exists (instant, offline); cloud otherwise.
-            imageUri: await resolveImageUri(t.imagePath, t.imageUrl),
+            imageUri: await resolveImageUri(t.imagePath),
             imagePath: t.imagePath,
-            imageUrl: t.imageUrl,
             imageW: t.imageW,
             imageH: t.imageH,
           })),
@@ -615,6 +771,11 @@ export default function SolverScreen({
         // at the TOP — a problem reads from its title down.
         coldDocRef.current = true
         explainCountsRef.current = {} // fresh problem, fresh teaching history
+        const firstAssistant = p.turns.find((turn) => turn.role === 'assistant')
+        setThreadIntent(firstAssistant && isStructuredSolution(firstAssistant.text) ? 'solution' : 'guided')
+        setPendingProblem(null)
+        setSelectedIntent(null)
+        setWorkInput('')
         setProblemMeta({ topic: p.topic, createdAt: p.createdAt })
         setThreadKey(p.id)
         commit(turns)
@@ -673,8 +834,9 @@ export default function SolverScreen({
         )
         return
       }
+      setThreadIntent('guided')
       run({ id: uid(), role: 'user', text: t('turn.similar') }, (sig) =>
-        followUp(
+        createSimilarProblem(
           [...priorTurns(), { role: 'user', text: 'Dă-mi o problemă asemănătoare pentru exersare, doar enunțul, fără soluție.' }],
           sig,
           problemIdRef.current ?? undefined,
@@ -694,40 +856,44 @@ export default function SolverScreen({
   )
 
   const solvePhoto = useCallback(
-    (img: CapturedImage) => {
+    async (img: CapturedImage) => {
       setCapture(null)
       if (!img.base64) return
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
-      // A photo is always a NEW problem — one thread per problem keeps the
-      // model accurate and history clean, so leave the previous thread behind.
       if (threadRef.current.length > 0) reset()
       const turnId = uid()
-      track('solve_start', { source: 'photo' })
-      // Permanent LOCAL copy first (the capture lives in purgeable cache):
-      // history opens on this device never touch the network for the photo.
-      saveLocalCopy(turnId, img.uri).catch(() => {})
-      // Cloud copy in PARALLEL with the solve — never blocks it. When it
-      // lands, the saved problem gets its image references; if it fails,
-      // the photo simply stays local-only for this session.
-      if (user) {
-        uploadProblemImage(user.id, turnId, img.uri)
-          .then((si) => {
-            uploadsRef.current[turnId] = si
-            persist(threadRef.current)
-          })
-          .catch((e) => reportNonFatal(e, 'photo-upload'))
+      capIdRef.current = turnId
+      const controller = new AbortController()
+      prepareAbortRef.current?.abort()
+      prepareAbortRef.current = controller
+      setPendingProblem(null)
+      setSelectedIntent(null)
+      setWorkInput('')
+      setPreparingPhoto(true)
+      try {
+        const read = await readProblemImage(img, controller.signal, turnId)
+        if (controller.signal.aborted) return
+        setPendingProblem({
+          turnId,
+          problem: read.problem,
+          source: 'photo',
+          image: img,
+          containsWork: read.containsWork,
+        })
+        setEntryMode('source')
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          const message = error instanceof Error && error.message.length <= 180
+            ? error.message
+            : 'Nu am putut citi enunțul. Încearcă o fotografie mai clară.'
+          toast.show(message, 'alert-triangle')
+        }
+      } finally {
+        if (prepareAbortRef.current === controller) prepareAbortRef.current = null
+        if (!controller.signal.aborted) setPreparingPhoto(false)
       }
-      // '' → the verifier reads the problem from the solution's own restatement;
-      // `img` rides along so a failed check re-solves by RE-READING THE PHOTO,
-      // never the (possibly misread) restatement.
-      run(
-        { id: turnId, role: 'user', text: '', imageUri: img.uri, imageW: img.width, imageH: img.height },
-        (sig) => solveImage(img, sig, turnId),
-        '',
-        img,
-      )
     },
-    [run, reset, user, persist],
+    [reset, toast],
   )
 
   const typeInstead = useCallback(() => {
@@ -789,9 +955,10 @@ export default function SolverScreen({
       if (kind === 'report') {
         // Play's AI-content policy requires in-app flagging of AI output.
         // The report reaches us as a Crashlytics non-fatal + analytics event
-        // carrying the problem id, so the flagged content can be pulled up.
-        track('content_report', { problem: problemIdRef.current ?? 'none' })
-        reportNonFatal(new Error('content_report'), `user flagged AI content, problem=${problemIdRef.current ?? '?'} turn=${turnId}`)
+        // Content reports are aggregate telemetry; do not attach a problem or
+        // turn identifier to optional analytics/diagnostics.
+        track('content_report')
+        reportNonFatal(new Error('content_report'), 'user flagged AI content')
         Haptics.selectionAsync().catch(() => {})
         toast.show(t('action.reported'), 'check')
         return
@@ -841,7 +1008,13 @@ export default function SolverScreen({
   )
 
   const activeTopic = problemMeta?.topic ?? extractTopic(thread)
-  const contextTitle = activeTopic || (sending ? 'Rezolvare în curs' : 'Soluția problemei')
+  const contextTitle = activeTopic || (
+    threadIntent === 'guided'
+      ? 'Ajutor ghidat'
+      : threadIntent === 'review'
+        ? 'Verificarea lucrării'
+        : sending ? 'Rezolvare în curs' : 'Soluția problemei'
+  )
   const openUsage = () => {
     if (!usage || !isFromToday(usage.at)) return
     if (usage.used >= usage.limit) {
@@ -869,12 +1042,24 @@ export default function SolverScreen({
       ) : (
         <ContextHeader
           eyebrow="REZOLVĂ"
-          title={entryMode === 'type' ? 'Scrie problema' : 'Alege sursa'}
-          onBack={entryMode === 'type' ? () => {
+          title={preparingPhoto
+            ? 'Citesc enunțul'
+            : pendingProblem
+              ? 'Alege tipul de ajutor'
+              : entryMode === 'type' ? 'Scrie problema' : 'Alege sursa'}
+          onBack={preparingPhoto || pendingProblem ? () => {
+            prepareAbortRef.current?.abort()
+            prepareAbortRef.current = null
+            setPreparingPhoto(false)
+            setPendingProblem(null)
+            setSelectedIntent(null)
+            setWorkInput('')
+            setEntryMode('source')
+          } : entryMode === 'type' ? () => {
             Keyboard.dismiss()
             setEntryMode('source')
           } : onExit}
-          backLabel={entryMode === 'type' ? 'Înapoi la surse' : 'Înapoi în aplicație'}
+          backLabel={preparingPhoto || pendingProblem || entryMode === 'type' ? 'Înapoi' : 'Înapoi în aplicație'}
         />
       )}
 
@@ -892,12 +1077,20 @@ export default function SolverScreen({
             >
               <View style={styles.entryIntro}>
                 <Txt style={[styles.entryTitle, { color: c.text, fontFamily: theme.font.display }]}>
-                  {entryMode === 'source' ? 'Rezolvă orice problemă' : 'Scrie enunțul complet'}
+                  {preparingPhoto
+                    ? 'Verific enunțul înainte de orice răspuns'
+                    : pendingProblem
+                      ? 'Cum vrei să te ajut?'
+                      : entryMode === 'source' ? 'Rezolvă orice problemă' : 'Scrie enunțul complet'}
                 </Txt>
                 <Txt size={13.5} color={c.textMuted} style={styles.entryDescription}>
-                  {entryMode === 'source'
-                    ? 'Fotografiază, alege o imagine sau scrie enunțul.'
-                    : 'Include toate datele și cerința. Bara matematică te ajută cu expresiile.'}
+                  {preparingPhoto
+                    ? 'Transcriu numai ce este vizibil. Soluția nu este generată în această etapă.'
+                    : pendingProblem
+                      ? 'Alegerea controlează strict ce poate afișa AI-ul.'
+                      : entryMode === 'source'
+                        ? 'Fotografiază, alege o imagine sau scrie enunțul.'
+                        : 'Include toate datele și cerința. Bara matematică te ajută cu expresiile.'}
                 </Txt>
               </View>
 
@@ -910,7 +1103,40 @@ export default function SolverScreen({
                 </View>
               )}
 
-              {entryMode === 'source' ? (
+              {preparingPhoto ? (
+                <View style={styles.preparePhoto}>
+                  <View style={[styles.preparePhotoIcon, { backgroundColor: c.surface }]}>
+                    <ActivityIndicator size="large" color={c.accent} />
+                  </View>
+                  <Txt weight="bold" size={15} color={c.text}>Citesc fiecare semn și fiecare număr…</Txt>
+                  <Txt size={12.5} color={c.textMuted} style={styles.preparePhotoCopy}>
+                    După transcriere verifici enunțul și alegi ajutor ghidat, soluție completă sau verificarea lucrării.
+                  </Txt>
+                  <Press
+                    onPress={() => {
+                      prepareAbortRef.current?.abort()
+                      prepareAbortRef.current = null
+                      setPreparingPhoto(false)
+                    }}
+                    style={styles.prepareCancel}
+                  >
+                    <Txt weight="bold" size={12.5} color={c.accent}>Anulează</Txt>
+                  </Press>
+                </View>
+              ) : pendingProblem ? (
+                <IntentChooser
+                  pending={pendingProblem}
+                  selected={selectedIntent}
+                  work={workInput}
+                  onProblemChange={(problem) => setPendingProblem((current) => current ? { ...current, problem } : current)}
+                  onSelect={(intent) => {
+                    if (intent === 'review') setSelectedIntent('review')
+                    else startPendingProblem(intent)
+                  }}
+                  onWorkChange={setWorkInput}
+                  onStartReview={() => startPendingProblem('review')}
+                />
+              ) : entryMode === 'source' ? (
                 <SolverSourcePicker
                   hasOpenSolution={hasThread}
                   solving={sending}
@@ -945,7 +1171,7 @@ export default function SolverScreen({
                 <View style={styles.notebookNote}>
                   <RezIcon name="document" size={16} color={c.textMuted} accent={c.accent} />
                   <Txt size={10.5} color={c.textMuted}>
-                    Rezolvările sunt salvate în Caietul meu.
+                    Problema se salvează automat în istoricul tău.
                   </Txt>
                 </View>
                 {usage && isFromToday(usage.at) && (
@@ -981,7 +1207,7 @@ export default function SolverScreen({
                 </Pressable>
               ) : (
                 <Txt size={10} color={c.textFaint} style={[styles.disc, { fontFamily: theme.font.mono }]}>
-                  Profu’ de Mate poate greși. Verifică rezultatele importante.
+                  Răspunsurile AI pot conține greșeli. Verifică rezultatele importante.
                 </Txt>
               )}
               </>
@@ -1028,11 +1254,30 @@ export default function SolverScreen({
               in the document, so the preview IS the result. */}
           {!!previewLatex && <MathPreview latex={previewLatex} label={t('composer.preview')} />}
           {(inputFocused || !!input.trim()) && <SymbolBar onInsert={insertKey} />}
+          {threadIntent !== 'solution' && !inputFocused && !input.trim() && (
+            <View style={[styles.guidedBar, { backgroundColor: c.successSoft }]}>
+              <View style={styles.guidedBarCopy}>
+                <RezIcon name={threadIntent === 'review' ? 'verified' : 'teacher'} size={16} color={c.success} accent={c.success} />
+                <Txt size={11.5} weight="semibold" color={c.text} style={styles.flex}>
+                  {threadIntent === 'review'
+                    ? 'Feedbackul nu înlocuiește lucrarea cu o soluție.'
+                    : 'Mod ghidat: soluția și răspunsul final rămân ascunse.'}
+                </Txt>
+              </View>
+              <Press onPress={() => setConfirmReveal(true)} hitSlop={6} style={styles.revealAction}>
+                <Txt weight="bold" size={11.5} color={c.accent}>Arată soluția</Txt>
+              </Press>
+            </View>
+          )}
           <View style={[styles.field, { backgroundColor: c.surface, borderColor: inputFocused ? c.accent : c.border }]}>
             <TextInput
               ref={inputRef}
               style={[styles.input, { color: c.text }]}
-              placeholder={showThread ? 'Întreabă despre soluție…' : 'Scrie problema…'}
+              placeholder={threadIntent === 'solution'
+                ? 'Întreabă despre soluție…'
+                : threadIntent === 'review'
+                  ? 'Întreabă despre feedback…'
+                  : 'Scrie următorul tău pas…'}
               placeholderTextColor={c.textFaint}
               value={input}
               onChangeText={(v) => {
@@ -1086,7 +1331,7 @@ export default function SolverScreen({
             </Pressable>
           ) : (
             <Txt size={10} color={c.textFaint} style={[styles.disc, { fontFamily: theme.font.mono }]}>
-              Profu’ de Mate poate greși. Verifică rezultatele importante.
+              Răspunsurile AI pot conține greșeli. Verifică rezultatele importante.
             </Txt>
           )}
         </View>}
@@ -1112,8 +1357,169 @@ export default function SolverScreen({
         okLabel={t('common.ok')}
         onClose={() => setVerifyInfo(false)}
       />
+      <ConfirmDialog
+        open={confirmReveal}
+        title="Vrei soluția completă?"
+        message="Părăsești modul fără soluție. AI-ul va afișa pașii compleți și răspunsul final numai după confirmare."
+        confirmLabel="Arată soluția"
+        cancelLabel="Continuă fără soluție"
+        onClose={() => setConfirmReveal(false)}
+        onConfirm={revealFullSolution}
+      />
       <CaptureScreen open={capture} onClose={() => setCapture(null)} onUsePhoto={solvePhoto} onTypeInstead={typeInstead} />
     </ScreenBackground>
+  )
+}
+
+function IntentChooser({
+  pending,
+  selected,
+  work,
+  onProblemChange,
+  onSelect,
+  onWorkChange,
+  onStartReview,
+}: {
+  pending: PendingProblem
+  selected: SolveIntent | null
+  work: string
+  onProblemChange: (problem: string) => void
+  onSelect: (intent: SolveIntent) => void
+  onWorkChange: (work: string) => void
+  onStartReview: () => void
+}) {
+  const { theme } = useTheme()
+  const c = theme.colors
+  return (
+    <View style={styles.intentPage}>
+      <View style={[styles.problemReview, { backgroundColor: c.surface, borderColor: c.border }]}>
+        <View style={styles.problemReviewHead}>
+          <View style={[styles.problemReviewIcon, { backgroundColor: c.sunnySoft }]}>
+            <RezIcon name={pending.source === 'photo' ? 'camera' : 'write'} size={18} color={c.text} accent={c.accent} />
+          </View>
+          <View style={styles.flex}>
+            <Txt weight="bold" size={12} color={c.text}>Verifică enunțul</Txt>
+            <Txt size={10.5} color={c.textMuted}>
+              {pending.source === 'photo' ? 'Corectează orice semn citit greșit.' : 'Enunțul pe care l-ai introdus.'}
+            </Txt>
+          </View>
+          {pending.containsWork && (
+            <View style={[styles.workDetected, { backgroundColor: c.successSoft }]}>
+              <Txt weight="bold" size={9.5} color={c.success}>LUCRARE DETECTATĂ</Txt>
+            </View>
+          )}
+        </View>
+        <TextInput
+          value={pending.problem}
+          onChangeText={(value) => onProblemChange(value.slice(0, 5000))}
+          multiline
+          style={[styles.problemReviewInput, { color: c.text, fontFamily: theme.font.regular }]}
+          accessibilityLabel="Enunțul confirmat al problemei"
+        />
+      </View>
+
+      <View style={styles.intentList} accessibilityRole="radiogroup">
+        <IntentOption
+          icon="teacher"
+          title="Ghidează-mă"
+          detail="Întrebări și indicii, fără răspuns final"
+          tone={c.successSoft}
+          onPress={() => onSelect('guided')}
+        />
+        <IntentOption
+          icon="verified"
+          title="Verifică-mi lucrarea"
+          detail={pending.containsWork ? 'Analizează pașii din fotografie' : 'Îți introduci pașii sau răspunsul'}
+          tone={c.sunnySoft}
+          selected={selected === 'review'}
+          onPress={() => onSelect('review')}
+        />
+        <IntentOption
+          icon="solve"
+          title="Arată soluția completă"
+          detail="Pașii explicați și răspunsul final"
+          tone={c.accentSoft}
+          onPress={() => onSelect('solution')}
+        />
+      </View>
+
+      {selected === 'review' && (
+        <View style={[styles.workPanel, { backgroundColor: c.surface, borderColor: c.border }]}>
+          <Txt weight="bold" size={13} color={c.text}>
+            {pending.containsWork ? 'Adaugă o notă, dacă este nevoie' : 'Scrie lucrarea ta'}
+          </Txt>
+          <Txt size={11.5} color={c.textMuted}>
+            {pending.containsWork
+              ? 'Voi verifica pașii din fotografie. Poți preciza ce parte te interesează.'
+              : 'Include pașii făcuți și răspunsul la care ai ajuns. Nu trebuie să fie corect.'}
+          </Txt>
+          <TextInput
+            value={work}
+            onChangeText={(value) => onWorkChange(value.slice(0, 5000))}
+            multiline
+            placeholder={pending.containsWork ? 'Opțional: verifică în special…' : 'Pașii și răspunsul meu…'}
+            placeholderTextColor={c.textFaint}
+            style={[styles.workInput, { backgroundColor: c.surfaceAlt, color: c.text, fontFamily: theme.font.regular }]}
+          />
+          <Press
+            disabled={!pending.containsWork && !work.trim()}
+            onPress={onStartReview}
+            pressDepth={3}
+            style={[
+              styles.reviewStart,
+              pending.containsWork || work.trim()
+                ? { backgroundColor: c.accent, borderColor: c.accent }
+                : { backgroundColor: c.surfaceAlt, borderColor: c.border },
+            ]}
+          >
+            <Txt weight="bold" size={14} color={pending.containsWork || work.trim() ? '#FFFFFF' : c.textFaint}>
+              Verifică lucrarea
+            </Txt>
+            <RezIcon name="arrow" size={18} color={pending.containsWork || work.trim() ? '#FFFFFF' : c.textFaint} />
+          </Press>
+        </View>
+      )}
+    </View>
+  )
+}
+
+function IntentOption({
+  icon,
+  title,
+  detail,
+  tone,
+  selected,
+  onPress,
+}: {
+  icon: 'teacher' | 'verified' | 'solve'
+  title: string
+  detail: string
+  tone: string
+  selected?: boolean
+  onPress: () => void
+}) {
+  const { theme } = useTheme()
+  const c = theme.colors
+  return (
+    <Press
+      onPress={onPress}
+      pressDepth={3}
+      accessibilityRole="radio"
+      accessibilityState={{ checked: !!selected }}
+      style={[
+        styles.intentOption,
+        { backgroundColor: c.surface, borderColor: selected ? c.accent : c.border },
+      ]}
+    >
+      <View style={[styles.intentIcon, { backgroundColor: tone }]}>
+        <RezIcon name={icon} size={22} color={c.text} accent={c.accent} />
+      </View>
+      <View style={styles.flex}>
+        <Txt weight="bold" size={14.5} color={c.text}>{title}</Txt>
+        <Txt size={11.5} color={c.textMuted} style={styles.intentDetail}>{detail}</Txt>
+      </View>
+      <RezIcon name="chevron" size={17} color={c.textFaint} />
+    </Press>
   )
 }
 
@@ -1148,16 +1554,17 @@ const styles = StyleSheet.create({
   photoPrimarySlot: { flex: 1 },
   photoPrimary: {
     alignItems: 'center',
-    borderRadius: 22,
-    borderWidth: 2,
+    borderRadius: 18,
+    borderWidth: 3,
+    borderBottomWidth: 8,
     flexDirection: 'row',
     gap: 12,
     minHeight: 100,
     overflow: 'hidden',
     padding: 14,
-    shadowOffset: { width: 4, height: 5 },
-    shadowOpacity: 0.24,
-    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
   },
   photoIcon: {
     alignItems: 'center',
@@ -1169,14 +1576,15 @@ const styles = StyleSheet.create({
   photoCopy: { flex: 1, gap: 2, minWidth: 0 },
   galleryCard: {
     alignItems: 'center',
-    borderRadius: 22,
-    borderWidth: 2,
+    borderRadius: 18,
+    borderWidth: 3,
+    borderBottomWidth: 8,
     justifyContent: 'center',
     minHeight: 100,
     paddingHorizontal: 10,
-    shadowOffset: { width: 3, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
     width: 104,
   },
   galleryIcon: {
@@ -1189,13 +1597,14 @@ const styles = StyleSheet.create({
   },
   galleryCaption: { marginTop: 1, textAlign: 'center' },
   typeCard: {
-    borderRadius: 22,
-    borderWidth: 2,
+    borderRadius: 18,
+    borderWidth: 3,
+    borderBottomWidth: 8,
     marginTop: 13,
     padding: 12,
-    shadowOffset: { width: 4, height: 5 },
-    shadowOpacity: 0.18,
-    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.09,
+    shadowRadius: 8,
   },
   typeHead: {
     alignItems: 'center',
@@ -1238,29 +1647,50 @@ const styles = StyleSheet.create({
   usagePill: {
     alignItems: 'center',
     borderRadius: 14,
-    borderWidth: 1,
+    borderWidth: 2,
+    borderBottomWidth: 4,
     flexDirection: 'row',
     gap: 5,
     height: 40,
     paddingHorizontal: 10,
   },
+  preparePhoto: { alignItems: 'center', justifyContent: 'center', minHeight: 330, paddingHorizontal: 24 },
+  preparePhotoIcon: { alignItems: 'center', borderRadius: 24, height: 72, justifyContent: 'center', marginBottom: 18, width: 72 },
+  preparePhotoCopy: { lineHeight: 18, marginTop: 5, maxWidth: 330, textAlign: 'center' },
+  prepareCancel: { marginTop: 16, minHeight: 42, justifyContent: 'center', paddingHorizontal: 14 },
+  intentPage: { gap: 13, paddingBottom: 12 },
+  problemReview: { borderRadius: 22, borderWidth: 3, borderBottomWidth: 7, padding: 14 },
+  problemReviewHead: { alignItems: 'center', flexDirection: 'row', gap: 9, marginBottom: 8 },
+  problemReviewIcon: { alignItems: 'center', borderRadius: 12, height: 38, justifyContent: 'center', width: 38 },
+  problemReviewInput: { fontSize: 13.5, lineHeight: 20, maxHeight: 150, minHeight: 58, padding: 0, textAlignVertical: 'top' },
+  workDetected: { borderRadius: 99, paddingHorizontal: 8, paddingVertical: 5 },
+  intentList: { gap: 9 },
+  intentOption: { alignItems: 'center', borderRadius: 22, borderWidth: 3, borderBottomWidth: 7, flexDirection: 'row', gap: 11, minHeight: 78, padding: 12 },
+  intentIcon: { alignItems: 'center', borderRadius: 14, height: 46, justifyContent: 'center', width: 46 },
+  intentDetail: { lineHeight: 16, marginTop: 2 },
+  workPanel: { borderRadius: 22, borderWidth: 3, borderBottomWidth: 7, gap: 8, padding: 14 },
+  workInput: { borderRadius: 14, fontSize: 13.5, lineHeight: 19, minHeight: 92, padding: 12, textAlignVertical: 'top' },
+  reviewStart: { alignItems: 'center', borderRadius: 20, borderWidth: 3, borderBottomWidth: 7, flexDirection: 'row', gap: 8, justifyContent: 'center', minHeight: 58, marginTop: 2 },
 
   // composer
   composerWrap: { paddingHorizontal: 14, paddingTop: 6 },
+  guidedBar: { borderRadius: 14, gap: 6, marginBottom: 7, paddingHorizontal: 11, paddingVertical: 8 },
+  guidedBarCopy: { alignItems: 'center', flexDirection: 'row', gap: 8 },
+  revealAction: { alignSelf: 'flex-end', minHeight: 30, justifyContent: 'center', paddingHorizontal: 4 },
   field: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: 8,
     borderWidth: 2,
-    borderBottomWidth: 4,
-    borderColor: '#E5E5E5',
-    borderBottomColor: '#D0D0D0',
-    borderRadius: 22,
+    borderBottomWidth: 5,
+    borderColor: '#193149',
+    borderBottomColor: '#193149',
+    borderRadius: 24,
     paddingVertical: 7,
     paddingHorizontal: 9,
     backgroundColor: '#FFFFFF',
   },
-  input: { flex: 1, fontSize: 15.5, fontFamily: 'Inter_400Regular', maxHeight: 120, paddingVertical: 8, paddingTop: 9 },
+  input: { flex: 1, fontSize: 15.5, fontFamily: 'Nunito_600SemiBold', maxHeight: 120, paddingVertical: 8, paddingTop: 9 },
   disc: { textAlign: 'center', marginTop: 7 },
 
   netBar: {

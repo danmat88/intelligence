@@ -1,0 +1,68 @@
+{
+  "id": "III",
+  "title": "SUBIECTUL al III-lea",
+  "instructions": "Rezolvați următoarele exerciții.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac22j-sn-III-1a",
+      "number": "III.1.a",
+      "points": 5,
+      "competency": "Derivare",
+      "prompt": "Se consideră funcția $f:(0,+\\infty)\\to\\mathbb{R}$, $f(x)=2x^2+1+\\ln x$. Arătați că $f'(x)=\\frac{4x^2+1}{x}$, $x\\in(0,+\\infty)$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Derivează termen cu termen și adu la același numitor.",
+      "solution": ["$f'(x)=4x+\\frac1x$.", "$f'(x)=\\frac{4x^2+1}{x}$ pentru orice $x>0$."]
+    },
+    {
+      "id": "bac22j-sn-III-1b",
+      "number": "III.1.b",
+      "points": 5,
+      "competency": "Limite",
+      "prompt": "Se consideră funcția $f:(0,+\\infty)\\to\\mathbb{R}$, $f(x)=2x^2+1+\\ln x$. Arătați că $\\lim_{x\\to+\\infty}\\frac{f(x)-\\ln x}{x^2+x+4}=2$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Simplifică numărătorul și împarte prin $x^2$.",
+      "solution": ["$\\frac{f(x)-\\ln x}{x^2+x+4}=\\frac{2x^2+1}{x^2+x+4}$.", "Împărțind numărătorul și numitorul prin $x^2$, limita este $2$."]
+    },
+    {
+      "id": "bac22j-sn-III-1c",
+      "number": "III.1.c",
+      "points": 5,
+      "competency": "Bijectivitate",
+      "prompt": "Se consideră funcția $f:(0,+\\infty)\\to\\mathbb{R}$, $f(x)=2x^2+1+\\ln x$. Demonstrați că funcția $f$ este bijectivă.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Folosește semnul derivatei și limitele la capetele domeniului.",
+      "solution": ["$f'(x)=\\frac{4x^2+1}{x}>0$ pentru orice $x>0$, deci $f$ este strict crescătoare și injectivă.", "$f$ este continuă, $\\lim_{x\\to0^+}f(x)=-\\infty$ și $\\lim_{x\\to+\\infty}f(x)=+\\infty$, deci imaginea este $\\mathbb{R}$ și $f$ este surjectivă.", "Prin urmare, $f$ este bijectivă."]
+    },
+    {
+      "id": "bac22j-sn-III-2a",
+      "number": "III.2.a",
+      "points": 5,
+      "competency": "Integrale",
+      "prompt": "Se consideră funcția $f:\\mathbb{R}\\to\\mathbb{R}$, $f(x)=xe^x+2x^3$. Arătați că $\\int_0^4\\frac{f(x)}{e^x+2x^2}dx=8$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Factorizează $x$ în expresia lui $f(x)$.",
+      "solution": ["$f(x)=x(e^x+2x^2)$, deci $\\frac{f(x)}{e^x+2x^2}=x$.", "$\\int_0^4x\\,dx=\\frac{x^2}{2}\\big|_0^4=8$."]
+    },
+    {
+      "id": "bac22j-sn-III-2b",
+      "number": "III.2.b",
+      "points": 5,
+      "competency": "Integrare prin părți",
+      "prompt": "Se consideră funcția $f:\\mathbb{R}\\to\\mathbb{R}$, $f(x)=xe^x+2x^3$. Arătați că $\\int_0^1(f(x)-2x^3)dx=1$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "După simplificare, integrează $xe^x$ prin părți.",
+      "solution": ["$f(x)-2x^3=xe^x$.", "$\\int_0^1xe^x\\,dx=(xe^x-e^x)\\big|_0^1=1$."]
+    },
+    {
+      "id": "bac22j-sn-III-2c",
+      "number": "III.2.c",
+      "points": 5,
+      "competency": "Integrale cu substituție",
+      "prompt": "Se consideră funcția $f:\\mathbb{R}\\to\\mathbb{R}$, $f(x)=xe^x+2x^3$. Determinați numărul real $a$ pentru care $\\int_1^2\\frac1x f(x^2)dx=\\frac{e^4-e}{2}+a$.",
+      "expectedAnswer": "$a=21$",
+      "hint": "Înlocuiește $f(x^2)$ și integrează separat cei doi termeni.",
+      "solution": ["$\\frac1x f(x^2)=xe^{x^2}+2x^5$.", "$\\int_1^2xe^{x^2}dx=\\frac{e^4-e}{2}$ și $\\int_1^22x^5dx=\\frac{x^6}{3}\\big|_1^2=21$.", "Prin urmare, $a=21$."]
+    }
+  ]
+}

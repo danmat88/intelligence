@@ -44,7 +44,7 @@ export default function ContextHeader({
           hitSlop={6}
           accessibilityRole="button"
           accessibilityLabel={backLabel}
-          style={[styles.control, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' }]}
+          style={[styles.control, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: c.cardEdge }]}
         >
           <RezIcon name="back" size={19} color={c.text} accent={c.bubblyRed} />
         </Press>
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 15,
     borderWidth: 2,
-    borderBottomWidth: 3.5,
+    borderBottomWidth: 4,
     height: 44,
     justifyContent: 'center',
     width: 44,

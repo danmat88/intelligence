@@ -1,0 +1,68 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL al II-lea",
+  "instructions": "Rezolvați următoarele exerciții.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac22j-mi-II-1a",
+      "number": "II.1.a",
+      "points": 5,
+      "competency": "Determinant",
+      "prompt": "Se consideră matricea $A(x)=\\begin{pmatrix}1&-x&x^2\\\\0&1&-2x\\\\0&0&1\\end{pmatrix}$, unde $x$ este număr real. Arătați că $\\det(A(1))=1$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Matricea este triunghiulară.",
+      "solution": ["$A(1)=\\begin{pmatrix}1&-1&1\\\\0&1&-2\\\\0&0&1\\end{pmatrix}$.", "Determinantul unei matrice triunghiulare este produsul elementelor diagonalei principale, deci $\\det(A(1))=1$."]
+    },
+    {
+      "id": "bac22j-mi-II-1b",
+      "number": "II.1.b",
+      "points": 5,
+      "competency": "Calcul matriceal",
+      "prompt": "Se consideră matricea $A(x)=\\begin{pmatrix}1&-x&x^2\\\\0&1&-2x\\\\0&0&1\\end{pmatrix}$. Arătați că $A(x)A(y)=A(x+y)$, pentru orice numere reale $x$ și $y$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Efectuează produsul și folosește formula pătratului unei sume.",
+      "solution": ["$A(x)A(y)=\\begin{pmatrix}1&-(x+y)&y^2+2xy+x^2\\\\0&1&-2(x+y)\\\\0&0&1\\end{pmatrix}$.", "Cum $x^2+2xy+y^2=(x+y)^2$, rezultă $A(x)A(y)=A(x+y)$."]
+    },
+    {
+      "id": "bac22j-mi-II-1c",
+      "number": "II.1.c",
+      "points": 5,
+      "competency": "Puteri de matrice",
+      "prompt": "Se consideră matricea $A(x)=\\begin{pmatrix}1&-x&x^2\\\\0&1&-2x\\\\0&0&1\\end{pmatrix}$. Determinați numărul natural $n$ pentru care $A(n)A(n+1)A(n+2)A(n+3)=A(2n^2)$.",
+      "expectedAnswer": "$n=3$",
+      "hint": "Aplică repetat relația $A(x)A(y)=A(x+y)$.",
+      "solution": ["$A(n)A(n+1)A(n+2)A(n+3)=A(4n+6)$.", "Egalitatea cerută conduce la $4n+6=2n^2$, adică $n^2-2n-3=0$.", "$n\\in\\mathbb{N}$, deci $n=3$."]
+    },
+    {
+      "id": "bac22j-mi-II-2a",
+      "number": "II.2.a",
+      "points": 5,
+      "competency": "Lege de compoziție",
+      "prompt": "Pe mulțimea $M=[0,+\\infty)$ se definește legea $x*y=\\frac{2x}{y+2}+\\frac{2y}{x+2}$. Arătați că $1*0=1$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Înlocuiește direct valorile.",
+      "solution": ["$1*0=\\frac{2}{2}+\\frac0{3}=1$."]
+    },
+    {
+      "id": "bac22j-mi-II-2b",
+      "number": "II.2.b",
+      "points": 5,
+      "competency": "Element neutru",
+      "prompt": "Pe mulțimea $M=[0,+\\infty)$ se definește legea $x*y=\\frac{2x}{y+2}+\\frac{2y}{x+2}$. Arătați că $e=0$ este elementul neutru al legii de compoziție $*$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Calculează atât $x*0$, cât și $0*x$.",
+      "solution": ["$x*0=\\frac{2x}{2}+0=x$ pentru orice $x\\in M$.", "$0*x=0+\\frac{2x}{2}=x$ pentru orice $x\\in M$.", "Prin urmare, $e=0$ este element neutru."]
+    },
+    {
+      "id": "bac22j-mi-II-2c",
+      "number": "II.2.c",
+      "points": 5,
+      "competency": "Ecuație cu lege de compoziție",
+      "prompt": "Pe mulțimea $M=[0,+\\infty)$ se definește legea $x*y=\\frac{2x}{y+2}+\\frac{2y}{x+2}$. Determinați $x\\in M$, $x$ nenul, pentru care $x*\\frac4x=x$.",
+      "expectedAnswer": "$x=2$",
+      "hint": "Adu cele două fracții la același numitor și folosește $x^3+8=(x+2)(x^2-2x+4)$.",
+      "solution": ["$x*\\frac4x=\\frac{x^3+8}{x(x+2)}$, pentru $x>0$.", "$\\frac{x^3+8}{x(x+2)}=x \\Leftrightarrow x^3+8=x^3+2x^2$.", "$x^2=4$ și $x>0$, deci $x=2$."]
+    }
+  ]
+}

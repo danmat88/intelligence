@@ -1,0 +1,214 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Încercuiește litera corespunzătoare răspunsului corect.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "en23m-I-1",
+      "number": "1",
+      "points": 5,
+      "competency": "Operații cu numere întregi",
+      "prompt": "Rezultatul calculului $15 - (3 + 4)$ este egal cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "3"
+        },
+        {
+          "id": "b",
+          "label": "8"
+        },
+        {
+          "id": "c",
+          "label": "16"
+        },
+        {
+          "id": "d",
+          "label": "22"
+        }
+      ],
+      "correctOption": "b",
+      "expectedAnswer": "8",
+      "hint": "Efectuează mai întâi operația din paranteză.",
+      "solution": [
+        "$15 - (3 + 4) = 15 - 7 = 8$"
+      ]
+    },
+    {
+      "id": "en23m-I-2",
+      "number": "2",
+      "points": 5,
+      "competency": "Rapoarte și proporții",
+      "prompt": "Știind că $\\frac{x}{y} = \\frac{5}{2}$, $y \\neq 0$, rezultatul calculului $2x - 5y + 10$ este egal cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "0"
+        },
+        {
+          "id": "b",
+          "label": "7"
+        },
+        {
+          "id": "c",
+          "label": "10"
+        },
+        {
+          "id": "d",
+          "label": "17"
+        }
+      ],
+      "correctOption": "c",
+      "expectedAnswer": "10",
+      "hint": "Folosește proprietatea fundamentală a proporțiilor pentru a exprima $2x$ în funcție de $5y$.",
+      "solution": [
+        "Din $\\frac{x}{y} = \\frac{5}{2}$ obținem $2x = 5y$.",
+        "Înlocuind în expresie, avem $2x - 5y + 10 = 5y - 5y + 10 = 10$."
+      ]
+    },
+    {
+      "id": "en23m-I-3",
+      "number": "3",
+      "points": 5,
+      "competency": "Numere întregi",
+      "prompt": "Produsul dintre numărul $3$ și opusul numărului $3$ este egal cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "-9"
+        },
+        {
+          "id": "b",
+          "label": "-6"
+        },
+        {
+          "id": "c",
+          "label": "0"
+        },
+        {
+          "id": "d",
+          "label": "1"
+        }
+      ],
+      "correctOption": "a",
+      "expectedAnswer": "-9",
+      "hint": "Opusul unui număr $a$ este $-a$.",
+      "solution": [
+        "Opusul numărului $3$ este $-3$.",
+        "Produsul lor este $3 \\cdot (-3) = -9$."
+      ]
+    },
+    {
+      "id": "en23m-I-4",
+      "number": "4",
+      "points": 5,
+      "competency": "Fracții dintr-un număr",
+      "prompt": "Numărul care reprezintă $\\frac{2}{3}$ din $12$ este egal cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "2"
+        },
+        {
+          "id": "b",
+          "label": "4"
+        },
+        {
+          "id": "c",
+          "label": "8"
+        },
+        {
+          "id": "d",
+          "label": "12"
+        }
+      ],
+      "correctOption": "c",
+      "expectedAnswer": "8",
+      "hint": "Pentru a afla o fracție dintr-un număr, înmulțește fracția cu acel număr.",
+      "solution": [
+        "$\\frac{2}{3} \\cdot 12 = \\frac{2 \\cdot 12}{3} = 2 \\cdot 4 = 8$"
+      ]
+    },
+    {
+      "id": "en23m-I-5",
+      "number": "5",
+      "points": 5,
+      "competency": "Intervale de numere reale",
+      "prompt": "Profesorul întreabă care este cel mai mare număr întreg din intervalul $(-2, 5)$. Răspunsurile date de elevii Andreea, Marina, David și Vlad sunt prezentate în tabelul de mai jos:\n\n| Andreea | Marina | David | Vlad |\n|---|---|---|---|\n| $-3$ | $-2$ | $5$ | $4$ |\n\nDintre cei patru elevi, cel care a răspuns corect la întrebarea profesorului este:",
+      "options": [
+        {
+          "id": "a",
+          "label": "Andreea"
+        },
+        {
+          "id": "b",
+          "label": "Marina"
+        },
+        {
+          "id": "c",
+          "label": "David"
+        },
+        {
+          "id": "d",
+          "label": "Vlad"
+        }
+      ],
+      "correctOption": "d",
+      "expectedAnswer": "Vlad",
+      "hint": "Atenție la parantezele rotunde ale intervalului, care indică faptul că extremitățile nu sunt incluse.",
+      "solution": [
+        "Numerele întregi din intervalul deschis $(-2, 5)$ sunt $-1, 0, 1, 2, 3, 4$.",
+        "Cel mai mare număr întreg din acest interval este $4$.",
+        "Acest răspuns a fost dat de Vlad."
+      ]
+    },
+    {
+      "id": "en23m-I-6",
+      "number": "6",
+      "points": 5,
+      "competency": "Analiza datelor",
+      "prompt": "În diagrama de mai jos sunt prezentate rezultatele obținute la un test la matematică, de către elevii unei clase a VIII-a.\n\nAfirmația: „Conform informațiilor din diagramă, la acest test, nota 7 a fost obținută de 10 elevi.” este:",
+      "options": [
+        {
+          "id": "a",
+          "label": "adevărată"
+        },
+        {
+          "id": "b",
+          "label": "falsă"
+        }
+      ],
+      "correctOption": "b",
+      "expectedAnswer": "falsă",
+      "hint": "Urmărește înălțimea barei corespunzătoare notei 7 pe axa verticală.",
+      "solution": [
+        "Din diagramă, bara corespunzătoare notei 7 se ridică până la valoarea 8 pe axa verticală (Număr de elevi).",
+        "Prin urmare, nota 7 a fost obținută de 8 elevi, nu de 10.",
+        "Afirmația este falsă."
+      ],
+      "figureDescription": "O diagramă cu bare verticale. Axa orizontală reprezintă notele obținute: Nota 4, Nota 5, Nota 6, Nota 7, Nota 8, Nota 9, Nota 10. Axa verticală reprezintă numărul de elevi, cu marcaje din 2 în 2, de la 0 la 10. Înălțimile barelor sunt: Nota 4 - 3 elevi, Nota 5 - 2 elevi, Nota 6 - 6 elevi, Nota 7 - 8 elevi, Nota 8 - 5 elevi, Nota 9 - 4 elevi, Nota 10 - 2 elevi.",
+      "figure": {
+        "kind": "bar-chart",
+        "labels": [
+          "Nota 4",
+          "Nota 5",
+          "Nota 6",
+          "Nota 7",
+          "Nota 8",
+          "Nota 9",
+          "Nota 10"
+        ],
+        "values": [
+          3,
+          2,
+          6,
+          8,
+          5,
+          4,
+          2
+        ]
+      }
+    }
+  ]
+}

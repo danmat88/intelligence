@@ -1,0 +1,236 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL al II-lea",
+  "instructions": "Încercuiește litera corespunzătoare răspunsului corect.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "en23j-II-1",
+      "number": "1",
+      "points": 5,
+      "competency": "Geometrie plană - segmente",
+      "prompt": "În figura alăturată sunt reprezentate punctele coliniare $A$, $B$, $C$ și $D$, în această ordine, astfel încât $AB = BC = CD$, iar lungimea segmentului $AC$ este egală cu $10\\text{ cm}$. Lungimea segmentului $AD$ este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$5\\text{ cm}$"
+        },
+        {
+          "id": "b",
+          "label": "$10\\text{ cm}$"
+        },
+        {
+          "id": "c",
+          "label": "$15\\text{ cm}$"
+        },
+        {
+          "id": "d",
+          "label": "$20\\text{ cm}$"
+        }
+      ],
+      "correctOption": "c",
+      "expectedAnswer": "$15\\text{ cm}$",
+      "hint": "Exprimă lungimea segmentului $AC$ în funcție de lungimea segmentului $AB$.",
+      "solution": [
+        "Din $AB = BC = CD$, deducem că $AC = AB + BC = 2 \\cdot AB$.",
+        "Cum $AC = 10\\text{ cm}$, rezultă că $2 \\cdot AB = 10\\text{ cm}$, deci $AB = 5\\text{ cm}$.",
+        "Lungimea segmentului $AD$ este $AD = AB + BC + CD = 3 \\cdot AB$.",
+        "Prin urmare, $AD = 3 \\cdot 5\\text{ cm} = 15\\text{ cm}$."
+      ],
+      "figureDescription": "O linie dreaptă pe care sunt marcate punctele A, B, C și D în această ordine.",
+      "figure": {
+        "kind": "segment",
+        "points": [
+          {
+            "label": "A",
+            "position": 0
+          },
+          {
+            "label": "B",
+            "position": 1
+          },
+          {
+            "label": "C",
+            "position": 2
+          },
+          {
+            "label": "D",
+            "position": 3
+          }
+        ]
+      }
+    },
+    {
+      "id": "en23j-II-2",
+      "number": "2",
+      "points": 5,
+      "competency": "Geometrie plană - unghiuri",
+      "prompt": "În figura alăturată sunt reprezentate punctele coliniare $A$, $O$ și $B$, în această ordine. Punctele $M$ și $N$ sunt de aceeași parte a dreptei $AB$, astfel încât măsura unghiului $MOA$ este egală cu $30^\\circ$ și dreapta $ON$ este perpendiculară pe dreapta $AB$. Măsura unghiului $MON$ este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$30^\\circ$"
+        },
+        {
+          "id": "b",
+          "label": "$45^\\circ$"
+        },
+        {
+          "id": "c",
+          "label": "$60^\\circ$"
+        },
+        {
+          "id": "d",
+          "label": "$90^\\circ$"
+        }
+      ],
+      "correctOption": "c",
+      "expectedAnswer": "$60^\\circ$",
+      "hint": "Care este măsura unghiului format de o dreaptă perpendiculară pe o altă dreaptă?",
+      "solution": [
+        "Deoarece dreapta $ON$ este perpendiculară pe dreapta $AB$, măsura unghiului $\\angle AON$ este de $90^\\circ$.",
+        "Unghiul $\\angle AON$ este format din unghiurile adiacente $\\angle MOA$ și $\\angle MON$.",
+        "Astfel, $\\angle MON = \\angle AON - \\angle MOA = 90^\\circ - 30^\\circ = 60^\\circ$."
+      ],
+      "figureDescription": "Punctele A, O, B sunt coliniare. Semidreptele OM și ON sunt de aceeași parte a dreptei AB. Unghiul MOA este ascuțit, iar unghiul AON este drept."
+    },
+    {
+      "id": "en23j-II-3",
+      "number": "3",
+      "points": 5,
+      "competency": "Geometrie plană - arii",
+      "prompt": "În figura alăturată este reprezentat triunghiul $ABC$ cu aria de $15\\text{ cm}^2$. Punctul $M$ se află pe segmentul $BC$, astfel încât $BC = 3 \\cdot BM$. Aria triunghiului $AMC$ este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$5\\text{ cm}^2$"
+        },
+        {
+          "id": "b",
+          "label": "$7,5\\text{ cm}^2$"
+        },
+        {
+          "id": "c",
+          "label": "$10\\text{ cm}^2$"
+        },
+        {
+          "id": "d",
+          "label": "$12,5\\text{ cm}^2$"
+        }
+      ],
+      "correctOption": "c",
+      "expectedAnswer": "$10\\text{ cm}^2$",
+      "hint": "Raportul ariilor a două triunghiuri cu aceeași înălțime este egal cu raportul lungimilor bazelor lor.",
+      "solution": [
+        "Triunghiurile $ABM$ și $ABC$ au aceeași înălțime dusă din vârful $A$.",
+        "Raportul ariilor lor este egal cu raportul bazelor: $\\frac{\\text{Aria}(ABM)}{\\text{Aria}(ABC)} = \\frac{BM}{BC}$.",
+        "Cum $BC = 3 \\cdot BM$, rezultă că $\\text{Aria}(ABM) = \\frac{1}{3} \\cdot \\text{Aria}(ABC) = \\frac{1}{3} \\cdot 15 = 5\\text{ cm}^2$.",
+        "Aria triunghiului $AMC$ este $\\text{Aria}(ABC) - \\text{Aria}(ABM) = 15 - 5 = 10\\text{ cm}^2$."
+      ],
+      "figureDescription": "Un triunghi ABC cu un punct M pe latura BC. Segmentul AM împarte triunghiul în două triunghiuri mai mici, ABM și AMC."
+    },
+    {
+      "id": "en23j-II-4",
+      "number": "4",
+      "points": 5,
+      "competency": "Geometrie plană - pătratul",
+      "prompt": "În figura alăturată este reprezentat pătratul $ABCD$ cu perimetrul egal cu $40\\text{ cm}$. Lungimea segmentului $AC$ este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$10\\text{ cm}$"
+        },
+        {
+          "id": "b",
+          "label": "$10\\sqrt{2}\\text{ cm}$"
+        },
+        {
+          "id": "c",
+          "label": "$10\\sqrt{3}\\text{ cm}$"
+        },
+        {
+          "id": "d",
+          "label": "$20\\text{ cm}$"
+        }
+      ],
+      "correctOption": "b",
+      "expectedAnswer": "$10\\sqrt{2}\\text{ cm}$",
+      "hint": "Află mai întâi lungimea laturii pătratului, apoi folosește formula pentru diagonala pătratului.",
+      "solution": [
+        "Perimetrul pătratului este $4 \\cdot l = 40\\text{ cm}$, de unde latura $l = 10\\text{ cm}$.",
+        "Segmentul $AC$ este diagonala pătratului.",
+        "Lungimea diagonalei unui pătrat cu latura $l$ este $l\\sqrt{2}$.",
+        "Deci, $AC = 10\\sqrt{2}\\text{ cm}$."
+      ],
+      "figureDescription": "Un pătrat ABCD cu diagonala AC trasată."
+    },
+    {
+      "id": "en23j-II-5",
+      "number": "5",
+      "points": 5,
+      "competency": "Geometrie plană - cercul",
+      "prompt": "În figura alăturată, punctele distincte $A$, $B$, $C$, $D$, $E$, $F$, $G$ și $H$ sunt reprezentate pe cercul de centru $O$, astfel încât arcele mici $AB$, $BC$, $CD$, $DE$, $EF$, $FG$, $GH$ și $HA$ sunt congruente. Măsura arcului mic $BC$ este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$30^\\circ$"
+        },
+        {
+          "id": "b",
+          "label": "$45^\\circ$"
+        },
+        {
+          "id": "c",
+          "label": "$60^\\circ$"
+        },
+        {
+          "id": "d",
+          "label": "$75^\\circ$"
+        }
+      ],
+      "correctOption": "b",
+      "expectedAnswer": "$45^\\circ$",
+      "hint": "Care este măsura totală a unui cerc în grade?",
+      "solution": [
+        "Cercul întreg are o măsură de $360^\\circ$.",
+        "Punctele împart cercul în $8$ arce mici congruente.",
+        "Măsura unui singur arc, cum ar fi arcul mic $BC$, este $\\frac{360^\\circ}{8} = 45^\\circ$."
+      ],
+      "figureDescription": "Un cerc cu centrul O pe care sunt marcate 8 puncte la distanțe egale: A, B, C, D, E, F, G, H."
+    },
+    {
+      "id": "en23j-II-6",
+      "number": "6",
+      "points": 5,
+      "competency": "Geometrie în spațiu - cubul",
+      "prompt": "În figura alăturată este reprezentat cubul $ABCDA'B'C'D'$ cu $AB = 5\\text{ cm}$. Lungimea segmentului $BD'$ este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$5\\text{ cm}$"
+        },
+        {
+          "id": "b",
+          "label": "$5\\sqrt{2}\\text{ cm}$"
+        },
+        {
+          "id": "c",
+          "label": "$5\\sqrt{3}\\text{ cm}$"
+        },
+        {
+          "id": "d",
+          "label": "$10\\text{ cm}$"
+        }
+      ],
+      "correctOption": "c",
+      "expectedAnswer": "$5\\sqrt{3}\\text{ cm}$",
+      "hint": "Segmentul $BD'$ reprezintă diagonala cubului.",
+      "solution": [
+        "Segmentul $BD'$ este diagonala cubului $ABCDA'B'C'D'$.",
+        "Formula pentru lungimea diagonalei unui cub cu muchia $l$ este $d = l\\sqrt{3}$.",
+        "Înlocuind $l = 5\\text{ cm}$, obținem $BD' = 5\\sqrt{3}\\text{ cm}$."
+      ],
+      "figureDescription": "Un cub ABCDA'B'C'D' cu diagonala BD' trasată cu linie întreruptă."
+    }
+  ]
+}

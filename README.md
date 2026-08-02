@@ -1,60 +1,54 @@
-# intelligence
+# Profu’ de Mate
 
-A Gemini-powered mobile app (Expo + React Native + TypeScript). This is the
-**foundation** — a clean, provider-agnostic AI layer with a working demo. The
-specific product gets built on top later.
+Aplicație mobilă de matematică pentru trei contexte: Evaluarea Națională,
+Bacalaureat și utilizare fără obiectiv de examen. Utilizatorul poate trimite o
+problemă prin text sau fotografie, confirma enunțul și alege ajutor ghidat,
+verificarea propriei lucrări ori soluția completă.
 
-## Run it
+## Dezvoltare locală
 
-```bash
-npm install          # already done by the scaffold
-npm start            # opens Expo — scan the QR with Expo Go on your phone
-# npm start -c       # same, but clears the cache (use after changing .env)
-```
-
-Install **Expo Go** on your phone (App Store / Play Store), scan the QR from
-`npm start`, and the app opens live on your device.
-
-## Set your Gemini key
-
-1. Get a free key: https://aistudio.google.com/apikey
-2. Open `.env` and paste it into `EXPO_PUBLIC_GEMINI_API_KEY=`
-3. Restart with `npm start -c` (env changes need a cache clear)
-
-`.env` is gitignored — your key never gets committed.
-
-## How the AI layer works
-
-Everything imports from **`src/ai`** and nothing else:
-
-```ts
-import { ai } from './src/ai'
-
-const { text, ms } = await ai.generate('Explain X simply')
-// vision:
-const { text } = await ai.generate('What is in this photo?', {
-  image: { base64, mimeType: 'image/jpeg' },
-})
-```
-
-- `src/ai/types.ts` — the provider-agnostic `AIClient` interface
-- `src/ai/gemini.ts` — Gemini implementation via plain `fetch` (text + vision)
-- `src/ai/index.ts` — picks the provider + reads config. **Swap providers here.**
-
-## Before you publish (security)
-
-The prototype calls Gemini directly with the key baked into the app. That key
-can be extracted from a shipped app. Before release, put a **Firebase Cloud
-Function** between the app and Gemini and set `baseUrl` in `src/ai/index.ts`
-to it — then remove the key from the client. One-line change; the rest of the
-app is unaffected.
-
-## Adding Firebase (when the app needs accounts / data / storage)
+Proiectul folosește Expo SDK 54, React Native, TypeScript și un development
+client Android.
 
 ```bash
-npx expo install firebase
+npm install
+npm run dev:client
 ```
 
-Then fill the `EXPO_PUBLIC_FIREBASE_*` values in `.env` (see `.env.example`)
-and create `src/firebase.ts` to initialise it. Deferred until the product
-actually needs it — no point carrying it before then.
+Pentru verificarea completă:
+
+```bash
+npm test -- --runInBand
+npm run test:rules
+npm --prefix functions run build
+npx expo-doctor
+```
+
+## Arhitectură
+
+- `src/solve` — citirea fotografiei, cele trei moduri de ajutor și verificarea;
+- `src/practice` — exerciții EN/BAC, exerciții libere și rezultate bazate numai
+  pe activitate reală;
+- `src/archive` — registrul surselor oficiale și conținut interactiv publicat
+  numai după verificare editorială integrală;
+- `src/product` — profilul de onboarding și obiectivul curent;
+- `functions` — proxy AI autentificat, limite server-side, export, ștergere de
+  cont și integrarea entitlement-urilor;
+- `firestore.rules` / `storage.rules` — izolare strictă a datelor sub UID.
+
+Firebase Authentication pornește cu o sesiune anonimă, astfel încât aplicația
+nu blochează utilizatorul într-un ecran de cont. Conectarea ulterioară cu Google
+păstrează sau transferă datele sesiunii.
+
+## Configurare
+
+Valorile publice acceptate sunt documentate în `.env.example`. Cheia Gemini nu
+se pune în aplicație: este secret Firebase Functions (`GEMINI_API_KEY`), iar
+clientul folosește numai `EXPO_PUBLIC_AI_PROXY_URL`.
+
+App Check rămâne în monitorizare în development. Enforcement-ul se activează
+numai după configurarea certificatelor reale de release și verificarea
+metricilor unui build semnat.
+
+Contractul curent al produsului și modelul de date sunt în
+[`docs/CODEX-PLAN.md`](docs/CODEX-PLAN.md).

@@ -3,6 +3,7 @@ import {
   collection,
   doc,
   setDoc,
+  updateDoc,
   deleteDoc,
   onSnapshot,
   query,
@@ -13,13 +14,12 @@ import {
 import { reportNonFatal } from '../lib/report'
 
 /** A saved turn. Photos live in Firebase Storage (owner-only): `imagePath`
- *  is the storage object, `imageUrl` a tokened URL ready for <img src>;
- *  dimensions let the UI reserve the exact image box before it loads. */
+ *  is the private Storage object; dimensions let the UI reserve the exact
+ *  image box before it loads through an authenticated download. */
 export type StoredTurn = {
   role: 'user' | 'assistant'
   text: string
   imagePath?: string
-  imageUrl?: string
   imageW?: number
   imageH?: number
 }
@@ -32,6 +32,8 @@ export type Problem = {
   createdAt: number
   /** True when the problem arrived as a photo (drives the history tile icon). */
   photo?: boolean
+  /** Explicit favourite chosen by the user; history itself is automatic. */
+  saved?: boolean
 }
 
 /**
@@ -46,29 +48,30 @@ function problemsCol(uid: string) {
   return collection(doc(getFirestore(), 'users', uid), 'problems')
 }
 
-/** Drop runtime-only fields (local URIs, pending/error) before persisting;
- *  cloud image references (path + tokened URL) ride along when present. */
+/** Drop runtime-only fields before persisting; only the private Storage path
+ * rides along, never a bearer-style download URL. */
 export function toStoredTurns(
   turns: {
     role: 'user' | 'assistant'
     text: string
     imageUri?: string
     imagePath?: string
-    imageUrl?: string
     imageW?: number
     imageH?: number
   }[],
   photoLabel = 'Problemă din poză',
 ): StoredTurn[] {
-  return turns
+  const stored = turns
     .filter((t) => !!t.text || !!t.imageUri)
     .map((t) => ({
       role: t.role,
       text: t.text || photoLabel,
       ...(t.imagePath ? { imagePath: t.imagePath } : null),
-      ...(t.imageUrl ? { imageUrl: t.imageUrl } : null),
       ...(t.imageW && t.imageH ? { imageW: t.imageW, imageH: t.imageH } : null),
     }))
+  // Security Rules validate every possible slot explicitly. Keep the original
+  // problem and the latest context when a long chat exceeds that bound.
+  return stored.length <= 20 ? stored : [stored[0], ...stored.slice(-19)]
 }
 
 /** Allocate a problem id WITHOUT writing anything. Persistence becomes
@@ -112,6 +115,10 @@ export async function removeProblem(uid: string, id: string): Promise<void> {
   await deleteDoc(doc(problemsCol(uid), id))
 }
 
+export async function setProblemSaved(uid: string, id: string, saved: boolean): Promise<void> {
+  await updateDoc(doc(problemsCol(uid), id), { saved })
+}
+
 /** Live list of the user's problems, newest first. Returns an unsubscribe fn. */
 export function subscribeProblems(uid: string, cb: (items: Problem[]) => void): () => void {
   const q = query(problemsCol(uid), orderBy('createdAt', 'desc'), limit(60))
@@ -125,6 +132,7 @@ export function subscribeProblems(uid: string, cb: (items: Problem[]) => void): 
             topic?: string | null
             turns?: StoredTurn[]
             photo?: boolean
+            saved?: boolean
             createdAt?: { toMillis?: () => number }
           }
           return {
@@ -133,6 +141,7 @@ export function subscribeProblems(uid: string, cb: (items: Problem[]) => void): 
             topic: data.topic ?? null,
             turns: Array.isArray(data.turns) ? data.turns : [],
             photo: data.photo,
+            saved: data.saved === true,
             createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : Date.now(),
           }
         }),

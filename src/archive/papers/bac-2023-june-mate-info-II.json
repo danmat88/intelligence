@@ -1,0 +1,86 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL al II-lea",
+  "instructions": "Rezolvați următoarele probleme.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac23j-mi-II-1",
+      "number": "II.1.a",
+      "points": 5,
+      "competency": "Calculul determinantului unei matrice",
+      "prompt": "Se consideră matricea $A(a) = \\begin{pmatrix} 2 & 1 & 2 \\\\ 1 & -1 & a \\\\ a & a+1 & -2 \\end{pmatrix}$ și sistemul de ecuații $\\begin{cases} 2x + y + 2z = 2 \\\\ x - y + az = 4 \\\\ ax + (a+1)y - 2z = a \\end{cases}$, unde $a$ este număr real.\n\na) Arătați că $\\det(A(0)) = 8$.",
+      "expectedAnswer": "$8$",
+      "hint": "Înlocuiți $a$ cu $0$ în expresia matricei $A(a)$ și calculați determinantul folosind regula lui Sarrus sau dezvoltarea pe o linie/coloană.",
+      "solution": [
+        "$A(0) = \\begin{pmatrix} 2 & 1 & 2 \\\\ 1 & -1 & 0 \\\\ 0 & 1 & -2 \\end{pmatrix} \\Rightarrow \\det(A(0)) = \\begin{vmatrix} 2 & 1 & 2 \\\\ 1 & -1 & 0 \\\\ 0 & 1 & -2 \\end{vmatrix} =$",
+        "$= 4 + 2 + 0 - 0 - 0 + 2 = 8$"
+      ]
+    },
+    {
+      "id": "bac23j-mi-II-2",
+      "number": "II.1.b",
+      "points": 5,
+      "competency": "Inversabilitatea unei matrice",
+      "prompt": "Se consideră matricea $A(a) = \\begin{pmatrix} 2 & 1 & 2 \\\\ 1 & -1 & a \\\\ a & a+1 & -2 \\end{pmatrix}$, unde $a$ este număr real.\n\nb) Determinați mulțimea numerelor reale $a$ pentru care matricea $A(a)$ este inversabilă.",
+      "expectedAnswer": "$a \\in \\mathbb{R} \\setminus \\{-2, 4\\}$",
+      "hint": "O matrice pătratică este inversabilă dacă și numai dacă determinantul ei este nenul.",
+      "solution": [
+        "$\\det(A(a)) = \\begin{vmatrix} 2 & 1 & 2 \\\\ 1 & -1 & a \\\\ a & a+1 & -2 \\end{vmatrix} = -a^2 + 2a + 8$, pentru orice număr real $a$",
+        "$\\det(A(a)) = 0 \\Leftrightarrow a = -2$ sau $a = 4$, deci matricea $A(a)$ este inversabilă dacă și numai dacă $a \\in \\mathbb{R} \\setminus \\{-2, 4\\}$"
+      ]
+    },
+    {
+      "id": "bac23j-mi-II-3",
+      "number": "II.1.c",
+      "points": 5,
+      "competency": "Rezolvarea sistemelor de ecuații liniare",
+      "prompt": "Se consideră sistemul de ecuații $\\begin{cases} 2x + y + 2z = 2 \\\\ x - y + az = 4 \\\\ ax + (a+1)y - 2z = a \\end{cases}$, unde $a$ este număr real.\n\nc) Pentru $a = -2$, arătați că $x_0z_0 + y_0 = -2$, pentru orice soluție $(x_0, y_0, z_0)$ a sistemului de ecuații.",
+      "expectedAnswer": "$-2$",
+      "hint": "Rezolvați sistemul pentru $a = -2$ exprimând soluțiile în funcție de un parametru, apoi calculați expresia $x_0z_0 + y_0$.",
+      "solution": [
+        "Pentru $a = -2$, soluțiile sistemului de ecuații sunt de forma $(2, -2 - 2\\alpha, \\alpha)$, cu $\\alpha \\in \\mathbb{C}$",
+        "$x_0z_0 + y_0 = 2\\alpha - 2 - 2\\alpha = -2$, pentru orice soluție $(x_0, y_0, z_0)$ a sistemului de ecuații"
+      ]
+    },
+    {
+      "id": "bac23j-mi-II-4",
+      "number": "II.2.a",
+      "points": 5,
+      "competency": "Calculul valorii unei legi de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x \\circ y = xy + (2^x - 2)(2^y - 2)$.\n\na) Arătați că $2 \\circ 3 = 18$.",
+      "expectedAnswer": "$18$",
+      "hint": "Înlocuiți $x$ cu $2$ și $y$ cu $3$ în definiția legii de compoziție.",
+      "solution": [
+        "$2 \\circ 3 = 2 \\cdot 3 + (2^2 - 2)(2^3 - 2) =$",
+        "$= 6 + 12 = 18$"
+      ]
+    },
+    {
+      "id": "bac23j-mi-II-5",
+      "number": "II.2.b",
+      "points": 5,
+      "competency": "Determinarea elementului neutru",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x \\circ y = xy + (2^x - 2)(2^y - 2)$.\n\nb) Arătați că $e = 1$ este elementul neutru al legii de compoziție „$\\circ$”.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Verificați dacă $x \\circ 1 = x$ și $1 \\circ x = x$ pentru orice număr real $x$.",
+      "solution": [
+        "$x \\circ 1 = x \\cdot 1 + (2^x - 2)(2^1 - 2) = x + 0 = x$, pentru orice număr real $x$",
+        "$1 \\circ x = 1 \\cdot x + (2^1 - 2)(2^x - 2) = x + 0 = x$, pentru orice număr real $x$, deci $e = 1$ este elementul neutru al legii de compoziție „$\\circ$”"
+      ]
+    },
+    {
+      "id": "bac23j-mi-II-6",
+      "number": "II.2.c",
+      "points": 5,
+      "competency": "Proprietăți ale legilor de compoziție și inegalități",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x \\circ y = xy + (2^x - 2)(2^y - 2)$.\n\nc) Demonstrați că $x \\circ (-x) \\le 1$, pentru orice număr real $x$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Calculați $x \\circ (-x)$ și încercați să restrângeți expresia obținută formând pătrate perfecte.",
+      "solution": [
+        "$x \\circ (-x) = -x^2 + 1 - 2 \\cdot 2^x - 2 \\cdot 2^{-x} + 4 =$",
+        "$= -x^2 + 1 - 2 \\cdot \\left(2^x - 2 + \\frac{1}{2^x}\\right) = 1 - x^2 - 2 \\cdot \\left(\\sqrt{2^x} - \\frac{1}{\\sqrt{2^x}}\\right)^2 \\le 1$, pentru orice număr real $x$"
+      ]
+    }
+  ]
+}

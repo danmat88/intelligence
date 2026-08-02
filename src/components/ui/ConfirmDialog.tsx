@@ -32,9 +32,9 @@ export default function ConfirmDialog({
 
   return (
     <Overlay open={open} onClose={onClose} align="center">
-      <View style={[styles.card, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' }]}>
-        <View style={[styles.badge, { backgroundColor: c.bubblyRed, borderColor: c.bubblyRedDark, borderBottomColor: c.bubblyRedDark }]}>
-          <RezIcon name="alert" size={22} color="#fff" accent={c.bubblyYellow} />
+      <View style={[styles.card, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: c.cardEdge }]}>
+        <View style={[styles.badge, { backgroundColor: c.bubblyRed, borderColor: c.border, borderBottomColor: c.border }]}>
+          <RezIcon name="alert" size={22} color="#FFFFFF" accent={c.bubblyYellow} />
         </View>
         <Txt size={20} style={{ fontFamily: theme.font.display, letterSpacing: -0.4 }}>
           {title}
@@ -43,7 +43,7 @@ export default function ConfirmDialog({
           {message}
         </Txt>
         <View style={styles.row}>
-          <Press onPress={onClose} pressDepth={3.5} containerStyle={styles.flex} style={[styles.btn, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' }]}>
+          <Press onPress={onClose} pressDepth={5} containerStyle={styles.flex} style={[styles.btn, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: c.cardEdge }]}>
             <Txt weight="bold" size={15} color={c.textMuted}>
               {cancelLabel}
             </Txt>
@@ -53,9 +53,9 @@ export default function ConfirmDialog({
               onClose()
               onConfirm()
             }}
-            pressDepth={3.5}
+            pressDepth={5}
             containerStyle={styles.flex}
-            style={[styles.btn, { backgroundColor: c.bubblyRed, borderColor: c.bubblyRedDark, borderBottomColor: c.bubblyRedDark }]}
+            style={[styles.btn, { backgroundColor: c.bubblyRed, borderColor: c.border, borderBottomColor: c.border }]}
           >
             <Txt weight="bold" size={15} color="#FFFFFF">
               {confirmLabel}

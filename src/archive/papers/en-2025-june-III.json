@@ -1,0 +1,178 @@
+{
+  "id": "III",
+  "title": "SUBIECTUL al III-lea",
+  "instructions": "Scrieți rezolvările complete.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "en25j-III-1a",
+      "number": "1.a",
+      "points": 2,
+      "competency": "Rezolvarea problemelor cu procente și ecuații",
+      "prompt": "Ana a cumpărat de la o librărie caiete, pixuri și creioane. Prețul unui pix este egal cu $75\\%$ din prețul unui caiet, iar prețul unui creion este egal cu $40\\%$ din prețul unui pix.\n\nEste posibil ca prețul a opt pixuri să fie egal cu prețul a cinci caiete? Justifică răspunsul dat.",
+      "expectedAnswer": "Nu este posibil",
+      "hint": "Exprimă prețul unui pix în funcție de prețul unui caiet și compară costul a opt pixuri cu costul a cinci caiete.",
+      "solution": [
+        "Prețul unui pix este $\\frac{75}{100} \\cdot x = \\frac{3}{4} \\cdot x$, unde $x$ reprezintă prețul unui caiet.",
+        "Opt pixuri costă $8 \\cdot \\frac{3}{4} \\cdot x = 6x$ și, cum $6x \\neq 5x$, nu este posibil ca prețul a opt pixuri să fie egal cu prețul a cinci caiete."
+      ]
+    },
+    {
+      "id": "en25j-III-1b",
+      "number": "1.b",
+      "points": 3,
+      "competency": "Rezolvarea problemelor cu procente și ecuații",
+      "prompt": "Ana a cumpărat de la o librărie caiete, pixuri și creioane. Prețul unui pix este egal cu $75\\%$ din prețul unui caiet, iar prețul unui creion este egal cu $40\\%$ din prețul unui pix.\n\nDacă Ana a plătit pentru trei caiete, patru pixuri și cinci creioane suma de $45$ de lei, determină prețul unui caiet.",
+      "expectedAnswer": "$6\\text{ lei}$",
+      "hint": "Exprimă prețul unui creion în funcție de prețul unui caiet și scrie o ecuație pentru suma totală plătită.",
+      "solution": [
+        "Prețul unui creion este $\\frac{40}{100} \\cdot \\frac{3}{4} \\cdot x = \\frac{3}{10} \\cdot x$, unde $x$ reprezintă prețul unui caiet.",
+        "$3x + 4 \\cdot \\frac{3}{4} \\cdot x + 5 \\cdot \\frac{3}{10} \\cdot x = 45$",
+        "$15x = 90$, de unde obținem $x = 6$, deci prețul unui caiet este $6\\text{ lei}$."
+      ]
+    },
+    {
+      "id": "en25j-III-2a",
+      "number": "2.a",
+      "points": 2,
+      "competency": "Calcul algebric cu expresii raționale",
+      "prompt": "Se consideră expresia $E(x) = \\left( \\frac{2}{x-3} - \\frac{3}{x} + \\frac{2}{x+3} \\right) : \\frac{1}{x^2-3x}$, unde $x$ este număr real, $x \\neq -3$, $x \\neq 0$ și $x \\neq 3$.\n\nArată că $\\frac{2}{x-3} - \\frac{3}{x} + \\frac{2}{x+3} = \\frac{x^2+27}{x(x-3)(x+3)}$, pentru orice număr real $x$, $x \\neq -3$, $x \\neq 0$ și $x \\neq 3$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Adu fracțiile din paranteză la același numitor comun.",
+      "solution": [
+        "$\\frac{2}{x-3} - \\frac{3}{x} + \\frac{2}{x+3} = \\frac{2x(x+3) - 3(x-3)(x+3) + 2x(x-3)}{x(x-3)(x+3)} =$",
+        "$= \\frac{2x^2 + 6x - 3x^2 + 27 + 2x^2 - 6x}{x(x-3)(x+3)} = \\frac{x^2+27}{x(x-3)(x+3)}$, pentru orice număr real $x$, $x \\neq -3$, $x \\neq 0$ și $x \\neq 3$."
+      ]
+    },
+    {
+      "id": "en25j-III-2b",
+      "number": "2.b",
+      "points": 3,
+      "competency": "Calcul algebric cu expresii raționale",
+      "prompt": "Se consideră expresia $E(x) = \\left( \\frac{2}{x-3} - \\frac{3}{x} + \\frac{2}{x+3} \\right) : \\frac{1}{x^2-3x}$, unde $x$ este număr real, $x \\neq -3$, $x \\neq 0$ și $x \\neq 3$.\n\nDemonstrează că $E(n) > 6$, pentru orice număr natural $n$, $n \\neq 0$, $n \\neq 3$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Efectuează împărțirea și simplifică expresia $E(x)$, apoi studiază semnul diferenței $E(n) - 6$.",
+      "solution": [
+        "$E(x) = \\frac{x^2+27}{x(x-3)(x+3)} \\cdot \\frac{x(x-3)}{1} = \\frac{x^2+27}{x+3}$, pentru orice număr real $x$, $x \\neq -3$, $x \\neq 0$, $x \\neq 3$.",
+        "$E(n) - 6 = \\frac{(n-3)^2}{n+3}$, pentru orice număr natural $n$, $n \\neq 0$ și $n \\neq 3$.",
+        "Cum $n+3 > 0$ și $(n-3)^2 > 0$, rezultă că $E(n) - 6 > 0$, deci $E(n) > 6$, pentru orice număr natural $n$, $n \\neq 0$ și $n \\neq 3$."
+      ]
+    },
+    {
+      "id": "en25j-III-3a",
+      "number": "3.a",
+      "points": 2,
+      "competency": "Calculul valorilor unei funcții",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\rightarrow \\mathbb{R}$, $f(x) = 2x - 4$.\n\nArată că $f(2) - f(0) = 4$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Calculează separat $f(2)$ și $f(0)$, apoi scade rezultatele.",
+      "solution": [
+        "$f(2) = 0$",
+        "$f(0) = -4$, deci $f(2) - f(0) = 0 - (-4) = 4$."
+      ],
+      "figureDescription": "Un sistem de axe ortogonale xOy cu o dreaptă care intersectează axa Ox în partea pozitivă și axa Oy în partea negativă."
+    },
+    {
+      "id": "en25j-III-3b",
+      "number": "3.b",
+      "points": 3,
+      "competency": "Geometria graficului unei funcții",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\rightarrow \\mathbb{R}$, $f(x) = 2x - 4$.\n\nReprezentarea geometrică a graficului funcției $f$ intersectează axele $Ox$ și $Oy$ ale sistemului de axe ortogonale $xOy$ în punctele $A$, respectiv $B$. Punctul $C$ este simetricul punctului $A$ față de axa $Oy$. Arată că perimetrul triunghiului $ABC$ este egal cu $4(\\sqrt{5} + 1)$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Determină coordonatele punctelor $A$, $B$ și $C$, apoi calculează lungimile laturilor triunghiului $ABC$.",
+      "solution": [
+        "$A(2,0)$, $B(0,-4)$",
+        "Punctul $C$ este simetricul punctului $A$ față de axa $Oy \\Rightarrow OC = OA = 2$, deci $CA = 4$.",
+        "$AB = BC = 2\\sqrt{5}$, de unde rezultă că $P_{\\Delta ABC} = 2\\sqrt{5} + 2\\sqrt{5} + 4 = 4(\\sqrt{5} + 1)$."
+      ],
+      "figureDescription": "Un sistem de axe ortogonale xOy cu o dreaptă care intersectează axa Ox în partea pozitivă și axa Oy în partea negativă."
+    },
+    {
+      "id": "en25j-III-4a",
+      "number": "4.a",
+      "points": 2,
+      "competency": "Perimetrul poligoanelor",
+      "prompt": "În figura alăturată este reprezentat pătratul $ABCD$ și triunghiul echilateral $ACE$, astfel încât punctele $D$ și $E$ sunt situate de aceeași parte a dreptei $AC$. Perimetrul pătratului $ABCD$ este egal cu $48\\text{ cm}$.\n\nArată că perimetrul triunghiului $ACE$ este egal cu $36\\sqrt{2}\\text{ cm}$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Află lungimea laturii pătratului și a diagonalei $AC$, care este și latura triunghiului echilateral.",
+      "solution": [
+        "$AB = 12\\text{ cm}$, $AC = 12\\sqrt{2}\\text{ cm}$",
+        "$P_{\\Delta ACE} = 3 \\cdot AC = 36\\sqrt{2}\\text{ cm}$"
+      ],
+      "figureDescription": "Un pătrat ABCD cu diagonala AC. Pe latura AC este construit un triunghi echilateral ACE, cu vârfurile D și E de aceeași parte a dreptei AC."
+    },
+    {
+      "id": "en25j-III-4b",
+      "number": "4.b",
+      "points": 3,
+      "competency": "Distanțe în figuri geometrice",
+      "prompt": "În figura alăturată este reprezentat pătratul $ABCD$ și triunghiul echilateral $ACE$, astfel încât punctele $D$ și $E$ sunt situate de aceeași parte a dreptei $AC$. Perimetrul pătratului $ABCD$ este egal cu $48\\text{ cm}$.\n\nArată că distanța de la punctul $D$ la dreapta $AE$ este egală cu $3\\sqrt{2}(\\sqrt{3} - 1)\\text{ cm}$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Exprimă aria triunghiului $ADE$ în două moduri pentru a afla înălțimea din $D$ pe $AE$.",
+      "solution": [
+        "$\\Delta ADE \\equiv \\Delta CDE$, deci $\\mathcal{A}_{\\Delta ADE} = \\frac{\\mathcal{A}_{ACE} - \\mathcal{A}_{ACD}}{2} = 36(\\sqrt{3} - 1)\\text{ cm}^2$",
+        "Fie $DM \\perp AE$, $M \\in AE$, deci $d(D, AE) = DM$ și $\\mathcal{A}_{\\Delta ADE} = \\frac{AE \\cdot DM}{2}$",
+        "$DM = \\frac{2 \\cdot \\mathcal{A}_{\\Delta ADE}}{AE} = 3\\sqrt{2}(\\sqrt{3} - 1)\\text{ cm}$"
+      ],
+      "figureDescription": "Un pătrat ABCD cu diagonala AC. Pe latura AC este construit un triunghi echilateral ACE, cu vârfurile D și E de aceeași parte a dreptei AC."
+    },
+    {
+      "id": "en25j-III-5a",
+      "number": "5.a",
+      "points": 2,
+      "competency": "Calculul lungimilor în trapez",
+      "prompt": "În figura alăturată este reprezentat trapezul dreptunghic $ABCD$, cu $AB \\parallel DC$, $\\sphericalangle DAB = 90^\\circ$, $AB = 8\\text{ cm}$ și $AD = DC = 4\\text{ cm}$. Punctul $M$ este mijlocul segmentului $DC$ și $P$ este punctul de intersecție a dreptelor $AM$ și $BD$.\n\nArată că $BC = 4\\sqrt{2}\\text{ cm}$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Construiește înălțimea din $C$ pe $AB$ și aplică teorema lui Pitagora în triunghiul dreptunghic format.",
+      "solution": [
+        "Fie $CN \\perp AB$, $N \\in AB$, deci $CN = 4\\text{ cm}$ și $NB = 4\\text{ cm}$",
+        "$BC = \\sqrt{CN^2 + BN^2} = 4\\sqrt{2}\\text{ cm}$"
+      ],
+      "figureDescription": "Un trapez dreptunghic ABCD cu unghiul drept în A și D. Baza mare este AB, baza mică este DC. M este mijlocul lui DC. P este intersecția diagonalelor AM și BD."
+    },
+    {
+      "id": "en25j-III-5b",
+      "number": "5.b",
+      "points": 3,
+      "competency": "Aria patrulaterelor",
+      "prompt": "În figura alăturată este reprezentat trapezul dreptunghic $ABCD$, cu $AB \\parallel DC$, $\\sphericalangle DAB = 90^\\circ$, $AB = 8\\text{ cm}$ și $AD = DC = 4\\text{ cm}$. Punctul $M$ este mijlocul segmentului $DC$ și $P$ este punctul de intersecție a dreptelor $AM$ și $BD$.\n\nCalculează aria patrulaterului $MPBC$.",
+      "expectedAnswer": "$7,2\\text{ cm}^2$",
+      "hint": "Folosește asemănarea triunghiurilor pentru a găsi raportul segmentelor și calculează aria patrulaterului ca diferență de arii.",
+      "solution": [
+        "$DM \\parallel AB \\Rightarrow \\Delta DPM \\sim \\Delta BPA \\Rightarrow \\frac{PM}{PA} = \\frac{DM}{BA} = \\frac{1}{4}$",
+        "Fie $EF \\perp AB$, $P \\in EF$, $E \\in CD$, $F \\in AB$, $\\Delta PME \\sim \\Delta PAF \\Rightarrow \\frac{PE}{PF} = \\frac{PM}{PA} = \\frac{1}{4}$, de unde obținem că $PF = \\frac{16}{5}\\text{ cm}$, deci $\\mathcal{A}_{\\Delta APB} = \\frac{AB \\cdot PF}{2} = \\frac{64}{5}\\text{ cm}^2$",
+        "$\\mathcal{A}_{ABCM} = 20\\text{ cm}^2$, deci $\\mathcal{A}_{MPBC} = \\mathcal{A}_{ABCM} - \\mathcal{A}_{\\Delta APB} = \\frac{36}{5} = 7,2\\text{ cm}^2$"
+      ],
+      "figureDescription": "Un trapez dreptunghic ABCD cu unghiul drept în A și D. Baza mare este AB, baza mică este DC. M este mijlocul lui DC. P este intersecția diagonalelor AM și BD."
+    },
+    {
+      "id": "en25j-III-6a",
+      "number": "6.a",
+      "points": 2,
+      "competency": "Volumul cubului",
+      "prompt": "În figura alăturată este reprezentat cubul $ABCDA'B'C'D'$, cu $AB = 8\\text{ cm}$. Dreptele $AC$ și $BD$ se intersectează în punctul $O$, iar dreptele $A'B$ și $AB'$ se intersectează în punctul $E$. Punctul $F$ este mijlocul segmentului $CC'$.\n\nArată că volumul cubului $ABCDA'B'C'D'$ este egal cu $512\\text{ cm}^3$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Aplică formula volumului unui cub cunoscând lungimea muchiei.",
+      "solution": [
+        "$\\mathcal{V}_{ABCDA'B'C'D'} = AB^3 =$",
+        "$= 8^3 = 512\\text{ cm}^3$"
+      ],
+      "figureDescription": "Un cub ABCDA'B'C'D'. O este intersecția diagonalelor bazei inferioare AC și BD. E este intersecția diagonalelor feței laterale A'B și AB'. F este mijlocul muchiei laterale CC'."
+    },
+    {
+      "id": "en25j-III-6b",
+      "number": "6.b",
+      "points": 3,
+      "competency": "Drepte perpendiculare în spațiu",
+      "prompt": "În figura alăturată este reprezentat cubul $ABCDA'B'C'D'$, cu $AB = 8\\text{ cm}$. Dreptele $AC$ și $BD$ se intersectează în punctul $O$, iar dreptele $A'B$ și $AB'$ se intersectează în punctul $E$. Punctul $F$ este mijlocul segmentului $CC'$.\n\nDemonstrează că dreptele $FO$ și $DE$ sunt perpendiculare.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Identifică o linie mijlocie și folosește asemănarea triunghiurilor pentru a demonstra că unghiul format de cele două drepte este de $90^\\circ$.",
+      "solution": [
+        "$FO$ este linie mijlocie în triunghiul $ACC' \\Rightarrow FO \\parallel AC'$, deci $\\sphericalangle(FO, DE) = \\sphericalangle(AC', DE)$",
+        "$AB' \\parallel DC'$, deci $\\Delta AQE \\sim \\Delta C'QD \\Rightarrow \\frac{AQ}{C'Q} = \\frac{QE}{QD} = \\frac{AE}{C'D} = \\frac{1}{2}$, unde $\\{Q\\} = DE \\cap AC'$, de unde obținem $QD = \\frac{2}{3} \\cdot DE$ și $C'Q = \\frac{2}{3} \\cdot C'A$",
+        "$DE = 4\\sqrt{6}\\text{ cm}$, $C'A = 8\\sqrt{3}\\text{ cm} \\Rightarrow QD = \\frac{8\\sqrt{6}}{3}\\text{ cm}$, $C'Q = \\frac{16\\sqrt{3}}{3}\\text{ cm}$ și, cum $C'D = 8\\sqrt{2}\\text{ cm}$ și $QD^2 + C'Q^2 = 128 = C'D^2 \\Rightarrow \\sphericalangle DQC' = 90^\\circ$, obținem că $\\sphericalangle(FO, DE) = 90^\\circ$, deci dreptele $FO$ și $DE$ sunt perpendiculare"
+      ],
+      "figureDescription": "Un cub ABCDA'B'C'D'. O este intersecția diagonalelor bazei inferioare AC și BD. E este intersecția diagonalelor feței laterale A'B și AB'. F este mijlocul muchiei laterale CC'."
+    }
+  ]
+}

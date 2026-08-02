@@ -1,0 +1,80 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Încercuiește litera corespunzătoare răspunsului corect.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "en22j-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Ordinea operațiilor",
+      "prompt": "Rezultatul calculului $10 + 10 : 10$ este egal cu:",
+      "options": [{ "id": "a", "label": "$2$" }, { "id": "b", "label": "$9$" }, { "id": "c", "label": "$10$" }, { "id": "d", "label": "$11$" }],
+      "correctOption": "d",
+      "expectedAnswer": "$11$",
+      "hint": "Efectuează împărțirea înaintea adunării.",
+      "solution": ["$10 + 10 : 10 = 10 + 1 = 11$"]
+    },
+    {
+      "id": "en22j-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Fracții algebrice",
+      "prompt": "Dacă $b \\neq 0$ și $\\frac{a}{2} = \\frac{10}{b}$, atunci $a \\cdot b$ este egal cu:",
+      "options": [{ "id": "a", "label": "$2$" }, { "id": "b", "label": "$5$" }, { "id": "c", "label": "$10$" }, { "id": "d", "label": "$20$" }],
+      "correctOption": "d",
+      "expectedAnswer": "$20$",
+      "hint": "Înmulțește egalitatea cu $2b$.",
+      "solution": ["$\\frac{a}{2} = \\frac{10}{b} \\Rightarrow a \\cdot b = 20$"]
+    },
+    {
+      "id": "en22j-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Numere opuse",
+      "prompt": "Opusul numărului $5$ este:",
+      "options": [{ "id": "a", "label": "$-5$" }, { "id": "b", "label": "$-\\frac{1}{5}$" }, { "id": "c", "label": "$\\frac{1}{5}$" }, { "id": "d", "label": "$5$" }],
+      "correctOption": "a",
+      "expectedAnswer": "$-5$",
+      "hint": "Numerele opuse au suma egală cu zero.",
+      "solution": ["$5 + (-5) = 0$, deci opusul lui $5$ este $-5$."]
+    },
+    {
+      "id": "en22j-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Fracții ordinare",
+      "prompt": "Transformând numărul $1,3$ în fracție ordinară se obține:",
+      "options": [{ "id": "a", "label": "$\\frac{1}{3}$" }, { "id": "b", "label": "$\\frac{13}{10}$" }, { "id": "c", "label": "$\\frac{4}{3}$" }, { "id": "d", "label": "$\\frac{13}{9}$" }],
+      "correctOption": "b",
+      "expectedAnswer": "$\\frac{13}{10}$",
+      "hint": "Numărul are o singură cifră după virgulă.",
+      "solution": ["$1,3 = \\frac{13}{10}$"]
+    },
+    {
+      "id": "en22j-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Calcul cu radicali",
+      "prompt": "Patru elevi, Ana, George, Radu și Elena, au calculat produsul numerelor $x = 2\\sqrt{2}$ și $y = \\frac{1}{2\\sqrt{2}}$, iar rezultatele obținute sunt prezentate în tabel:\n\n| Ana | George | Radu | Elena |\n|---|---|---|---|\n| $4\\sqrt{2}$ | $\\sqrt{2}$ | $1$ | $8$ |\n\nConform informațiilor din tabel, rezultatul corect a fost obținut de:",
+      "options": [{ "id": "a", "label": "Ana" }, { "id": "b", "label": "George" }, { "id": "c", "label": "Radu" }, { "id": "d", "label": "Elena" }],
+      "correctOption": "c",
+      "expectedAnswer": "Radu",
+      "hint": "Simplifică factorii identici din numărător și numitor.",
+      "solution": ["$x \\cdot y = 2\\sqrt{2} \\cdot \\frac{1}{2\\sqrt{2}} = 1$", "În tabel, rezultatul $1$ îi aparține lui Radu."]
+    },
+    {
+      "id": "en22j-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Probleme cu vârste",
+      "prompt": "Andrei are $28$ de ani, iar Cătălina are $13$ ani. Andrei afirmă: «Peste doi ani voi avea dublul vârstei pe care o va avea Cătălina.» Afirmația lui Andrei este:",
+      "options": [{ "id": "a", "label": "adevărată" }, { "id": "b", "label": "falsă" }],
+      "correctOption": "a",
+      "expectedAnswer": "adevărată",
+      "hint": "Adaugă doi ani ambelor vârste și compară rezultatele.",
+      "solution": ["Peste doi ani, Andrei va avea $30$ de ani, iar Cătălina $15$ ani.", "$30 = 2 \\cdot 15$, deci afirmația este adevărată."]
+    }
+  ]
+}

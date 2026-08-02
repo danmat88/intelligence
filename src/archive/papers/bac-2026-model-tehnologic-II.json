@@ -1,0 +1,93 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL al II-lea",
+  "instructions": "Rezolvați următoarele exerciții:",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac26m-th-II-1",
+      "number": "II.1.a",
+      "points": 5,
+      "competency": "Calculul determinantului unei matrice",
+      "prompt": "Se consideră matricea $M(a) = \\begin{pmatrix} a+1 & 4 \\\\ -1 & a-4 \\end{pmatrix}$, unde $a$ este număr real. Arătați că $\\det(M(0)) = 0$.",
+      "expectedAnswer": "$0$",
+      "hint": "Înlocuiți $a$ cu $0$ în expresia matricei $M(a)$ și calculați determinantul.",
+      "solution": [
+        "$M(0) = \\begin{pmatrix} 1 & 4 \\\\ -1 & -4 \\end{pmatrix} \\Rightarrow \\det(M(0)) = \\begin{vmatrix} 1 & 4 \\\\ -1 & -4 \\end{vmatrix}$",
+        "$\\det(M(0)) = 1 \\cdot (-4) - 4 \\cdot (-1)$",
+        "$= -4 + 4 = 0$"
+      ]
+    },
+    {
+      "id": "bac26m-th-II-2",
+      "number": "II.1.b",
+      "points": 5,
+      "competency": "Operații cu matrice",
+      "prompt": "Se consideră matricea $M(a) = \\begin{pmatrix} a+1 & 4 \\\\ -1 & a-4 \\end{pmatrix}$, unde $a$ este număr real. Arătați că $M(3) + 2M(0) = 3M(1)$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Calculați separat $M(3)$, $M(0)$ și $M(1)$, apoi efectuați operațiile cerute.",
+      "solution": [
+        "$M(3) = \\begin{pmatrix} 4 & 4 \\\\ -1 & -1 \\end{pmatrix}$",
+        "$M(3) + 2M(0) = \\begin{pmatrix} 4 & 4 \\\\ -1 & -1 \\end{pmatrix} + 2 \\begin{pmatrix} 1 & 4 \\\\ -1 & -4 \\end{pmatrix} = \\begin{pmatrix} 6 & 12 \\\\ -3 & -9 \\end{pmatrix}$",
+        "$M(1) = \\begin{pmatrix} 2 & 4 \\\\ -1 & -3 \\end{pmatrix}$",
+        "$3M(1) = 3 \\begin{pmatrix} 2 & 4 \\\\ -1 & -3 \\end{pmatrix} = \\begin{pmatrix} 6 & 12 \\\\ -3 & -9 \\end{pmatrix}$",
+        "Deci $M(3) + 2M(0) = 3M(1)$."
+      ]
+    },
+    {
+      "id": "bac26m-th-II-3",
+      "number": "II.1.c",
+      "points": 5,
+      "competency": "Înmulțirea matricelor și egalitatea matricelor",
+      "prompt": "Se consideră matricea $M(a) = \\begin{pmatrix} a+1 & 4 \\\\ -1 & a-4 \\end{pmatrix}$, unde $a$ este număr real. Determinați numărul real $a$ pentru care $M(a) \\cdot M(0) = 3M(0)$.",
+      "expectedAnswer": "$a = 6$",
+      "hint": "Efectuați înmulțirea $M(a) \\cdot M(0)$ și egalați rezultatul cu $3M(0)$.",
+      "solution": [
+        "$M(a) \\cdot M(0) = \\begin{pmatrix} a+1 & 4 \\\\ -1 & a-4 \\end{pmatrix} \\cdot \\begin{pmatrix} 1 & 4 \\\\ -1 & -4 \\end{pmatrix} = \\begin{pmatrix} a-3 & 4a-12 \\\\ 3-a & 12-4a \\end{pmatrix}$, pentru orice număr real $a$",
+        "$3M(0) = \\begin{pmatrix} 3 & 12 \\\\ -3 & -12 \\end{pmatrix}$",
+        "$\\begin{pmatrix} a-3 & 4a-12 \\\\ 3-a & 12-4a \\end{pmatrix} = \\begin{pmatrix} 3 & 12 \\\\ -3 & -12 \\end{pmatrix}$, de unde obținem $a = 6$"
+      ]
+    },
+    {
+      "id": "bac26m-th-II-4",
+      "number": "II.2.a",
+      "points": 5,
+      "competency": "Calculul valorii unei legi de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x \\circ y = xy + 4(x + y)$. Arătați că $1 \\circ 2 = 14$.",
+      "expectedAnswer": "$14$",
+      "hint": "Înlocuiți $x$ cu $1$ și $y$ cu $2$ în expresia legii de compoziție.",
+      "solution": [
+        "$1 \\circ 2 = 1 \\cdot 2 + 4(1 + 2)$",
+        "$= 2 + 12 = 14$"
+      ]
+    },
+    {
+      "id": "bac26m-th-II-5",
+      "number": "II.2.b",
+      "points": 5,
+      "competency": "Rezolvarea ecuațiilor cu legi de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x \\circ y = xy + 4(x + y)$. Determinați numărul real $x$ pentru care $x \\circ 3 = x$.",
+      "expectedAnswer": "$x = -2$",
+      "hint": "Exprimați $x \\circ 3$ folosind definiția legii de compoziție și rezolvați ecuația obținută.",
+      "solution": [
+        "$x \\circ 3 = x \\cdot 3 + 4(x + 3) = 7x + 12$, pentru orice număr real $x$",
+        "$7x + 12 = x$, de unde obținem $x = -2$"
+      ]
+    },
+    {
+      "id": "bac26m-th-II-6",
+      "number": "II.2.c",
+      "points": 5,
+      "competency": "Rezolvarea ecuațiilor exponențiale cu legi de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x \\circ y = xy + 4(x + y)$. Determinați numărul real $x$ pentru care $2^x \\circ 4 = 2^{x+4}$.",
+      "expectedAnswer": "$x = 1$",
+      "hint": "Aplicați legea de compoziție pentru $2^x$ și $4$, apoi folosiți proprietățile puterilor pentru a rezolva ecuația.",
+      "solution": [
+        "$2^x \\circ 4 = 2^x \\cdot 4 + 4(2^x + 4) = 8 \\cdot 2^x + 16$, pentru orice număr real $x$",
+        "$8 \\cdot 2^x + 16 = 2^{x+4} \\Leftrightarrow 2^3 \\cdot 2^x + 16 = 2^{x+4} \\Leftrightarrow 2^{x+3} + 16 = 2^{x+4}$",
+        "$16 = 2^{x+4} - 2^{x+3} \\Leftrightarrow 16 = 2^{x+3}(2 - 1) \\Leftrightarrow 16 = 2^{x+3}$",
+        "$2^{x+3} = 2^4$, de unde obținem $x = 1$"
+      ]
+    }
+  ]
+}

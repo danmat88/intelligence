@@ -1,0 +1,91 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Toate subiectele sunt obligatorii. Se acordă zece puncte din oficiu. Timpul de lucru efectiv este de trei ore.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac26j-pd-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Operații cu numere raționale",
+      "prompt": "Arătați că $\\frac{14}{5} \\cdot \\left(1 - \\frac{1}{6}\\right) + \\frac{2}{3} = 3$.",
+      "expectedAnswer": "Demonstrație completă",
+      "hint": "Efectuați mai întâi scăderea din paranteză, aducând la același numitor.",
+      "solution": [
+        "$\\frac{14}{5} \\cdot \\left(1 - \\frac{1}{6}\\right) + \\frac{2}{3} = \\frac{14}{5} \\cdot \\frac{5}{6} + \\frac{2}{3}$",
+        "$= \\frac{7}{3} + \\frac{2}{3} = \\frac{9}{3} = 3$"
+      ]
+    },
+    {
+      "id": "bac26j-pd-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Calculul valorii unei funcții",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 4x - 1$ și numărul $a = f(1)$. Calculați $f(a)$.",
+      "expectedAnswer": "11",
+      "hint": "Calculați mai întâi valoarea lui $a$ înlocuind $x$ cu $1$ în expresia funcției $f$.",
+      "solution": [
+        "$f(1) = 4 \\cdot 1 - 1 = 3$, deci $a = 3$",
+        "$f(a) = f(3) = 4 \\cdot 3 - 1 = 11$"
+      ]
+    },
+    {
+      "id": "bac26j-pd-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Ecuații exponențiale",
+      "prompt": "Rezolvați în mulțimea numerelor reale ecuația $10^{3} \\cdot 10^{x} = 100$.",
+      "expectedAnswer": "-1",
+      "hint": "Scrieți ambele membre ale ecuației ca puteri ale lui $10$ și egalați exponenții.",
+      "solution": [
+        "$10^{3+x} = 10^2$",
+        "Din egalitatea puterilor cu aceeași bază, obținem $3 + x = 2$",
+        "$x = -1$"
+      ]
+    },
+    {
+      "id": "bac26j-pd-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Probleme cu procente",
+      "prompt": "După două ieftiniri succesive, cu câte $50\\%$, un obiect costă $200$ de lei. Determinați prețul obiectului înainte de cele două ieftiniri.",
+      "expectedAnswer": "800 de lei",
+      "hint": "Dacă un obiect se ieftinește cu $50\\%$, noul preț reprezintă jumătate din prețul anterior.",
+      "solution": [
+        "Fie $x$ prețul obiectului înainte de cele două ieftiniri.",
+        "Prețul după prima ieftinire este $x - \\frac{50}{100} \\cdot x = \\frac{x}{2}$.",
+        "Prețul după a doua ieftinire este $\\frac{x}{2} - \\frac{50}{100} \\cdot \\frac{x}{2} = \\frac{x}{4}$.",
+        "Avem ecuația $\\frac{x}{4} = 200$, de unde obținem $x = 800$ de lei."
+      ]
+    },
+    {
+      "id": "bac26j-pd-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Geometrie analitică",
+      "prompt": "În reperul cartezian $xOy$ se consideră punctele $A(4,0)$, $B(6,2)$ și $C$, mijlocul segmentului $OB$. Arătați că $AC = \\sqrt{2}$.",
+      "expectedAnswer": "Demonstrație completă",
+      "hint": "Determinați coordonatele punctului $C$ folosind formula mijlocului unui segment, apoi aplicați formula distanței dintre două puncte.",
+      "solution": [
+        "Punctul $O$ are coordonatele $(0,0)$. Deoarece $C$ este mijlocul segmentului $OB$, coordonatele sale sunt $x_C = \\frac{0+6}{2} = 3$ și $y_C = \\frac{0+2}{2} = 1$, deci $C(3,1)$.",
+        "Distanța $AC$ este $\\sqrt{(x_C - x_A)^2 + (y_C - y_A)^2} = \\sqrt{(3 - 4)^2 + (1 - 0)^2}$.",
+        "$AC = \\sqrt{(-1)^2 + 1^2} = \\sqrt{1 + 1} = \\sqrt{2}$."
+      ]
+    },
+    {
+      "id": "bac26j-pd-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Trigonometrie",
+      "prompt": "Arătați că $2\\sin 45^\\circ \\cdot \\sin 30^\\circ - \\sqrt{2}\\cos 60^\\circ = 0$.",
+      "expectedAnswer": "Demonstrație completă",
+      "hint": "Înlocuiți funcțiile trigonometrice cu valorile lor cunoscute: $\\sin 45^\\circ = \\frac{\\sqrt{2}}{2}$, $\\sin 30^\\circ = \\frac{1}{2}$ și $\\cos 60^\\circ = \\frac{1}{2}$.",
+      "solution": [
+        "Știm că $\\sin 45^\\circ = \\frac{\\sqrt{2}}{2}$, $\\sin 30^\\circ = \\frac{1}{2}$ și $\\cos 60^\\circ = \\frac{1}{2}$.",
+        "$2\\sin 45^\\circ \\cdot \\sin 30^\\circ - \\sqrt{2}\\cos 60^\\circ = 2 \\cdot \\frac{\\sqrt{2}}{2} \\cdot \\frac{1}{2} - \\sqrt{2} \\cdot \\frac{1}{2}$",
+        "$= \\frac{\\sqrt{2}}{2} - \\frac{\\sqrt{2}}{2} = 0$"
+      ]
+    }
+  ]
+}

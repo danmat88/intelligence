@@ -1,0 +1,245 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL al II-lea",
+  "instructions": "Încercuiește litera corespunzătoare răspunsului corect.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "en25j-II-1",
+      "number": "II.1",
+      "points": 5,
+      "competency": "Geometrie plană - segmente",
+      "prompt": "În figura alăturată, punctul $B$ este mijlocul segmentului $AC$ și punctul $D$ este simetricul punctului $B$ față de $C$. Știind că $AD = 12\\text{ cm}$, lungimea segmentului $AC$ este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$3\\text{ cm}$"
+        },
+        {
+          "id": "b",
+          "label": "$4\\text{ cm}$"
+        },
+        {
+          "id": "c",
+          "label": "$6\\text{ cm}$"
+        },
+        {
+          "id": "d",
+          "label": "$8\\text{ cm}$"
+        }
+      ],
+      "correctOption": "d",
+      "expectedAnswer": "$8\\text{ cm}$",
+      "hint": "Exprimă lungimea segmentului $AD$ în funcție de lungimea segmentului $BC$.",
+      "solution": [
+        "$B$ este mijlocul segmentului $AC \\implies AB = BC$.",
+        "$D$ este simetricul punctului $B$ față de $C \\implies BC = CD$.",
+        "$AD = AB + BC + CD = 3 \\cdot BC$.",
+        "$3 \\cdot BC = 12 \\implies BC = 4\\text{ cm}$.",
+        "$AC = 2 \\cdot BC = 8\\text{ cm}$."
+      ],
+      "figureDescription": "Un segment de dreaptă cu punctele A, B, C, D în această ordine.",
+      "figure": {
+        "kind": "segment",
+        "points": [
+          {
+            "label": "A",
+            "position": 0
+          },
+          {
+            "label": "B",
+            "position": 1
+          },
+          {
+            "label": "C",
+            "position": 2
+          },
+          {
+            "label": "D",
+            "position": 3
+          }
+        ]
+      }
+    },
+    {
+      "id": "en25j-II-2",
+      "number": "II.2",
+      "points": 5,
+      "competency": "Geometrie plană - unghiuri",
+      "prompt": "În figura alăturată sunt reprezentate unghiurile adiacente $AOB$ și $BOC$, $\\sphericalangle BOC = 2 \\cdot \\sphericalangle AOB$. Măsura unghiului $AOC$ este egală cu $120^\\circ$ și semidreapta $OM$ este bisectoarea unghiului $BOC$. Măsura unghiului $AOM$ este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$30^\\circ$"
+        },
+        {
+          "id": "b",
+          "label": "$40^\\circ$"
+        },
+        {
+          "id": "c",
+          "label": "$60^\\circ$"
+        },
+        {
+          "id": "d",
+          "label": "$80^\\circ$"
+        }
+      ],
+      "correctOption": "d",
+      "expectedAnswer": "$80^\\circ$",
+      "hint": "Află mai întâi măsura unghiului $AOB$ folosind suma unghiurilor adiacente.",
+      "solution": [
+        "$\\sphericalangle AOC = \\sphericalangle AOB + \\sphericalangle BOC = \\sphericalangle AOB + 2 \\cdot \\sphericalangle AOB = 3 \\cdot \\sphericalangle AOB$.",
+        "$3 \\cdot \\sphericalangle AOB = 120^\\circ \\implies \\sphericalangle AOB = 40^\\circ$.",
+        "$\\sphericalangle BOC = 2 \\cdot 40^\\circ = 80^\\circ$.",
+        "$OM$ este bisectoarea unghiului $BOC \\implies \\sphericalangle BOM = \\frac{\\sphericalangle BOC}{2} = 40^\\circ$.",
+        "$\\sphericalangle AOM = \\sphericalangle AOB + \\sphericalangle BOM = 40^\\circ + 40^\\circ = 80^\\circ$."
+      ],
+      "figureDescription": "Unghiurile adiacente AOB și BOC, cu semidreapta OM în interiorul unghiului BOC."
+    },
+    {
+      "id": "en25j-II-3",
+      "number": "II.3",
+      "points": 5,
+      "competency": "Geometrie plană - triunghiuri",
+      "prompt": "În figura alăturată este reprezentat triunghiul isoscel $ABC$, cu $\\sphericalangle BAC = 120^\\circ$. Punctul $E$ aparține segmentului $BC$, astfel încât $CE = 4\\text{ cm}$, iar dreptele $AB$ și $AE$ sunt perpendiculare. Lungimea segmentului $BC$ este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$16\\text{ cm}$"
+        },
+        {
+          "id": "b",
+          "label": "$12\\text{ cm}$"
+        },
+        {
+          "id": "c",
+          "label": "$8\\text{ cm}$"
+        },
+        {
+          "id": "d",
+          "label": "$6\\text{ cm}$"
+        }
+      ],
+      "correctOption": "b",
+      "expectedAnswer": "$12\\text{ cm}$",
+      "hint": "Calculează măsurile unghiurilor triunghiului $AEC$ pentru a determina natura acestuia.",
+      "solution": [
+        "Triunghiul $ABC$ este isoscel cu $\\sphericalangle BAC = 120^\\circ \\implies \\sphericalangle B = \\sphericalangle C = \\frac{180^\\circ - 120^\\circ}{2} = 30^\\circ$.",
+        "$AB \\perp AE \\implies \\sphericalangle BAE = 90^\\circ$.",
+        "În triunghiul dreptunghic $ABE$, $\\sphericalangle B = 30^\\circ \\implies BE = 2 \\cdot AE$.",
+        "$\\sphericalangle EAC = \\sphericalangle BAC - \\sphericalangle BAE = 120^\\circ - 90^\\circ = 30^\\circ$.",
+        "În triunghiul $AEC$, $\\sphericalangle EAC = \\sphericalangle C = 30^\\circ \\implies \\triangle AEC$ este isoscel cu $AE = CE = 4\\text{ cm}$.",
+        "$BE = 2 \\cdot 4 = 8\\text{ cm}$.",
+        "$BC = BE + CE = 8 + 4 = 12\\text{ cm}$."
+      ],
+      "figureDescription": "Triunghiul obtuzunghic isoscel ABC cu unghiul obtuz în A. Punctul E este pe latura BC astfel încât unghiul BAE este drept."
+    },
+    {
+      "id": "en25j-II-4",
+      "number": "II.4",
+      "points": 5,
+      "competency": "Geometrie plană - patrulatere",
+      "prompt": "În figura alăturată este reprezentat dreptunghiul $ABCD$, cu $AB = 3 \\cdot BC$. Perimetrul dreptunghiului $ABCD$ este egal cu $32\\text{ cm}$. Aria dreptunghiului $ABCD$ este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$16\\text{ cm}^2$"
+        },
+        {
+          "id": "b",
+          "label": "$32\\text{ cm}^2$"
+        },
+        {
+          "id": "c",
+          "label": "$48\\text{ cm}^2$"
+        },
+        {
+          "id": "d",
+          "label": "$64\\text{ cm}^2$"
+        }
+      ],
+      "correctOption": "c",
+      "expectedAnswer": "$48\\text{ cm}^2$",
+      "hint": "Exprimă perimetrul dreptunghiului în funcție de lățimea $BC$ pentru a afla dimensiunile acestuia.",
+      "solution": [
+        "Perimetrul dreptunghiului este $P = 2 \\cdot (AB + BC)$.",
+        "Înlocuind $AB = 3 \\cdot BC$, obținem $P = 2 \\cdot (3 \\cdot BC + BC) = 8 \\cdot BC$.",
+        "$8 \\cdot BC = 32 \\implies BC = 4\\text{ cm}$.",
+        "$AB = 3 \\cdot 4 = 12\\text{ cm}$.",
+        "Aria dreptunghiului este $\\mathcal{A} = AB \\cdot BC = 12 \\cdot 4 = 48\\text{ cm}^2$."
+      ],
+      "figureDescription": "Dreptunghiul ABCD cu lungimea AB mai mare decât lățimea BC."
+    },
+    {
+      "id": "en25j-II-5",
+      "number": "II.5",
+      "points": 5,
+      "competency": "Geometrie plană - cerc",
+      "prompt": "În figura alăturată este reprezentat triunghiul echilateral $ABC$, înscris în cercul de centru $O$. Punctul $D$ aparține arcului mic $BC$. Măsura unghiului $BDC$ este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$60^\\circ$"
+        },
+        {
+          "id": "b",
+          "label": "$90^\\circ$"
+        },
+        {
+          "id": "c",
+          "label": "$120^\\circ$"
+        },
+        {
+          "id": "d",
+          "label": "$150^\\circ$"
+        }
+      ],
+      "correctOption": "c",
+      "expectedAnswer": "$120^\\circ$",
+      "hint": "Folosește proprietatea patrulaterului inscriptibil $ABDC$.",
+      "solution": [
+        "Triunghiul $ABC$ este echilateral, deci $\\sphericalangle BAC = 60^\\circ$.",
+        "Patrulaterul $ABDC$ este înscris în cerc, deci este inscriptibil.",
+        "Într-un patrulater inscriptibil, unghiurile opuse sunt suplementare: $\\sphericalangle BAC + \\sphericalangle BDC = 180^\\circ$.",
+        "$\\sphericalangle BDC = 180^\\circ - 60^\\circ = 120^\\circ$."
+      ],
+      "figureDescription": "Un cerc de centru O în care este înscris triunghiul echilateral ABC. Punctul D se află pe arcul mic BC, formând patrulaterul inscriptibil ABDC."
+    },
+    {
+      "id": "en25j-II-6",
+      "number": "II.6",
+      "points": 5,
+      "competency": "Geometrie în spațiu - corpuri rotunde",
+      "prompt": "În figura alăturată este reprezentat conul circular drept cu secțiunea axială triunghiul echilateral $VAB$, cu $AB = 6\\text{ cm}$. Aria laterală a conului este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$18\\pi\\text{ cm}^2$"
+        },
+        {
+          "id": "b",
+          "label": "$27\\pi\\text{ cm}^2$"
+        },
+        {
+          "id": "c",
+          "label": "$36\\pi\\text{ cm}^2$"
+        },
+        {
+          "id": "d",
+          "label": "$54\\pi\\text{ cm}^2$"
+        }
+      ],
+      "correctOption": "a",
+      "expectedAnswer": "$18\\pi\\text{ cm}^2$",
+      "hint": "Identifică raza bazei și generatoarea conului din dimensiunile secțiunii axiale.",
+      "solution": [
+        "Secțiunea axială $VAB$ este un triunghi echilateral, deci generatoarea conului este $G = VA = AB = 6\\text{ cm}$.",
+        "Diametrul bazei este $AB = 6\\text{ cm}$, deci raza bazei este $R = \\frac{AB}{2} = 3\\text{ cm}$.",
+        "Aria laterală a conului este $\\mathcal{A}_l = \\pi \\cdot R \\cdot G$.",
+        "$\\mathcal{A}_l = \\pi \\cdot 3 \\cdot 6 = 18\\pi\\text{ cm}^2$."
+      ],
+      "figureDescription": "Un con circular drept cu vârful V și diametrul bazei AB. Secțiunea axială VAB este un triunghi echilateral."
+    }
+  ]
+}

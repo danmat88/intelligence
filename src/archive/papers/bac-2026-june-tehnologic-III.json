@@ -1,0 +1,86 @@
+{
+  "id": "III",
+  "title": "SUBIECTUL al III-lea",
+  "instructions": "Rezolvați următoarele exerciții.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac26j-th-III-1",
+      "number": "III.1.a",
+      "points": 5,
+      "competency": "Derivarea funcțiilor polinomiale",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 3x^4 - 4x^3 - 12x^2 - 1$.\n\na) Arătați că $f'(x) = 12x(x+1)(x-2)$, $x \\in \\mathbb{R}$.",
+      "expectedAnswer": "Demonstrație de calcul pentru derivata funcției $f$.",
+      "hint": "Calculează derivata funcției $f$ folosind regulile de derivare pentru polinoame și apoi dă factor comun pe $12x$.",
+      "solution": [
+        "$f'(x) = 12x^3 - 12x^2 - 24x =$",
+        "$= 12x(x^2 - x - 2) = 12x(x+1)(x-2)$, $x \\in \\mathbb{R}$"
+      ]
+    },
+    {
+      "id": "bac26j-th-III-2",
+      "number": "III.1.b",
+      "points": 5,
+      "competency": "Ecuația tangentei la graficul unei funcții",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 3x^4 - 4x^3 - 12x^2 - 1$.\n\nb) Determinați ecuația tangentei la graficul funcției $f$ în punctul de abscisă $x = 0$, situat pe graficul funcției $f$.",
+      "expectedAnswer": "$y = -1$",
+      "hint": "Ecuația tangentei în punctul de abscisă $x_0$ este $y - f(x_0) = f'(x_0)(x - x_0)$.",
+      "solution": [
+        "$f(0) = -1$, $f'(0) = 0$",
+        "Ecuația tangentei este $y - f(0) = f'(0)(x - 0)$, adică $y = -1$"
+      ]
+    },
+    {
+      "id": "bac26j-th-III-3",
+      "number": "III.1.c",
+      "points": 5,
+      "competency": "Studiul monotoniei și inegalități",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 3x^4 - 4x^3 - 12x^2 - 1$.\n\nc) Demonstrați că $3x^4 + 5 \\ge 4x^3 + 12x^2$, pentru orice $x \\in (-\\infty, 0]$.",
+      "expectedAnswer": "Demonstrație bazată pe monotonia funcției $f$ pe intervalul $(-\\infty, 0]$.",
+      "hint": "Studiază semnul derivatei $f'(x)$ pe intervalul $(-\\infty, 0]$ pentru a determina punctul de minim al funcției $f$.",
+      "solution": [
+        "Pentru $x \\in (-\\infty, 0]$, $f'(x) = 0 \\Leftrightarrow x = -1$ sau $x = 0$; pentru orice $x \\in (-\\infty, -1]$, $f'(x) \\le 0$, deci $f$ este descrescătoare pe $(-\\infty, -1]$ și, pentru orice $x \\in [-1, 0]$, $f'(x) \\ge 0$, deci $f$ este crescătoare pe $[-1, 0]$",
+        "$f(x) \\ge f(-1)$, pentru orice $x \\in (-\\infty, 0]$ și, cum $f(-1) = -6$, obținem $3x^4 - 4x^3 - 12x^2 - 1 \\ge -6$, adică $3x^4 + 5 \\ge 4x^3 + 12x^2$, pentru orice $x \\in (-\\infty, 0]$"
+      ]
+    },
+    {
+      "id": "bac26j-th-III-4",
+      "number": "III.2.a",
+      "points": 5,
+      "competency": "Calculul integralelor definite",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = x + 1 + xe^x$.\n\na) Arătați că $\\int_0^4 (f(x) - xe^x) dx = 12$.",
+      "expectedAnswer": "12",
+      "hint": "Înlocuiește expresia funcției $f(x)$ în integrală și calculează integrala funcției polinomiale rezultate.",
+      "solution": [
+        "$\\int_0^4 (f(x) - xe^x) dx = \\int_0^4 (x + 1) dx = \\left( \\frac{x^2}{2} + x \\right) \\bigg|_0^4 =$",
+        "$= 8 + 4 = 12$"
+      ]
+    },
+    {
+      "id": "bac26j-th-III-5",
+      "number": "III.2.b",
+      "points": 5,
+      "competency": "Integrarea prin părți",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = x + 1 + xe^x$.\n\nb) Arătați că $\\int_0^1 (f(x) - x - 1) dx = 1$.",
+      "expectedAnswer": "1",
+      "hint": "După simplificarea integrandului, folosește metoda integrării prin părți pentru a calcula $\\int_0^1 xe^x dx$.",
+      "solution": [
+        "$\\int_0^1 (f(x) - x - 1) dx = \\int_0^1 x(e^x)' dx = xe^x \\bigg|_0^1 - \\int_0^1 e^x dx = xe^x \\bigg|_0^1 - e^x \\bigg|_0^1 =$",
+        "$= e - e + 1 = 1$"
+      ]
+    },
+    {
+      "id": "bac26j-th-III-6",
+      "number": "III.2.c",
+      "points": 5,
+      "competency": "Volumul corpului de rotație",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = x + 1 + xe^x$.\n\nc) Se consideră funcția $g : [0, 1] \\to \\mathbb{R}$, $g(x) = \\frac{\\sqrt{f'(x)}}{f(x)}$. Arătați că volumul corpului obținut prin rotația graficului funcției $g$ în jurul axei $Ox$ este egal cu $\\frac{\\pi(e + 1)}{e + 2}$.",
+      "expectedAnswer": "$\\frac{\\pi(e + 1)}{e + 2}$",
+      "hint": "Volumul este dat de formula $V = \\pi \\int_0^1 g^2(x) dx$. Observă că integrandul este de forma $\\frac{f'(x)}{f^2(x)}$, care este derivata funcției $-\\frac{1}{f(x)}$.",
+      "solution": [
+        "$V = \\pi \\int_0^1 (g(x))^2 dx = \\pi \\int_0^1 \\frac{f'(x)}{(f(x))^2} dx = \\pi \\cdot \\left( -\\frac{1}{f(x)} \\right) \\bigg|_0^1 =$",
+        "$= \\pi \\left( -\\frac{1}{e + 2} + 1 \\right) = \\frac{\\pi(e + 1)}{e + 2}$"
+      ]
+    }
+  ]
+}

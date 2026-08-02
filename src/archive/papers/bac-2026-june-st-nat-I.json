@@ -1,0 +1,97 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Rezolvați toate exercițiile.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac26j-sn-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Calcule cu numere zecimale",
+      "prompt": "Arătați că $(4,9 - 3,4) : 3 + 2,5 = 3$.",
+      "expectedAnswer": "$3$",
+      "hint": "Efectuați mai întâi scăderea din paranteză, apoi împărțirea și la final adunarea.",
+      "solution": [
+        "$(4,9 - 3,4) : 3 + 2,5 = 1,5 : 3 + 2,5$",
+        "$1,5 : 3 + 2,5 = 0,5 + 2,5 = 3$"
+      ]
+    },
+    {
+      "id": "bac26j-sn-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Puncte pe graficul unei funcții",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 2x - 21$. Determinați numărul real $a$ pentru care punctul $A(-3a, a)$ aparține graficului funcției $f$.",
+      "expectedAnswer": "$a = -3$",
+      "hint": "Un punct $A(x, y)$ aparține graficului funcției $f$ dacă și numai dacă $f(x) = y$.",
+      "solution": [
+        "Condiția ca punctul $A(-3a, a)$ să aparțină graficului funcției $f$ este $f(-3a) = a$.",
+        "Înlocuind în expresia funcției, obținem $2(-3a) - 21 = a$, adică $-6a - 21 = a$.",
+        "Rezolvând ecuația, rezultă $-7a = 21$, de unde obținem $a = -3$."
+      ]
+    },
+    {
+      "id": "bac26j-sn-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Ecuații logaritmice",
+      "prompt": "Rezolvați în mulțimea numerelor reale ecuația $\\log_7(1 + 2x - x^2) = \\log_7(3 - x)$.",
+      "expectedAnswer": "$x \\in \\{1, 2\\}$",
+      "hint": "Egalând argumentele logaritmilor, obțineți o ecuație de gradul al doilea. Nu uitați să verificați dacă soluțiile obținute convin condițiilor de existență ale logaritmilor.",
+      "solution": [
+        "Din egalitatea logaritmilor rezultă egalitatea argumentelor: $1 + 2x - x^2 = 3 - x$.",
+        "Trecând toți termenii într-un membru, obținem ecuația de gradul al doilea $x^2 - 3x + 2 = 0$.",
+        "Soluțiile ecuației sunt $x = 1$ și $x = 2$.",
+        "Pentru $x = 1$, argumentele devin $1 + 2 - 1 = 2 > 0$ și $3 - 1 = 2 > 0$, deci soluția convine.",
+        "Pentru $x = 2$, argumentele devin $1 + 4 - 4 = 1 > 0$ și $3 - 2 = 1 > 0$, deci și această soluție convine."
+      ]
+    },
+    {
+      "id": "bac26j-sn-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Probabilități",
+      "prompt": "Determinați probabilitatea ca, alegând un număr din mulțimea numerelor naturale de două cifre, acesta să fie multiplu impar de $11$.",
+      "expectedAnswer": "$\\frac{1}{18}$",
+      "hint": "Probabilitatea este raportul dintre numărul cazurilor favorabile și numărul cazurilor posibile. Găsiți toți multiplii impari de 11 de două cifre.",
+      "solution": [
+        "Mulțimea numerelor naturale de două cifre are $90$ de elemente, deci sunt $90$ de cazuri posibile.",
+        "Multiplii impari de $11$ de două cifre sunt: $11, 33, 55, 77, 99$.",
+        "În mulțimea numerelor naturale de două cifre sunt $5$ multipli impari de $11$, deci sunt $5$ cazuri favorabile.",
+        "Probabilitatea este $p = \\frac{\\text{nr. cazuri favorabile}}{\\text{nr. cazuri posibile}} = \\frac{5}{90} = \\frac{1}{18}$."
+      ]
+    },
+    {
+      "id": "bac26j-sn-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Geometrie analitică",
+      "prompt": "În reperul cartezian $xOy$ se consideră punctele $A(0,5)$, $B(2,0)$ și $C(4,2)$. Arătați că triunghiul $ADC$ este isoscel, unde punctul $D$ este mijlocul segmentului $BC$.",
+      "expectedAnswer": "$AD = AC = 5$",
+      "hint": "Determinați coordonatele mijlocului $D$ al segmentului $BC$, apoi calculați lungimile laturilor $AD$ și $AC$ folosind formula distanței dintre două puncte.",
+      "solution": [
+        "Punctul $D$ este mijlocul segmentului $BC$, deci coordonatele sale sunt $x_D = \\frac{x_B + x_C}{2} = \\frac{2 + 4}{2} = 3$ și $y_D = \\frac{y_B + y_C}{2} = \\frac{0 + 2}{2} = 1$. Astfel, $D(3,1)$.",
+        "Calculăm lungimea segmentului $AD$: $AD = \\sqrt{(3 - 0)^2 + (1 - 5)^2} = \\sqrt{3^2 + (-4)^2} = \\sqrt{9 + 16} = \\sqrt{25} = 5$.",
+        "Calculăm lungimea segmentului $AC$: $AC = \\sqrt{(4 - 0)^2 + (2 - 5)^2} = \\sqrt{4^2 + (-3)^2} = \\sqrt{16 + 9} = \\sqrt{25} = 5$.",
+        "Deoarece $AD = AC = 5$, triunghiul $ADC$ este isoscel."
+      ]
+    },
+    {
+      "id": "bac26j-sn-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Trigonometrie și aria triunghiului",
+      "prompt": "Se consideră triunghiul $ABC$, dreptunghic în $A$, cu $\\text{tg} B = \\frac{1}{3}$ și aria egală cu $24$. Arătați că $AC = 4$.",
+      "expectedAnswer": "$AC = 4$",
+      "hint": "Exprimați tangenta unghiului $B$ și aria triunghiului dreptunghic în funcție de catetele $AB$ și $AC$.",
+      "solution": [
+        "În triunghiul dreptunghic $ABC$ (cu unghiul drept în $A$), tangenta unghiului $B$ este raportul dintre cateta opusă și cateta alăturată: $\\text{tg} B = \\frac{AC}{AB}$.",
+        "Cum $\\text{tg} B = \\frac{1}{3}$, obținem $\\frac{AC}{AB} = \\frac{1}{3}$, de unde $AB = 3AC$.",
+        "Aria triunghiului dreptunghic este $\\mathcal{A} = \\frac{AB \\cdot AC}{2}$. Știm că aria este $24$, deci $\\frac{AB \\cdot AC}{2} = 24$.",
+        "Înlocuind $AB = 3AC$ în formula ariei, obținem $\\frac{3AC \\cdot AC}{2} = 24$, adică $3AC^2 = 48$.",
+        "Împărțind la $3$, rezultă $AC^2 = 16$. Cum $AC > 0$, obținem $AC = 4$."
+      ]
+    }
+  ]
+}

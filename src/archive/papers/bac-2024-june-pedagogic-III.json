@@ -1,0 +1,86 @@
+{
+  "id": "III",
+  "title": "SUBIECTUL III",
+  "instructions": "Rezolvați următoarele exerciții.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac24j-pd-III-1",
+      "number": "III.1",
+      "points": 5,
+      "competency": "Calculul determinantului unei matrice",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$ și $A(a) = \\begin{pmatrix} a + 2 & 2 \\\\ 2 & a - 6 \\end{pmatrix}$, unde $a$ este număr real. Arătați că $\\det(A(6)) = -4$.",
+      "expectedAnswer": "$-4$",
+      "hint": "Înlocuiți $a$ cu $6$ în expresia matricei $A(a)$ și calculați determinantul folosind formula $\\det(X) = x_{11}x_{22} - x_{12}x_{21}$.",
+      "solution": [
+        "$A(6) = \\begin{pmatrix} 8 & 2 \\\\ 2 & 0 \\end{pmatrix} \\Rightarrow \\det(A(6)) = \\begin{vmatrix} 8 & 2 \\\\ 2 & 0 \\end{vmatrix} = 8 \\cdot 0 - 2 \\cdot 2 =$",
+        "$= 0 - 4 = -4$"
+      ]
+    },
+    {
+      "id": "bac24j-pd-III-2",
+      "number": "III.2",
+      "points": 5,
+      "competency": "Înmulțirea matricelor",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$ și $A(a) = \\begin{pmatrix} a + 2 & 2 \\\\ 2 & a - 6 \\end{pmatrix}$, unde $a$ este număr real. Arătați că $A(3) \\cdot A(1) = 19I_2$.",
+      "expectedAnswer": "$19I_2$",
+      "hint": "Calculați matricele $A(3)$ și $A(1)$, apoi efectuați înmulțirea acestora.",
+      "solution": [
+        "$A(3) \\cdot A(1) = \\begin{pmatrix} 5 & 2 \\\\ 2 & -3 \\end{pmatrix} \\begin{pmatrix} 3 & 2 \\\\ 2 & -5 \\end{pmatrix} = \\begin{pmatrix} 19 & 0 \\\\ 0 & 19 \\end{pmatrix} =$",
+        "$= 19 \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix} = 19I_2$"
+      ]
+    },
+    {
+      "id": "bac24j-pd-III-3",
+      "number": "III.3",
+      "points": 5,
+      "competency": "Adunarea matricelor",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$ și $A(a) = \\begin{pmatrix} a + 2 & 2 \\\\ 2 & a - 6 \\end{pmatrix}$, unde $a$ este număr real. Demonstrați că $A(a) + A(-a) = 2A(0)$, pentru orice număr real $a$.",
+      "expectedAnswer": "$2A(0)$",
+      "hint": "Calculați $A(-a)$ și adunați-o cu $A(a)$, apoi comparați rezultatul cu $2A(0)$.",
+      "solution": [
+        "$A(a) + A(-a) = \\begin{pmatrix} a + 2 & 2 \\\\ 2 & a - 6 \\end{pmatrix} + \\begin{pmatrix} -a + 2 & 2 \\\\ 2 & -a - 6 \\end{pmatrix} = \\begin{pmatrix} 4 & 4 \\\\ 4 & -12 \\end{pmatrix} =$",
+        "$= 2 \\begin{pmatrix} 2 & 2 \\\\ 2 & -6 \\end{pmatrix} = 2A(0)$, pentru orice număr real $a$"
+      ]
+    },
+    {
+      "id": "bac24j-pd-III-4",
+      "number": "III.4",
+      "points": 5,
+      "competency": "Ecuații cu determinanți",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$ și $A(a) = \\begin{pmatrix} a + 2 & 2 \\\\ 2 & a - 6 \\end{pmatrix}$, unde $a$ este număr real. Determinați numărul real $a$ pentru care $\\det(A(a)) = -20$.",
+      "expectedAnswer": "$a = 2$",
+      "hint": "Calculați $\\det(A(a))$ în funcție de $a$ și egalați expresia obținută cu $-20$.",
+      "solution": [
+        "$\\det(A(a)) = \\begin{vmatrix} a + 2 & 2 \\\\ 2 & a - 6 \\end{vmatrix} = a^2 - 4a - 16$, pentru orice număr real $a$",
+        "$a^2 - 4a - 16 = -20$, de unde obținem $a = 2$"
+      ]
+    },
+    {
+      "id": "bac24j-pd-III-5",
+      "number": "III.5",
+      "points": 5,
+      "competency": "Ecuații matriceale",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$ și $A(a) = \\begin{pmatrix} a + 2 & 2 \\\\ 2 & a - 6 \\end{pmatrix}$, unde $a$ este număr real. Determinați numerele reale $a$ pentru care $A(a^2) - A(a) = 2I_2$.",
+      "expectedAnswer": "$a = -1$ sau $a = 2$",
+      "hint": "Calculați $A(a^2) - A(a)$ și egalați matricea rezultată cu $2I_2$.",
+      "solution": [
+        "$A(a^2) - A(a) = \\begin{pmatrix} a^2 - a & 0 \\\\ 0 & a^2 - a \\end{pmatrix}$, pentru orice număr real $a$",
+        "$\\begin{pmatrix} a^2 - a & 0 \\\\ 0 & a^2 - a \\end{pmatrix} = \\begin{pmatrix} 2 & 0 \\\\ 0 & 2 \\end{pmatrix}$, de unde obținem $a = -1$ sau $a = 2$"
+      ]
+    },
+    {
+      "id": "bac24j-pd-III-6",
+      "number": "III.6",
+      "points": 5,
+      "competency": "Sisteme de ecuații liniare",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$ și $A(a) = \\begin{pmatrix} a + 2 & 2 \\\\ 2 & a - 6 \\end{pmatrix}$, unde $a$ este număr real. Determinați numerele reale $x$ și $y$ pentru care $A(-1) \\cdot \\begin{pmatrix} x \\\\ y \\end{pmatrix} = \\begin{pmatrix} -1 \\\\ 9 \\end{pmatrix}$.",
+      "expectedAnswer": "$x = 1$ și $y = -1$",
+      "hint": "Efectuați înmulțirea matricei $A(-1)$ cu vectorul coloană și rezolvați sistemul de ecuații rezultat.",
+      "solution": [
+        "$A(-1) \\cdot \\begin{pmatrix} x \\\\ y \\end{pmatrix} = \\begin{pmatrix} 1 & 2 \\\\ 2 & -7 \\end{pmatrix} \\begin{pmatrix} x \\\\ y \\end{pmatrix} = \\begin{pmatrix} x + 2y \\\\ 2x - 7y \\end{pmatrix}$, unde $x$ și $y$ sunt numere reale",
+        "$\\begin{pmatrix} x + 2y \\\\ 2x - 7y \\end{pmatrix} = \\begin{pmatrix} -1 \\\\ 9 \\end{pmatrix}$, de unde obținem $x = 1$ și $y = -1$"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "id": "III",
+  "title": "SUBIECTUL al III-lea",
+  "instructions": "Rezolvați următoarele exerciții.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac22j-mi-III-1a",
+      "number": "III.1.a",
+      "points": 5,
+      "competency": "Derivare",
+      "prompt": "Se consideră funcția $f:\\mathbb{R}\\to\\mathbb{R}$, $f(x)=2+\\frac{x}{e^x-x}$. Arătați că $f'(x)=\\frac{e^x(1-x)}{(e^x-x)^2}$, $x\\in\\mathbb{R}$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Aplică regula derivării unui raport.",
+      "solution": ["$f'(x)=\\frac{e^x-x-x(e^x-1)}{(e^x-x)^2}$.", "$f'(x)=\\frac{e^x-x-xe^x+x}{(e^x-x)^2}=\\frac{e^x(1-x)}{(e^x-x)^2}$."]
+    },
+    {
+      "id": "bac22j-mi-III-1b",
+      "number": "III.1.b",
+      "points": 5,
+      "competency": "Monotonie",
+      "prompt": "Se consideră funcția $f:\\mathbb{R}\\to\\mathbb{R}$, $f(x)=2+\\frac{x}{e^x-x}$. Determinați intervalele de monotonie ale funcției $f$.",
+      "expectedAnswer": "Crescătoare pe $(-\\infty,1]$ și descrescătoare pe $[1,+\\infty)$.",
+      "hint": "Numitorul derivatei este pozitiv; semnul este dat de $1-x$.",
+      "solution": ["$f'(x)=0 \\Leftrightarrow x=1$.", "$f'(x)>0$ pentru $x<1$ și $f'(x)<0$ pentru $x>1$.", "Funcția este crescătoare pe $(-\\infty,1]$ și descrescătoare pe $[1,+\\infty)$."]
+    },
+    {
+      "id": "bac22j-mi-III-1c",
+      "number": "III.1.c",
+      "points": 5,
+      "competency": "Ecuații și monotonie",
+      "prompt": "Se consideră funcția $f:\\mathbb{R}\\to\\mathbb{R}$, $f(x)=2+\\frac{x}{e^x-x}$. Demonstrați că, pentru orice $m\\in(1,2]$, ecuația $f(x)=m$ are soluție unică.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Combină monotonia cu limitele funcției la $-\\infty$ și $+\\infty$.",
+      "solution": ["$\\lim_{x\\to-\\infty}f(x)=1$, $f(1)=2+\\frac1{e-1}>2$ și $\\lim_{x\\to+\\infty}f(x)=2$.", "$f$ este strict crescătoare pe $(-\\infty,1]$ și strict descrescătoare pe $[1,+\\infty)$.", "Pentru fiecare $m\\in(1,2]$, ramura crescătoare atinge valoarea $m$ o singură dată, iar ramura descrescătoare are valori strict mai mari decât $2$; deci soluția este unică."]
+    },
+    {
+      "id": "bac22j-mi-III-2a",
+      "number": "III.2.a",
+      "points": 5,
+      "competency": "Integrale",
+      "prompt": "Se consideră funcția $f:\\mathbb{R}\\to\\mathbb{R}$, $f(x)=3-x+\\sqrt{x^2+9}$. Arătați că $\\int_1^5(f(x)-\\sqrt{x^2+9})dx=0$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "După înlocuirea lui $f$, radicalii se reduc.",
+      "solution": ["$f(x)-\\sqrt{x^2+9}=3-x$.", "$\\int_1^5(3-x)dx=\\left(3x-\\frac{x^2}{2}\\right)\\big|_1^5=0$."]
+    },
+    {
+      "id": "bac22j-mi-III-2b",
+      "number": "III.2.b",
+      "points": 5,
+      "competency": "Integrale cu substituție",
+      "prompt": "Se consideră funcția $f:\\mathbb{R}\\to\\mathbb{R}$, $f(x)=3-x+\\sqrt{x^2+9}$. Arătați că $\\int_0^4\\frac{x}{f(x)+x-3}dx=2$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Simplifică numitorul și recunoaște derivata radicalului.",
+      "solution": ["$f(x)+x-3=\\sqrt{x^2+9}$.", "$\\int_0^4\\frac{x}{\\sqrt{x^2+9}}dx=\\sqrt{x^2+9}\\big|_0^4=5-3=2$."]
+    },
+    {
+      "id": "bac22j-mi-III-2c",
+      "number": "III.2.c",
+      "points": 5,
+      "competency": "Șiruri de integrale",
+      "prompt": "Se consideră funcția $f:\\mathbb{R}\\to\\mathbb{R}$, $f(x)=3-x+\\sqrt{x^2+9}$. Pentru fiecare număr natural nenul $n$ se consideră $I_n=\\int_0^1\\frac{x^n}{f(x)}dx$. Demonstrați că $\\lim_{n\\to+\\infty}I_n=0$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Pe $[0,1]$, găsește o bornă inferioară simplă pentru $f(x)$.",
+      "solution": ["Pentru $x\\in[0,1]$, avem $f(x)=3-x+\\sqrt{x^2+9}\\geq3-x\\geq2$.", "$0\\leq\\frac{x^n}{f(x)}\\leq\\frac{x^n}{2}$, deci $0\\leq I_n\\leq\\frac1{2(n+1)}$.", "Cum $\\frac1{2(n+1)}\\to0$, rezultă $I_n\\to0$."]
+    }
+  ]
+}

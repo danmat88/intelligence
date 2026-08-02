@@ -1,8 +1,11 @@
-import { useState } from 'react'
-import { ActivityIndicator, Image, Linking, ScrollView, StyleSheet, View } from 'react-native'
+import { useEffect, useState } from 'react'
+import { ActivityIndicator, Image, Linking, ScrollView, StyleSheet, Switch, View } from 'react-native'
+import * as FileSystem from 'expo-file-system/legacy'
+import * as Sharing from 'expo-sharing'
 import { useAuth } from '../auth/AuthProvider'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import ContextHeader from '../components/ui/ContextHeader'
+import Entrance from '../components/ui/Entrance'
 import Press from '../components/ui/Press'
 import RezIcon, { type RezIconName } from '../components/ui/RezIcon'
 import ScreenBackground from '../components/ui/ScreenBackground'
@@ -11,26 +14,35 @@ import Txt from '../components/ui/Txt'
 import { useToast } from '../components/ui/Toast'
 import { useI18n } from '../i18n'
 import { useTheme } from '../theme/ThemeProvider'
-import { useProduct, type BacProfile, type LearningGoal } from '../product/ProductProvider'
+import { useProduct } from '../product/ProductProvider'
+import { BAC_TRACKS, BAC_TRACK_LABELS, type BacTrack, type ExamGoal } from '../product/profile'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { readTelemetryConsent, setTelemetryConsent } from '../lib/telemetry'
 
-const goalOptions: Array<{ value: Exclude<LearningGoal, null>; label: string; icon: RezIconName; accent: 'red' | 'blue' | 'yellow' }> = [
-  { value: 'en', label: 'Evaluare Națională', icon: 'exam-en', accent: 'red' },
-  { value: 'bac', label: 'Bacalaureat', icon: 'exam-bac', accent: 'blue' },
-  { value: 'general', label: 'Matematică generală', icon: 'workspace', accent: 'yellow' },
+const goalOptions: Array<{ id: 'en' | 'bac' | 'none'; value: ExamGoal; label: string; copy: string; icon: RezIconName; accent: 'red' | 'blue' | 'yellow' }> = [
+  { id: 'en', value: 'en', label: 'Evaluarea Națională', copy: 'Programa și subiectele oficiale pentru clasa a VIII-a', icon: 'exam-en', accent: 'red' },
+  { id: 'bac', value: 'bac', label: 'Bacalaureat', copy: 'Conținut adaptat profilului și programei tale', icon: 'exam-bac', accent: 'blue' },
+  { id: 'none', value: null, label: 'Matematică, fără examen', copy: 'Rezolvare și exerciții fără programă impusă', icon: 'workspace', accent: 'yellow' },
 ]
-const bacProfiles: BacProfile[] = ['Mate-info', 'Științe ale naturii', 'Tehnologic', 'Pedagogic']
+const bacProfiles = BAC_TRACKS
 
 export default function SettingsScreen({ onBack }: { onBack: () => void }) {
   const { theme } = useTheme()
   const insets = useSafeAreaInsets()
   const c = theme.colors
-  const { user, signIn, signingIn, signOut, deleteAccount } = useAuth()
+  const { user, signIn, signingIn, signOut, deleteAccount, exportAccount } = useAuth()
   const { t } = useI18n()
   const toast = useToast()
-  const { goal, bacProfile, setGoal, setBacProfile } = useProduct()
+  const { examGoal, bacTrack, setExamGoal, saving } = useProduct()
   const [deleting, setDeleting] = useState(false)
   const [confirming, setConfirming] = useState(false)
+  const [exporting, setExporting] = useState(false)
+  const [diagnostics, setDiagnostics] = useState(false)
+  const [changingDiagnostics, setChangingDiagnostics] = useState(false)
+
+  useEffect(() => {
+    void readTelemetryConsent().then(setDiagnostics)
+  }, [])
 
   if (!user) return null
   const isGuest = user.isAnonymous
@@ -40,7 +52,7 @@ export default function SettingsScreen({ onBack }: { onBack: () => void }) {
     try {
       await deleteAccount()
       onBack()
-      toast.show(t('settings.deleted'), 'check')
+      toast.show(isGuest ? 'Sesiune și date șterse' : t('settings.deleted'), 'check')
     } catch {
       toast.show(t('settings.deleteError'), 'alert-triangle')
     } finally {
@@ -48,15 +60,52 @@ export default function SettingsScreen({ onBack }: { onBack: () => void }) {
     }
   }
 
+  const doExport = async () => {
+    setExporting(true)
+    let uri: string | null = null
+    try {
+      const data = await exportAccount()
+      const directory = FileSystem.cacheDirectory ?? FileSystem.documentDirectory
+      if (!directory || !(await Sharing.isAvailableAsync())) throw new Error('Sharing unavailable')
+      uri = `${directory}profu-de-mate-date-${new Date().toISOString().slice(0, 10)}.json`
+      await FileSystem.writeAsStringAsync(uri, JSON.stringify(data, null, 2), { encoding: FileSystem.EncodingType.UTF8 })
+      await Sharing.shareAsync(uri, { mimeType: 'application/json', dialogTitle: 'Exportă datele Profu’ de Mate' })
+    } catch {
+      toast.show('Nu am putut exporta datele. Încearcă din nou.', 'alert-triangle')
+    } finally {
+      if (uri) await FileSystem.deleteAsync(uri, { idempotent: true }).catch(() => {})
+      setExporting(false)
+    }
+  }
+
+  const toggleDiagnostics = async () => {
+    const next = !diagnostics
+    const previous = diagnostics
+    setDiagnostics(next)
+    setChangingDiagnostics(true)
+    try {
+      await setTelemetryConsent(next)
+      toast.show(
+        next ? 'Datele opționale de diagnostic sunt pornite.' : 'Datele opționale de diagnostic sunt oprite.',
+        'check',
+      )
+    } catch {
+      setDiagnostics(previous)
+      toast.show('Nu am putut salva preferința.', 'alert-triangle')
+    } finally {
+      setChangingDiagnostics(false)
+    }
+  }
+
   return (
     <ScreenBackground>
-      <ContextHeader eyebrow="CONT" title="Cont și setări" onBack={onBack} backLabel="Înapoi" />
+      <ContextHeader eyebrow="PROFIL" title="Setări" onBack={onBack} backLabel="Înapoi" />
       <ScreenContent>
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}
         >
-          {/* ─── Identity Section ─── */}
+          <Entrance>
           {isGuest ? (
             <View style={[styles.guestCard, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' }]}>
               <View style={styles.guestTop}>
@@ -64,11 +113,12 @@ export default function SettingsScreen({ onBack }: { onBack: () => void }) {
                   <RezIcon name="user" size={30} color={c.text} accent={c.bubblyRed} />
                 </View>
                 <View style={styles.guestInfo}>
-                  <Txt weight="bold" size={17} color={c.text} style={styles.noBreak}>
-                    {t('settings.guest.title')}
-                  </Txt>
+                  <View style={[styles.accountBadge, { backgroundColor: c.sunnySoft }]}>
+                    <Txt weight="bold" size={9.5} color={c.bubblyYellowDark} style={{ fontFamily: theme.font.mono, letterSpacing: 0.7 }}>MOD VIZITATOR</Txt>
+                  </View>
+                  <Txt weight="bold" size={18} color={c.text} style={styles.noBreak}>Contul tău</Txt>
                   <Txt size={12.5} color={c.textMuted} style={styles.guestSub}>
-                    {t('settings.guest.sub')}
+                    Conectează-te pentru a-ți păstra munca atunci când schimbi dispozitivul.
                   </Txt>
                 </View>
               </View>
@@ -101,48 +151,65 @@ export default function SettingsScreen({ onBack }: { onBack: () => void }) {
                   </View>
                 )}
                 <View style={styles.flex}>
+                  <View style={[styles.accountBadge, { backgroundColor: c.successSoft }]}>
+                    <RezIcon name="verified" size={12} color={c.bubblyGreenDark} accent={c.bubblyGreen} />
+                    <Txt weight="bold" size={9.5} color={c.bubblyGreenDark} style={{ fontFamily: theme.font.mono, letterSpacing: 0.7 }}>CONT GOOGLE</Txt>
+                  </View>
                   <Txt numberOfLines={1} weight="bold" size={17} color={c.text}>{user.name ?? user.email}</Txt>
                   <Txt numberOfLines={1} size={13} color={c.textMuted} style={{ marginTop: 2 }}>{user.email}</Txt>
                 </View>
               </View>
             </View>
           )}
+          </Entrance>
 
-          {/* ─── Learning Goal Section ─── */}
-          <SectionLabel title="OBIECTIV DE ÎNVĂȚARE" />
-          <View style={[styles.groupCard, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' }]}>
-            <View style={styles.goalGrid}>
+          <Entrance delay={45}>
+            <SectionLabel title="PREGĂTIREA MEA" />
+            <View style={[styles.groupCard, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: c.cardEdge }]}>
+            <View style={styles.goalList}>
               {goalOptions.map((option) => {
-                const selected = goal === option.value
+                const selected = examGoal === option.value
                 const accentBg = option.accent === 'red' ? c.bubblyRed
                   : option.accent === 'blue' ? c.bubblyBlue
                   : c.bubblyYellow
                 const accentDark = option.accent === 'red' ? c.bubblyRedDark
                   : option.accent === 'blue' ? c.bubblyBlueDark
                   : c.bubblyYellowDark
+                const accentSoft = option.accent === 'red' ? c.accentSoft
+                  : option.accent === 'blue' ? '#E4F6FF'
+                  : c.sunnySoft
                 return (
                   <Press
-                    key={option.value}
-                    onPress={() => setGoal(option.value)}
-                    pressDepth={3}
+                    key={option.id}
+                    onPress={() => void setExamGoal(
+                      option.value,
+                      option.value === 'bac' ? bacTrack ?? 'mate_info' : null,
+                    ).catch(() => toast.show('Nu am putut salva obiectivul.', 'alert-triangle'))}
+                    disabled={saving}
+                    pressDepth={1.5}
                     style={[
                       styles.goalOption,
                       selected
-                        ? { backgroundColor: accentBg, borderColor: accentDark, borderBottomColor: accentDark }
-                        : { backgroundColor: c.bgElevated, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' },
+                        ? { backgroundColor: accentSoft, borderColor: accentDark }
+                        : { backgroundColor: c.bgElevated, borderColor: 'transparent' },
                     ]}
                   >
-                    <RezIcon name={option.icon} size={18} color={selected ? '#FFFFFF' : c.text} accent={selected ? '#FFFFFF' : c.bubblyRed} />
-                    <Txt weight="bold" size={13} color={selected ? '#FFFFFF' : c.text} style={styles.noBreak}>
-                      {option.label}
-                    </Txt>
-                    {selected && <RezIcon name="check" size={15} color="#FFFFFF" />}
+                    <View style={[styles.goalOptionIcon, { backgroundColor: accentBg, borderColor: accentDark }]}>
+                      <RezIcon name={option.icon} size={21} color={option.accent === 'yellow' ? c.text : '#FFFFFF'} accent={option.accent === 'yellow' ? c.bubblyRed : '#FFFFFF'} />
+                    </View>
+                    <View style={styles.flex}>
+                      <Txt weight="bold" size={14.5} color={c.text} style={styles.noBreak}>{option.label}</Txt>
+                      <Txt size={11.8} color={c.textMuted} style={styles.goalOptionCopy}>{option.copy}</Txt>
+                    </View>
+                    <View style={[styles.goalCheck, { borderColor: selected ? accentDark : c.textFaint, backgroundColor: selected ? accentBg : 'transparent' }]}>
+                      {selected && <RezIcon name="check" size={13} color="#FFFFFF" />}
+                    </View>
                   </Press>
                 )
               })}
             </View>
 
-            {goal === 'bac' && (
+            {examGoal === 'bac' && (
               <View style={styles.profileSection}>
                 <View style={styles.profileLabel}>
                   <RezIcon name="exam-bac" size={15} color={c.textMuted} accent={c.bubblyRed} />
@@ -151,11 +218,13 @@ export default function SettingsScreen({ onBack }: { onBack: () => void }) {
                   </Txt>
                 </View>
                 {bacProfiles.map((profile, index) => {
-                  const active = profile === bacProfile
+                  const active = profile === bacTrack
                   return (
                     <Press
                       key={profile}
-                      onPress={() => setBacProfile(profile)}
+                      onPress={() => void setExamGoal('bac', profile).catch(() => toast.show('Nu am putut salva profilul.', 'alert-triangle'))}
+                      disabled={saving}
+                      pressDepth={1.5}
                       style={[
                         styles.profileRow,
                         index < bacProfiles.length - 1 && { borderBottomColor: 'rgba(25,49,73,0.1)', borderBottomWidth: StyleSheet.hairlineWidth },
@@ -173,60 +242,80 @@ export default function SettingsScreen({ onBack }: { onBack: () => void }) {
                         color={active ? c.text : c.textMuted}
                         style={styles.flex}
                       >
-                        {profile}
+                        {BAC_TRACK_LABELS[profile]}
                       </Txt>
                     </Press>
                   )
                 })}
               </View>
             )}
-          </View>
+            </View>
+          </Entrance>
 
-          {/* ─── Information Section ─── */}
-          <SectionLabel title="INFORMAȚII" />
-          <View style={[styles.groupCard, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' }]}>
+          <Entrance delay={90}>
+            <SectionLabel title="CONFIDENȚIALITATE" />
+            <View style={[styles.groupCard, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: c.cardEdge }]}>
+              <SettingsToggleRow
+                icon="privacy"
+                label="Diagnostic opțional"
+                copy="Ne ajută să găsim erorile. Nu include enunțurile sau răspunsurile tale."
+                value={diagnostics}
+                disabled={changingDiagnostics}
+                onChange={() => void toggleDiagnostics()}
+              />
+              <SettingsRow
+                icon="privacy"
+                label="Politica de confidențialitate"
+                copy="Cum sunt protejate și folosite datele"
+                onPress={() => Linking.openURL('https://rezolvo.web.app/privacy')}
+                last={false}
+              />
+              <SettingsRow
+                icon="terms"
+                label="Termeni și condiții"
+                copy="Regulile de utilizare ale aplicației"
+                onPress={() => Linking.openURL('https://rezolvo.web.app/terms')}
+                last
+              />
+            </View>
+          </Entrance>
+
+          <Entrance delay={135}>
+            <SectionLabel title="CONT ȘI DATE" />
+            <View style={[styles.groupCard, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: c.cardEdge }]}>
             <SettingsRow
-              icon="privacy"
-              label="Politica de confidențialitate"
-              onPress={() => Linking.openURL('https://rezolvo.web.app/privacy')}
+              icon="download"
+              label={exporting ? 'Pregătesc exportul…' : 'Exportă datele mele'}
+              copy="Primești o copie a informațiilor contului"
+              disabled={exporting || deleting}
+              onPress={() => void doExport()}
               last={false}
             />
-            <SettingsRow
-              icon="terms"
-              label="Termeni și condiții"
-              onPress={() => Linking.openURL('https://rezolvo.web.app/terms')}
-              last
-            />
-          </View>
-
-          {/* ─── Account Actions Section ─── */}
-          {!isGuest && (
-            <>
-              <SectionLabel title="CONT" />
-              <View style={[styles.groupCard, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' }]}>
+            {!isGuest && (
                 <SettingsRow
                   icon="logout"
                   label="Deconectează-te"
+                  copy="Datele sincronizate rămân în cont"
                   onPress={() => signOut().then(() => {
                     onBack()
                     toast.show(t('auth.signedOut'))
                   })}
                   last={false}
                 />
-                <SettingsRow
-                  icon="trash"
-                  label={deleting ? 'Șterg contul…' : 'Șterge definitiv contul'}
-                  danger
-                  disabled={deleting}
-                  onPress={() => setConfirming(true)}
-                  last
-                />
-              </View>
-            </>
-          )}
+            )}
+            <SettingsRow
+              icon="trash"
+              label={deleting ? 'Șterg datele…' : isGuest ? 'Șterge sesiunea și datele' : 'Șterge definitiv contul'}
+              copy="Acțiune permanentă, cu confirmare"
+              danger
+              disabled={deleting || exporting}
+              onPress={() => setConfirming(true)}
+              last
+            />
+            </View>
+          </Entrance>
 
-          {/* ─── Version Footer ─── */}
-          <View style={styles.versionWrap}>
+          <Entrance delay={180} style={styles.versionWrap}>
             <View style={[styles.versionPill, { backgroundColor: c.surfaceAlt, borderColor: c.cardEdge }]}>
               <RezIcon name="workspace" size={14} color={c.textFaint} />
               <Txt size={11.5} weight="semibold" color={c.textFaint} style={{ fontFamily: theme.font.mono }}>
@@ -234,16 +323,18 @@ export default function SettingsScreen({ onBack }: { onBack: () => void }) {
               </Txt>
             </View>
             <Txt size={11} color={c.textFaint}>
-              Profu' de Mate
+              Profu’ de Mate
             </Txt>
-          </View>
+          </Entrance>
         </ScrollView>
       </ScreenContent>
 
       <ConfirmDialog
         open={confirming}
-        title={t('settings.confirm.title')}
-        message={t('settings.confirm.message')}
+        title={isGuest ? 'Ștergi sesiunea?' : t('settings.confirm.title')}
+        message={isGuest
+          ? 'Șterge definitiv sesiunea anonimă, problemele, pozele și rezultatele asociate. Nu există anulare.'
+          : t('settings.confirm.message')}
         confirmLabel={t('settings.confirm.cta')}
         cancelLabel={t('settings.confirm.cancel')}
         onConfirm={doDelete}
@@ -272,6 +363,7 @@ function SectionLabel({ title }: { title: string }) {
 function SettingsRow({
   icon,
   label,
+  copy,
   onPress,
   danger = false,
   disabled = false,
@@ -279,6 +371,7 @@ function SettingsRow({
 }: {
   icon: RezIconName
   label: string
+  copy?: string
   onPress: () => void
   danger?: boolean
   disabled?: boolean
@@ -299,9 +392,51 @@ function SettingsRow({
       <View style={[styles.rowIcon, { backgroundColor: danger ? c.dangerSoft : c.sunnySoft }]}>
         <RezIcon name={icon} size={18} color={color} accent={danger ? c.danger : c.bubblyRed} />
       </View>
-      <Txt weight="semibold" size={14.5} color={color} style={[styles.flex, styles.noBreak]}>{label}</Txt>
+      <View style={styles.flex}>
+        <Txt weight="semibold" size={14.5} color={color} style={styles.noBreak}>{label}</Txt>
+        {copy ? <Txt size={11.8} color={danger ? c.danger : c.textMuted} style={styles.rowCopy}>{copy}</Txt> : null}
+      </View>
       <RezIcon name="chevron" size={16} color={c.textFaint} />
     </Press>
+  )
+}
+
+function SettingsToggleRow({
+  icon,
+  label,
+  copy,
+  value,
+  disabled,
+  onChange,
+}: {
+  icon: RezIconName
+  label: string
+  copy: string
+  value: boolean
+  disabled: boolean
+  onChange: () => void
+}) {
+  const { theme } = useTheme()
+  const c = theme.colors
+  return (
+    <View style={[styles.row, styles.toggleRow, { borderBottomColor: 'rgba(25,49,73,0.1)' }]}>
+      <View style={[styles.rowIcon, { backgroundColor: c.successSoft }]}>
+        <RezIcon name={icon} size={18} color={c.bubblyGreenDark} accent={c.bubblyGreen} />
+      </View>
+      <View style={styles.flex}>
+        <Txt weight="semibold" size={14.5} color={c.text}>{label}</Txt>
+        <Txt size={11.8} color={c.textMuted} style={styles.rowCopy}>{copy}</Txt>
+      </View>
+      <Switch
+        accessibilityLabel={label}
+        disabled={disabled}
+        onValueChange={onChange}
+        value={value}
+        trackColor={{ false: c.surfaceAlt, true: c.bubblyGreen }}
+        thumbColor="#FFFFFF"
+        ios_backgroundColor={c.surfaceAlt}
+      />
+    </View>
   )
 }
 
@@ -310,7 +445,7 @@ function SettingsRow({
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   noBreak: { flexShrink: 1 },
-  content: { paddingBottom: 32, paddingTop: 8 },
+  content: { paddingBottom: 32, paddingTop: 6 },
 
   // Guest card
   guestCard: {
@@ -339,11 +474,11 @@ const styles = StyleSheet.create({
   },
   guestSub: {
     lineHeight: 17,
-    marginTop: 3,
+    marginTop: 5,
   },
   googleBtn: {
     alignItems: 'center',
-    borderRadius: 20,
+    borderRadius: 22,
     borderWidth: 3,
     borderBottomWidth: 8,
     flexDirection: 'row',
@@ -375,6 +510,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 14,
   },
+  accountBadge: {
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    borderRadius: 99,
+    flexDirection: 'row',
+    gap: 4,
+    marginBottom: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
   avatar: { borderRadius: 24, height: 52, width: 52 },
   avatarFallback: {
     alignItems: 'center',
@@ -389,7 +534,7 @@ const styles = StyleSheet.create({
   // Section labels
   sectionLabel: {
     marginBottom: 8,
-    marginTop: 28,
+    marginTop: 24,
     paddingHorizontal: 4,
   },
 
@@ -402,22 +547,37 @@ const styles = StyleSheet.create({
   },
 
   // Goal options
-  goalGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+  goalList: {
+    gap: 7,
     padding: 12,
   },
   goalOption: {
     alignItems: 'center',
     borderRadius: 18,
-    borderWidth: 3,
-    borderBottomWidth: 6,
+    borderWidth: 2,
     flexDirection: 'row',
-    gap: 7,
-    minHeight: 52,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    gap: 11,
+    minHeight: 72,
+    paddingHorizontal: 11,
+    paddingVertical: 9,
+  },
+  goalOptionIcon: {
+    alignItems: 'center',
+    borderRadius: 15,
+    borderWidth: 2,
+    borderBottomWidth: 4,
+    height: 44,
+    justifyContent: 'center',
+    width: 44,
+  },
+  goalOptionCopy: { lineHeight: 15, marginTop: 2 },
+  goalCheck: {
+    alignItems: 'center',
+    borderRadius: 99,
+    borderWidth: 2,
+    height: 25,
+    justifyContent: 'center',
+    width: 25,
   },
 
   // BAC profile
@@ -444,7 +604,7 @@ const styles = StyleSheet.create({
   profileDot: {
     alignItems: 'center',
     borderRadius: 14,
-    borderWidth: 3,
+    borderWidth: 2,
     borderBottomWidth: 4,
     height: 32,
     justifyContent: 'center',
@@ -456,16 +616,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     gap: 12,
-    minHeight: 58,
+    minHeight: 70,
     paddingHorizontal: 14,
+    paddingVertical: 9,
   },
   rowIcon: {
     alignItems: 'center',
-    borderRadius: 12,
-    height: 36,
+    borderRadius: 14,
+    height: 40,
     justifyContent: 'center',
-    width: 36,
+    width: 40,
   },
+  rowCopy: { lineHeight: 15, marginTop: 2 },
+  toggleRow: { borderBottomWidth: StyleSheet.hairlineWidth },
 
   // Version footer
   versionWrap: {
@@ -477,8 +640,7 @@ const styles = StyleSheet.create({
   versionPill: {
     alignItems: 'center',
     borderRadius: 99,
-    borderWidth: 3,
-    borderBottomWidth: 5,
+    borderWidth: 2,
     flexDirection: 'row',
     gap: 5,
     paddingHorizontal: 14,

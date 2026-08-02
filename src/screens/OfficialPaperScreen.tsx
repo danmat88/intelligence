@@ -6,21 +6,27 @@ import type { NativeOfficialPaper, OfficialExercise } from '../archive/content'
 import {
   findOpenOfficialAttempt,
   saveOfficialAttempt,
+  type OfficialAssistance,
   type OfficialPaperMode,
 } from '../archive/store'
 import ContextHeader from '../components/ui/ContextHeader'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
 import Press from '../components/ui/Press'
 import RezIcon from '../components/ui/RezIcon'
 import ScreenBackground from '../components/ui/ScreenBackground'
 import ScreenContent from '../components/ui/ScreenContent'
 import Txt from '../components/ui/Txt'
+import MathRichText from '../components/ui/MathRichText'
 import OfficialChoiceGrid from '../features/official/OfficialChoiceGrid'
 import OfficialSolution from '../features/official/OfficialSolution'
 import TeacherHelpPanel from '../features/learning/TeacherHelpPanel'
 import OfficialFigure from '../features/official/OfficialFigure'
+import { getOfficialFigure } from '../archive/figures'
+import { canRevealOfficialSolution } from '../archive/sessionPolicy'
 import ProgressMeter from '../components/ui/ProgressMeter'
-import { followUp } from '../solve/solve'
+import { followUpGuided } from '../solve/solve'
 import { useTheme } from '../theme/ThemeProvider'
+import { useAuth } from '../auth/AuthProvider'
 
 type Props = {
   item: NativeOfficialPaper
@@ -31,7 +37,7 @@ type Props = {
 const modeCopy: Record<OfficialPaperMode, { title: string; detail: string }> = {
   study: {
     title: 'Studiază',
-    detail: 'Parcurgi exercițiile și vezi metoda redactată pas cu pas.',
+    detail: 'Parcurgi exercițiile, apoi deschizi metoda redactată când ai nevoie.',
   },
   guided: {
     title: 'Ghidat',
@@ -51,15 +57,20 @@ function flattenExercises(paper: NativeOfficialPaper) {
 
 export default function OfficialPaperScreen({ item, initialMode, onBack }: Props) {
   const { theme } = useTheme()
+  const { user } = useAuth()
   const insets = useSafeAreaInsets()
   const c = theme.colors
   const items = useMemo(() => flattenExercises(item), [item])
   const [mode, setMode] = useState<OfficialPaperMode>(initialMode)
   const [index, setIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>({})
+  const [assistance, setAssistance] = useState<Record<string, OfficialAssistance>>({})
   const [elapsed, setElapsed] = useState(0)
   const [hintVisible, setHintVisible] = useState(false)
-  const [solutionVisible, setSolutionVisible] = useState(initialMode === 'study')
+  // No mode is allowed to reveal an answer just by opening an exercise.
+  // Even in study mode, revealing the worked solution must be an explicit action.
+  const [solutionVisible, setSolutionVisible] = useState(false)
+  const [confirmSolutionVisible, setConfirmSolutionVisible] = useState(false)
   const [teacherVisible, setTeacherVisible] = useState(false)
   const [teacherReply, setTeacherReply] = useState('')
   const [teacherLoading, setTeacherLoading] = useState(false)
@@ -68,21 +79,25 @@ export default function OfficialPaperScreen({ item, initialMode, onBack }: Props
   const [submitConfirmVisible, setSubmitConfirmVisible] = useState(false)
   const startedAtRef = useRef(Date.now())
   const attemptIdRef = useRef(`${item.id}-${Date.now()}`)
+  const attemptCompletedRef = useRef(false)
   const current = items[index]
 
   useEffect(() => {
-    findOpenOfficialAttempt(item.id, item.profile, initialMode)
+    if (!user) return
+    findOpenOfficialAttempt(user.id, item.id, item.profile, initialMode)
       .then((attempt) => {
         if (!attempt) return
         attemptIdRef.current = attempt.id
         startedAtRef.current = Date.now() - attempt.elapsedSeconds * 1000
         setElapsed(attempt.elapsedSeconds)
         setAnswers(attempt.answers ?? {})
+        setAssistance(attempt.assistance ?? {})
         setIndex(Math.min(attempt.exerciseIndex ?? 0, Math.max(items.length - 1, 0)))
         setMode(attempt.mode)
+        setSolutionVisible(false)
       })
       .catch(() => {})
-  }, [initialMode, item.id, item.profile, items.length])
+  }, [initialMode, item.id, item.profile, items.length, user?.id])
 
   useEffect(() => {
     if (finished) return
@@ -94,8 +109,10 @@ export default function OfficialPaperScreen({ item, initialMode, onBack }: Props
   }, [finished, mode])
 
   useEffect(() => {
-    const persist = () =>
-      saveOfficialAttempt({
+    if (!user || finished || attemptCompletedRef.current) return
+    const persist = () => {
+      if (attemptCompletedRef.current) return
+      saveOfficialAttempt(user.id, {
         id: attemptIdRef.current,
         packageId: item.id,
         exam: item.exam,
@@ -107,18 +124,21 @@ export default function OfficialPaperScreen({ item, initialMode, onBack }: Props
         elapsedSeconds: Math.floor((Date.now() - startedAtRef.current) / 1000),
         answers,
         exerciseIndex: index,
+        assistance,
       }).catch(() => {})
+    }
     const timer = setInterval(persist, 15_000)
     return () => {
       clearInterval(timer)
       persist()
     }
-  }, [answers, index, item, mode])
+  }, [answers, assistance, finished, index, item, mode, user?.id])
 
   const goTo = (next: number) => {
     setIndex(Math.max(0, Math.min(items.length - 1, next)))
     setHintVisible(false)
-    setSolutionVisible(mode === 'study')
+    setSolutionVisible(false)
+    setConfirmSolutionVisible(false)
     setTeacherVisible(false)
     setTeacherReply('')
     setTeacherError('')
@@ -136,6 +156,8 @@ export default function OfficialPaperScreen({ item, initialMode, onBack }: Props
     )
     return { earned, automaticallyScored }
   }, [answers, item.pointsFromOffice, items])
+  const automaticallyScoresExercises = score.automaticallyScored > item.pointsFromOffice
+  const answeredCount = items.filter(({ exercise }) => answers[exercise.id]?.trim()).length
 
   const finish = () => {
     const unanswered = items.filter(({ exercise: itemExercise }) => !answers[itemExercise.id]?.trim()).length
@@ -144,7 +166,9 @@ export default function OfficialPaperScreen({ item, initialMode, onBack }: Props
       return
     }
     setFinished(true)
-    saveOfficialAttempt({
+    attemptCompletedRef.current = true
+    if (!user) return
+    saveOfficialAttempt(user.id, {
       id: attemptIdRef.current,
       packageId: item.id,
       exam: item.exam,
@@ -157,8 +181,11 @@ export default function OfficialPaperScreen({ item, initialMode, onBack }: Props
       elapsedSeconds: elapsed,
       answers,
       exerciseIndex: index,
-      score: score.earned,
-      maxScore: score.automaticallyScored,
+      assistance,
+      score: mode !== 'study' && automaticallyScoresExercises ? score.earned : undefined,
+      maxScore: mode !== 'study' && automaticallyScoresExercises
+        ? score.automaticallyScored
+        : undefined,
     }).catch(() => {})
   }
 
@@ -177,13 +204,26 @@ export default function OfficialPaperScreen({ item, initialMode, onBack }: Props
         />
         <ScreenContent style={styles.resultPage}>
           <View style={[styles.resultCard, { backgroundColor: c.chalkDark, borderColor: '#0A2926', borderBottomColor: '#071F1D' }]}>
-            <Txt size={11} color="#DDF3E6" style={{ letterSpacing: 0.8 }}>PUNCTAJ VERIFICAT AUTOMAT</Txt>
+            <Txt size={11} color="#DDF3E6" style={{ letterSpacing: 0.8 }}>
+              {mode === 'study'
+                ? 'PARCURGERE ÎNCHEIATĂ'
+                : automaticallyScoresExercises
+                  ? 'PUNCTAJ VERIFICAT AUTOMAT'
+                  : 'LUCRARE ÎNCHEIATĂ'}
+            </Txt>
             <Txt style={[styles.resultScore, { fontFamily: theme.font.display }]}>
-              {score.earned}/{score.automaticallyScored}
+              {mode === 'study'
+                ? `${items.length} exerciții`
+                : automaticallyScoresExercises
+                  ? `${score.earned}/${score.automaticallyScored}`
+                  : `${answeredCount}/${items.length} răspunsuri`}
             </Txt>
             <Txt size={13} color="#DDF3E6" style={styles.resultCopy}>
-              Sunt incluse punctele din oficiu și exercițiile cu alegere multiplă.
-              Exercițiile cu redactare se verifică separat, pe barem.
+              {mode === 'study'
+                ? 'Ai parcurs lucrarea în modul de studiu; aceasta nu este înregistrată ca evaluare.'
+                : automaticallyScoresExercises
+                  ? 'Sunt incluse punctele din oficiu și exercițiile cu alegere multiplă. Exercițiile cu redactare se verifică separat, pe barem.'
+                  : `Cele ${100 - item.pointsFromOffice} de puncte pentru redactare nu sunt declarate corecte automat. Ai ${item.pointsFromOffice} puncte din oficiu, iar răspunsurile se revizuiesc pe barem.`}
             </Txt>
           </View>
           <Press
@@ -200,16 +240,19 @@ export default function OfficialPaperScreen({ item, initialMode, onBack }: Props
   }
 
   const { section, exercise } = current
+  const figure = getOfficialFigure(exercise)
   const answer = answers[exercise.id] ?? ''
   const isChoice = !!exercise.options?.length
   const showHelp = mode !== 'simulation'
+  const canShowSolution = canRevealOfficialSolution(mode, solutionVisible)
   const askTeacher = async () => {
+    setAssistance((currentAssistance) => ({ ...currentAssistance, [exercise.id]: 'ai' }))
     setTeacherVisible(true)
     if (teacherReply || teacherLoading) return
     setTeacherLoading(true)
     setTeacherError('')
     try {
-      const reply = await followUp(
+      const reply = await followUpGuided(
         [{
           role: 'user',
           text: [
@@ -226,10 +269,15 @@ export default function OfficialPaperScreen({ item, initialMode, onBack }: Props
       )
       setTeacherReply(reply)
     } catch {
-      setTeacherError('Profu’ nu a putut răspunde acum. Indiciul redactat rămâne disponibil.')
+      setTeacherError('Ajutorul AI nu este disponibil acum. Indiciul redactat rămâne disponibil.')
     } finally {
       setTeacherLoading(false)
     }
+  }
+  const revealSolution = () => {
+    setAssistance((currentAssistance) => ({ ...currentAssistance, [exercise.id]: 'solution' }))
+    setSolutionVisible(true)
+    setConfirmSolutionVisible(false)
   }
   return (
     <ScreenBackground>
@@ -270,12 +318,12 @@ export default function OfficialPaperScreen({ item, initialMode, onBack }: Props
             <Txt size={11} color={c.textMuted}>{exercise.competency}</Txt>
           </View>
 
-          <Txt style={[styles.prompt, { color: c.text, fontFamily: theme.font.serif }]}>
-            {exercise.prompt}
-          </Txt>
+          <View style={styles.prompt}>
+            <MathRichText text={exercise.prompt} size={18} weight={500} />
+          </View>
 
-          {exercise.figure && exercise.figureDescription ? (
-            <OfficialFigure figure={exercise.figure} description={exercise.figureDescription} />
+          {figure && exercise.figureDescription ? (
+            <OfficialFigure figure={figure} description={exercise.figureDescription} />
           ) : exercise.figureDescription ? (
             <View style={[styles.figure, { backgroundColor: c.chalkDark }]}>
               <RezIcon name="workspace" size={22} color="#FFFFFF" accent={c.sunny} />
@@ -289,7 +337,7 @@ export default function OfficialPaperScreen({ item, initialMode, onBack }: Props
             <OfficialChoiceGrid
               exercise={exercise}
               value={answer}
-              revealAnswer={mode === 'study' || solutionVisible}
+              revealAnswer={canShowSolution}
               onChange={(value) => setAnswers((currentAnswers) => ({
                 ...currentAnswers,
                 [exercise.id]: value,
@@ -315,7 +363,13 @@ export default function OfficialPaperScreen({ item, initialMode, onBack }: Props
           {showHelp && (
             <View style={styles.helpActions}>
               <Press
-                onPress={() => setHintVisible((visible) => !visible)}
+                onPress={() => {
+                  setAssistance((currentAssistance) => ({
+                    ...currentAssistance,
+                    [exercise.id]: currentAssistance[exercise.id] === 'ai' ? 'ai' : 'hint',
+                  }))
+                  setHintVisible((visible) => !visible)
+                }}
                 style={[styles.secondary, { backgroundColor: c.sunnySoft }]}
               >
                 <RezIcon name="spark" size={17} color={c.text} accent={c.accent} />
@@ -326,7 +380,7 @@ export default function OfficialPaperScreen({ item, initialMode, onBack }: Props
                 style={[styles.secondary, { backgroundColor: c.successSoft }]}
               >
                 <RezIcon name="teacher" size={17} color={c.text} accent={c.accent} />
-                <Txt weight="bold" size={12} color={c.text}>Întreabă-l pe Profu’</Txt>
+                <Txt weight="bold" size={12} color={c.text}>Cere ajutor AI</Txt>
               </Press>
             </View>
           )}
@@ -335,8 +389,17 @@ export default function OfficialPaperScreen({ item, initialMode, onBack }: Props
             <TeacherHelpPanel
               loading={teacherLoading}
               message={teacherReply || teacherError || teacherMessage(exercise, answer)}
-              onHint={() => setHintVisible(true)}
-              onMethod={() => setSolutionVisible(true)}
+              onHint={() => {
+                setAssistance((currentAssistance) => ({
+                  ...currentAssistance,
+                  [exercise.id]: currentAssistance[exercise.id] === 'ai' ? 'ai' : 'hint',
+                }))
+                setHintVisible(true)
+              }}
+              onMethod={() => {
+                if (mode === 'study') revealSolution()
+                else setConfirmSolutionVisible(true)
+              }}
             />
           )}
 
@@ -349,7 +412,11 @@ export default function OfficialPaperScreen({ item, initialMode, onBack }: Props
 
           {showHelp && (
             <Press
-              onPress={() => setSolutionVisible((visible) => !visible)}
+              onPress={() => {
+                if (solutionVisible) setSolutionVisible(false)
+                else if (mode === 'study') revealSolution()
+                else setConfirmSolutionVisible(true)
+              }}
               style={[styles.solutionToggle, { borderColor: c.border }]}
             >
               <Txt weight="bold" size={12.5} color={c.accent}>
@@ -359,7 +426,7 @@ export default function OfficialPaperScreen({ item, initialMode, onBack }: Props
             </Press>
           )}
 
-          {solutionVisible && (
+          {canShowSolution && (
             <OfficialSolution exercise={exercise} />
           )}
         </ScrollView>
@@ -393,6 +460,15 @@ export default function OfficialPaperScreen({ item, initialMode, onBack }: Props
         </View>
         </ScreenContent>
       </KeyboardAvoidingView>
+      <ConfirmDialog
+        open={confirmSolutionVisible}
+        title="Vrei să vezi rezolvarea?"
+        message="Metoda și răspunsul vor deveni vizibile, iar exercițiul va fi marcat ca asistat."
+        confirmLabel="Arată rezolvarea"
+        cancelLabel="Mai încerc"
+        onClose={() => setConfirmSolutionVisible(false)}
+        onConfirm={revealSolution}
+      />
     </ScreenBackground>
   )
 }
@@ -421,19 +497,19 @@ const styles = StyleSheet.create({
   prompt: { fontSize: 17, lineHeight: 24, marginTop: 11 },
   figure: { alignItems: 'center', borderRadius: 18, flexDirection: 'row', gap: 10, marginTop: 16, padding: 15 },
   figureCopy: { flex: 1, lineHeight: 18 },
-  workInput: { borderRadius: 20, borderWidth: 3, borderBottomWidth: 6, fontSize: 16, lineHeight: 24, marginTop: 15, minHeight: 140, padding: 16, textAlignVertical: 'top' },
+  workInput: { borderRadius: 20, borderWidth: 2, borderBottomWidth: 5, fontSize: 16, lineHeight: 24, marginTop: 15, minHeight: 140, padding: 16, textAlignVertical: 'top' },
   helpActions: { flexDirection: 'row', gap: 9, marginTop: 14 },
-  secondary: { alignItems: 'center', borderRadius: 20, borderWidth: 3, borderBottomWidth: 6, flex: 1, flexDirection: 'row', gap: 9, justifyContent: 'center', minHeight: 56, paddingHorizontal: 12 },
-  helpBox: { borderRadius: 20, borderWidth: 3, borderBottomWidth: 6, marginTop: 12, padding: 18 },
+  secondary: { alignItems: 'center', borderRadius: 20, borderWidth: 2, borderBottomWidth: 5, flex: 1, flexDirection: 'row', gap: 9, justifyContent: 'center', minHeight: 58, paddingHorizontal: 12 },
+  helpBox: { borderRadius: 20, borderWidth: 2, borderBottomWidth: 5, marginTop: 12, padding: 18 },
   helpCopy: { lineHeight: 20, marginTop: 5 },
-  solutionToggle: { alignItems: 'center', borderRadius: 20, borderWidth: 3, borderBottomWidth: 6, flexDirection: 'row', justifyContent: 'space-between', marginTop: 14, minHeight: 64, paddingHorizontal: 18 },
-  bottom: { borderTopWidth: 1.8, flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingTop: 10 },
-  submitWarning: { borderRadius: 16, borderWidth: 3, borderBottomWidth: 5, padding: 14, width: '100%' },
+  solutionToggle: { alignItems: 'center', borderRadius: 20, borderWidth: 2, borderBottomWidth: 5, flexDirection: 'row', justifyContent: 'space-between', marginTop: 14, minHeight: 62, paddingHorizontal: 18 },
+  bottom: { borderTopWidth: 3, flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingTop: 10 },
+  submitWarning: { borderRadius: 18, borderWidth: 2, borderBottomWidth: 4, padding: 14, width: '100%' },
   navButton: { alignItems: 'center', borderRadius: 20, borderWidth: 3, borderBottomWidth: 6, height: 64, justifyContent: 'center', width: 64 },
-  finishButton: { alignItems: 'center', borderRadius: 22, borderWidth: 3, borderBottomWidth: 8, flex: 1, flexDirection: 'row', gap: 10, justifyContent: 'center', minHeight: 64 },
-  primary: { alignItems: 'center', borderRadius: 24, borderWidth: 3, borderBottomWidth: 8, flexDirection: 'row', gap: 12, justifyContent: 'center', minHeight: 72 },
+  finishButton: { alignItems: 'center', borderRadius: 22, borderWidth: 3, borderBottomWidth: 7, flex: 1, flexDirection: 'row', gap: 10, justifyContent: 'center', minHeight: 64 },
+  primary: { alignItems: 'center', borderRadius: 24, borderWidth: 3, borderBottomWidth: 8, flexDirection: 'row', gap: 12, justifyContent: 'center', minHeight: 70 },
   resultPage: { gap: 15, justifyContent: 'center', paddingBottom: 50 },
-  resultCard: { borderRadius: 26, borderWidth: 3, borderBottomWidth: 8, padding: 26 },
+  resultCard: { borderRadius: 28, borderWidth: 3, borderBottomWidth: 9, padding: 24 },
   resultScore: { color: '#FFFFFF', fontSize: 48, letterSpacing: -2, lineHeight: 56, marginTop: 7 },
   resultCopy: { lineHeight: 19, marginTop: 5 },
 })

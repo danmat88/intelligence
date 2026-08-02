@@ -1,7 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
-import { ScrollView, StyleSheet, View } from 'react-native'
-import type { ArchiveExam } from '../archive/catalog'
-import { NATIVE_OFFICIAL_PAPERS, type NativeOfficialPaper } from '../archive/content'
+import { useMemo } from 'react'
+import { Linking, ScrollView, StyleSheet, View } from 'react-native'
+import {
+  NATIVE_OFFICIAL_PAPERS,
+  OFFICIAL_SOURCE_PACKAGES,
+  type NativeOfficialPaper,
+  type OfficialSourcePackage,
+} from '../archive/content'
 import type { OfficialPaperMode } from '../archive/store'
 import AppHeader from '../components/ui/AppHeader'
 import Press from '../components/ui/Press'
@@ -9,36 +13,39 @@ import RezIcon from '../components/ui/RezIcon'
 import ScreenBackground from '../components/ui/ScreenBackground'
 import ScreenContent from '../components/ui/ScreenContent'
 import ScreenHeading from '../components/ui/ScreenHeading'
-import SegmentedControl from '../components/ui/SegmentedControl'
 import EmptyState from '../components/ui/EmptyState'
 import Txt from '../components/ui/Txt'
 import { useProduct } from '../product/ProductProvider'
 import { useTheme } from '../theme/ThemeProvider'
+import { BAC_TRACK_LABELS } from '../product/profile'
 
 type Props = {
   onOpenSettings: () => void
   onOpenPaper: (item: NativeOfficialPaper, mode: OfficialPaperMode) => void
+  onSolve: () => void
 }
 
-export default function SubjectsScreen({ onOpenSettings, onOpenPaper }: Props) {
+export default function SubjectsScreen({ onOpenSettings, onOpenPaper, onSolve }: Props) {
   const { theme } = useTheme()
-  const { goal, bacProfile } = useProduct()
+  const { examGoal, bacTrack } = useProduct()
   const c = theme.colors
-  const [exam, setExam] = useState<ArchiveExam>(goal === 'bac' ? 'bac' : 'en')
+  const exam = examGoal === 'bac' ? 'bac' : 'en'
   const papers = useMemo(
     () => NATIVE_OFFICIAL_PAPERS.filter(
-      (paper) => paper.exam === exam && (exam !== 'bac' || paper.profile === bacProfile),
+      (paper) => paper.exam === exam && (exam !== 'bac' || paper.profile === bacTrack),
     ),
-    [bacProfile, exam],
+    [bacTrack, exam],
+  )
+  const sources = useMemo(
+    () => OFFICIAL_SOURCE_PACKAGES.filter(
+      (source) => source.exam === exam && (exam !== 'bac' || source.profile === bacTrack),
+    ),
+    [bacTrack, exam],
   )
   const years = useMemo(
     () => [...new Set(papers.map((paper) => paper.year))].sort((a, b) => b - a),
     [papers],
   )
-
-  useEffect(() => {
-    if (goal === 'en' || goal === 'bac') setExam(goal)
-  }, [goal])
 
   return (
     <ScreenBackground>
@@ -47,17 +54,8 @@ export default function SubjectsScreen({ onOpenSettings, onOpenPaper }: Props) {
         <ScreenHeading
           eyebrow="ARHIVĂ"
           title="Subiecte oficiale"
-          description="Alegi modul și lucrezi varianta direct în aplicație."
+          description="Fiecare variantă este legată de sursa Ministerului și de baremul ei."
           style={styles.intro}
-        />
-        <SegmentedControl
-          value={exam}
-          accessibilityLabel="Examen"
-          segments={[
-            { value: 'en', label: 'Evaluare Națională' },
-            { value: 'bac', label: 'Bacalaureat' },
-          ]}
-          onChange={setExam}
         />
 
         {exam === 'bac' && (
@@ -71,7 +69,7 @@ export default function SubjectsScreen({ onOpenSettings, onOpenPaper }: Props) {
             </View>
             <View style={styles.profileCopy}>
               <Txt size={11} weight="bold" color={c.textMuted}>Programa curentă</Txt>
-              <Txt weight="bold" size={14.5} color={c.text}>{bacProfile}</Txt>
+              <Txt weight="bold" size={14.5} color={c.text}>{BAC_TRACK_LABELS[bacTrack ?? 'mate_info']}</Txt>
             </View>
             <Txt weight="bold" size={12} color={c.bubblyRedDark}>Schimbă</Txt>
           </Press>
@@ -82,16 +80,14 @@ export default function SubjectsScreen({ onOpenSettings, onOpenPaper }: Props) {
           contentContainerStyle={styles.list}
         >
           {papers.length === 0 ? (
-            <EmptyState
-              icon="workspace"
-              title={exam === 'bac' ? 'Nu există încă variante BAC în aplicație' : 'Nu există variante pentru selecția curentă'}
-              message={exam === 'bac'
-                ? 'Arhiva disponibilă acum este cea pentru Evaluarea Națională.'
-                : 'Schimbă examenul sau programa pentru a vedea conținutul disponibil.'}
-              action={exam === 'bac'
-                ? { title: 'Vezi Evaluarea Națională', icon: 'exam-en', onPress: () => setExam('en') }
-                : undefined}
-            />
+            <View style={styles.sourceOnly}>
+              <EmptyState
+                icon="verified"
+                title="Documentele oficiale sunt disponibile"
+                message="Deschide arhiva exactă a Ministerului. Pentru ajutor la o cerință, revino și trimite fotografia prin Rezolvă."
+              />
+              {sources.map((source) => <SourceCard key={source.id} source={source} onSolve={onSolve} />)}
+            </View>
           ) : (
             years.map((year) => (
               <View key={year} style={styles.yearGroup}>
@@ -112,6 +108,36 @@ export default function SubjectsScreen({ onOpenSettings, onOpenPaper }: Props) {
         </ScrollView>
       </ScreenContent>
     </ScreenBackground>
+  )
+}
+
+function SourceCard({ source, onSolve }: { source: OfficialSourcePackage; onSolve: () => void }) {
+  const { theme } = useTheme()
+  const c = theme.colors
+  return (
+    <View style={[styles.sourceCard, { backgroundColor: c.surface, borderColor: c.border, borderBottomColor: c.border }]}>
+      <View style={styles.sourceCopy}>
+        <View style={[styles.sourceIcon, { backgroundColor: c.bubblyGreen, borderColor: c.border }]}>
+          <RezIcon name="verified" size={20} color="#FFFFFF" />
+        </View>
+        <View style={styles.flex}>
+          <Txt weight="bold" size={14.5} color={c.text}>{source.session} · {source.year}</Txt>
+          <Txt size={11.5} color={c.textMuted}>Subiect și barem originale · amprente verificate</Txt>
+        </View>
+      </View>
+      <Press
+        onPress={() => void Linking.openURL(source.sourceUrl)}
+        pressDepth={3}
+        style={[styles.sourceButton, { backgroundColor: c.chalkDark, borderColor: c.border, borderBottomColor: c.border }]}
+      >
+        <RezIcon name="download" size={17} color="#FFFFFF" />
+        <Txt weight="bold" size={13} color="#FFFFFF">Deschide sursa Ministerului</Txt>
+      </Press>
+      <Press onPress={onSolve} style={styles.solveSourceButton}>
+        <RezIcon name="solve" size={17} color={c.accent} accent={c.accent} />
+        <Txt weight="bold" size={13} color={c.accent}>Rezolvă o cerință din document</Txt>
+      </Press>
+    </View>
   )
 }
 
@@ -192,9 +218,9 @@ const styles = StyleSheet.create({
   // Profile pill — full-width card
   profile: {
     alignItems: 'center',
-    borderRadius: 24,
+    borderRadius: 22,
     borderWidth: 3,
-    borderBottomWidth: 8,
+    borderBottomWidth: 7,
     flexDirection: 'row',
     gap: 12,
     marginBottom: 4,
@@ -204,8 +230,8 @@ const styles = StyleSheet.create({
   profileIcon: {
     alignItems: 'center',
     borderRadius: 18,
-    borderWidth: 3,
-    borderBottomWidth: 6,
+    borderWidth: 2,
+    borderBottomWidth: 5,
     height: 48,
     justifyContent: 'center',
     width: 48,
@@ -214,6 +240,41 @@ const styles = StyleSheet.create({
 
   // Year groups
   list: { flexGrow: 1, paddingBottom: 24 },
+  sourceOnly: { gap: 14, paddingTop: 12 },
+  sourceCard: {
+    borderRadius: 24,
+    borderWidth: 3,
+    borderBottomWidth: 7,
+    gap: 14,
+    padding: 16,
+  },
+  sourceCopy: { alignItems: 'center', flexDirection: 'row', gap: 12 },
+  sourceIcon: {
+    alignItems: 'center',
+    borderRadius: 16,
+    borderWidth: 2,
+    borderBottomWidth: 4,
+    height: 42,
+    justifyContent: 'center',
+    width: 42,
+  },
+  sourceButton: {
+    alignItems: 'center',
+    borderRadius: 18,
+    borderWidth: 3,
+    borderBottomWidth: 6,
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
+    minHeight: 48,
+  },
+  solveSourceButton: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
+    minHeight: 42,
+  },
   yearGroup: { gap: 12, marginTop: 16 },
   yearRow: {
     alignItems: 'center',
@@ -223,8 +284,8 @@ const styles = StyleSheet.create({
   yearBadge: {
     alignItems: 'center',
     borderRadius: 16,
-    borderWidth: 3,
-    borderBottomWidth: 6,
+    borderWidth: 2,
+    borderBottomWidth: 4,
     justifyContent: 'center',
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -237,9 +298,9 @@ const styles = StyleSheet.create({
 
   // Paper card
   paper: {
-    borderRadius: 28,
+    borderRadius: 26,
     borderWidth: 3,
-    borderBottomWidth: 10,
+    borderBottomWidth: 8,
     overflow: 'hidden',
   },
   paperHead: {
@@ -250,7 +311,7 @@ const styles = StyleSheet.create({
   },
   paperIcon: {
     alignItems: 'center',
-    borderRadius: 20,
+    borderRadius: 18,
     borderWidth: 3,
     borderBottomWidth: 6,
     height: 56,
@@ -262,8 +323,7 @@ const styles = StyleSheet.create({
   official: {
     alignItems: 'center',
     borderRadius: 99,
-    borderWidth: 3,
-    borderBottomWidth: 6,
+    borderWidth: 2,
     flexDirection: 'row',
     gap: 6,
     paddingHorizontal: 12,
@@ -282,7 +342,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 20,
     borderWidth: 3,
-    borderBottomWidth: 8,
+    borderBottomWidth: 6,
     gap: 4,
     justifyContent: 'center',
     minHeight: 76,

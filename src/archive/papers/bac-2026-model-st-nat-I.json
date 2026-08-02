@@ -1,0 +1,96 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Scrieți rezolvările complete.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac26m-sn-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Numere complexe",
+      "prompt": "Se consideră numerele complexe $z_1 = 4 - 3i$ și $z_2 = 1 - 2i$. Arătați că $z_1 + 3iz_2 = 10$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Calculează produsul $3iz_2$ și apoi adună rezultatul la $z_1$, ținând cont că $i^2 = -1$.",
+      "solution": [
+        "$z_1 + 3iz_2 = 4 - 3i + 3i(1 - 2i)$",
+        "$= 4 - 3i + 3i - 6i^2$",
+        "$= 4 + 6 = 10$"
+      ]
+    },
+    {
+      "id": "bac26m-sn-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Funcții și ecuații",
+      "prompt": "Se consideră funcțiile $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 3 - x$ și $g : \\mathbb{R} \\to \\mathbb{R}$, $g(x) = 2x + 1$. Determinați numărul real $a$ pentru care $f(a) = 3a + g(3)$.",
+      "expectedAnswer": "$a = -1$",
+      "hint": "Calculează valoarea lui $g(3)$ și exprimă $f(a)$ în funcție de $a$, apoi rezolvă ecuația obținută.",
+      "solution": [
+        "$g(3) = 2 \\cdot 3 + 1 = 7$",
+        "$f(a) = 3 - a$, pentru orice număr real $a$",
+        "Ecuația devine $3 - a = 3a + 7$",
+        "$-4a = 4$, de unde obținem $a = -1$"
+      ]
+    },
+    {
+      "id": "bac26m-sn-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Ecuații logaritmice",
+      "prompt": "Rezolvați în mulțimea numerelor reale ecuația $\\log_4 (x^2 + 4) = \\log_4 x + \\log_4 5$.",
+      "expectedAnswer": "$x \\in \\{1, 4\\}$",
+      "hint": "Folosește proprietatea de adunare a logaritmilor pentru a restrânge membrul drept, apoi egalează argumentele.",
+      "solution": [
+        "$\\log_4 (x^2 + 4) = \\log_4 (5x)$",
+        "Din egalitatea logaritmilor obținem $x^2 + 4 = 5x$, deci $x^2 - 5x + 4 = 0$",
+        "Soluțiile ecuației de gradul al doilea sunt $x = 1$ și $x = 4$",
+        "Ambele soluții convin (verifică condiția de existență $x > 0$)."
+      ]
+    },
+    {
+      "id": "bac26m-sn-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Probabilități",
+      "prompt": "Determinați probabilitatea ca, alegând un număr din mulțimea numerelor naturale de două cifre, acesta să aibă produsul cifrelor egal cu $4$.",
+      "expectedAnswer": "$\\frac{1}{30}$",
+      "hint": "Găsește toate numerele de două cifre al căror produs al cifrelor este $4$.",
+      "solution": [
+        "Mulțimea numerelor naturale de două cifre are $90$ de elemente, deci sunt $90$ de cazuri posibile.",
+        "Numerele de două cifre care au produsul cifrelor egal cu $4$ sunt $14$, $22$ și $41$.",
+        "Sunt $3$ cazuri favorabile.",
+        "Probabilitatea este $p = \\frac{\\text{nr. cazuri favorabile}}{\\text{nr. cazuri posibile}} = \\frac{3}{90} = \\frac{1}{30}$."
+      ]
+    },
+    {
+      "id": "bac26m-sn-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Geometrie analitică",
+      "prompt": "În reperul cartezian $xOy$ se consideră punctele $A(2,8)$, $B(0,4)$ și $C(a,b)$, unde $a$ și $b$ sunt numere reale. Determinați numerele reale $a$ și $b$, știind că segmentele $OA$ și $BC$ au același mijloc.",
+      "expectedAnswer": "$a = 2, b = 4$",
+      "hint": "Calculează coordonatele mijlocului segmentului $OA$ și egalează-le cu formulele pentru coordonatele mijlocului segmentului $BC$.",
+      "solution": [
+        "Fie $M$ mijlocul segmentului $OA$. Coordonatele sale sunt $x_M = \\frac{0 + 2}{2} = 1$ și $y_M = \\frac{0 + 8}{2} = 4$, deci $M(1,4)$.",
+        "Cum $M$ este și mijlocul segmentului $BC$, avem $x_M = \\frac{x_B + x_C}{2}$ și $y_M = \\frac{y_B + y_C}{2}$.",
+        "Obținem $1 = \\frac{0 + a}{2} \\implies a = 2$.",
+        "Obținem $4 = \\frac{4 + b}{2} \\implies 8 = 4 + b \\implies b = 4$."
+      ]
+    },
+    {
+      "id": "bac26m-sn-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Trigonometrie și geometrie",
+      "prompt": "Se consideră triunghiul $ABC$, dreptunghic în $A$, cu $C = \\frac{\\pi}{6}$. Raza cercului circumscris triunghiului $ABC$ este egală cu $4$. Arătați că $AB = 4$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Într-un triunghi dreptunghic, ipotenuza este diametrul cercului circumscris, iar cateta opusă unghiului de $30^\\circ$ este jumătate din ipotenuză.",
+      "solution": [
+        "Într-un triunghi dreptunghic, raza cercului circumscris este jumătate din ipotenuză, deci $BC = 2R = 2 \\cdot 4 = 8$.",
+        "Cum unghiul $C$ are măsura $\\frac{\\pi}{6}$ ($30^\\circ$), cateta opusă acestuia este jumătate din ipotenuză.",
+        "Prin urmare, $AB = \\frac{BC}{2} = \\frac{8}{2} = 4$."
+      ]
+    }
+  ]
+}

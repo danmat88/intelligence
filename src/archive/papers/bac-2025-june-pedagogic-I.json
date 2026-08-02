@@ -1,0 +1,96 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Toate subiectele sunt obligatorii. Se acordă zece puncte din oficiu. Timpul de lucru efectiv este de trei ore.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac25j-pd-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Calcule cu numere raționale",
+      "prompt": "Arătați că $3 \\cdot (1,5 - 0,3) + 0,8 : 2 = 4$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Efectuați mai întâi operațiile din paranteză, apoi înmulțirile și împărțirile, iar la final adunarea.",
+      "solution": [
+        "$3 \\cdot (1,5 - 0,3) + 0,8 : 2 = 3 \\cdot 1,2 + 0,4 =$",
+        "$= 3,6 + 0,4 = 4$"
+      ]
+    },
+    {
+      "id": "bac25j-pd-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Ecuații cu valori ale unei funcții",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 2x + 1$. Determinați numărul real $a$ pentru care $f(a) = f(3) - a$.",
+      "expectedAnswer": "$a = 2$",
+      "hint": "Calculați valoarea lui $f(3)$ și exprimați $f(a)$ în funcție de $a$, apoi rezolvați ecuația obținută.",
+      "solution": [
+        "Calculăm $f(3) = 2 \\cdot 3 + 1 = 7$.",
+        "Avem $f(a) = 2a + 1$, pentru orice număr real $a$.",
+        "Ecuația devine $2a + 1 = 7 - a$.",
+        "Adunând $a$ și scăzând $1$ în ambele părți, obținem $3a = 6$, de unde $a = 2$."
+      ]
+    },
+    {
+      "id": "bac25j-pd-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Ecuații logaritmice",
+      "prompt": "Rezolvați în mulțimea numerelor reale ecuația $\\log_2 (5x - 12) = \\log_2 (2x)$.",
+      "expectedAnswer": "$x = 4$",
+      "hint": "Din egalitatea logaritmilor cu aceeași bază rezultă egalitatea argumentelor. Nu uitați să verificați dacă soluția obținută respectă condițiile de existență ale logaritmilor.",
+      "solution": [
+        "Din egalitatea logaritmilor rezultă egalitatea argumentelor: $5x - 12 = 2x$.",
+        "Scăzând $2x$ și adunând $12$ în ambele părți, obținem $3x = 12$.",
+        "Rezultă $x = 4$.",
+        "Verificăm condițiile de existență: $5 \\cdot 4 - 12 = 8 > 0$ și $2 \\cdot 4 = 8 > 0$. Soluția convine."
+      ]
+    },
+    {
+      "id": "bac25j-pd-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Probleme cu procente",
+      "prompt": "După o scumpire cu $35\\%$, un obiect costă $54$ de lei. Determinați prețul obiectului înainte de scumpire.",
+      "expectedAnswer": "$40$ de lei",
+      "hint": "Dacă $x$ este prețul inițial, prețul după scumpire se poate scrie ca $x + 35\\% \\cdot x$.",
+      "solution": [
+        "Fie $x$ prețul obiectului înainte de scumpire.",
+        "Ecuația este $x + \\frac{35}{100} \\cdot x = 54$.",
+        "Aducând la același numitor, obținem $\\frac{135}{100} \\cdot x = 54$.",
+        "Rezultă $x = 54 \\cdot \\frac{100}{135} = 40$ de lei."
+      ]
+    },
+    {
+      "id": "bac25j-pd-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Geometrie analitică",
+      "prompt": "În reperul cartezian $xOy$ se consideră punctele $A(2,5)$, $B(4,1)$, $C(6,0)$ și $M$, mijlocul segmentului $AB$. Arătați că $OM = CM$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Determinați coordonatele punctului $M$ folosind formula mijlocului unui segment, apoi calculați lungimile segmentelor $OM$ și $CM$.",
+      "solution": [
+        "Punctul $M$ este mijlocul segmentului $AB$, deci $x_M = \\frac{2+4}{2} = 3$ și $y_M = \\frac{5+1}{2} = 3$. Obținem $M(3,3)$.",
+        "Calculăm lungimea segmentului $OM$: $OM = \\sqrt{(3-0)^2 + (3-0)^2} = \\sqrt{9+9} = \\sqrt{18} = 3\\sqrt{2}$.",
+        "Calculăm lungimea segmentului $CM$: $CM = \\sqrt{(3-6)^2 + (3-0)^2} = \\sqrt{(-3)^2 + 3^2} = \\sqrt{9+9} = 3\\sqrt{2}$.",
+        "Deoarece $OM = 3\\sqrt{2}$ și $CM = 3\\sqrt{2}$, rezultă că $OM = CM$."
+      ]
+    },
+    {
+      "id": "bac25j-pd-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Teorema lui Pitagora",
+      "prompt": "Se consideră triunghiul $ABC$, dreptunghic în $A$, cu $AB = 16$ și $5AB = 4BC$. Arătați că $AC = 12$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Folosiți relația dată pentru a afla lungimea ipotenuzei $BC$, apoi aplicați Teorema lui Pitagora pentru a determina cateta $AC$.",
+      "solution": [
+        "Din relația $5AB = 4BC$ și $AB = 16$, obținem $5 \\cdot 16 = 4BC$, deci $80 = 4BC$.",
+        "Rezultă că $BC = 20$.",
+        "Aplicăm Teorema lui Pitagora în triunghiul dreptunghic $ABC$: $AC^2 = BC^2 - AB^2$.",
+        "$AC^2 = 20^2 - 16^2 = 400 - 256 = 144$, de unde obținem $AC = 12$."
+      ]
+    }
+  ]
+}

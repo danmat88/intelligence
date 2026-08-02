@@ -1,0 +1,86 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL al II-lea",
+  "instructions": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = x + y - 4$.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac23j-pd-II-1",
+      "number": "II.1",
+      "points": 5,
+      "competency": "Calculul valorii unei legi de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = x + y - 4$.\n\nArătați că $2 * (-2) = -4$.",
+      "expectedAnswer": "$-4$",
+      "hint": "Înlocuiți $x$ cu $2$ și $y$ cu $-2$ în formula legii de compoziție.",
+      "solution": [
+        "$2 * (-2) = 2 + (-2) - 4 =$",
+        "$= 0 - 4 = -4$"
+      ]
+    },
+    {
+      "id": "bac23j-pd-II-2",
+      "number": "II.2",
+      "points": 5,
+      "competency": "Demonstrarea asociativității unei legi de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = x + y - 4$.\n\nArătați că legea de compoziție „$*$” este asociativă.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Arătați că $(x * y) * z = x * (y * z)$ pentru orice numere reale $x, y, z$.",
+      "solution": [
+        "$(x * y) * z = (x + y - 4) * z = (x + y - 4) + z - 4 = x + y + z - 8$, pentru orice numere reale $x$, $y$ și $z$",
+        "$x * (y * z) = x * (y + z - 4) = x + (y + z - 4) - 4 = x + y + z - 8 = (x * y) * z$, pentru orice numere reale $x$, $y$ și $z$, deci legea de compoziție „$*$” este asociativă"
+      ]
+    },
+    {
+      "id": "bac23j-pd-II-3",
+      "number": "II.3",
+      "points": 5,
+      "competency": "Calculul unei expresii cu legea de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = x + y - 4$.\n\nArătați că $1 * 2 * 3 * 4 * 5 * 6 > 0$.",
+      "expectedAnswer": "$1 > 0$",
+      "hint": "Grupați termenii convenabil folosind asociativitatea, de exemplu $(1 * 2 * 3) * (4 * 5 * 6)$.",
+      "solution": [
+        "$(1 * 2 * 3) * (4 * 5 * 6) = (-2) * 7 =$",
+        "$= -2 + 7 - 4 = 1 > 0$"
+      ]
+    },
+    {
+      "id": "bac23j-pd-II-4",
+      "number": "II.4",
+      "points": 5,
+      "competency": "Rezolvarea unei ecuații cu legea de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = x + y - 4$.\n\nDeterminați numărul real $x$ pentru care $x * x * x = (x + 1) * x$.",
+      "expectedAnswer": "$x = 5$",
+      "hint": "Calculați separat $x * x * x$ și $(x + 1) * x$, apoi egalați rezultatele.",
+      "solution": [
+        "$x * x * x = 3x - 8$, $(x + 1) * x = 2x - 3$, pentru orice număr real $x$",
+        "$3x - 8 = 2x - 3$, de unde obținem $x = 5$"
+      ]
+    },
+    {
+      "id": "bac23j-pd-II-5",
+      "number": "II.5",
+      "points": 5,
+      "competency": "Rezolvarea unei ecuații exponențiale folosind legea de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = x + y - 4$.\n\nRezolvați în mulțimea numerelor reale ecuația $4^x * 2^x = 2$.",
+      "expectedAnswer": "$x = 1$",
+      "hint": "Aplicați legea de compoziție și notați $2^x = t$ pentru a obține o ecuație de gradul al doilea.",
+      "solution": [
+        "$4^x * 2^x = 4^x + 2^x - 4$, pentru orice număr real $x$",
+        "$4^x + 2^x - 6 = 0 \\Leftrightarrow (2^x - 2)(2^x + 3) = 0$, de unde obținem $x = 1$"
+      ]
+    },
+    {
+      "id": "bac23j-pd-II-6",
+      "number": "II.6",
+      "points": 5,
+      "competency": "Demonstrarea unei inegalități folosind legea de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = x + y - 4$.\n\nArătați că $x^2 * \\frac{1}{x^2} \\ge -2$, pentru orice număr real nenul $x$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Aplicați legea de compoziție și formați un pătrat perfect.",
+      "solution": [
+        "$x^2 + \\frac{1}{x^2} - 4 \\ge -2 \\Leftrightarrow x^2 + \\frac{1}{x^2} - 2 \\ge 0$, pentru orice număr real nenul $x$",
+        "$\\left(x - \\frac{1}{x}\\right)^2 \\ge 0$, deci $x^2 * \\frac{1}{x^2} \\ge -2$, pentru orice număr real nenul $x$"
+      ]
+    }
+  ]
+}

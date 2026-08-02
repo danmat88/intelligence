@@ -3,14 +3,15 @@ import type { Problem } from '../solve/store'
 import type { PracticeExam } from '../practice/catalog'
 import type { PracticeConfig } from '../practice/generator'
 import type { NativeOfficialPaper } from '../archive/content'
+import type { BacTrack } from '../product/profile'
 
-export type MainDestination = 'Azi' | 'Subiecte' | 'Exerseaza' | 'Caiet'
+export type MainDestination = 'Acasa' | 'Exercitii' | 'Biblioteca' | 'Activitate'
 
 export type MainTabParamList = {
-  Azi: undefined
-  Subiecte: undefined
-  Exerseaza: undefined
-  Caiet: { section?: 'problems' | 'tests' | 'mistakes' | 'progress' } | undefined
+  Acasa: undefined
+  Exercitii: undefined
+  Biblioteca: { section?: 'problems' | 'tests' | 'mistakes' | 'progress' } | undefined
+  Activitate: { section?: 'problems' | 'tests' | 'mistakes' | 'progress' } | undefined
 }
 
 export type SolveEntryKind = 'camera' | 'library' | 'type'
@@ -29,7 +30,7 @@ export type RootStackParamList = {
     exam: PracticeExam
     setId?: string
     config?: PracticeConfig
-    profile?: string
+    bacTrack?: BacTrack
     mode?: 'practice' | 'simulation'
     focusExerciseId?: string
   }

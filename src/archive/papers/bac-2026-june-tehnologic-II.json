@@ -1,0 +1,92 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL al II-lea",
+  "instructions": "Scrieți rezolvările complete.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac26j-th-II-1",
+      "number": "II.1.a",
+      "points": 5,
+      "competency": "Calculul determinantului unei matrice",
+      "prompt": "Se consideră matricea $A(x) = \\begin{pmatrix} x & 1 \\\\ x - 1 & 2 \\end{pmatrix}$, unde $x$ este număr real.\n\na) Arătați că $\\det(A(4)) = 5$.",
+      "expectedAnswer": "$5$",
+      "hint": "Înlocuiți $x$ cu $4$ în expresia matricei $A(x)$ și calculați determinantul folosind formula $\\det = ad - bc$.",
+      "solution": [
+        "$A(4) = \\begin{pmatrix} 4 & 1 \\\\ 3 & 2 \\end{pmatrix} \\Rightarrow \\det(A(4)) = \\begin{vmatrix} 4 & 1 \\\\ 3 & 2 \\end{vmatrix} = 4 \\cdot 2 - 1 \\cdot 3 =$",
+        "$= 8 - 3 = 5$"
+      ]
+    },
+    {
+      "id": "bac26j-th-II-2",
+      "number": "II.1.b",
+      "points": 5,
+      "competency": "Operații cu matrice",
+      "prompt": "Se consideră matricea $A(x) = \\begin{pmatrix} x & 1 \\\\ x - 1 & 2 \\end{pmatrix}$, unde $x$ este număr real.\n\nb) Arătați că $2A(1) + A(4) = 3A(2)$.",
+      "expectedAnswer": "Egalitatea este verificată.",
+      "hint": "Calculați separat $A(1)$, $A(4)$ și $A(2)$, apoi efectuați operațiile de înmulțire cu scalari și adunare a matricelor.",
+      "solution": [
+        "$A(1) = \\begin{pmatrix} 1 & 1 \\\\ 0 & 2 \\end{pmatrix}$",
+        "$2A(1) + A(4) = 2 \\begin{pmatrix} 1 & 1 \\\\ 0 & 2 \\end{pmatrix} + \\begin{pmatrix} 4 & 1 \\\\ 3 & 2 \\end{pmatrix} = \\begin{pmatrix} 2 & 2 \\\\ 0 & 4 \\end{pmatrix} + \\begin{pmatrix} 4 & 1 \\\\ 3 & 2 \\end{pmatrix} = \\begin{pmatrix} 6 & 3 \\\\ 3 & 6 \\end{pmatrix}$",
+        "$\\begin{pmatrix} 6 & 3 \\\\ 3 & 6 \\end{pmatrix} = 3 \\begin{pmatrix} 2 & 1 \\\\ 1 & 2 \\end{pmatrix} = 3A(2)$"
+      ]
+    },
+    {
+      "id": "bac26j-th-II-3",
+      "number": "II.1.c",
+      "points": 5,
+      "competency": "Înmulțirea matricelor și egalitatea matricelor",
+      "prompt": "Se consideră matricea $A(x) = \\begin{pmatrix} x & 1 \\\\ x - 1 & 2 \\end{pmatrix}$, unde $x$ este număr real.\n\nc) Determinați numerele reale $x$ și $y$ pentru care $A(-x) \\cdot A(x) = A(y)$.",
+      "expectedAnswer": "$x = 1$ și $y = -1$",
+      "hint": "Calculați produsul $A(-x) \\cdot A(x)$ și egalați elementele matricei rezultate cu elementele matricei $A(y)$.",
+      "solution": [
+        "$A(-x) = \\begin{pmatrix} -x & 1 \\\\ -x - 1 & 2 \\end{pmatrix}$",
+        "$A(-x) \\cdot A(x) = \\begin{pmatrix} -x & 1 \\\\ -x - 1 & 2 \\end{pmatrix} \\cdot \\begin{pmatrix} x & 1 \\\\ x - 1 & 2 \\end{pmatrix} = \\begin{pmatrix} -x^2 + x - 1 & -x + 2 \\\\ -x^2 + x - 2 & -x + 3 \\end{pmatrix}$, pentru orice număr real $x$",
+        "$\\begin{pmatrix} -x^2 + x - 1 & -x + 2 \\\\ -x^2 + x - 2 & -x + 3 \\end{pmatrix} = \\begin{pmatrix} y & 1 \\\\ y - 1 & 2 \\end{pmatrix}$",
+        "Din egalitatea elementelor obținem $-x + 2 = 1 \\Rightarrow x = 1$ și $-x^2 + x - 1 = y \\Rightarrow -1^2 + 1 - 1 = y \\Rightarrow y = -1$."
+      ]
+    },
+    {
+      "id": "bac26j-th-II-4",
+      "number": "II.2.a",
+      "points": 5,
+      "competency": "Calculul valorii unei legi de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = (4 - x)(4 - y) + 2$.\n\na) Arătați că $0 * 3 = 6$.",
+      "expectedAnswer": "$6$",
+      "hint": "Înlocuiți $x$ cu $0$ și $y$ cu $3$ în expresia legii de compoziție.",
+      "solution": [
+        "$0 * 3 = (4 - 0)(4 - 3) + 2 =$",
+        "$= 4 \\cdot 1 + 2 = 6$"
+      ]
+    },
+    {
+      "id": "bac26j-th-II-5",
+      "number": "II.2.b",
+      "points": 5,
+      "competency": "Rezolvarea ecuațiilor folosind legi de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = (4 - x)(4 - y) + 2$.\n\nb) Determinați numărul real $x$ pentru care $2 * x = 2$.",
+      "expectedAnswer": "$x = 4$",
+      "hint": "Calculați $2 * x$ folosind definiția legii de compoziție și rezolvați ecuația rezultată.",
+      "solution": [
+        "$2 * x = (4 - 2)(4 - x) + 2 = 2(4 - x) + 2 = 8 - 2x + 2 = -2x + 10$, pentru orice număr real $x$",
+        "$-2x + 10 = 2$, de unde obținem $x = 4$"
+      ]
+    },
+    {
+      "id": "bac26j-th-II-6",
+      "number": "II.2.c",
+      "points": 5,
+      "competency": "Rezolvarea ecuațiilor diofantice folosind legi de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = (4 - x)(4 - y) + 2$.\n\nc) Determinați perechile $(m, n)$ de numere întregi pentru care $(2m) * (2n + 1) = 10$.",
+      "expectedAnswer": "$(-2, 1)$ și $(6, 2)$",
+      "hint": "Exprimați $(2m) * (2n + 1)$ și folosiți faptul că $m$ și $n$ sunt numere întregi pentru a găsi divizorii întregi ai numărului obținut.",
+      "solution": [
+        "$(2m) * (2n + 1) = (4 - 2m)(4 - (2n + 1)) + 2 = (4 - 2m)(3 - 2n) + 2$",
+        "Ecuația devine $(4 - 2m)(3 - 2n) + 2 = 10 \\Rightarrow (4 - 2m)(3 - 2n) = 8$",
+        "Cum $m$ și $n$ sunt numere întregi, factorii $4 - 2m$ și $3 - 2n$ sunt întregi. Deoarece $4 - 2m$ este par, iar $3 - 2n$ este impar, singurele descompuneri ale lui $8$ în produs de un număr par și unul impar sunt $8 \\cdot 1$ și $(-8) \\cdot (-1)$.",
+        "Cazul 1: $4 - 2m = 8$ și $3 - 2n = 1 \\Rightarrow -2m = 4 \\Rightarrow m = -2$ și $-2n = -2 \\Rightarrow n = 1$. Obținem perechea $(-2, 1)$.",
+        "Cazul 2: $4 - 2m = -8$ și $3 - 2n = -1 \\Rightarrow -2m = -12 \\Rightarrow m = 6$ și $-2n = -4 \\Rightarrow n = 2$. Obținem perechea $(6, 2)$."
+      ]
+    }
+  ]
+}

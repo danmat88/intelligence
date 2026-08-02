@@ -1,0 +1,93 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL II",
+  "instructions": "Rezolvați următoarele probleme:",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac25j-mi-II-1",
+      "number": "II.1.a",
+      "points": 5,
+      "competency": "Calculul determinantului unei matrice",
+      "prompt": "Se consideră matricea $A(x) = \\begin{pmatrix} 2-3x & 0 & x \\\\ 0 & 2 & 0 \\\\ -9x & 0 & 2+3x \\end{pmatrix}$, unde $x$ este număr real.\n\na) Arătați că $\\det(A(1)) = 8$.",
+      "expectedAnswer": "$8$",
+      "hint": "Calculați elementele matricei $A(1)$ înlocuind $x$ cu $1$, apoi aplicați regula lui Sarrus sau dezvoltați după o linie/coloană pentru a calcula determinantul.",
+      "solution": [
+        "$A(1) = \\begin{pmatrix} -1 & 0 & 1 \\\\ 0 & 2 & 0 \\\\ -9 & 0 & 5 \\end{pmatrix}$",
+        "$\\det(A(1)) = \\begin{vmatrix} -1 & 0 & 1 \\\\ 0 & 2 & 0 \\\\ -9 & 0 & 5 \\end{vmatrix} = -10 + 0 + 0 + 18 - 0 - 0 = 8$"
+      ]
+    },
+    {
+      "id": "bac25j-mi-II-2",
+      "number": "II.1.b",
+      "points": 5,
+      "competency": "Înmulțirea matricelor",
+      "prompt": "Se consideră matricea $A(x) = \\begin{pmatrix} 2-3x & 0 & x \\\\ 0 & 2 & 0 \\\\ -9x & 0 & 2+3x \\end{pmatrix}$, unde $x$ este număr real.\n\nb) Arătați că $A(x) \\cdot A(y) = 2A(x+y)$, pentru orice numere reale $x$ și $y$.",
+      "expectedAnswer": "$2A(x+y)$",
+      "hint": "Înmulțiți cele două matrice $A(x)$ și $A(y)$ folosind regula de înmulțire a matricelor, apoi dați factor comun pe $2$ și identificați forma matricei rezultate.",
+      "solution": [
+        "$A(x) \\cdot A(y) = \\begin{pmatrix} (2-3x)(2-3y) - 9xy & 0 & (2-3x)y + x(2+3y) \\\\ 0 & 4 & 0 \\\\ -9x(2-3y) - 9y(2+3x) & 0 & -9xy + (2+3x)(2+3y) \\end{pmatrix}$",
+        "$A(x) \\cdot A(y) = \\begin{pmatrix} 4 - 6x - 6y & 0 & 2x + 2y \\\\ 0 & 4 & 0 \\\\ -18x - 18y & 0 & 4 + 6x + 6y \\end{pmatrix}$",
+        "$= 2 \\begin{pmatrix} 2 - 3(x+y) & 0 & x+y \\\\ 0 & 2 & 0 \\\\ -9(x+y) & 0 & 2 + 3(x+y) \\end{pmatrix} = 2A(x+y)$, pentru orice numere reale $x$ și $y$."
+      ]
+    },
+    {
+      "id": "bac25j-mi-II-3",
+      "number": "II.1.c",
+      "points": 5,
+      "competency": "Rezolvarea ecuațiilor matriceale",
+      "prompt": "Se consideră matricea $A(x) = \\begin{pmatrix} 2-3x & 0 & x \\\\ 0 & 2 & 0 \\\\ -9x & 0 & 2+3x \\end{pmatrix}$, unde $x$ este număr real.\n\nc) Determinați numerele reale $x$ pentru care $(A(x) + A(3x)) \\cdot A(2x) = 4A(x^2)$.",
+      "expectedAnswer": "$x = 0$ sau $x = 4$",
+      "hint": "Folosiți proprietatea demonstrată la punctul anterior pentru a simplifica expresia $(A(x) + A(3x)) \\cdot A(2x)$.",
+      "solution": [
+        "$A(x) + A(3x) = \\begin{pmatrix} 2-3x+2-9x & 0 & x+3x \\\\ 0 & 2+2 & 0 \\\\ -9x-27x & 0 & 2+3x+2+9x \\end{pmatrix} = \\begin{pmatrix} 4-12x & 0 & 4x \\\\ 0 & 4 & 0 \\\\ -36x & 0 & 4+12x \\end{pmatrix} = 2A(2x)$",
+        "$(A(x) + A(3x)) \\cdot A(2x) = 2A(2x) \\cdot A(2x) = 2 \\cdot 2A(2x + 2x) = 4A(4x)$, pentru orice număr real $x$.",
+        "Ecuația devine $4A(4x) = 4A(x^2)$, de unde obținem $4x = x^2$.",
+        "$x^2 - 4x = 0$, deci $x = 0$ sau $x = 4$."
+      ]
+    },
+    {
+      "id": "bac25j-mi-II-4",
+      "number": "II.2.a",
+      "points": 5,
+      "competency": "Calculul valorii unui polinom",
+      "prompt": "Se consideră polinomul $f = aX^3 + 3X^2 - aX - 6$, unde $a$ este număr real nenul.\n\na) Arătați că $f(1) = -3$, pentru orice număr real nenul $a$.",
+      "expectedAnswer": "$-3$",
+      "hint": "Calculați valoarea polinomului $f$ înlocuind nedeterminata $X$ cu $1$.",
+      "solution": [
+        "$f(1) = a \\cdot 1^3 + 3 \\cdot 1^2 - a \\cdot 1 - 6$",
+        "$= a + 3 - a - 6 = -3$, pentru orice număr real nenul $a$."
+      ]
+    },
+    {
+      "id": "bac25j-mi-II-5",
+      "number": "II.2.b",
+      "points": 5,
+      "competency": "Împărțirea polinoamelor",
+      "prompt": "Se consideră polinomul $f = aX^3 + 3X^2 - aX - 6$, unde $a$ este număr real nenul.\n\nb) Pentru $a=1$, determinați câtul și restul împărțirii polinomului $f$ la polinomul $g = X^2 + 3X - 1$.",
+      "expectedAnswer": "Câtul este $X$, iar restul este $-6$",
+      "hint": "Înlocuiți $a$ cu $1$ în expresia polinomului $f$ și efectuați împărțirea polinoamelor, sau descompuneți convenabil polinomul $f$.",
+      "solution": [
+        "Pentru $a=1$, polinomul devine $f = X^3 + 3X^2 - X - 6$.",
+        "Putem rescrie polinomul $f$ astfel: $f = X(X^2 + 3X - 1) - 6$.",
+        "Deoarece gradul restului trebuie să fie strict mai mic decât gradul împărțitorului $g = X^2 + 3X - 1$, deducem că restul este $-6$, iar câtul împărțirii este $X$."
+      ]
+    },
+    {
+      "id": "bac25j-mi-II-6",
+      "number": "II.2.c",
+      "points": 5,
+      "competency": "Relațiile lui Viète",
+      "prompt": "Se consideră polinomul $f = aX^3 + 3X^2 - aX - 6$, unde $a$ este număr real nenul.\n\nc) Determinați numărul real nenul $a$ pentru care $(1+x_1)(1+x_2)(1+x_3) = 1$, unde $x_1$, $x_2$ și $x_3$ sunt rădăcinile polinomului $f$.",
+      "expectedAnswer": "$a = 3$",
+      "hint": "Exprimați produsul $(1+x_1)(1+x_2)(1+x_3)$ în funcție de valoarea polinomului $f$ în punctul $-1$.",
+      "solution": [
+        "Polinomul $f$ are rădăcinile $x_1, x_2, x_3$, deci se poate scrie sub forma $f(X) = a(X - x_1)(X - x_2)(X - x_3)$.",
+        "Calculăm valoarea polinomului în $X = -1$: $f(-1) = a(-1 - x_1)(-1 - x_2)(-1 - x_3) = -a(1 + x_1)(1 + x_2)(1 + x_3)$.",
+        "Rezultă că $(1+x_1)(1+x_2)(1+x_3) = -\\frac{f(-1)}{a}$, pentru orice număr real nenul $a$.",
+        "Pe de altă parte, $f(-1) = a(-1)^3 + 3(-1)^2 - a(-1) - 6 = -a + 3 + a - 6 = -3$.",
+        "Obținem $-\\frac{-3}{a} = 1$, adică $\\frac{3}{a} = 1$, de unde rezultă $a = 3$."
+      ]
+    }
+  ]
+}

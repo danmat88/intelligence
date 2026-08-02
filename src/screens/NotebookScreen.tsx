@@ -14,19 +14,21 @@ import EmptyState from '../components/ui/EmptyState'
 import Txt from '../components/ui/Txt'
 import { useToast } from '../components/ui/Toast'
 import { deleteProblemImages } from '../solve/imageStore'
-import { removeProblem, subscribeProblems, type Problem } from '../solve/store'
+import { removeProblem, setProblemSaved, subscribeProblems, type Problem } from '../solve/store'
 import { useTheme } from '../theme/ThemeProvider'
 import { readPracticeAttempts, type PracticeAttempt } from '../practice/store'
 import { findPracticeExercise, type PracticeExam } from '../practice/catalog'
 import { configuredSetFromId } from '../practice/generator'
-import { calculateCompetencyProgress } from '../practice/progress'
+import { calculateCompetencyEvidence } from '../practice/progress'
 import { readOfficialAttempts, type OfficialPaperAttempt } from '../archive/store'
+import type { BacTrack } from '../product/profile'
+import { useProduct } from '../product/ProductProvider'
 
 type Props = {
   onOpenSettings: () => void
   onOpenProblem: (problem: Problem) => void
   onSolve: () => void
-  onOpenPractice: (exam: PracticeExam, setId: string, focusExerciseId?: string) => void
+  onOpenPractice: (exam: PracticeExam, setId: string, focusExerciseId?: string, bacTrack?: BacTrack) => void
   onOpenOfficialAttempt: (attempt: OfficialPaperAttempt) => void
   initialMode?: 'problems' | 'tests' | 'mistakes' | 'progress'
 }
@@ -60,6 +62,7 @@ export default function NotebookScreen({
 }: Props) {
   const { theme } = useTheme()
   const { user } = useAuth()
+  const { examGoal, bacTrack } = useProduct()
   const toast = useToast()
   const focused = useIsFocused()
   const c = theme.colors
@@ -70,6 +73,24 @@ export default function NotebookScreen({
   const [attempts, setAttempts] = useState<PracticeAttempt[]>([])
   const [officialAttempts, setOfficialAttempts] = useState<OfficialPaperAttempt[]>([])
   const autoSelectedRef = useRef(initialMode !== 'problems')
+  const examMode = examGoal === 'en' || examGoal === 'bac'
+
+  const relevantAttempts = useMemo(
+    () => examMode
+      ? attempts.filter((attempt) =>
+          attempt.exam === examGoal && (examGoal !== 'bac' || attempt.profile === bacTrack),
+        )
+      : [],
+    [attempts, bacTrack, examGoal, examMode],
+  )
+  const relevantOfficialAttempts = useMemo(
+    () => examMode
+      ? officialAttempts.filter((attempt) =>
+          attempt.exam === examGoal && (examGoal !== 'bac' || attempt.profile === bacTrack),
+        )
+      : [],
+    [bacTrack, examGoal, examMode, officialAttempts],
+  )
 
   useEffect(() => setMode(initialMode), [initialMode])
 
@@ -84,8 +105,8 @@ export default function NotebookScreen({
   }, [user?.id])
 
   useEffect(() => {
-    if (!focused) return
-    Promise.all([readPracticeAttempts(), readOfficialAttempts()])
+    if (!focused || !user) return
+    Promise.all([readPracticeAttempts(user.id), readOfficialAttempts(user.id)])
       .then(([practice, official]) => {
         setAttempts(practice)
         setOfficialAttempts(official)
@@ -94,19 +115,19 @@ export default function NotebookScreen({
         setAttempts([])
         setOfficialAttempts([])
       })
-  }, [focused])
+  }, [focused, user?.id])
 
   useEffect(() => {
     if (
       !autoSelectedRef.current &&
       loaded &&
       problems.length === 0 &&
-      (attempts.length > 0 || officialAttempts.length > 0)
+      (relevantAttempts.length > 0 || relevantOfficialAttempts.length > 0)
     ) {
       autoSelectedRef.current = true
       setMode('tests')
     }
-  }, [attempts.length, loaded, officialAttempts.length, problems.length])
+  }, [loaded, problems.length, relevantAttempts.length, relevantOfficialAttempts.length])
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase('ro-RO')
@@ -120,7 +141,7 @@ export default function NotebookScreen({
 
   const mistakes = useMemo(
     () =>
-      attempts.flatMap((attempt) =>
+      relevantAttempts.flatMap((attempt) =>
         attempt.answers
           .filter((answer) => !answer.correct)
           .map((answer) => {
@@ -129,9 +150,9 @@ export default function NotebookScreen({
           })
           .filter((item): item is NonNullable<typeof item> => item !== null),
       ),
-    [attempts],
+    [relevantAttempts],
   )
-  const progress = useMemo(() => calculateCompetencyProgress(attempts), [attempts])
+  const progress = useMemo(() => calculateCompetencyEvidence(relevantAttempts), [relevantAttempts])
 
   const remove = useCallback(
     (problem: Problem) => {
@@ -151,9 +172,11 @@ export default function NotebookScreen({
       <AppHeader onOpenSettings={onOpenSettings} />
       <ScreenContent style={styles.page}>
         <ScreenHeading
-          eyebrow="CAIET"
-          title="Caietul meu"
-          description="Tot ce ai lucrat, într-un singur loc."
+          eyebrow={examMode ? 'REZULTATE' : 'ISTORIC'}
+          title={examMode ? 'Activitatea ta' : 'Problemele tale'}
+          description={examMode
+            ? 'Rezultate, greșeli și activități bazate numai pe ce ai lucrat.'
+            : 'Toate problemele rezolvate și conversațiile tale.'}
           trailing={
             <Press
               onPress={onSolve}
@@ -167,19 +190,19 @@ export default function NotebookScreen({
           }
         />
 
-        <SegmentedControl
+        {examMode && <SegmentedControl
           value={mode}
-          accessibilityLabel="Conținutul caietului"
+          accessibilityLabel="Conținutul activității"
           segments={[
             { value: 'problems', label: 'Probleme' },
             { value: 'tests', label: 'Teste' },
             { value: 'mistakes', label: 'Greșeli' },
-            { value: 'progress', label: 'Progres' },
+            { value: 'progress', label: 'Rezultate' },
           ]}
           onChange={setMode}
-        />
+        />}
 
-        {mode === 'progress' ? (
+        {examMode && mode === 'progress' ? (
           progress.length === 0 ? (
             <EmptyState
               icon="compass"
@@ -197,30 +220,43 @@ export default function NotebookScreen({
                     <View style={styles.progressCopy}>
                       <Txt weight="extrabold" size={16} color={c.text} style={{ fontFamily: theme.font.display }}>{item.competency}</Txt>
                       <Txt size={11.5} color={c.textMuted}>
-                        {item.correct} {item.correct === 1 ? 'răspuns corect' : 'răspunsuri corecte'} din{' '}
-                        {item.attempts} {item.attempts === 1 ? 'încercare' : 'încercări'}
+                        {item.attempts > 0
+                          ? `${item.correct} ${item.correct === 1 ? 'răspuns corect' : 'răspunsuri corecte'} din ${item.attempts} ${item.attempts === 1 ? 'încercare independentă' : 'încercări independente'}`
+                          : 'Nu există încă răspunsuri independente'}
+                        {item.assistedAttempts > 0
+                          ? ` · ${item.assistedAttempts} ${item.assistedAttempts === 1 ? 'încercare asistată' : 'încercări asistate'}`
+                          : ''}
+                      </Txt>
+                      <Txt size={10.5} color={c.textFaint}>
+                        {item.confidence === 'high'
+                          ? 'Încredere ridicată în date'
+                          : item.confidence === 'medium'
+                            ? 'Încredere medie în date'
+                            : item.confidence === 'low'
+                              ? 'Date puține — rezultatul se poate schimba rapid'
+                              : 'Neevaluat'}
                       </Txt>
                     </View>
                     <View style={[styles.percentBadge, {
-                      backgroundColor: item.percent >= 70 ? c.successSoft : item.percent >= 40 ? c.sunnySoft : c.dangerSoft,
+                      backgroundColor: item.percent == null ? c.surfaceAlt : item.percent >= 70 ? c.successSoft : item.percent >= 40 ? c.sunnySoft : c.dangerSoft,
                       borderColor: c.border, borderBottomColor: c.border,
                     }]}>
                       <Txt weight="extrabold" size={16} color={c.text} style={{ fontFamily: theme.font.mono }}>
-                        {item.percent}%
+                        {item.percent == null ? 'Neevaluat' : `${item.percent}%`}
                       </Txt>
                     </View>
                   </View>
-                  <View style={styles.progressTrack}>
+                  {item.percent != null && <View style={styles.progressTrack}>
                     <ProgressMeter
                       value={item.percent / 100}
                       tone={item.percent >= 70 ? c.chalk : item.percent >= 40 ? c.sunny : c.accent}
                     />
-                  </View>
+                  </View>}
                 </View>
               )}
             />
           )
-        ) : mode === 'mistakes' ? (
+        ) : examMode && mode === 'mistakes' ? (
           mistakes.length === 0 ? (
             <EmptyState
               icon="mistakes"
@@ -234,7 +270,9 @@ export default function NotebookScreen({
               contentContainerStyle={styles.list}
               renderItem={({ item }) => (
                 <Press
-                  onPress={() => onOpenPractice(item.attempt.exam, item.attempt.setId, item.exercise.id)}
+                  onPress={() => {
+                    if (item.attempt.exam) onOpenPractice(item.attempt.exam, item.attempt.setId, item.exercise.id, item.attempt.profile)
+                  }}
                   pressDepth={2}
                   style={[styles.itemCard, { backgroundColor: c.surface, borderColor: c.border, borderBottomColor: c.border }]}
                 >
@@ -252,8 +290,8 @@ export default function NotebookScreen({
               )}
             />
           )
-        ) : mode === 'tests' ? (
-          attempts.length === 0 && officialAttempts.length === 0 ? (
+        ) : examMode && mode === 'tests' ? (
+          relevantAttempts.length === 0 && relevantOfficialAttempts.length === 0 ? (
             <EmptyState
               icon="practice"
               title="Nicio activitate salvată"
@@ -262,8 +300,8 @@ export default function NotebookScreen({
           ) : (
             <FlatList
               data={[
-                ...attempts.map((attempt) => ({ kind: 'practice' as const, attempt, at: attempt.completedAt })),
-                ...officialAttempts.map((attempt) => ({
+                ...relevantAttempts.map((attempt) => ({ kind: 'practice' as const, attempt, at: attempt.completedAt })),
+                ...relevantOfficialAttempts.map((attempt) => ({
                   kind: 'official' as const,
                   attempt,
                   at: attempt.completedAt ?? attempt.startedAt,
@@ -290,7 +328,9 @@ export default function NotebookScreen({
                         </Txt>
                         <Txt numberOfLines={1} size={11.5} color={c.textMuted}>
                           {attempt.session} · {attempt.completedAt ? 'Finalizat' : 'În lucru'}
-                          {typeof attempt.score === 'number' ? ` · ${attempt.score}/100` : ''} · {dateLabel(item.at)}
+                          {typeof attempt.score === 'number' && typeof attempt.maxScore === 'number'
+                            ? ` · ${attempt.score}/${attempt.maxScore} automat`
+                            : ''} · {dateLabel(item.at)}
                         </Txt>
                       </View>
                       <RezIcon name={attempt.completedAt ? 'chevron' : 'forward'} size={18} color={c.textMuted} accent={c.sunny} />
@@ -307,7 +347,7 @@ export default function NotebookScreen({
                     </View>
                     <View style={styles.itemCopy}>
                       <Txt numberOfLines={1} weight="extrabold" size={15} color={c.text} style={{ fontFamily: theme.font.display }}>
-                        {attempt.exam === 'en' ? 'Evaluare Națională' : 'Bacalaureat'}
+                        {attempt.exam === 'en' ? 'Evaluare Națională' : attempt.exam === 'bac' ? 'Bacalaureat' : 'Exersare liberă'}
                       </Txt>
                       <Txt numberOfLines={1} size={11.5} color={c.textMuted}>
                         {configuredSetFromId(attempt.setId)?.title ?? 'Set de exerciții'} · {dateLabel(attempt.completedAt)}
@@ -322,12 +362,12 @@ export default function NotebookScreen({
         ) : !loaded ? (
           <View style={styles.center}>
             <ActivityIndicator color={c.bubblyRed} />
-            <Txt size={13} color={c.textMuted}>Deschid caietul…</Txt>
+            <Txt size={13} color={c.textMuted}>Deschid activitatea…</Txt>
           </View>
         ) : problems.length === 0 ? (
           <EmptyState
             icon="document"
-            title="Caietul tău e gol"
+            title="Nu ai activitate salvată"
             message="După prima rezolvare, problema și explicația apar aici automat."
             action={{ title: 'Rezolvă prima problemă', icon: 'solve', onPress: onSolve }}
           />
@@ -346,7 +386,7 @@ export default function NotebookScreen({
                 <TextInput
                   value={query}
                   onChangeText={setQuery}
-                  placeholder="Caută în caiet"
+                  placeholder="Caută în probleme"
                   placeholderTextColor={c.textFaint}
                   returnKeyType="search"
                   style={[styles.searchInput, { color: c.text, fontFamily: theme.font.regular }]}
@@ -398,6 +438,22 @@ export default function NotebookScreen({
                   <Press
                     onPress={(event) => {
                       event.stopPropagation()
+                      if (user) void setProblemSaved(user.id, item.id, !item.saved)
+                    }}
+                    accessibilityLabel={item.saved ? 'Elimină din salvate' : 'Salvează problema'}
+                    hitSlop={8}
+                    style={styles.delete}
+                  >
+                    <RezIcon
+                      name="bookmark"
+                      size={18}
+                      color={item.saved ? c.bubblyRed : c.textFaint}
+                      accent={item.saved ? c.bubblyYellow : c.textFaint}
+                    />
+                  </Press>
+                  <Press
+                    onPress={(event) => {
+                      event.stopPropagation()
                       remove(item)
                     }}
                     accessibilityLabel="Șterge problema"
@@ -424,7 +480,7 @@ const styles = StyleSheet.create({
   // Add button
   add: {
     alignItems: 'center',
-    borderRadius: 22,
+    borderRadius: 20,
     borderWidth: 3,
     borderBottomWidth: 6,
     flexDirection: 'row',
@@ -440,9 +496,9 @@ const styles = StyleSheet.create({
   // Summary banner
   summaryBanner: {
     alignItems: 'center',
-    borderRadius: 22,
+    borderRadius: 20,
     borderWidth: 3,
-    borderBottomWidth: 6,
+    borderBottomWidth: 7,
     flexDirection: 'row',
     gap: 12,
     marginTop: 8,
@@ -453,9 +509,9 @@ const styles = StyleSheet.create({
   // Search
   search: {
     alignItems: 'center',
-    borderRadius: 24,
+    borderRadius: 20,
     borderWidth: 3,
-    borderBottomWidth: 6,
+    borderBottomWidth: 7,
     flexDirection: 'row',
     gap: 12,
     minHeight: 64,
@@ -470,9 +526,9 @@ const styles = StyleSheet.create({
   // Item card — used for problems, tests, mistakes
   itemCard: {
     alignItems: 'center',
-    borderRadius: 26,
+    borderRadius: 24,
     borderWidth: 3,
-    borderBottomWidth: 8,
+    borderBottomWidth: 7,
     flexDirection: 'row',
     gap: 14,
     minHeight: 88,
@@ -481,9 +537,9 @@ const styles = StyleSheet.create({
   },
   itemIcon: {
     alignItems: 'center',
-    borderRadius: 20,
-    borderWidth: 3,
-    borderBottomWidth: 6,
+    borderRadius: 18,
+    borderWidth: 2,
+    borderBottomWidth: 5,
     height: 60,
     justifyContent: 'center',
     width: 60,
@@ -494,9 +550,9 @@ const styles = StyleSheet.create({
 
   // Progress card
   progressCard: {
-    borderRadius: 26,
+    borderRadius: 24,
     borderWidth: 3,
-    borderBottomWidth: 8,
+    borderBottomWidth: 7,
     padding: 20,
   },
   progressTop: {
@@ -508,8 +564,8 @@ const styles = StyleSheet.create({
   percentBadge: {
     alignItems: 'center',
     borderRadius: 16,
-    borderWidth: 3,
-    borderBottomWidth: 6,
+    borderWidth: 2,
+    borderBottomWidth: 4,
     justifyContent: 'center',
     minWidth: 56,
     paddingHorizontal: 12,

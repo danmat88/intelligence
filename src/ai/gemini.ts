@@ -71,7 +71,7 @@ export function createGeminiClient(config: GeminiConfig): AIClient {
     }
     if (!config.apiKey) {
       throw new Error(
-        'AI is not configured: set EXPO_PUBLIC_AI_PROXY_URL (production) or EXPO_PUBLIC_GEMINI_API_KEY (dev), then restart with: npm start -c',
+        'AI is not configured: set EXPO_PUBLIC_AI_PROXY_URL, then restart with: npm start -c',
       )
     }
     return { 'x-goog-api-key': config.apiKey }

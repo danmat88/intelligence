@@ -1,7 +1,9 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
+    "strict": true,
+    "incremental": true,
+    "tsBuildInfoFile": "./tmp/app.tsbuildinfo"
   },
   // scripts/ runs directly under node --strip-types (imports need the .ts
   // extension there, which app tsc rejects) — it is not app code.

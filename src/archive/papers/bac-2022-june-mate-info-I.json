@@ -1,0 +1,68 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Rezolvați următoarele exerciții.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac22j-mi-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Calcul cu radicali",
+      "prompt": "Arătați că $8-6\\sqrt{6}+\\sqrt{6}(6-\\sqrt{6})=2$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Dezvoltă produsul care conține radicalul.",
+      "solution": ["$\\sqrt6(6-\\sqrt6)=6\\sqrt6-6$.", "$8-6\\sqrt6+6\\sqrt6-6=2$."]
+    },
+    {
+      "id": "bac22j-mi-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Compunerea funcțiilor",
+      "prompt": "Se consideră funcția $f:\\mathbb{R}\\to\\mathbb{R}$, $f(x)=3x+m$, unde $m$ este număr real. Determinați numărul real $m$ pentru care $(f\\circ f)(0)=4$.",
+      "expectedAnswer": "$m=1$",
+      "hint": "Calculează mai întâi $f(0)$, apoi aplică din nou funcția.",
+      "solution": ["$f(0)=m$, deci $(f\\circ f)(0)=f(m)=3m+m=4m$.", "$4m=4$, de unde $m=1$."]
+    },
+    {
+      "id": "bac22j-mi-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Ecuații exponențiale",
+      "prompt": "Rezolvați în mulțimea numerelor reale ecuația $3\\cdot2^{2x}+4^x=4$.",
+      "expectedAnswer": "$x=0$",
+      "hint": "Observă că $2^{2x}=4^x$.",
+      "solution": ["$3\\cdot4^x+4^x=4$, deci $4\\cdot4^x=4$.", "$4^x=1$, de unde $x=0$."]
+    },
+    {
+      "id": "bac22j-mi-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Probabilități",
+      "prompt": "Calculați probabilitatea ca, alegând un număr din mulțimea numerelor naturale de două cifre, acesta să aibă cifra zecilor divizor al numărului $6$.",
+      "expectedAnswer": "$\\frac49$",
+      "hint": "Cifrele nenule care divid 6 sunt 1, 2, 3 și 6.",
+      "solution": ["Sunt $90$ de numere naturale de două cifre.", "Cifra zecilor poate fi $1,2,3$ sau $6$, iar pentru fiecare există $10$ cifre ale unităților, deci sunt $40$ cazuri favorabile.", "$p=\\frac{40}{90}=\\frac49$."]
+    },
+    {
+      "id": "bac22j-mi-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Geometrie analitică",
+      "prompt": "În reperul cartezian $xOy$ se consideră dreapta $d$ de ecuație $y=3x-2$ și punctul $A(a,a)$, unde $a$ este număr real. Determinați numărul real $a$, știind că punctul $A$ aparține dreptei $d$.",
+      "expectedAnswer": "$a=1$",
+      "hint": "Coordonatele punctului trebuie să verifice ecuația dreptei.",
+      "solution": ["$a=3a-2$.", "$2a=2$, deci $a=1$."]
+    },
+    {
+      "id": "bac22j-mi-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Trigonometrie",
+      "prompt": "Se consideră triunghiul isoscel $ABC$, cu $AB=10$ și $\\cos A=0$. Arătați că aria triunghiului $ABC$ este egală cu $50$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Determină măsura unghiului $A$ și identifică laturile egale ale triunghiului isoscel.",
+      "solution": ["$\\cos A=0$, deci $A=\\frac\\pi2$.", "Triunghiul este isoscel cu vârful în $A$, astfel $AB=AC=10$.", "$\\mathcal{A}_{\\triangle ABC}=\\frac{AB\\cdot AC}{2}=50$."]
+    }
+  ]
+}

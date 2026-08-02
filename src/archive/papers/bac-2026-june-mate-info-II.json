@@ -1,0 +1,94 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL II",
+  "instructions": "Rezolvați următoarele exerciții.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac26j-mi-II-1",
+      "number": "II.1.a",
+      "points": 5,
+      "competency": "Calculul determinantului unei matrice",
+      "prompt": "Se consideră matricea $A(a) = \\begin{pmatrix} 1 & a & a \\\\ a & 3 & a \\\\ 0 & 2 & 1 \\end{pmatrix}$ și sistemul de ecuații liniare $\\begin{cases} x + ay + az = 1 \\\\ ax + 3y + az = 0 \\\\ 2y + z = 0 \\end{cases}$, unde $a$ este număr real. Arătați că $\\det(A(1)) = 2$.",
+      "expectedAnswer": "$2$",
+      "hint": "Înlocuiți $a$ cu $1$ în matricea $A(a)$ și calculați determinantul folosind regula lui Sarrus sau dezvoltarea pe o linie/coloană.",
+      "solution": [
+        "$A(1) = \\begin{pmatrix} 1 & 1 & 1 \\\\ 1 & 3 & 1 \\\\ 0 & 2 & 1 \\end{pmatrix} \\Rightarrow \\det(A(1)) = \\begin{vmatrix} 1 & 1 & 1 \\\\ 1 & 3 & 1 \\\\ 0 & 2 & 1 \\end{vmatrix} =$",
+        "$= 3 + 2 + 0 - 0 - 2 - 1 = 2$"
+      ]
+    },
+    {
+      "id": "bac26j-mi-II-2",
+      "number": "II.1.b",
+      "points": 5,
+      "competency": "Discuția compatibilității unui sistem de ecuații liniare",
+      "prompt": "Se consideră matricea $A(a) = \\begin{pmatrix} 1 & a & a \\\\ a & 3 & a \\\\ 0 & 2 & 1 \\end{pmatrix}$ și sistemul de ecuații liniare $\\begin{cases} x + ay + az = 1 \\\\ ax + 3y + az = 0 \\\\ 2y + z = 0 \\end{cases}$, unde $a$ este număr real. Arătați că, pentru orice număr real $a$, sistemul de ecuații are soluție unică.",
+      "expectedAnswer": "Sistemul are soluție unică deoarece $\\det(A(a)) \\neq 0$ pentru orice $a \\in \\mathbb{R}$.",
+      "hint": "Calculați determinantul matricei sistemului în funcție de $a$ și arătați că acesta este nenul pentru orice valoare reală a lui $a$.",
+      "solution": [
+        "$\\det(A(a)) = \\begin{vmatrix} 1 & a & a \\\\ a & 3 & a \\\\ 0 & 2 & 1 \\end{vmatrix} = a^2 - 2a + 3$, pentru orice număr real $a$.",
+        "$\\det(A(a)) = (a - 1)^2 + 2 \\neq 0$, pentru orice număr real $a$, deci pentru orice număr real $a$ sistemul de ecuații are soluție unică."
+      ]
+    },
+    {
+      "id": "bac26j-mi-II-3",
+      "number": "II.1.c",
+      "points": 5,
+      "competency": "Rezolvarea unui sistem de ecuații liniare cu parametri",
+      "prompt": "Se consideră matricea $A(a) = \\begin{pmatrix} 1 & a & a \\\\ a & 3 & a \\\\ 0 & 2 & 1 \\end{pmatrix}$ și sistemul de ecuații liniare $\\begin{cases} x + ay + az = 1 \\\\ ax + 3y + az = 0 \\\\ 2y + z = 0 \\end{cases}$, unde $a$ este număr real. Determinați numărul natural nenul $a$ pentru care sistemul de ecuații are soluția $(x_0, y_0, z_0)$, cu $z_0 = nx_0$, unde $n$ este număr natural.",
+      "expectedAnswer": "$a = 1$",
+      "hint": "Exprimați $x_0$ și $z_0$ în funcție de $a$ rezolvând sistemul, apoi folosiți relația $z_0 = nx_0$ și condițiile de număr natural pentru a-l afla pe $a$.",
+      "solution": [
+        "Din ecuația a treia a sistemului avem $z = -2y$. Înlocuind în primele două ecuații și rezolvând, obținem $x_0 = \\frac{3 - 2a}{a^2 - 2a + 3}$ și $z_0 = \\frac{2a}{a^2 - 2a + 3}$.",
+        "Condiția $z_0 = nx_0$ devine $\\frac{2a}{a^2 - 2a + 3} = n \\frac{3 - 2a}{a^2 - 2a + 3}$, de unde $2a = n(3 - 2a)$, unde $a$ și $n$ sunt numere naturale, $a$ nenul.",
+        "Deoarece $a > 0$ și $n \\ge 0$, deducem că $3 - 2a > 0$.",
+        "Cum $a$ este număr natural nenul, singura valoare posibilă este $a = 1$, care convine (deoarece conduce la $n = 2 \\in \\mathbb{N}$)."
+      ]
+    },
+    {
+      "id": "bac26j-mi-II-4",
+      "number": "II.2.a",
+      "points": 5,
+      "competency": "Calculul valorii unei legi de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție asociativă $x * y = \\frac{2}{3}(x - 3)(y - 3) + 3$. Arătați că $0 * 2 = 5$.",
+      "expectedAnswer": "$5$",
+      "hint": "Înlocuiți $x$ cu $0$ și $y$ cu $2$ în expresia legii de compoziție.",
+      "solution": [
+        "$0 * 2 = \\frac{2}{3}(0 - 3)(2 - 3) + 3 =$",
+        "$= \\frac{2}{3}(-3)(-1) + 3 = 2 + 3 = 5$"
+      ]
+    },
+    {
+      "id": "bac26j-mi-II-5",
+      "number": "II.2.b",
+      "points": 5,
+      "competency": "Rezolvarea unei ecuații folosind o lege de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție asociativă $x * y = \\frac{2}{3}(x - 3)(y - 3) + 3$. Determinați numerele reale $x$ pentru care $x * \\frac{3x}{2} = 5x$.",
+      "expectedAnswer": "$x \\in \\{1, 9\\}$",
+      "hint": "Calculați $x * \\frac{3x}{2}$ folosind definiția legii de compoziție, apoi rezolvați ecuația de gradul al doilea rezultată.",
+      "solution": [
+        "$x * \\frac{3x}{2} = \\frac{2}{3}(x - 3)\\left(\\frac{3x}{2} - 3\\right) + 3 = \\frac{2}{3}(x - 3)\\frac{3(x - 2)}{2} + 3 = (x - 3)(x - 2) + 3 = x^2 - 5x + 9$, pentru orice număr real $x$.",
+        "Ecuația devine $x^2 - 5x + 9 = 5x$, adică $x^2 - 10x + 9 = 0$.",
+        "Rezolvând ecuația, obținem $x = 1$ sau $x = 9$."
+      ]
+    },
+    {
+      "id": "bac26j-mi-II-6",
+      "number": "II.2.c",
+      "points": 5,
+      "competency": "Determinarea unor elemente din mulțimea de definiție a unei legi de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție asociativă $x * y = \\frac{2}{3}(x - 3)(y - 3) + 3$. Determinați perechile $(m, n)$ de numere naturale pentru care $m * m * n = -1$.",
+      "expectedAnswer": "$(0, 2)$ și $(6, 2)$",
+      "hint": "Calculați $m * m * n$ folosind asociativitatea legii de compoziție și scrieți ecuația sub forma unui produs de factori întregi egal cu $-9$.",
+      "solution": [
+        "$m * m = \\frac{2}{3}(m - 3)^2 + 3$",
+        "$m * m * n = (m * m) * n = \\frac{2}{3}\\left(\\frac{2}{3}(m - 3)^2 + 3 - 3\\right)(n - 3) + 3 = \\frac{4}{9}(m - 3)^2(n - 3) + 3$, pentru orice numere naturale $m$ și $n$.",
+        "Ecuația devine $\\frac{4}{9}(m - 3)^2(n - 3) + 3 = -1 \\Leftrightarrow (m - 3)^2(n - 3) = -9$.",
+        "Cum $m$ și $n$ sunt numere naturale, $(m - 3)^2 \\ge 0$. Singurele pătrate perfecte care divid $-9$ sunt $1$ și $9$.",
+        "Dacă $(m - 3)^2 = 1$, obținem $m \\in \\{2, 4\\}$, dar $n - 3 = -9 \\Rightarrow n = -6 \\notin \\mathbb{N}$.",
+        "Dacă $(m - 3)^2 = 9$, obținem $m \\in \\{0, 6\\}$, iar $n - 3 = -1 \\Rightarrow n = 2 \\in \\mathbb{N}$.",
+        "Obținem perechile $(0, 2)$ și $(6, 2)$."
+      ]
+    }
+  ]
+}

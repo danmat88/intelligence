@@ -1,0 +1,90 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Rezolvați următoarele exerciții.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac23j-mi-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Numere complexe",
+      "prompt": "Se consideră numărul complex $z = 3 + i$. Arătați că $z(z - 2i) = 10$.",
+      "expectedAnswer": "$10$",
+      "hint": "Înlocuiește $z$ cu $3+i$ în expresia $z(z - 2i)$ și efectuează calculele folosind $i^2 = -1$.",
+      "solution": [
+        "$z(z - 2i) = (3 + i)(3 + i - 2i) = (3 + i)(3 - i)$",
+        "$= 3^2 - i^2 = 9 - (-1) = 10$"
+      ]
+    },
+    {
+      "id": "bac23j-mi-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Funcții",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 5x + 1$. Arătați că $f(2x) - 2f(x) = -1$, pentru orice număr real $x$.",
+      "expectedAnswer": "$-1$",
+      "hint": "Calculează separat $f(2x)$ și $2f(x)$, apoi scade-le.",
+      "solution": [
+        "$f(2x) = 5(2x) + 1 = 10x + 1$, pentru orice număr real $x$.",
+        "$f(2x) - 2f(x) = 10x + 1 - 2(5x + 1) = 10x + 1 - 10x - 2 = -1$, pentru orice număr real $x$."
+      ]
+    },
+    {
+      "id": "bac23j-mi-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Ecuații iraționale",
+      "prompt": "Rezolvați în mulțimea numerelor reale ecuația $\\sqrt[3]{x^3 - 2x + 2} = x$.",
+      "expectedAnswer": "$x = 1$",
+      "hint": "Ridică ambele membre ale ecuației la puterea a treia pentru a elimina radicalul.",
+      "solution": [
+        "Ridicând la puterea a treia, obținem $x^3 - 2x + 2 = x^3$.",
+        "$-2x + 2 = 0$",
+        "$x = 1$"
+      ]
+    },
+    {
+      "id": "bac23j-mi-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Probabilități",
+      "prompt": "Se consideră mulțimea $A$, a numerelor naturale de două cifre. Calculați probabilitatea ca, alegând un număr $n$ din mulțimea $A$, numărul $n + 5$ să fie multiplu de $10$.",
+      "expectedAnswer": "$p = \\frac{1}{10}$",
+      "hint": "Un număr $n+5$ este multiplu de $10$ dacă și numai dacă ultima cifră a lui $n$ este $5$.",
+      "solution": [
+        "Mulțimea numerelor naturale de două cifre are $90$ de elemente, deci sunt $90$ de cazuri posibile.",
+        "În mulțimea $A$ sunt $9$ numere $n$ pentru care $n + 5$ este multiplu de $10$, deci sunt $9$ cazuri favorabile.",
+        "Probabilitatea este $p = \\frac{\\text{nr. cazuri favorabile}}{\\text{nr. cazuri posibile}} = \\frac{9}{90} = \\frac{1}{10}$."
+      ]
+    },
+    {
+      "id": "bac23j-mi-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Geometrie analitică",
+      "prompt": "În reperul cartezian $xOy$ se consideră punctele $A(4,0)$ și $B(5,4)$. Determinați ecuația dreptei $d$ care trece prin punctul $O$ și este paralelă cu dreapta $AB$.",
+      "expectedAnswer": "$y = 4x$",
+      "hint": "Două drepte paralele au aceeași pantă. Calculează panta dreptei $AB$ și folosește-o pentru a scrie ecuația dreptei $d$.",
+      "solution": [
+        "Panta dreptei $AB$ este $m_{AB} = \\frac{4 - 0}{5 - 4} = 4$.",
+        "Cum $d \\parallel AB$, obținem panta dreptei $d$, $m_d = 4$.",
+        "Ecuația dreptei $d$ care trece prin $O(0,0)$ este $y - 0 = 4(x - 0)$, adică $y = 4x$."
+      ]
+    },
+    {
+      "id": "bac23j-mi-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Geometrie plană",
+      "prompt": "Se consideră triunghiul isoscel $ABC$, dreptunghic în $A$, cu aria egală cu $4$. Arătați că $BC = 4$.",
+      "expectedAnswer": "$BC = 4$",
+      "hint": "Exprimă aria triunghiului în funcție de ipotenuza $BC$ și înălțimea corespunzătoare, știind că într-un triunghi dreptunghic isoscel înălțimea din unghiul drept este jumătate din ipotenuză.",
+      "solution": [
+        "Fie $AD$ înălțimea corespunzătoare ipotenuzei $BC$. Deoarece triunghiul $ABC$ este dreptunghic isoscel, $AD = \\frac{BC}{2}$.",
+        "Aria triunghiului este $\\mathcal{A}_{ABC} = \\frac{AD \\cdot BC}{2} = \\frac{\\frac{BC}{2} \\cdot BC}{2} = \\frac{BC^2}{4}$.",
+        "Cum $\\mathcal{A}_{ABC} = 4$, obținem $\\frac{BC^2}{4} = 4$, de unde obținem $BC = 4$."
+      ]
+    }
+  ]
+}

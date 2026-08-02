@@ -1,0 +1,88 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL al II-lea",
+  "instructions": "Rezolvați toate exercițiile.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac26j-sn-II-1",
+      "number": "1.a)",
+      "points": 5,
+      "competency": "Calculul determinantului unei matrice",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$ și $A(a) = \\begin{pmatrix} 2a+2 & -a \\\\ a-3 & 1 \\end{pmatrix}$, unde $a$ este număr real.\n\nArătați că $\\det(A(1)) = 2$.",
+      "expectedAnswer": "2",
+      "hint": "Înlocuiți $a$ cu $1$ în expresia matricei $A(a)$ și calculați determinantul folosind formula $\\det = ad - bc$.",
+      "solution": [
+        "$A(1) = \\begin{pmatrix} 4 & -1 \\\\ -2 & 1 \\end{pmatrix} \\Rightarrow \\det(A(1)) = \\begin{vmatrix} 4 & -1 \\\\ -2 & 1 \\end{vmatrix} = 4 \\cdot 1 - (-1) \\cdot (-2) =$",
+        "$= 4 - 2 = 2$"
+      ]
+    },
+    {
+      "id": "bac26j-sn-II-2",
+      "number": "1.b)",
+      "points": 5,
+      "competency": "Operații cu matrice",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$ și $A(a) = \\begin{pmatrix} 2a+2 & -a \\\\ a-3 & 1 \\end{pmatrix}$, unde $a$ este număr real.\n\nDeterminați numărul real $x$ pentru care $A(0) \\cdot (6I_2 - A(2) - A(-2)) = xI_2$.",
+      "expectedAnswer": "$x = 4$",
+      "hint": "Calculați pe rând matricele $A(0)$, $A(2)$ și $A(-2)$, apoi efectuați operațiile din paranteză și înmulțirea.",
+      "solution": [
+        "$A(0) = \\begin{pmatrix} 2 & 0 \\\\ -3 & 1 \\end{pmatrix}$, $6I_2 - A(2) - A(-2) = \\begin{pmatrix} 2 & 0 \\\\ 6 & 4 \\end{pmatrix}$",
+        "$A(0) \\cdot (6I_2 - A(2) - A(-2)) = \\begin{pmatrix} 4 & 0 \\\\ 0 & 4 \\end{pmatrix} = 4I_2$",
+        "$4I_2 = xI_2$, de unde obținem $x = 4$"
+      ]
+    },
+    {
+      "id": "bac26j-sn-II-3",
+      "number": "1.c)",
+      "points": 5,
+      "competency": "Ecuații matriceale",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$ și $A(a) = \\begin{pmatrix} 2a+2 & -a \\\\ a-3 & 1 \\end{pmatrix}$, unde $a$ este număr real.\n\nDeterminați matricea $X \\in \\mathcal{M}_2(\\mathbb{R})$ pentru care $A(1) \\cdot X \\cdot A(1) = 4I_2$.",
+      "expectedAnswer": "$X = \\begin{pmatrix} 3 & 5 \\\\ 10 & 18 \\end{pmatrix}$",
+      "hint": "Înmulțiți ecuația la stânga și la dreapta cu inversa matricei $A(1)$.",
+      "solution": [
+        "Cum $\\det(A(1)) \\neq 0$, $X = 4(A(1))^{-1} \\cdot (A(1))^{-1}$",
+        "$(A(1))^{-1} = \\begin{pmatrix} \\frac{1}{2} & \\frac{1}{2} \\\\ 1 & 2 \\end{pmatrix}$, de unde obținem $X = \\begin{pmatrix} 3 & 5 \\\\ 10 & 18 \\end{pmatrix}$"
+      ]
+    },
+    {
+      "id": "bac26j-sn-II-4",
+      "number": "2.a)",
+      "points": 5,
+      "competency": "Valoarea unui polinom",
+      "prompt": "Se consideră polinomul $f = X^3 - aX + 2 + a$, unde $a$ este număr real.\n\nArătați că $f(1) = 3$, pentru orice număr real $a$.",
+      "expectedAnswer": "3",
+      "hint": "Înlocuiți $X$ cu $1$ în expresia polinomului $f$.",
+      "solution": [
+        "$f(1) = 1^3 - a \\cdot 1 + 2 + a =$",
+        "$= 1 + 2 = 3$, pentru orice număr real $a$"
+      ]
+    },
+    {
+      "id": "bac26j-sn-II-5",
+      "number": "2.b)",
+      "points": 5,
+      "competency": "Divizibilitatea polinoamelor",
+      "prompt": "Se consideră polinomul $f = X^3 - aX + 2 + a$, unde $a$ este număr real.\n\nDeterminați numărul real $a$ pentru care polinomul $f$ este divizibil cu polinomul $g = X + 2$.",
+      "expectedAnswer": "$a = 2$",
+      "hint": "Folosiți teorema lui Bézout: polinomul $f$ este divizibil cu $X + 2$ dacă și numai dacă $f(-2) = 0$.",
+      "solution": [
+        "$f(-2) = 3a - 6$, pentru orice număr real $a$",
+        "$3a - 6 = 0$, de unde obținem $a = 2$"
+      ]
+    },
+    {
+      "id": "bac26j-sn-II-6",
+      "number": "2.c)",
+      "points": 5,
+      "competency": "Relațiile lui Viète",
+      "prompt": "Se consideră polinomul $f = X^3 - aX + 2 + a$, unde $a$ este număr real.\n\nDeterminați numărul real $a$ pentru care $x_1^3 + x_2^3 + x_3^3 = x_1x_2 + x_1x_3 + x_2x_3$, unde $x_1$, $x_2$ și $x_3$ sunt rădăcinile polinomului $f$.",
+      "expectedAnswer": "$a = -3$",
+      "hint": "Folosiți relațiile lui Viète și faptul că fiecare rădăcină verifică ecuația $f(x) = 0$ pentru a calcula suma cuburilor rădăcinilor.",
+      "solution": [
+        "$x_1 + x_2 + x_3 = 0$, $x_1x_2 + x_1x_3 + x_2x_3 = -a$, pentru orice număr real $a$",
+        "$f(x_1) = 0$, $f(x_2) = 0$, $f(x_3) = 0$, de unde rezultă $x_1^3 + x_2^3 + x_3^3 = -3a - 6$, deci",
+        "$-3a - 6 = -a$, de unde obținem $a = -3$"
+      ]
+    }
+  ]
+}

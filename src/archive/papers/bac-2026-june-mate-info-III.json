@@ -1,0 +1,102 @@
+{
+  "id": "III",
+  "title": "SUBIECTUL III",
+  "instructions": "Rezolvați următoarele probleme:",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac26j-mi-III-1-a",
+      "number": "III.1.a",
+      "points": 5,
+      "competency": "Derivarea funcțiilor raționale",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = \\frac{x^3 - 4x}{x^2 + 5}$.\n\na) Arătați că $f'(x) = \\frac{(x^2 - 1)(x^2 + 20)}{(x^2 + 5)^2}$, $x \\in \\mathbb{R}$.",
+      "expectedAnswer": "$f'(x) = \\frac{(x^2 - 1)(x^2 + 20)}{(x^2 + 5)^2}$",
+      "hint": "Aplicați regula de derivare a câtului a două funcții: $\\left(\\frac{u}{v}\\right)' = \\frac{u'v - uv'}{v^2}$.",
+      "solution": [
+        "$f'(x) = \\frac{(x^3 - 4x)'(x^2 + 5) - (x^3 - 4x)(x^2 + 5)'}{(x^2 + 5)^2} = \\frac{(3x^2 - 4)(x^2 + 5) - (x^3 - 4x) \\cdot 2x}{(x^2 + 5)^2}$",
+        "$= \\frac{3x^4 + 15x^2 - 4x^2 - 20 - 2x^4 + 8x^2}{(x^2 + 5)^2} = \\frac{x^4 + 19x^2 - 20}{(x^2 + 5)^2}$",
+        "$= \\frac{(x^2 - 1)(x^2 + 20)}{(x^2 + 5)^2}$, pentru orice $x \\in \\mathbb{R}$."
+      ]
+    },
+    {
+      "id": "bac26j-mi-III-1-b",
+      "number": "III.1.b",
+      "points": 5,
+      "competency": "Asimptote oblice",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = \\frac{x^3 - 4x}{x^2 + 5}$.\n\nb) Arătați că dreapta de ecuație $y = x$ este asimptota oblică spre $+\\infty$ la graficul funcției $f$.",
+      "expectedAnswer": "Dreapta $y = x$ este asimptotă oblică spre $+\\infty$.",
+      "hint": "Calculați limita $\\lim_{x \\to +\\infty} (f(x) - x)$ pentru a verifica dacă este $0$.",
+      "solution": [
+        "Calculăm $\\lim_{x \\to +\\infty} (f(x) - x) = \\lim_{x \\to +\\infty} \\left( \\frac{x^3 - 4x}{x^2 + 5} - x \\right)$.",
+        "$= \\lim_{x \\to +\\infty} \\frac{x^3 - 4x - x^3 - 5x}{x^2 + 5} = \\lim_{x \\to +\\infty} \\frac{-9x}{x^2 + 5}$.",
+        "Deoarece gradul numărătorului este mai mic decât gradul numitorului, limita este $0$.",
+        "Prin urmare, dreapta de ecuație $y = x$ este asimptota oblică spre $+\\infty$ la graficul funcției $f$."
+      ]
+    },
+    {
+      "id": "bac26j-mi-III-1-c",
+      "number": "III.1.c",
+      "points": 5,
+      "competency": "Studiul variației funcției și ecuații",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = \\frac{x^3 - 4x}{x^2 + 5}$.\n\nc) Determinați mulțimea numerelor reale $m$ pentru care ecuația $f(x) = m$ are exact trei soluții.",
+      "expectedAnswer": "$m \\in \\left(-\\frac{1}{2}, \\frac{1}{2}\\right)$",
+      "hint": "Studiați monotonia funcției $f$ folosind derivata întâi și determinați punctele de extrem local.",
+      "solution": [
+        "Rezolvăm ecuația $f'(x) = 0 \\implies (x^2 - 1)(x^2 + 20) = 0 \\implies x = -1$ sau $x = 1$.",
+        "Pentru $x \\in (-\\infty, -1)$, $f'(x) > 0$, deci $f$ este strict crescătoare pe $(-\\infty, -1)$.",
+        "Pentru $x \\in (-1, 1)$, $f'(x) < 0$, deci $f$ este strict descrescătoare pe $(-1, 1)$.",
+        "Pentru $x \\in (1, +\\infty)$, $f'(x) > 0$, deci $f$ este strict crescătoare pe $(1, +\\infty)$.",
+        "Calculăm limitele și valorile în punctele de extrem: $\\lim_{x \\to -\\infty} f(x) = -\\infty$, $f(-1) = \\frac{1}{2}$, $f(1) = -\\frac{1}{2}$, $\\lim_{x \\to +\\infty} f(x) = +\\infty$.",
+        "Funcția $f$ este continuă. Din tabelul de variație, ecuația $f(x) = m$ are exact trei soluții dacă și numai dacă $m$ se află strict între valoarea minimului local și valoarea maximului local.",
+        "Astfel, obținem $m \\in \\left(-\\frac{1}{2}, \\frac{1}{2}\\right)$."
+      ]
+    },
+    {
+      "id": "bac26j-mi-III-2-a",
+      "number": "III.2.a",
+      "points": 5,
+      "competency": "Calcul integral",
+      "prompt": "Se consideră funcția $f : (1, +\\infty) \\to \\mathbb{R}$, $f(x) = \\frac{x^2 - 4}{x \\ln x}$.\n\na) Arătați că $\\int_2^3 f(x) x \\ln x \\, dx = \\frac{7}{3}$.",
+      "expectedAnswer": "Rezultatul integralei este $\\frac{7}{3}$.",
+      "hint": "Înlocuiți expresia lui $f(x)$ în integrală și simplificați termenii $x \\ln x$.",
+      "solution": [
+        "Avem $\\int_2^3 f(x) x \\ln x \\, dx = \\int_2^3 \\frac{x^2 - 4}{x \\ln x} \\cdot x \\ln x \\, dx = \\int_2^3 (x^2 - 4) \\, dx$.",
+        "Calculăm primitiva: $\\int (x^2 - 4) \\, dx = \\frac{x^3}{3} - 4x$.",
+        "Aplicăm formula Leibniz-Newton: $\\left( \\frac{x^3}{3} - 4x \\right) \\bigg|_2^3 = \\left( \\frac{27}{3} - 12 \\right) - \\left( \\frac{8}{3} - 8 \\right)$.",
+        "$= (9 - 12) - \\left( \\frac{8}{3} - 8 \\right) = -3 - \\frac{8}{3} + 8 = 5 - \\frac{8}{3} = \\frac{15 - 8}{3} = \\frac{7}{3}$."
+      ]
+    },
+    {
+      "id": "bac26j-mi-III-2-b",
+      "number": "III.2.b",
+      "points": 5,
+      "competency": "Integrare prin substituție",
+      "prompt": "Se consideră funcția $f : (1, +\\infty) \\to \\mathbb{R}$, $f(x) = \\frac{x^2 - 4}{x \\ln x}$.\n\nb) Arătați că $\\int_e^{e^2} \\frac{f(x)}{x^2 - 4} \\, dx = \\ln 2$.",
+      "expectedAnswer": "Rezultatul integralei este $\\ln 2$.",
+      "hint": "După simplificare, observați că integrala devine $\\int \\frac{1}{x \\ln x} \\, dx$, care se poate rezolva prin substituția $u = \\ln x$.",
+      "solution": [
+        "Avem $\\int_e^{e^2} \\frac{f(x)}{x^2 - 4} \\, dx = \\int_e^{e^2} \\frac{1}{x^2 - 4} \\cdot \\frac{x^2 - 4}{x \\ln x} \\, dx = \\int_e^{e^2} \\frac{1}{x \\ln x} \\, dx$.",
+        "Observăm că $\\frac{1}{x \\ln x} = \\frac{(\\ln x)'}{\\ln x}$.",
+        "Integrala devine $\\int_e^{e^2} \\frac{(\\ln x)'}{\\ln x} \\, dx = \\ln(\\ln x) \\bigg|_e^{e^2}$.",
+        "Calculăm valorile: $\\ln(\\ln e^2) - \\ln(\\ln e) = \\ln 2 - \\ln 1 = \\ln 2$."
+      ]
+    },
+    {
+      "id": "bac26j-mi-III-2-c",
+      "number": "III.2.c",
+      "points": 5,
+      "competency": "Regula lui l'Hôpital și Teorema fundamentală a calculului integral",
+      "prompt": "Se consideră funcția $f : (1, +\\infty) \\to \\mathbb{R}$, $f(x) = \\frac{x^2 - 4}{x \\ln x}$.\n\nc) Arătați că $\\lim_{x \\to 2} \\frac{1}{F^2(x)} \\int_2^x (t - 2)F(t) \\, dt = \\frac{\\ln 2}{4}$, unde $F : (1, +\\infty) \\to \\mathbb{R}$ este primitiva funcției $f$ pentru care $F(2) = 0$.",
+      "expectedAnswer": "Limita este $\\frac{\\ln 2}{4}$.",
+      "hint": "Aplicați Regula lui l'Hôpital pentru cazul $\\frac{0}{0}$ și folosiți faptul că derivata integralei $\\int_2^x g(t) \\, dt$ este $g(x)$.",
+      "solution": [
+        "Deoarece $F(2) = 0$ și $\\int_2^2 (t - 2)F(t) \\, dt = 0$, suntem în cazul $\\frac{0}{0}$. Aplicăm Regula lui l'Hôpital.",
+        "$\\lim_{x \\to 2} \\frac{\\int_2^x (t - 2)F(t) \\, dt}{F^2(x)} = \\lim_{x \\to 2} \\frac{\\left( \\int_2^x (t - 2)F(t) \\, dt \\right)'}{(F^2(x))'}$",
+        "$= \\lim_{x \\to 2} \\frac{(x - 2)F(x)}{2F(x)F'(x)} = \\lim_{x \\to 2} \\frac{x - 2}{2F'(x)}$.",
+        "Deoarece $F$ este o primitivă a lui $f$, avem $F'(x) = f(x) = \\frac{x^2 - 4}{x \\ln x}$.",
+        "Limita devine $\\lim_{x \\to 2} \\frac{x - 2}{2 f(x)} = \\lim_{x \\to 2} \\frac{x - 2}{2 \\frac{x^2 - 4}{x \\ln x}} = \\lim_{x \\to 2} \\frac{(x - 2) x \\ln x}{2(x - 2)(x + 2)}$.",
+        "Simplificăm prin $x - 2$: $\\lim_{x \\to 2} \\frac{x \\ln x}{2(x + 2)} = \\frac{2 \\ln 2}{2(2 + 2)} = \\frac{2 \\ln 2}{8} = \\frac{\\ln 2}{4}$."
+      ]
+    }
+  ]
+}

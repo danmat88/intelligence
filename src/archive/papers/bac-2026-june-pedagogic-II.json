@@ -1,0 +1,91 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL II",
+  "instructions": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = xy - x - 2y + 4$.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac26j-pd-II-1",
+      "number": "II.1",
+      "points": 5,
+      "competency": "Calculul valorii unei legi de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = xy - x - 2y + 4$.\n\nArătați că $3 * 3 = 4$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Înlocuiți $x$ cu $3$ și $y$ cu $3$ în expresia legii de compoziție și efectuați calculele.",
+      "solution": [
+        "$3 * 3 = 3 \\cdot 3 - 3 - 2 \\cdot 3 + 4$",
+        "$= 9 - 3 - 6 + 4 = 4$"
+      ]
+    },
+    {
+      "id": "bac26j-pd-II-2",
+      "number": "II.2",
+      "points": 5,
+      "competency": "Rezolvarea ecuațiilor cu legi de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = xy - x - 2y + 4$.\n\nDeterminați numărul real $x$ pentru care $x * (-2) = x$.",
+      "expectedAnswer": "$x = 2$",
+      "hint": "Calculați $x * (-2)$ folosind definiția legii de compoziție și egalați rezultatul cu $x$.",
+      "solution": [
+        "$x * (-2) = x \\cdot (-2) - x - 2 \\cdot (-2) + 4 = -3x + 8$, pentru orice număr real $x$",
+        "$-3x + 8 = x$, de unde obținem $x = 2$"
+      ]
+    },
+    {
+      "id": "bac26j-pd-II-3",
+      "number": "II.3",
+      "points": 5,
+      "competency": "Rezolvarea ecuațiilor de gradul al doilea cu legi de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = xy - x - 2y + 4$.\n\nDeterminați numerele reale $x$ pentru care $(-x) * x = 2x$.",
+      "expectedAnswer": "$x = -4$ sau $x = 1$",
+      "hint": "Exprimați $(-x) * x$ și rezolvați ecuația de gradul al doilea obținută.",
+      "solution": [
+        "$(-x) * x = (-x) \\cdot x - (-x) - 2x + 4 = -x^2 - x + 4$, pentru orice număr real $x$",
+        "$-x^2 - x + 4 = 2x$, deci $x^2 + 3x - 4 = 0$",
+        "Rezolvând ecuația, obținem $x = -4$ sau $x = 1$"
+      ]
+    },
+    {
+      "id": "bac26j-pd-II-4",
+      "number": "II.4",
+      "points": 5,
+      "competency": "Factorizarea expresiei unei legi de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = xy - x - 2y + 4$.\n\nArătați că $x * y = (x - 2)(y - 1) + 2$, pentru orice numere reale $x$ și $y$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Grupați termenii din expresia $xy - x - 2y + 4$ pentru a obține forma factorizată.",
+      "solution": [
+        "$x * y = xy - 2y - x + 2 + 2$",
+        "$= y(x - 2) - (x - 2) + 2 = (x - 2)(y - 1) + 2$, pentru orice numere reale $x$ și $y$"
+      ]
+    },
+    {
+      "id": "bac26j-pd-II-5",
+      "number": "II.5",
+      "points": 5,
+      "competency": "Rezolvarea ecuațiilor cu legi de compoziție și fracții",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = xy - x - 2y + 4$.\n\nDeterminați numerele reale nenule $a$ pentru care $4 * (4 * a) = \\frac{1}{a}$.",
+      "expectedAnswer": "$a = -\\frac{1}{2}$ sau $a = \\frac{1}{2}$",
+      "hint": "Folosiți forma factorizată a legii de compoziție pentru a calcula mai ușor $4 * a$ și apoi $4 * (4 * a)$.",
+      "solution": [
+        "Folosind forma factorizată, $4 * a = (4 - 2)(a - 1) + 2 = 2a - 2 + 2 = 2a$",
+        "$4 * (4 * a) = 4 * (2a) = (4 - 2)(2a - 1) + 2 = 4a - 2 + 2 = 4a$, pentru orice număr real $a$",
+        "$4a = \\frac{1}{a}$, de unde obținem $4a^2 = 1$",
+        "Soluțiile sunt $a = -\\frac{1}{2}$ sau $a = \\frac{1}{2}$, care convin"
+      ]
+    },
+    {
+      "id": "bac26j-pd-II-6",
+      "number": "II.6",
+      "points": 5,
+      "competency": "Rezolvarea ecuațiilor diofantice cu legi de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = xy - x - 2y + 4$.\n\nDeterminați perechile $(n, p)$ de numere naturale pentru care $n * p = p$.",
+      "expectedAnswer": "$(2, 2)$ și $(4, 0)$",
+      "hint": "Folosiți forma factorizată a legii de compoziție și proprietățile divizibilității în mulțimea numerelor întregi.",
+      "solution": [
+        "Folosind forma factorizată, $n * p = (n - 2)(p - 1) + 2$, deci $(n - 2)(p - 1) + 2 = p$",
+        "$(n - 2)(p - 1) - (p - 1) = -1$, de unde obținem $(n - 3)(p - 1) = -1$",
+        "Deoarece $n$ și $p$ sunt numere naturale, divizorii întregi ai lui $-1$ conduc la sistemele: $n - 3 = 1$ și $p - 1 = -1$, sau $n - 3 = -1$ și $p - 1 = 1$",
+        "Obținem perechile $(4, 0)$ și $(2, 2)$"
+      ]
+    }
+  ]
+}

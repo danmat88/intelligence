@@ -1,0 +1,68 @@
+{
+  "id": "III",
+  "title": "SUBIECTUL al III-lea",
+  "instructions": "Se consideră matricele $A=\\begin{pmatrix}1&0\\\\3&1\\end{pmatrix}$, $B=\\begin{pmatrix}1&0\\\\-3&1\\end{pmatrix}$ și $I_2=\\begin{pmatrix}1&0\\\\0&1\\end{pmatrix}$.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac22j-pd-III-1",
+      "number": "III.1",
+      "points": 5,
+      "competency": "Determinant",
+      "prompt": "Se consideră matricea $A=\\begin{pmatrix}1&0\\\\3&1\\end{pmatrix}$. Arătați că $\\det(A)=1$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Aplică formula determinantului de ordin doi.",
+      "solution": ["$\\det(A)=1\\cdot1-3\\cdot0=1$."]
+    },
+    {
+      "id": "bac22j-pd-III-2",
+      "number": "III.2",
+      "points": 5,
+      "competency": "Calcul matriceal",
+      "prompt": "Se consideră $A=\\begin{pmatrix}1&0\\\\3&1\\end{pmatrix}$ și $I_2=\\begin{pmatrix}1&0\\\\0&1\\end{pmatrix}$. Arătați că $A\\cdot A-2A=-I_2$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Calculează mai întâi $A^2$.",
+      "solution": ["$A^2=\\begin{pmatrix}1&0\\\\6&1\\end{pmatrix}$ și $2A=\\begin{pmatrix}2&0\\\\6&2\\end{pmatrix}$.", "$A^2-2A=\\begin{pmatrix}-1&0\\\\0&-1\\end{pmatrix}=-I_2$."]
+    },
+    {
+      "id": "bac22j-pd-III-3",
+      "number": "III.3",
+      "points": 5,
+      "competency": "Matrice inverse",
+      "prompt": "Se consideră matricele $A=\\begin{pmatrix}1&0\\\\3&1\\end{pmatrix}$, $B=\\begin{pmatrix}1&0\\\\-3&1\\end{pmatrix}$ și $I_2=\\begin{pmatrix}1&0\\\\0&1\\end{pmatrix}$. Arătați că $A\\cdot B=B\\cdot A=I_2$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Efectuează cele două produse matriceale.",
+      "solution": ["$AB=\\begin{pmatrix}1&0\\\\3-3&1\\end{pmatrix}=I_2$.", "$BA=\\begin{pmatrix}1&0\\\\-3+3&1\\end{pmatrix}=I_2$."]
+    },
+    {
+      "id": "bac22j-pd-III-4",
+      "number": "III.4",
+      "points": 5,
+      "competency": "Ecuație cu determinant",
+      "prompt": "Se consideră $A=\\begin{pmatrix}1&0\\\\3&1\\end{pmatrix}$ și $I_2=\\begin{pmatrix}1&0\\\\0&1\\end{pmatrix}$. Determinați numărul real $a$ pentru care $\\det(A-aI_2)=0$.",
+      "expectedAnswer": "$a=1$",
+      "hint": "Scrie matricea $A-aI_2$ și calculează determinantul.",
+      "solution": ["$A-aI_2=\\begin{pmatrix}1-a&0\\\\3&1-a\\end{pmatrix}$.", "$\\det(A-aI_2)=(1-a)^2=0$, deci $a=1$."]
+    },
+    {
+      "id": "bac22j-pd-III-5",
+      "number": "III.5",
+      "points": 5,
+      "competency": "Determinant parametric",
+      "prompt": "Se consideră matricele $A=\\begin{pmatrix}1&0\\\\3&1\\end{pmatrix}$ și $B=\\begin{pmatrix}1&0\\\\-3&1\\end{pmatrix}$. Determinați numerele reale $m$ pentru care $\\det(m(A+B))=m\\cdot\\det(A+B)$.",
+      "expectedAnswer": "$m\\in\\{0,1\\}$",
+      "hint": "Observă că $A+B=2I_2$ și ține cont de ordinul matricei când scoți un scalar din determinant.",
+      "solution": ["$m(A+B)=\\begin{pmatrix}2m&0\\\\0&2m\\end{pmatrix}$, deci $\\det(m(A+B))=4m^2$.", "$\\det(A+B)=4$, astfel ecuația devine $4m^2=4m$.", "$m(m-1)=0$, de unde $m=0$ sau $m=1$."]
+    },
+    {
+      "id": "bac22j-pd-III-6",
+      "number": "III.6",
+      "points": 5,
+      "competency": "Ecuație matriceală",
+      "prompt": "Se consideră matricele $A=\\begin{pmatrix}1&0\\\\3&1\\end{pmatrix}$, $B=\\begin{pmatrix}1&0\\\\-3&1\\end{pmatrix}$ și $I_2=\\begin{pmatrix}1&0\\\\0&1\\end{pmatrix}$. Determinați numerele reale $x$ și $y$, știind că $xA+yB=2I_2$.",
+      "expectedAnswer": "$x=1$ și $y=1$",
+      "hint": "Egalează elementele corespunzătoare ale celor două matrice.",
+      "solution": ["$xA+yB=\\begin{pmatrix}x+y&0\\\\3x-3y&x+y\\end{pmatrix}$.", "Din egalitatea cu $2I_2$ rezultă $x+y=2$ și $3x-3y=0$.", "Prin urmare, $x=1$ și $y=1$."]
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL al II-lea",
+  "instructions": "Rezolvați următoarele exerciții.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac26m-pd-II-1",
+      "number": "1",
+      "points": 5,
+      "competency": "Calculul valorii unei legi de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = \\frac{x + y}{3} - 4$.\n\nArătați că $7 * 8 = 1$.",
+      "expectedAnswer": "$1$",
+      "hint": "Înlocuiește $x$ cu $7$ și $y$ cu $8$ în expresia legii de compoziție.",
+      "solution": [
+        "$7 * 8 = \\frac{7 + 8}{3} - 4$",
+        "$= \\frac{15}{3} - 4 = 5 - 4 = 1$"
+      ]
+    },
+    {
+      "id": "bac26m-pd-II-2",
+      "number": "2",
+      "points": 5,
+      "competency": "Rezolvarea unei ecuații cu lege de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = \\frac{x + y}{3} - 4$.\n\nDeterminați numărul real $x$ pentru care $4 * x = x$.",
+      "expectedAnswer": "$x = -4$",
+      "hint": "Aplică definiția legii de compoziție pentru $4 * x$ și egalează rezultatul cu $x$.",
+      "solution": [
+        "$4 * x = \\frac{4 + x}{3} - 4$, pentru orice număr real $x$",
+        "$\\frac{4 + x}{3} - 4 = x \\implies 4 + x = 3x + 12 \\implies 2x = -8$",
+        "Obținem $x = -4$"
+      ]
+    },
+    {
+      "id": "bac26m-pd-II-3",
+      "number": "3",
+      "points": 5,
+      "competency": "Rezolvarea unei ecuații de gradul al doilea cu lege de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = \\frac{x + y}{3} - 4$.\n\nDeterminați numerele reale $x$ pentru care $x * x^2 = 0$.",
+      "expectedAnswer": "$x = -4$ sau $x = 3$",
+      "hint": "Exprimă $x * x^2$ folosind formula legii de compoziție și rezolvă ecuația de gradul al doilea rezultată.",
+      "solution": [
+        "$x * x^2 = \\frac{x + x^2}{3} - 4 = \\frac{x^2 + x - 12}{3}$, pentru orice număr real $x$",
+        "$\\frac{x^2 + x - 12}{3} = 0 \\implies x^2 + x - 12 = 0$",
+        "Rezolvând ecuația, obținem $x = -4$ sau $x = 3$"
+      ]
+    },
+    {
+      "id": "bac26m-pd-II-4",
+      "number": "4",
+      "points": 5,
+      "competency": "Demonstrarea unei identități cu lege de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = \\frac{x + y}{3} - 4$.\n\nArătați că $(2x) * (2y) = 2 \\cdot (x * (y + 6))$, pentru orice numere reale $x$ și $y$.",
+      "expectedAnswer": "Demonstrație directă",
+      "hint": "Calculează separat membrul stâng și membrul drept al egalității folosind definiția legii de compoziție.",
+      "solution": [
+        "$(2x) * (2y) = \\frac{2x + 2y}{3} - 4$, pentru orice numere reale $x$ și $y$",
+        "$x * (y + 6) = \\frac{x + y + 6}{3} - 4 = \\frac{x + y}{3} + 2 - 4 = \\frac{x + y}{3} - 2$",
+        "$2 \\cdot (x * (y + 6)) = 2 \\cdot \\left(\\frac{x + y}{3} - 2\\right) = \\frac{2x + 2y}{3} - 4$",
+        "Deci $(2x) * (2y) = 2 \\cdot (x * (y + 6))$, pentru orice numere reale $x$ și $y$"
+      ]
+    },
+    {
+      "id": "bac26m-pd-II-5",
+      "number": "5",
+      "points": 5,
+      "competency": "Rezolvarea unei inecuații cu lege de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = \\frac{x + y}{3} - 4$.\n\nDeterminați numerele naturale $n$ pentru care $(3n) * ((2n) * n) \\le -n$.",
+      "expectedAnswer": "$n \\in \\{0, 1, 2\\}$",
+      "hint": "Calculează mai întâi paranteza interioară $(2n) * n$, apoi aplică din nou legea de compoziție.",
+      "solution": [
+        "$(2n) * n = \\frac{2n + n}{3} - 4 = n - 4$",
+        "$(3n) * ((2n) * n) = (3n) * (n - 4) = \\frac{3n + n - 4}{3} - 4 = \\frac{4n - 16}{3}$, pentru orice număr natural $n$",
+        "$\\frac{4n - 16}{3} \\le -n \\implies 4n - 16 \\le -3n \\implies 7n \\le 16$",
+        "Cum $n$ este număr natural, obținem $n = 0$, $n = 1$, $n = 2$"
+      ]
+    },
+    {
+      "id": "bac26m-pd-II-6",
+      "number": "6",
+      "points": 5,
+      "competency": "Rezolvarea unei ecuații logaritmice cu lege de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x * y = \\frac{x + y}{3} - 4$.\n\nDeterminați $x \\in (0, +\\infty)$ pentru care $\\lg x * \\lg x = (-3) * \\lg \\frac{1}{x}$.",
+      "expectedAnswer": "$x = \\frac{1}{10}$",
+      "hint": "Folosește proprietatea logaritmului $\\lg \\frac{1}{x} = -\\lg x$ și aplică legea de compoziție pentru ambii membri.",
+      "solution": [
+        "$\\lg x * \\lg x = \\frac{2\\lg x}{3} - 4$",
+        "$(-3) * \\lg \\frac{1}{x} = \\frac{-3 + \\lg \\frac{1}{x}}{3} - 4 = \\frac{-3 - \\lg x}{3} - 4$, pentru orice $x \\in (0, +\\infty)$",
+        "$\\frac{2\\lg x}{3} - 4 = \\frac{-3 - \\lg x}{3} - 4 \\implies 2\\lg x = -3 - \\lg x \\implies 3\\lg x = -3$",
+        "$\\lg x = -1$, de unde obținem $x = \\frac{1}{10}$, care convine"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Rezolvați următoarele exerciții:",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac26m-th-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Operații cu numere raționale",
+      "prompt": "Arătați că $\\frac{1}{4} + 3 \\cdot \\left( \\frac{3}{2} - \\frac{1}{4} \\right) = 4$.",
+      "expectedAnswer": "Egalitatea este adevărată.",
+      "hint": "Aduceți fracțiile din paranteză la același numitor înainte de a înmulți cu $3$.",
+      "solution": [
+        "$\\frac{1}{4} + 3 \\cdot \\left( \\frac{3}{2} - \\frac{1}{4} \\right) = \\frac{1}{4} + 3 \\cdot \\left( \\frac{6}{4} - \\frac{1}{4} \\right) =$",
+        "$= \\frac{1}{4} + 3 \\cdot \\frac{5}{4} = \\frac{1}{4} + \\frac{15}{4} = \\frac{16}{4} = 4$"
+      ]
+    },
+    {
+      "id": "bac26m-th-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Ecuații cu funcții de gradul întâi",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 4x - 9$. Determinați numărul real $a$ pentru care $f(a) = a$.",
+      "expectedAnswer": "$a = 3$",
+      "hint": "Înlocuiți $x$ cu $a$ în expresia funcției și rezolvați ecuația rezultată.",
+      "solution": [
+        "$f(a) = 4a - 9$, pentru orice număr real $a$.",
+        "Din $f(a) = a$, obținem $4a - 9 = a$.",
+        "$3a = 9$, de unde obținem $a = 3$."
+      ]
+    },
+    {
+      "id": "bac26m-th-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Ecuații iraționale",
+      "prompt": "Rezolvați în mulțimea numerelor reale ecuația $\\sqrt{2x - 1} = x$.",
+      "expectedAnswer": "$x = 1$",
+      "hint": "Ridicați ambele membre ale ecuației la pătrat și nu uitați să verificați soluția obținută.",
+      "solution": [
+        "Ridicând la pătrat ambele membre ale ecuației, obținem $2x - 1 = x^2$.",
+        "Ecuația devine $x^2 - 2x + 1 = 0$, adică $(x - 1)^2 = 0$.",
+        "Obținem $x = 1$, care convine (deoarece $\\sqrt{2(1) - 1} = 1$)."
+      ]
+    },
+    {
+      "id": "bac26m-th-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Probabilități",
+      "prompt": "Se consideră mulțimea $A = \\{1, 2, 3, 4, 5, 6, 7, 8\\}$. Determinați probabilitatea ca, alegând un număr $n$ din mulțimea $A$, numărul natural $n(n + 1)$ să fie multiplu de $10$.",
+      "expectedAnswer": "$p = \\frac{1}{4}$",
+      "hint": "Calculați $n(n+1)$ pentru fiecare element din mulțimea $A$ și numărați câte rezultate se împart exact la $10$.",
+      "solution": [
+        "Mulțimea $A$ are $8$ elemente, deci sunt $8$ cazuri posibile.",
+        "În mulțimea $A$ sunt $2$ numere $n$ pentru care numărul $n(n + 1)$ este multiplu de $10$ (acestea sunt $n = 4$, pentru care $4 \\cdot 5 = 20$, și $n = 5$, pentru care $5 \\cdot 6 = 30$).",
+        "Avem $2$ cazuri favorabile, de unde obținem probabilitatea $p = \\frac{\\text{nr. cazuri favorabile}}{\\text{nr. cazuri posibile}} = \\frac{2}{8} = \\frac{1}{4}$."
+      ]
+    },
+    {
+      "id": "bac26m-th-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Geometrie analitică",
+      "prompt": "În reperul cartezian $xOy$ se consideră punctele $A(6, 8)$, $B(8, 4)$ și $M$, mijlocul segmentului $OA$. Arătați că triunghiul $OBM$ este isoscel.",
+      "expectedAnswer": "Triunghiul $OBM$ este isoscel.",
+      "hint": "Calculați coordonatele punctului $M$ folosind formula mijlocului unui segment, apoi determinați lungimile laturilor $OM$ și $BM$.",
+      "solution": [
+        "Coordonatele mijlocului $M$ al segmentului $OA$ sunt $x_M = \\frac{x_O + x_A}{2} = \\frac{0 + 6}{2} = 3$ și $y_M = \\frac{y_O + y_A}{2} = \\frac{0 + 8}{2} = 4$, deci $M(3, 4)$.",
+        "Lungimea segmentului $OM$ este $\\sqrt{3^2 + 4^2} = \\sqrt{25} = 5$.",
+        "Lungimea segmentului $BM$ este $\\sqrt{(3 - 8)^2 + (4 - 4)^2} = \\sqrt{(-5)^2 + 0} = 5$.",
+        "Deoarece $OM = BM = 5$, obținem că triunghiul $OBM$ este isoscel."
+      ]
+    },
+    {
+      "id": "bac26m-th-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Teorema lui Pitagora",
+      "prompt": "Se consideră triunghiul $ABC$, dreptunghic în $A$, cu $AC = 6$ și $AC = 3AB$. Arătați că $BC = 2\\sqrt{10}$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Aflați lungimea catetei $AB$, apoi aplicați teorema lui Pitagora în triunghiul $ABC$.",
+      "solution": [
+        "Din relația $AC = 3AB$ și $AC = 6$, obținem $3AB = 6$, deci $AB = 2$.",
+        "Aplicând teorema lui Pitagora în triunghiul dreptunghic $ABC$, avem $BC^2 = AB^2 + AC^2$.",
+        "$BC^2 = 2^2 + 6^2 = 4 + 36 = 40$, de unde obținem $BC = \\sqrt{40} = 2\\sqrt{10}$."
+      ]
+    }
+  ]
+}

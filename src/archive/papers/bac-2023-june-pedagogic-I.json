@@ -1,0 +1,94 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Toate subiectele sunt obligatorii. Se acordă zece puncte din oficiu. Timpul de lucru efectiv este de trei ore.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac23j-pd-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Operații cu radicali",
+      "prompt": "Arătați că $\\sqrt{25} + \\sqrt{64} - \\sqrt{169} = 0$.",
+      "expectedAnswer": "$0$",
+      "hint": "Calculează valoarea fiecărui radical în parte înainte de a efectua adunarea și scăderea.",
+      "solution": [
+        "$\\sqrt{25} + \\sqrt{64} - \\sqrt{169} = 5 + 8 - 13 =$",
+        "$= 13 - 13 = 0$"
+      ]
+    },
+    {
+      "id": "bac23j-pd-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Inecuații cu funcții",
+      "prompt": "Se consideră funcțiile $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 2x + 2$, și $g : \\mathbb{R} \\to \\mathbb{R}$, $g(x) = x^2 + 2$. Determinați numerele naturale $n$ pentru care $f(n) \\ge g(n)$.",
+      "expectedAnswer": "$n \\in \\{0, 1, 2\\}$",
+      "hint": "Scrie inecuația înlocuind funcțiile cu expresiile lor și rezolvă inecuația obținută în mulțimea numerelor naturale.",
+      "solution": [
+        "Din condiția $f(n) \\ge g(n)$ obținem $2n + 2 \\ge n^2 + 2$.",
+        "Scăzând $2$ din ambele părți, rezultă $2n \\ge n^2$.",
+        "Cum $n$ este număr natural, valorile care verifică inecuația sunt $n = 0$, $n = 1$ și $n = 2$."
+      ]
+    },
+    {
+      "id": "bac23j-pd-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Ecuații logaritmice",
+      "prompt": "Rezolvați în mulțimea numerelor reale ecuația $2 + \\log_3(2x - 1) = \\log_3 27$.",
+      "expectedAnswer": "$x = 2$",
+      "hint": "Evaluează $\\log_3 27$ și izolează logaritmul care conține necunoscuta.",
+      "solution": [
+        "Știm că $\\log_3 27 = 3$. Ecuația devine $2 + \\log_3(2x - 1) = 3$.",
+        "Scăzând $2$, obținem $\\log_3(2x - 1) = 1$.",
+        "Din definiția logaritmului, rezultă $2x - 1 = 3^1$, adică $2x - 1 = 3$.",
+        "Rezolvând ecuația, obținem $2x = 4 \\implies x = 2$, care convine."
+      ]
+    },
+    {
+      "id": "bac23j-pd-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Procente",
+      "prompt": "Prețul unui obiect este de $150$ de lei. Determinați prețul obiectului după ce se scumpește de două ori, succesiv, cu câte $20\\%$.",
+      "expectedAnswer": "$216$ lei",
+      "hint": "Calculează noul preț după prima scumpire, apoi aplică a doua scumpire asupra acestui nou preț.",
+      "solution": [
+        "După prima scumpire cu $20\\%$, prețul obiectului este $150 + \\frac{20}{100} \\cdot 150 = 150 + 30 = 180$ de lei.",
+        "După a doua scumpire cu $20\\%$, prețul obiectului este $180 + \\frac{20}{100} \\cdot 180 = 180 + 36 = 216$ lei."
+      ]
+    },
+    {
+      "id": "bac23j-pd-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Geometrie analitică",
+      "prompt": "În reperul cartezian $xOy$ se consideră punctele $A(0,4)$ și $M(3,6)$. Determinați coordonatele punctului $B$, știind că punctul $M$ este mijlocul segmentului $AB$.",
+      "expectedAnswer": "$B(6, 8)$",
+      "hint": "Folosește formulele pentru coordonatele mijlocului unui segment: $x_M = \\frac{x_A + x_B}{2}$ și $y_M = \\frac{y_A + y_B}{2}$.",
+      "solution": [
+        "Deoarece $M$ este mijlocul segmentului $AB$, avem $x_M = \\frac{x_A + x_B}{2}$ și $y_M = \\frac{y_A + y_B}{2}$.",
+        "Înlocuind coordonatele cunoscute, obținem $3 = \\frac{0 + x_B}{2}$ și $6 = \\frac{4 + y_B}{2}$.",
+        "Din prima ecuație rezultă $x_B = 6$.",
+        "Din a doua ecuație rezultă $12 = 4 + y_B \\implies y_B = 8$.",
+        "Așadar, coordonatele punctului $B$ sunt $(6, 8)$."
+      ]
+    },
+    {
+      "id": "bac23j-pd-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Trigonometrie",
+      "prompt": "Arătați că $\\frac{\\sqrt{3}}{2} \\cdot \\sin 60^\\circ - \\frac{1}{\\sqrt{3}} \\cdot \\cos 30^\\circ \\cdot \\cos 60^\\circ = \\frac{1}{2}$.",
+      "expectedAnswer": "$\\frac{1}{2}$",
+      "hint": "Înlocuiește funcțiile trigonometrice cu valorile lor cunoscute și efectuează calculele.",
+      "solution": [
+        "Știm că $\\sin 60^\\circ = \\frac{\\sqrt{3}}{2}$, $\\cos 30^\\circ = \\frac{\\sqrt{3}}{2}$ și $\\cos 60^\\circ = \\frac{1}{2}$.",
+        "Înlocuind în expresie, obținem: $\\frac{\\sqrt{3}}{2} \\cdot \\frac{\\sqrt{3}}{2} - \\frac{1}{\\sqrt{3}} \\cdot \\frac{\\sqrt{3}}{2} \\cdot \\frac{1}{2}$.",
+        "Efectuând înmulțirile, expresia devine: $\\frac{3}{4} - \\frac{1}{4}$.",
+        "$\\frac{3}{4} - \\frac{1}{4} = \\frac{2}{4} = \\frac{1}{2}$."
+      ]
+    }
+  ]
+}

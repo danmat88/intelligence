@@ -3,6 +3,7 @@ import type { OfficialExercise } from '../../archive/content'
 import Press from '../../components/ui/Press'
 import RezIcon from '../../components/ui/RezIcon'
 import Txt from '../../components/ui/Txt'
+import MathRichText from '../../components/ui/MathRichText'
 import { useTheme } from '../../theme/ThemeProvider'
 
 type Props = {
@@ -46,9 +47,9 @@ export default function OfficialChoiceGrid({
                 {option.id.toUpperCase()}
               </Txt>
             </View>
-            <Txt weight="bold" size={14} color={c.text} style={styles.copy}>
-              {option.label}
-            </Txt>
+            <View style={styles.copy}>
+              <MathRichText text={option.label} size={14} weight={600} />
+            </View>
             {correct && <RezIcon name="check" size={18} color={c.success} />}
           </Press>
         )
@@ -61,11 +62,12 @@ const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 14 },
   option: {
     alignItems: 'center',
-    borderRadius: 15,
-    borderWidth: 1.5,
+    borderRadius: 18,
+    borderWidth: 2.5,
+    borderBottomWidth: 5,
     flexDirection: 'row',
     gap: 8,
-    minHeight: 52,
+    minHeight: 56,
     padding: 7,
     width: '48.7%',
   },

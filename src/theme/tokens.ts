@@ -1,9 +1,9 @@
 /**
  * Design tokens — the single source of truth for the whole app's look.
  * Direction: "notebook, chalk, sticker." Warm exercise-book paper, navy ink,
- * tomato actions, school-bus yellow and chalk green make Profu' de Mate feel
- * like an animated classroom. Space Grotesk carries display/headers, Inter
- * runs the UI, JetBrains Mono does labels and Fraunces carries math character.
+ * tomato actions, school-bus yellow and chalk green keep the product playful
+ * without sacrificing hierarchy or readability. Nunito runs the interface,
+ * Fraunces carries mathematical reading, and JetBrains Mono labels evidence.
  */
 
 export type Theme = {
@@ -60,45 +60,45 @@ export type Theme = {
     serifItalic: string
     /** JetBrains Mono — labels, step numbers, technical bits. */
     mono: string
+    /** Kalam — handwritten accent used only in the brand lockup. */
+    handwritten: string
   }
 }
 
-const BRAND = ['#F06A4D', '#E84B3A']
-
 export const theme: Theme = {
   colors: {
-    bg: '#F0F8FF',
+    bg: '#FFF8E7',
     bgElevated: '#FFFFFF',
     surface: '#FFFFFF',
-    surfaceAlt: '#E1F5FE',
-    border: '#0A1C2E',
-    text: '#0A1C2E',
-    textMuted: '#4F7FA8',
-    textFaint: '#8DA9C4',
-    accent: '#FF5722',
-    accentSoft: '#FFCCBC',
+    surfaceAlt: '#F7EAC7',
+    border: '#193149',
+    text: '#193149',
+    textMuted: '#587087',
+    textFaint: '#8DA0B0',
+    accent: '#E9543D',
+    accentSoft: '#FFE1D8',
     onAccent: '#FFFFFF',
-    sunny: '#FFC107',
-    sunnySoft: '#FFF8E1',
-    chalk: '#4CAF50',
-    chalkDark: '#388E3C',
-    danger: '#F44336',
-    dangerSoft: '#FFEBEE',
-    success: '#4CAF50',
-    successSoft: '#E8F5E9',
-    bubblyRed: '#FF5252',
-    bubblyRedDark: '#D32F2F',
-    bubblyGreen: '#4CAF50',
-    bubblyGreenDark: '#388E3C',
-    bubblyBlue: '#03A9F4',
-    bubblyBlueDark: '#0288D1',
-    bubblyYellow: '#FFC107',
-    bubblyYellowDark: '#FFA000',
-    cardEdge: '#0A1C2E',
+    sunny: '#FFC800',
+    sunnySoft: '#FFF3BF',
+    chalk: '#46A302',
+    chalkDark: '#327A00',
+    danger: '#EA2B2B',
+    dangerSoft: '#FFE4E4',
+    success: '#46A302',
+    successSoft: '#E8F7D8',
+    bubblyRed: '#FF4B4B',
+    bubblyRedDark: '#C92B2B',
+    bubblyGreen: '#58CC02',
+    bubblyGreenDark: '#3D9200',
+    bubblyBlue: '#1CB0F6',
+    bubblyBlueDark: '#147EAF',
+    bubblyYellow: '#FFC800',
+    bubblyYellowDark: '#C89400',
+    cardEdge: '#193149',
   },
   gradient: {
-    brand: ['#FF9800', '#FF5722'],
-    surface: ['#FFFFFF', '#E1F5FE'],
+    brand: ['#F06A4D', '#E9543D'],
+    surface: ['#FFFFFF', '#FFF8E7'],
   },
   radius: { sm: 16, md: 24, lg: 32, xl: 40, pill: 999 },
   space: (n: number) => n * 4,
@@ -113,5 +113,6 @@ export const theme: Theme = {
     serif: 'Fraunces_600SemiBold',
     serifItalic: 'Fraunces_600SemiBold_Italic',
     mono: 'JetBrainsMono_500Medium',
+    handwritten: 'Kalam_700Bold',
   },
 }

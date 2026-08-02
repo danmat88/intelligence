@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native'
 import type { OfficialExercise } from '../../archive/content'
 import Txt from '../../components/ui/Txt'
+import MathRichText from '../../components/ui/MathRichText'
 import { useTheme } from '../../theme/ThemeProvider'
 
 export default function OfficialSolution({ exercise }: { exercise: OfficialExercise }) {
@@ -15,20 +16,23 @@ export default function OfficialSolution({ exercise }: { exercise: OfficialExerc
           <View style={[styles.number, { backgroundColor: c.chalk }]}>
             <Txt weight="bold" size={10.5} color="#FFFFFF">{index + 1}</Txt>
           </View>
-          <Txt size={13.5} color={c.text} style={styles.copy}>{step}</Txt>
+          <View style={styles.copy}><MathRichText text={step} size={13.5} /></View>
         </View>
       ))}
       <View style={[styles.answer, { backgroundColor: c.successSoft }]}>
-        <Txt weight="bold" size={12.5} color={c.chalk}>
-          Răspuns: {exercise.expectedAnswer}
-        </Txt>
+        <MathRichText
+          text={`**Răspuns:** ${exercise.expectedAnswer}`}
+          size={12.5}
+          color={c.chalk}
+          weight={600}
+        />
       </View>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
-  solution: { borderRadius: 18, borderWidth: 1.5, gap: 12, marginTop: 10, padding: 15 },
+  solution: { borderRadius: 24, borderWidth: 3, borderBottomWidth: 7, gap: 12, marginTop: 10, padding: 15 },
   step: { alignItems: 'flex-start', flexDirection: 'row', gap: 10 },
   number: { alignItems: 'center', borderRadius: 99, height: 23, justifyContent: 'center', marginTop: 1, width: 23 },
   copy: { flex: 1, lineHeight: 21 },

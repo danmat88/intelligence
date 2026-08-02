@@ -1,0 +1,103 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Toate subiectele sunt obligatorii. Se acordă zece puncte din oficiu. Timpul de lucru efectiv este de trei ore.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac26m-mi-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Progresii aritmetice",
+      "prompt": "Determinați numărul real $x$ pentru care numerele $x$, $8$ și $2x + 1$ sunt, în această ordine, termeni consecutivi ai unei progresii aritmetice.",
+      "expectedAnswer": "$x = 5$",
+      "hint": "Trei numere sunt în progresie aritmetică dacă cel din mijloc este media aritmetică a celorlalte două.",
+      "solution": [
+        "Din condiția ca numerele să fie în progresie aritmetică, avem $\\frac{x + 2x + 1}{2} = 8$.",
+        "Rezolvând ecuația, obținem $3x + 1 = 16$.",
+        "Rezultă $3x = 15$, de unde $x = 5$."
+      ]
+    },
+    {
+      "id": "bac26m-mi-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Funcții și compunerea funcțiilor",
+      "prompt": "Se consideră funcțiile $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 2x + 1$ și $g : \\mathbb{R} \\to \\mathbb{R}$, $g(x) = x + 4$. Determinați numărul real $a$ pentru care $(f \\circ g)(a) = -a$.",
+      "expectedAnswer": "$a = -3$",
+      "hint": "Calculează mai întâi expresia funcției compuse $(f \\circ g)(a) = f(g(a))$.",
+      "solution": [
+        "Calculăm $g(a) = a + 4$.",
+        "Atunci $(f \\circ g)(a) = f(g(a)) = 2(a + 4) + 1 = 2a + 9$, pentru orice număr real $a$.",
+        "Din ipoteză, $2a + 9 = -a$.",
+        "Obținem $3a = -9$, de unde $a = -3$."
+      ]
+    },
+    {
+      "id": "bac26m-mi-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Ecuații logaritmice",
+      "prompt": "Rezolvați în mulțimea numerelor reale ecuația $2\\log_5 x = \\log_5 (4x + 5)$.",
+      "expectedAnswer": "$x = 5$",
+      "hint": "Folosește proprietatea logaritmilor $n \\log_a b = \\log_a (b^n)$ și apoi egalează argumentele, ținând cont de condițiile de existență.",
+      "solution": [
+        "Condițiile de existență pentru logaritmi sunt $x > 0$ și $4x + 5 > 0$, de unde rezultă $x \\in (0, +\\infty)$.",
+        "Folosind proprietățile logaritmilor, ecuația devine $\\log_5 x^2 = \\log_5 (4x + 5)$.",
+        "Egalând argumentele, obținem $x^2 = 4x + 5$, adică $x^2 - 4x - 5 = 0$.",
+        "Rezolvând ecuația de gradul al doilea, găsim soluțiile $x = -1$ și $x = 5$.",
+        "Deoarece $x = -1$ nu convine condițiilor de existență, singura soluție este $x = 5$."
+      ]
+    },
+    {
+      "id": "bac26m-mi-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Probleme de numărare",
+      "prompt": "Se consideră mulțimea $A = \\{1, 3, 5, 7, 8\\}$. Determinați câte numere naturale de două cifre distincte, cu cifra zecilor impară, se pot forma cu cifre din mulțimea $A$.",
+      "expectedAnswer": "$16$ numere",
+      "hint": "Analizează pe rând în câte moduri poți alege cifra zecilor (care trebuie să fie impară) și apoi cifra unităților (care trebuie să fie diferită de cifra zecilor).",
+      "solution": [
+        "Căutăm numere de forma $\\overline{ab}$ cu $a, b \\in A$, $a \\neq b$ și $a$ impar.",
+        "Cifra zecilor, $a$, poate fi aleasă din submulțimea elementelor impare ale lui $A$, adică $\\{1, 3, 5, 7\\}$. Deci $a$ se poate alege în $4$ moduri.",
+        "Pentru fiecare alegere a cifrei zecilor, cifra unităților, $b$, poate fi orice element din $A$ diferit de $a$. Cum $A$ are $5$ elemente, $b$ se poate alege în $5 - 1 = 4$ moduri.",
+        "Conform regulii produsului, se pot forma $4 \\cdot 4 = 16$ numere."
+      ]
+    },
+    {
+      "id": "bac26m-mi-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Vectori în planul cartezian",
+      "prompt": "În reperul cartezian $xOy$ se consideră punctele $A(0, 5)$ și $B(3, 4)$. Determinați coordonatele punctului $C$ pentru care $3\\overrightarrow{OC} = \\overrightarrow{OA} + \\overrightarrow{OB}$.",
+      "expectedAnswer": "$C(1, 3)$",
+      "hint": "Exprimă vectorii de poziție $\\overrightarrow{OA}$ și $\\overrightarrow{OB}$ cu ajutorul versorilor $\\vec{i}$ și $\\vec{j}$, apoi calculează suma lor.",
+      "solution": [
+        "Vectorii de poziție ai punctelor $A$ și $B$ sunt $\\overrightarrow{OA} = 5\\vec{j}$ și $\\overrightarrow{OB} = 3\\vec{i} + 4\\vec{j}$.",
+        "Calculăm suma lor: $\\overrightarrow{OA} + \\overrightarrow{OB} = 3\\vec{i} + 9\\vec{j}$.",
+        "Din relația dată, $\\overrightarrow{OC} = \\frac{1}{3}(\\overrightarrow{OA} + \\overrightarrow{OB})$.",
+        "Obținem $\\overrightarrow{OC} = \\frac{1}{3}(3\\vec{i} + 9\\vec{j}) = \\vec{i} + 3\\vec{j}$.",
+        "Prin urmare, coordonatele punctului $C$ sunt $(1, 3)$."
+      ]
+    },
+    {
+      "id": "bac26m-mi-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Geometrie și trigonometrie",
+      "prompt": "Se consideră triunghiul $ABC$, cu $A = \\frac{\\pi}{2}$, $C = \\frac{\\pi}{3}$ și $AE = 2$, unde $E$ este punctul în care bisectoarea unghiului $C$ intersectează latura $AB$. Arătați că distanța de la punctul $B$ la dreapta $CE$ este egală cu $2\\sqrt{3}$.",
+      "expectedAnswer": "$2\\sqrt{3}$",
+      "hint": "Observă că triunghiul $EBC$ este isoscel și folosește funcțiile trigonometrice în triunghiul dreptunghic $CAE$ pentru a afla lungimea catetei $AC$.",
+      "solution": [
+        "Deoarece $CE$ este bisectoarea unghiului $C$, avem $\\widehat{ACE} = \\widehat{ECB} = \\frac{1}{2} \\cdot \\frac{\\pi}{3} = \\frac{\\pi}{6}$.",
+        "În triunghiul dreptunghic $ABC$, unghiul $B$ este $\\frac{\\pi}{2} - \\frac{\\pi}{3} = \\frac{\\pi}{6}$.",
+        "Așadar, $\\widehat{ECB} = \\widehat{EBC} = \\frac{\\pi}{6}$, deci triunghiul $EBC$ este isoscel cu $EB = EC$.",
+        "Distanța de la $B$ la dreapta $CE$ și distanța de la $C$ la dreapta $BE$ sunt înălțimi corespunzătoare laturilor congruente în triunghiul isoscel $EBC$, deci sunt egale: $d(B, CE) = d(C, BE)$.",
+        "Cum $CA \\perp AB$ și $E \\in AB$, distanța de la $C$ la dreapta $BE$ este chiar lungimea catetei $CA$.",
+        "În triunghiul dreptunghic $CAE$, $\\text{tg}(\\widehat{ACE}) = \\frac{AE}{AC}$.",
+        "Obținem $\\text{tg}\\left(\\frac{\\pi}{6}\\right) = \\frac{2}{AC}$, adică $\\frac{1}{\\sqrt{3}} = \\frac{2}{AC}$, de unde $AC = 2\\sqrt{3}$.",
+        "În concluzie, $d(B, CE) = 2\\sqrt{3}$."
+      ]
+    }
+  ]
+}

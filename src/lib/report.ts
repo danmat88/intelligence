@@ -1,4 +1,5 @@
 import { getCrashlytics, log, recordError } from '@react-native-firebase/crashlytics'
+import { isTelemetryEnabled } from './telemetry'
 
 /**
  * Background failures must be VISIBLE (Crashlytics non-fatals), never silent:
@@ -7,6 +8,7 @@ import { getCrashlytics, log, recordError } from '@react-native-firebase/crashly
  * safe to call from inside any catch.
  */
 export function reportNonFatal(e: unknown, context: string): void {
+  if (!isTelemetryEnabled()) return
   try {
     const c = getCrashlytics()
     log(c, `[nonfatal] ${context}`)

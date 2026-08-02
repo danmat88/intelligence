@@ -13,28 +13,22 @@ export type { AIClient, AIResult, GenerateOptions } from './types'
  * Function proxy, authenticated with the signed-in user's Firebase ID token.
  * The Gemini API key lives ONLY on the server - nothing to extract from the APK.
  *
- * Dev fallback (no proxy URL): talks straight to Gemini with the local .env
- * key, so the app still works before the backend is deployed.
+ * Even development builds use the proxy. A raw Gemini key is never referenced
+ * by app code and therefore cannot be bundled into an APK.
  */
 const proxyUrl = process.env.EXPO_PUBLIC_AI_PROXY_URL ?? ''
-// The dev fallback key is referenced ONLY under __DEV__: in release bundles
-// the branch folds to '' and the minifier strips the inlined literal, so the
-// raw key can never ship inside an APK (verified by grepping the bundle).
-const apiKey = __DEV__ ? (process.env.EXPO_PUBLIC_GEMINI_API_KEY ?? '') : ''
-const model = process.env.EXPO_PUBLIC_GEMINI_MODEL ?? 'gemini-flash-latest'
+const model = process.env.EXPO_PUBLIC_GEMINI_MODEL ?? 'gemini-3.1-flash-lite'
 
-export const ai = proxyUrl
-  ? createGeminiClient({
-      model,
-      baseUrl: proxyUrl,
-      getAuthToken: async () => (await getAuth().currentUser?.getIdToken()) ?? null,
-      getDeviceId: getInstallId, // guests are capped per install, not per (disposable) uid
-      getAppCheckToken, // attestation header; proxy is monitor-only until enforced
-    })
-  : createGeminiClient({ apiKey, model })
+export const ai = createGeminiClient({
+  model,
+  baseUrl: proxyUrl || 'https://proxy-not-configured.invalid',
+  getAuthToken: async () => (await getAuth().currentUser?.getIdToken()) ?? null,
+  getDeviceId: getInstallId, // guests are capped per install, not per (disposable) uid
+  getAppCheckToken, // required by the production proxy
+})
 
 /** True once a key or proxy is present — lets the UI nudge you to set one up. */
-export const AI_CONFIGURED = proxyUrl.length > 0 || apiKey.length > 0
+export const AI_CONFIGURED = proxyUrl.length > 0
 
 /** Which model the app is currently pointed at (for display/debug). */
 export const AI_MODEL = model

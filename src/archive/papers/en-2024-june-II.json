@@ -1,0 +1,216 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL al II-lea",
+  "instructions": "Încercuiește litera corespunzătoare răspunsului corect.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "en24j-II-1",
+      "number": "II.1",
+      "points": 5,
+      "competency": "Calculul lungimii unui segment",
+      "prompt": "În figura alăturată punctele $A$, $B$, $C$ și $D$ sunt coliniare, în această ordine, astfel încât $BC = 4\\text{ cm}$, $AD = 4 \\cdot BC$ și $AB = CD$. Lungimea segmentului $AB$ este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$4\\text{ cm}$"
+        },
+        {
+          "id": "b",
+          "label": "$6\\text{ cm}$"
+        },
+        {
+          "id": "c",
+          "label": "$8\\text{ cm}$"
+        },
+        {
+          "id": "d",
+          "label": "$12\\text{ cm}$"
+        }
+      ],
+      "correctOption": "b",
+      "expectedAnswer": "$6\\text{ cm}$",
+      "hint": "Exprimă lungimea segmentului $AD$ ca suma lungimilor segmentelor $AB$, $BC$ și $CD$.",
+      "solution": [
+        "$AD = 4 \\cdot BC = 4 \\cdot 4\\text{ cm} = 16\\text{ cm}$.",
+        "Punctele $A$, $B$, $C$, $D$ sunt coliniare, deci $AD = AB + BC + CD$.",
+        "Cum $AB = CD$, obținem $AD = 2 \\cdot AB + BC$.",
+        "$16 = 2 \\cdot AB + 4 \\implies 2 \\cdot AB = 12 \\implies AB = 6\\text{ cm}$."
+      ],
+      "figureDescription": "Un segment cu punctele A, B, C, D coliniare în această ordine."
+    },
+    {
+      "id": "en24j-II-2",
+      "number": "II.2",
+      "points": 5,
+      "competency": "Calculul măsurii unui unghi exterior unui triunghi",
+      "prompt": "În figura alăturată este reprezentat triunghiul isoscel $ABC$, cu $AB = AC$ și măsura unghiului $C$ egală cu $40^\\circ$. Punctele $B$, $A$ și $D$ sunt coliniare, în această ordine. Măsura unghiului $CAD$ este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$40^\\circ$"
+        },
+        {
+          "id": "b",
+          "label": "$60^\\circ$"
+        },
+        {
+          "id": "c",
+          "label": "$80^\\circ$"
+        },
+        {
+          "id": "d",
+          "label": "$100^\\circ$"
+        }
+      ],
+      "correctOption": "c",
+      "expectedAnswer": "$80^\\circ$",
+      "hint": "Măsura unui unghi exterior unui triunghi este egală cu suma măsurilor unghiurilor interioare neadiacente lui.",
+      "solution": [
+        "Triunghiul $ABC$ este isoscel cu $AB = AC$, deci $\\sphericalangle B = \\sphericalangle C = 40^\\circ$.",
+        "Unghiul $CAD$ este unghi exterior triunghiului $ABC$.",
+        "Măsura unghiului $CAD$ este egală cu $\\sphericalangle B + \\sphericalangle C = 40^\\circ + 40^\\circ = 80^\\circ$."
+      ],
+      "figureDescription": "Triunghiul isoscel ABC cu baza BC. Latura BA este prelungită dincolo de A până la un punct D, formând unghiul exterior CAD."
+    },
+    {
+      "id": "en24j-II-3",
+      "number": "II.3",
+      "points": 5,
+      "competency": "Proprietățile paralelogramului",
+      "prompt": "În figura alăturată este reprezentat triunghiul $ABC$ cu măsura unghiului $A$ egală cu $43^\\circ$ și măsura unghiului $C$ egală cu $51^\\circ$. Punctele $M$, $N$ și $P$ aparțin laturilor $AC$, $AB$ respectiv $BC$, astfel încât dreapta $MN$ este paralelă cu dreapta $BC$ și dreapta $MP$ este paralelă cu dreapta $AB$. Măsura unghiului $NMP$ este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$43^\\circ$"
+        },
+        {
+          "id": "b",
+          "label": "$51^\\circ$"
+        },
+        {
+          "id": "c",
+          "label": "$86^\\circ$"
+        },
+        {
+          "id": "d",
+          "label": "$94^\\circ$"
+        }
+      ],
+      "correctOption": "c",
+      "expectedAnswer": "$86^\\circ$",
+      "hint": "Demonstrează că patrulaterul $NMPB$ este un paralelogram și folosește proprietatea unghiurilor opuse.",
+      "solution": [
+        "În triunghiul $ABC$, suma măsurilor unghiurilor este $180^\\circ$, deci $\\sphericalangle B = 180^\\circ - (\\sphericalangle A + \\sphericalangle C) = 180^\\circ - (43^\\circ + 51^\\circ) = 180^\\circ - 94^\\circ = 86^\\circ$.",
+        "Deoarece $MN \\parallel BC$ (deci $MN \\parallel BP$) și $MP \\parallel AB$ (deci $MP \\parallel NB$), patrulaterul $NMPB$ este paralelogram.",
+        "Într-un paralelogram, unghiurile opuse sunt congruente, așadar $\\sphericalangle NMP = \\sphericalangle NBP = \\sphericalangle B = 86^\\circ$."
+      ],
+      "figureDescription": "Triunghiul ABC cu punctele M pe AC, N pe AB și P pe BC. Segmentele MN și MP formează patrulaterul NMPB."
+    },
+    {
+      "id": "en24j-II-4",
+      "number": "II.4",
+      "points": 5,
+      "competency": "Aria paralelogramului și a triunghiului",
+      "prompt": "În figura alăturată este reprezentat paralelogramul $ABCD$. Punctul $M$ este mijlocul segmentului $AB$ și aria triunghiului $ACM$ este egală cu $10\\text{ cm}^2$. Aria paralelogramului $ABCD$ este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$10\\text{ cm}^2$"
+        },
+        {
+          "id": "b",
+          "label": "$20\\text{ cm}^2$"
+        },
+        {
+          "id": "c",
+          "label": "$30\\text{ cm}^2$"
+        },
+        {
+          "id": "d",
+          "label": "$40\\text{ cm}^2$"
+        }
+      ],
+      "correctOption": "d",
+      "expectedAnswer": "$40\\text{ cm}^2$",
+      "hint": "Compară baza și înălțimea triunghiului $ACM$ cu baza și înălțimea paralelogramului $ABCD$.",
+      "solution": [
+        "Fie $h$ distanța de la punctul $C$ la dreapta $AB$, care reprezintă atât înălțimea triunghiului $ACM$, cât și înălțimea paralelogramului $ABCD$.",
+        "Aria triunghiului $ACM$ este $\\frac{AM \\cdot h}{2} = 10\\text{ cm}^2$, deci $AM \\cdot h = 20\\text{ cm}^2$.",
+        "Punctul $M$ este mijlocul lui $AB$, deci $AB = 2 \\cdot AM$.",
+        "Aria paralelogramului $ABCD$ este $AB \\cdot h = 2 \\cdot AM \\cdot h = 2 \\cdot 20\\text{ cm}^2 = 40\\text{ cm}^2$."
+      ],
+      "figureDescription": "Paralelogramul ABCD cu punctul M pe latura AB. Sunt trasate segmentele CM și CA, formând triunghiul ACM."
+    },
+    {
+      "id": "en24j-II-5",
+      "number": "II.5",
+      "points": 5,
+      "competency": "Calculul lungimii unei coarde într-un cerc",
+      "prompt": "În figura alăturată este reprezentat cercul cu centrul în punctul $O$ și raza egală cu $6\\text{ cm}$. Punctele $A$, $B$ și $C$ aparțin cercului, $AC$ este diametru și măsura unghiului $BAC$ este egală cu $30^\\circ$. Lungimea coardei $BC$ este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$6\\text{ cm}$"
+        },
+        {
+          "id": "b",
+          "label": "$6\\sqrt{3}\\text{ cm}$"
+        },
+        {
+          "id": "c",
+          "label": "$12\\text{ cm}$"
+        },
+        {
+          "id": "d",
+          "label": "$8\\sqrt{3}\\text{ cm}$"
+        }
+      ],
+      "correctOption": "a",
+      "expectedAnswer": "$6\\text{ cm}$",
+      "hint": "Un triunghi înscris într-un cerc care are o latură diametru este dreptunghic. Folosește teorema unghiului de $30^\\circ$.",
+      "solution": [
+        "Deoarece $AC$ este diametru, triunghiul $ABC$ este dreptunghic în $B$ (măsura unghiului înscris într-un semicerc este de $90^\\circ$).",
+        "Lungimea ipotenuzei $AC$ este $2 \\cdot R = 2 \\cdot 6\\text{ cm} = 12\\text{ cm}$.",
+        "În triunghiul dreptunghic $ABC$, cateta $BC$ se opune unghiului de $30^\\circ$ ($\\sphericalangle BAC = 30^\\circ$).",
+        "Conform teoremei unghiului de $30^\\circ$, $BC = \\frac{AC}{2} = \\frac{12}{2} = 6\\text{ cm}$."
+      ],
+      "figureDescription": "Un cerc cu centrul O. Punctele A, B, C sunt pe cerc, AC trece prin O. Este desenat triunghiul ABC."
+    },
+    {
+      "id": "en24j-II-6",
+      "number": "II.6",
+      "points": 5,
+      "competency": "Unghiul a două drepte în spațiu",
+      "prompt": "În figura alăturată este reprezentat cubul $ABCDA'B'C'D'$. Unghiul dreptelor $AC$ și $A'D$ are măsura egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$45^\\circ$"
+        },
+        {
+          "id": "b",
+          "label": "$60^\\circ$"
+        },
+        {
+          "id": "c",
+          "label": "$90^\\circ$"
+        },
+        {
+          "id": "d",
+          "label": "$120^\\circ$"
+        }
+      ],
+      "correctOption": "b",
+      "expectedAnswer": "$60^\\circ$",
+      "hint": "Găsește o dreaptă paralelă cu $A'D$ care să se intersecteze cu $AC$ pentru a determina unghiul cerut.",
+      "solution": [
+        "În cubul $ABCDA'B'C'D'$, fețele opuse sunt paralele, deci $A'D \\parallel B'C$.",
+        "Unghiul dintre dreptele $AC$ și $A'D$ este egal cu unghiul dintre dreptele $AC$ și $B'C$, adică unghiul $\\sphericalangle ACB'$.",
+        "Segmentele $AC$, $AB'$ și $B'C$ sunt diagonale ale fețelor cubului, deci au lungimi egale.",
+        "Triunghiul $AB'C$ este echilateral, prin urmare măsura unghiului $\\sphericalangle ACB'$ este de $60^\\circ$."
+      ],
+      "figureDescription": "Cubul ABCDA'B'C'D' cu diagonala bazei AC și diagonala feței laterale A'D trasate."
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import { getAnalytics, logEvent } from '@react-native-firebase/analytics'
+import { isTelemetryEnabled } from './telemetry'
 
 /**
  * One-line product telemetry: `track('limit_hit', { kind: 'solve' })`.
@@ -18,6 +19,7 @@ import { getAnalytics, logEvent } from '@react-native-firebase/analytics'
  *   content_report {problem}    · user flagged AI output (Play AI-content policy)
  */
 export function track(name: string, params?: Record<string, string | number | boolean>) {
+  if (!isTelemetryEnabled()) return
   try {
     void logEvent(getAnalytics(), name, params).catch(() => {})
   } catch {

@@ -13,8 +13,9 @@ import {
   updateProfile,
 } from '@react-native-firebase/auth'
 import { clearLocalImages } from '../solve/imageStore'
-import { migrateGuestWork, deleteAccountOnServer } from './accountApi'
+import { migrateGuestWork, deleteAccountOnServer, exportAccountData, type AccountExport } from './accountApi'
 import { reportNonFatal } from '../lib/report'
+import { resetInstallId } from '../lib/installId'
 import { useI18n } from '../i18n'
 import {
   GoogleSignin,
@@ -44,8 +45,10 @@ type AuthContextValue = {
   /** Start an anonymous (guest) session — solve first, sign in later. */
   signInGuest: () => Promise<void>
   signOut: () => Promise<void>
-  /** Permanently removes the account and every chat. Throws on failure. */
+  /** Permanently removes the account/session and all of its cloud data. */
   deleteAccount: () => Promise<void>
+  /** Portable snapshot of all cloud data plus short-lived photo links. */
+  exportAccount: () => Promise<AccountExport>
   /** How many guest problems were just carried into an existing account on
    *  sign-in (null when nothing was carried). Cleared once surfaced. */
   carried: number | null
@@ -229,18 +232,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const fbUser = getAuth().currentUser
       if (!fbUser) return
 
-      // Destruction demands proof of recent presence: get a fresh Google
-      // credential (silently when possible), re-authenticate, then force-mint
-      // an ID token so it carries the new auth_time — the server rejects
-      // deletion on sign-ins older than 5 minutes.
-      try {
-        await GoogleSignin.signInSilently()
-      } catch {
-        await GoogleSignin.hasPlayServices()
-        await GoogleSignin.signIn()
+      // Named accounts must prove recent presence. Anonymous sessions have no
+      // external identity to re-authenticate; possession of their current
+      // Firebase session is the only available proof and the server accepts it.
+      if (!fbUser.isAnonymous) {
+        try {
+          await GoogleSignin.signInSilently()
+        } catch {
+          await GoogleSignin.hasPlayServices()
+          await GoogleSignin.signIn()
+        }
+        const { idToken, accessToken } = await GoogleSignin.getTokens()
+        await reauthenticateWithCredential(fbUser, GoogleAuthProvider.credential(idToken, accessToken))
       }
-      const { idToken, accessToken } = await GoogleSignin.getTokens()
-      await reauthenticateWithCredential(fbUser, GoogleAuthProvider.credential(idToken, accessToken))
       const freshToken = await getIdToken(fbUser, true)
 
       // The server (Admin SDK) wipes EVERYTHING in one place — Storage,
@@ -250,6 +254,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // The account is gone server-side; drop every local trace and session.
       await clearLocalImages()
+      await resetInstallId()
       try {
         await GoogleSignin.signOut()
       } catch {
@@ -258,6 +263,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Local session only — the user record is already deleted. Signing out
       // fires onAuthStateChanged(null) -> a fresh guest session attaches.
       await firebaseSignOut(getAuth()).catch(() => {})
+    }
+
+    const exportAccount = async () => {
+      const current = getAuth().currentUser
+      if (!current) throw new Error('No authenticated user')
+      return exportAccountData(await getIdToken(current))
     }
 
     return {
@@ -269,6 +280,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signInGuest,
       signOut,
       deleteAccount,
+      exportAccount,
       carried,
       clearCarried: () => setCarried(null),
     }

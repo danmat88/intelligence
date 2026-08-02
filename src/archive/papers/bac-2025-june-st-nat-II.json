@@ -1,0 +1,86 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL al II-lea",
+  "instructions": "Rezolvați următoarele probleme.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac25j-sn-II-1",
+      "number": "II.1.a",
+      "points": 5,
+      "competency": "Determinantul unei matrice",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$ și $A = \\begin{pmatrix} -2 & 8 \\\\ -1 & 3 \\end{pmatrix}$.\n\na) Arătați că $\\det A = 2$.",
+      "expectedAnswer": "$\\det A = 2$",
+      "hint": "Folosiți formula determinantului pentru o matrice de ordinul 2: $\\det \\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix} = ad - bc$.",
+      "solution": [
+        "$\\det A = \\begin{vmatrix} -2 & 8 \\\\ -1 & 3 \\end{vmatrix} = (-2) \\cdot 3 - 8 \\cdot (-1)$",
+        "$= -6 + 8 = 2$"
+      ]
+    },
+    {
+      "id": "bac25j-sn-II-2",
+      "number": "II.1.b",
+      "points": 5,
+      "competency": "Inversa unei matrice",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$ și $A = \\begin{pmatrix} -2 & 8 \\\\ -1 & 3 \\end{pmatrix}$.\n\nb) Arătați că matricea $B = \\frac{1}{2}(I_2 - A)$ este inversa matricei $A$.",
+      "expectedAnswer": "$A \\cdot B = B \\cdot A = I_2$",
+      "hint": "Verificați dacă $A \\cdot B = I_2$ și $B \\cdot A = I_2$.",
+      "solution": [
+        "$I_2 - A = \\begin{pmatrix} 3 & -8 \\\\ 1 & -2 \\end{pmatrix}$, $B = \\begin{pmatrix} \\frac{3}{2} & -4 \\\\ \\frac{1}{2} & -1 \\end{pmatrix}$",
+        "$A \\cdot B = B \\cdot A = I_2$, deci matricea $B$ este inversa matricei $A$."
+      ]
+    },
+    {
+      "id": "bac25j-sn-II-3",
+      "number": "II.1.c",
+      "points": 5,
+      "competency": "Ecuații matriceale",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$ și $A = \\begin{pmatrix} -2 & 8 \\\\ -1 & 3 \\end{pmatrix}$.\n\nc) Determinați matricea $X \\in \\mathcal{M}_2(\\mathbb{R})$ pentru care $(A - I_2) \\cdot X = 2A$.",
+      "expectedAnswer": "$X = \\begin{pmatrix} 4 & -8 \\\\ 1 & -1 \\end{pmatrix}$",
+      "hint": "Exprimați $A - I_2$ în funcție de $A^{-1}$ folosind rezultatul de la punctul anterior.",
+      "solution": [
+        "Cum $A - I_2 = -2A^{-1}$, obținem $-2A^{-1} \\cdot X = 2A$, deci $X = -A \\cdot A$.",
+        "$X = \\begin{pmatrix} 4 & -8 \\\\ 1 & -1 \\end{pmatrix}$"
+      ]
+    },
+    {
+      "id": "bac25j-sn-II-4",
+      "number": "II.2.a",
+      "points": 5,
+      "competency": "Calculul valorii unei legi de compoziție",
+      "prompt": "Pe mulțimea $M = [0, +\\infty)$ se definește legea de compoziție $x * y = x + y - \\sqrt{xy}$.\n\na) Arătați că $1 * 4 = 3$.",
+      "expectedAnswer": "$3$",
+      "hint": "Înlocuiți $x$ cu $1$ și $y$ cu $4$ în definiția legii de compoziție.",
+      "solution": [
+        "$1 * 4 = 1 + 4 - \\sqrt{1 \\cdot 4}$",
+        "$= 5 - 2 = 3$"
+      ]
+    },
+    {
+      "id": "bac25j-sn-II-5",
+      "number": "II.2.b",
+      "points": 5,
+      "competency": "Ecuații cu legi de compoziție",
+      "prompt": "Pe mulțimea $M = [0, +\\infty)$ se definește legea de compoziție $x * y = x + y - \\sqrt{xy}$.\n\nb) Determinați $x \\in M$ pentru care $x * (9x) = x^2$.",
+      "expectedAnswer": "$x \\in \\{0, 7\\}$",
+      "hint": "Calculați $x * (9x)$ folosind definiția legii de compoziție, ținând cont că $x \\ge 0$.",
+      "solution": [
+        "$x * (9x) = x + 9x - \\sqrt{9x^2} = 7x$, pentru orice $x \\in M$.",
+        "$7x = x^2$, de unde obținem $x = 0$ sau $x = 7$, care convin."
+      ]
+    },
+    {
+      "id": "bac25j-sn-II-6",
+      "number": "II.2.c",
+      "points": 5,
+      "competency": "Ecuații exponențiale cu legi de compoziție",
+      "prompt": "Pe mulțimea $M = [0, +\\infty)$ se definește legea de compoziție $x * y = x + y - \\sqrt{xy}$.\n\nc) Determinați numărul real $x$ pentru care $2^x * 2^{x+2} = 6^x$.",
+      "expectedAnswer": "$x = 1$",
+      "hint": "Aplicați legea de compoziție pentru $2^x$ și $2^{x+2}$, apoi rezolvați ecuația exponențială rezultată.",
+      "solution": [
+        "$2^x * 2^{x+2} = 2^x + 2^{x+2} - 2^{x+1} = 2^x \\cdot 3$, pentru orice număr real $x$.",
+        "$2^x \\cdot 3 = 6^x$, deci $3^x = 3$, de unde obținem $x = 1$."
+      ]
+    }
+  ]
+}

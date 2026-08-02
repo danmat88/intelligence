@@ -1,0 +1,86 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL al II-lea",
+  "instructions": "Pe foaia de examen scrieți rezolvările complete.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac24j-mi-II-1",
+      "number": "II.1.a",
+      "points": 5,
+      "competency": "Calculul determinantului unei matrice",
+      "prompt": "Se consideră matricea $M(x) = \\begin{pmatrix} x & 0 & 0 \\\\ 0 & x+2 & x \\\\ 0 & 2x & x+2 \\end{pmatrix}$, unde $x$ este număr real.\n\nArătați că $\\det(M(1)) = 7$.",
+      "expectedAnswer": "$7$",
+      "hint": "Înlocuiți $x$ cu $1$ în expresia matricei $M(x)$ și calculați determinantul obținut.",
+      "solution": [
+        "$$M(1) = \\begin{pmatrix} 1 & 0 & 0 \\\\ 0 & 3 & 1 \\\\ 0 & 2 & 3 \\end{pmatrix} \\Rightarrow \\det(M(1)) = \\begin{vmatrix} 1 & 0 & 0 \\\\ 0 & 3 & 1 \\\\ 0 & 2 & 3 \\end{vmatrix} =$$",
+        "$$= 9 + 0 + 0 - 0 - 0 - 2 = 7$$"
+      ]
+    },
+    {
+      "id": "bac24j-mi-II-2",
+      "number": "II.1.b",
+      "points": 5,
+      "competency": "Înmulțirea și egalitatea matricelor",
+      "prompt": "Se consideră matricea $M(x) = \\begin{pmatrix} x & 0 & 0 \\\\ 0 & x+2 & x \\\\ 0 & 2x & x+2 \\end{pmatrix}$, unde $x$ este număr real.\n\nDeterminați numărul real $x$ pentru care $M(x) \\cdot M(2) = M(x-1)$.",
+      "expectedAnswer": "$x = -1$",
+      "hint": "Calculați produsul $M(x) \\cdot M(2)$ și egalați matricea rezultată cu $M(x-1)$.",
+      "solution": [
+        "$$M(2) = \\begin{pmatrix} 2 & 0 & 0 \\\\ 0 & 4 & 2 \\\\ 0 & 4 & 4 \\end{pmatrix}$$, $$M(x) \\cdot M(2) = \\begin{pmatrix} 2x & 0 & 0 \\\\ 0 & 8x+8 & 6x+4 \\\\ 0 & 12x+8 & 8x+8 \\end{pmatrix}$$, pentru orice număr real $x$",
+        "$$\\begin{pmatrix} 2x & 0 & 0 \\\\ 0 & 8x+8 & 6x+4 \\\\ 0 & 12x+8 & 8x+8 \\end{pmatrix} = \\begin{pmatrix} x-1 & 0 & 0 \\\\ 0 & x+1 & x-1 \\\\ 0 & 2x-2 & x+1 \\end{pmatrix}$$, de unde obținem $x = -1$"
+      ]
+    },
+    {
+      "id": "bac24j-mi-II-3",
+      "number": "II.1.c",
+      "points": 5,
+      "competency": "Rezolvarea inecuațiilor cu determinanți",
+      "prompt": "Se consideră matricea $M(x) = \\begin{pmatrix} x & 0 & 0 \\\\ 0 & x+2 & x \\\\ 0 & 2x & x+2 \\end{pmatrix}$, unde $x$ este număr real.\n\nDeterminați numerele naturale $n$ pentru care $2\\det(M(n)) \\le \\det(M(2n))$.",
+      "expectedAnswer": "$n = 0$ și $n = 1$",
+      "hint": "Calculați $\\det(M(n))$ și $\\det(M(2n))$, apoi rezolvați inecuația în mulțimea numerelor naturale.",
+      "solution": [
+        "$$\\det(M(n)) = n(-n^2 + 4n + 4)$$, $$\\det(M(2n)) = 2n(-4n^2 + 8n + 4)$$, pentru orice număr natural $n$",
+        "$$2n(-n^2 + 4n + 4) \\le 2n(-4n^2 + 8n + 4)$$, de unde obținem $n^2(3n - 4) \\le 0$ și, cum $n$ este număr natural, obținem $n = 0$ și $n = 1$"
+      ]
+    },
+    {
+      "id": "bac24j-mi-II-4",
+      "number": "II.2.a",
+      "points": 5,
+      "competency": "Calculul valorii unui polinom",
+      "prompt": "Se consideră polinomul $f = X^3 - 2X^2 - aX + 2a$, unde $a$ este număr real.\n\nArătați că $f(2) = 0$, pentru orice număr real $a$.",
+      "expectedAnswer": "$0$",
+      "hint": "Înlocuiți $X$ cu $2$ în expresia polinomului $f$ și efectuați calculele.",
+      "solution": [
+        "$$f(2) = 2^3 - 2 \\cdot 2^2 - a \\cdot 2 + 2a =$$",
+        "$$= 8 - 8 - 2a + 2a = 0$$, pentru orice număr real $a$"
+      ]
+    },
+    {
+      "id": "bac24j-mi-II-5",
+      "number": "II.2.b",
+      "points": 5,
+      "competency": "Divizibilitatea polinoamelor",
+      "prompt": "Se consideră polinomul $f = X^3 - 2X^2 - aX + 2a$, unde $a$ este număr real.\n\nPentru $a = 1$, arătați că polinomul $f$ este divizibil cu polinomul $g = X + 1$.",
+      "expectedAnswer": "$f(-1) = 0$",
+      "hint": "Un polinom $f$ este divizibil cu $X + 1$ dacă și numai dacă $f(-1) = 0$.",
+      "solution": [
+        "$$f = X^3 - 2X^2 - X + 2 \\Rightarrow f(-1) = (-1)^3 - 2(-1)^2 - (-1) + 2 =$$",
+        "$$= -1 - 2 + 1 + 2 = 0$$, deci polinomul $f$ este divizibil cu polinomul $g = X + 1$"
+      ]
+    },
+    {
+      "id": "bac24j-mi-II-6",
+      "number": "II.2.c",
+      "points": 5,
+      "competency": "Rădăcinile polinoamelor",
+      "prompt": "Se consideră polinomul $f = X^3 - 2X^2 - aX + 2a$, unde $a$ este număr real.\n\nDeterminați $a \\in (0, +\\infty)$ pentru care $|x_1| + |x_2| + |x_3| = 8$, unde $x_1$, $x_2$ și $x_3$ sunt rădăcinile polinomului $f$.",
+      "expectedAnswer": "$a = 9$",
+      "hint": "Descompuneți polinomul $f$ în factori grupând termenii, pentru a găsi rădăcinile în funcție de $a$.",
+      "solution": [
+        "$$f = (X - 2)(X^2 - a)$$; $x_1 = 2$ și $|x_2| = |x_3| = \\sqrt{a}$, deci $|x_1| + |x_2| + |x_3| = 2 + 2\\sqrt{a}$",
+        "$$2 + 2\\sqrt{a} = 8$$, de unde obținem $a = 9$"
+      ]
+    }
+  ]
+}

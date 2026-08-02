@@ -1,0 +1,93 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Toate subiectele sunt obligatorii. Se acordă zece puncte din oficiu. Timpul de lucru efectiv este de trei ore.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac25j-th-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Calcule cu numere raționale",
+      "prompt": "Arătați că $\\frac{1}{10} + 3 \\cdot \\left( \\frac{1}{2} - \\frac{1}{5} \\right) = 1$.",
+      "expectedAnswer": "$1$",
+      "hint": "Aduceți la același numitor fracțiile din paranteză, apoi efectuați înmulțirea și adunarea.",
+      "solution": [
+        "$\\frac{1}{10} + 3 \\cdot \\left( \\frac{1}{2} - \\frac{1}{5} \\right) = \\frac{1}{10} + 3 \\cdot \\frac{5 - 2}{10}$",
+        "$= \\frac{1}{10} + 3 \\cdot \\frac{3}{10}$",
+        "$= \\frac{1}{10} + \\frac{9}{10} = \\frac{10}{10} = 1$"
+      ]
+    },
+    {
+      "id": "bac25j-th-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Valori ale unei funcții de gradul întâi",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 6x - 3$. Determinați numărul real $a$ pentru care $f(2) = a + f(0)$.",
+      "expectedAnswer": "$a = 12$",
+      "hint": "Calculați valorile $f(2)$ și $f(0)$, apoi înlocuiți-le în relația dată pentru a-l afla pe $a$.",
+      "solution": [
+        "Calculăm $f(2) = 6 \\cdot 2 - 3 = 12 - 3 = 9$.",
+        "Calculăm $f(0) = 6 \\cdot 0 - 3 = -3$.",
+        "Înlocuind în relația dată, obținem $9 = a + (-3)$, de unde rezultă $a = 12$."
+      ]
+    },
+    {
+      "id": "bac25j-th-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Ecuații exponențiale",
+      "prompt": "Rezolvați în mulțimea numerelor reale ecuația $5^{2x} = 5^{3-x}$.",
+      "expectedAnswer": "$x = 1$",
+      "hint": "Folosiți proprietatea de injectivitate a funcției exponențiale pentru a egala exponenții.",
+      "solution": [
+        "Din ecuația $5^{2x} = 5^{3-x}$, deducem egalitatea exponenților: $2x = 3 - x$.",
+        "$2x + x = 3 \\implies 3x = 3$.",
+        "Obținem soluția $x = 1$."
+      ]
+    },
+    {
+      "id": "bac25j-th-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Probabilități",
+      "prompt": "Determinați probabilitatea ca, alegând un număr $n$ din mulțimea $A = \\{0, 1, 2, 3, 4, 5, 6, 7, 8, 9\\}$, acesta să verifice inegalitatea $6n > 25$.",
+      "expectedAnswer": "$\\frac{1}{2}$",
+      "hint": "Determinați numărul cazurilor favorabile găsind elementele din mulțime care verifică inegalitatea, apoi aplicați formula probabilității.",
+      "solution": [
+        "Mulțimea $A$ are $10$ elemente, deci numărul cazurilor posibile este $10$.",
+        "Rezolvăm inegalitatea: $6n > 25 \\iff n > \\frac{25}{6} \\approx 4,16$.",
+        "Numerele $n \\in A$ care verifică inegalitatea sunt $5, 6, 7, 8, 9$, deci avem $5$ cazuri favorabile.",
+        "Probabilitatea este $p = \\frac{\\text{numărul cazurilor favorabile}}{\\text{numărul cazurilor posibile}} = \\frac{5}{10} = \\frac{1}{2}$."
+      ]
+    },
+    {
+      "id": "bac25j-th-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Distanța dintre două puncte în plan",
+      "prompt": "În reperul cartezian $xOy$ se consideră punctele $A(2,0)$, $B(2,1)$ și $C(6,4)$. Determinați numărul real $a$ pentru care $BC = a \\cdot AB$.",
+      "expectedAnswer": "$a = 5$",
+      "hint": "Calculați lungimile segmentelor $BC$ și $AB$ folosind formula distanței dintre două puncte.",
+      "solution": [
+        "Calculăm lungimea segmentului $BC$: $BC = \\sqrt{(6 - 2)^2 + (4 - 1)^2} = \\sqrt{4^2 + 3^2} = \\sqrt{16 + 9} = \\sqrt{25} = 5$.",
+        "Calculăm lungimea segmentului $AB$: $AB = \\sqrt{(2 - 2)^2 + (1 - 0)^2} = \\sqrt{0^2 + 1^2} = 1$.",
+        "Din relația $BC = a \\cdot AB$, obținem $5 = a \\cdot 1$, de unde rezultă $a = 5$."
+      ]
+    },
+    {
+      "id": "bac25j-th-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Aria triunghiului dreptunghic",
+      "prompt": "Se consideră triunghiul $MNP$, dreptunghic în $M$, cu $MN = 4 \\cdot MP$ și $MN = 8$. Arătați că aria triunghiului $MNP$ este egală cu $8$.",
+      "expectedAnswer": "$8$",
+      "hint": "Aflați lungimea catetei $MP$ din relația dată, apoi folosiți formula ariei pentru un triunghi dreptunghic.",
+      "solution": [
+        "Din relațiile $MN = 4 \\cdot MP$ și $MN = 8$, obținem $8 = 4 \\cdot MP$, deci $MP = 2$.",
+        "Aria triunghiului dreptunghic $MNP$ este $\\mathcal{A}_{\\Delta MNP} = \\frac{MN \\cdot MP}{2}$.",
+        "$\\mathcal{A}_{\\Delta MNP} = \\frac{8 \\cdot 2}{2} = \\frac{16}{2} = 8$."
+      ]
+    }
+  ]
+}

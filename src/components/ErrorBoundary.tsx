@@ -1,7 +1,7 @@
 import { Component, type ReactNode } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
-import { getCrashlytics, recordError } from '@react-native-firebase/crashlytics'
 import * as Updates from 'expo-updates'
+import { reportNonFatal } from '../lib/report'
 
 /**
  * Last line of defense: a rendering crash anywhere below shows this recovery
@@ -19,11 +19,7 @@ export default class ErrorBoundary extends Component<{ children: ReactNode }, { 
   }
 
   componentDidCatch(error: Error) {
-    try {
-      recordError(getCrashlytics(), error, 'react-error-boundary')
-    } catch {
-      // never let reporting itself take the recovery screen down
-    }
+    reportNonFatal(error, 'react-error-boundary')
   }
 
   private restart = () => {
@@ -40,10 +36,10 @@ export default class ErrorBoundary extends Component<{ children: ReactNode }, { 
           <View style={styles.badge}>
             <Text style={styles.badgeLabel}>!</Text>
           </View>
-          <Text style={styles.eyebrow}>PROFU’ DE MATE</Text>
+          <Text style={styles.eyebrow}>REZOLVO</Text>
           <Text style={styles.title}>A apărut o problemă</Text>
           <Text style={styles.body}>
-            Eroarea a fost raportată automat. Repornește aplicația ca să continui — rezolvările tale sunt în siguranță.
+            Repornește aplicația ca să continui — rezolvările tale sunt în siguranță.
           </Text>
           <Pressable onPress={this.restart} style={({ pressed }) => [styles.btn, { opacity: pressed ? 0.82 : 1 }]}>
             <Text style={styles.btnLabel}>Repornește aplicația</Text>

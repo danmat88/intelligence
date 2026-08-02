@@ -1,0 +1,177 @@
+{
+  "id": "III",
+  "title": "SUBIECTUL al III-lea",
+  "instructions": "Scrie rezolvările complete.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "en24j-III-1a",
+      "number": "1.a",
+      "points": 2,
+      "competency": "Aritmetică",
+      "prompt": "Dacă elevii unei clase se așază câte $2$ în fiecare bancă din laboratorul de fizică, atunci rămân $3$ elevi în picioare. Dacă elevii se așază câte $4$ în bancă, atunci rămân $5$ bănci libere și o bancă în care stă un singur elev.\n\nVerifică dacă în acea clasă pot fi $30$ de elevi. Justifică răspunsul dat.",
+      "expectedAnswer": "Nu pot fi 30 de elevi.",
+      "hint": "Calculează câți elevi ar trebui să fie așezați în bănci dacă în clasă ar fi 30 de elevi și compară cu paritatea numărului.",
+      "solution": [
+        "$30 - 3 = 27$ de elevi ar trebui așezați câte doi în fiecare bancă",
+        "Cum $27$ este număr impar, obținem că nu pot fi $30$ de elevi"
+      ]
+    },
+    {
+      "id": "en24j-III-1b",
+      "number": "1.b",
+      "points": 3,
+      "competency": "Aritmetică",
+      "prompt": "Dacă elevii unei clase se așază câte $2$ în fiecare bancă din laboratorul de fizică, atunci rămân $3$ elevi în picioare. Dacă elevii se așază câte $4$ în bancă, atunci rămân $5$ bănci libere și o bancă în care stă un singur elev.\n\nDetermină numărul băncilor din laboratorul de fizică.",
+      "expectedAnswer": "$13$",
+      "hint": "Scrie un sistem de ecuații notând cu $a$ numărul elevilor și cu $b$ numărul băncilor.",
+      "solution": [
+        "$a = 2b + 3$, unde $a$ reprezintă numărul elevilor și $b$ reprezintă numărul băncilor din laboratorul de fizică",
+        "$a = 4(b - 6) + 1$",
+        "$b = 13$"
+      ]
+    },
+    {
+      "id": "en24j-III-2a",
+      "number": "2.a",
+      "points": 2,
+      "competency": "Algebră",
+      "prompt": "Se consideră expresia $E(x) = \\left( \\frac{1}{x^2 - 3x + 2} + \\frac{1}{x - 1} \\right) \\cdot (x^2 - 4)$, unde $x$ este număr real, $x \\neq 1$ și $x \\neq 2$.\n\nArată că $x^2 - 3x + 2 = (x - 1)(x - 2)$, pentru orice număr real $x$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Descompune termenul $-3x$ în $-2x - x$ și dă factor comun.",
+      "solution": [
+        "$x^2 - 3x + 2 = x^2 - 2x - x + 2 =$",
+        "$= x(x - 2) - (x - 2) = (x - 2)(x - 1)$, pentru orice număr real $x$"
+      ]
+    },
+    {
+      "id": "en24j-III-2b",
+      "number": "2.b",
+      "points": 3,
+      "competency": "Algebră",
+      "prompt": "Se consideră expresia $E(x) = \\left( \\frac{1}{x^2 - 3x + 2} + \\frac{1}{x - 1} \\right) \\cdot (x^2 - 4)$, unde $x$ este număr real, $x \\neq 1$ și $x \\neq 2$.\n\nDetermină numerele întregi $n$, $n \\neq 1$ și $n \\neq 2$, pentru care $N = \\frac{5}{E(n)}$ este număr natural.",
+      "expectedAnswer": "$-1$ și $3$",
+      "hint": "Adu expresia $E(x)$ la o formă mai simplă, apoi impune condiția ca fracția să fie număr natural.",
+      "solution": [
+        "$E(x) = \\left( \\frac{1}{(x - 1)(x - 2)} + \\frac{1}{x - 1} \\right) \\cdot (x^2 - 4) = \\frac{x - 1}{(x - 1)(x - 2)} \\cdot (x^2 - 4) =$",
+        "$= \\frac{x - 1}{(x - 1)(x - 2)} \\cdot (x - 2)(x + 2) = x + 2$, pentru orice număr real $x$, $x \\neq 1$ și $x \\neq 2$",
+        "$N = \\frac{5}{n + 2}$ este număr natural, deci $n + 2 \\in \\{1, 5\\}$, de unde obținem $n = -1$ și $n = 3$"
+      ]
+    },
+    {
+      "id": "en24j-III-3a",
+      "number": "3.a",
+      "points": 2,
+      "competency": "Funcții",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 2x - 1$.\n\nArată că $f(0) + f(1) = 0$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Calculează separat valorile $f(0)$ și $f(1)$, apoi adună-le.",
+      "solution": [
+        "$f(0) = -1$",
+        "$f(1) = 1$, de unde obținem $f(0) + f(1) = 0$"
+      ]
+    },
+    {
+      "id": "en24j-III-3b",
+      "number": "3.b",
+      "points": 3,
+      "competency": "Funcții",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 2x - 1$.\n\nReprezentarea geometrică a graficului funcției $f$ intersectează axele $Ox$ și $Oy$ ale sistemului de axe ortogonale $xOy$ în punctele $A$, respectiv $B$. Determină distanța de la punctul $C\\left(-\\frac{1}{2}, 0\\right)$ la dreapta $AB$.",
+      "figureDescription": "Un sistem de axe ortogonale xOy cu dreapta de ecuație y = 2x - 1. Dreapta intersectează axele în A și B, iar punctul C se află pe semiaxa negativă Ox.",
+      "expectedAnswer": "$\\frac{2\\sqrt{5}}{5}$",
+      "hint": "Exprimă aria triunghiului $CAB$ în două moduri pentru a afla înălțimea din $C$.",
+      "solution": [
+        "$A\\left(\\frac{1}{2}, 0\\right)$ și $B(0, -1)$",
+        "Triunghiul $AOB$ este dreptunghic în $O$, deci $AB = \\frac{\\sqrt{5}}{2}$",
+        "$CD \\perp AB$, $D \\in AB$ și, cum $AC = 1$, obținem $CD = \\frac{AC \\cdot OB}{AB} = \\frac{2\\sqrt{5}}{5}$"
+      ]
+    },
+    {
+      "id": "en24j-III-4a",
+      "number": "4.a",
+      "points": 2,
+      "competency": "Geometrie plană",
+      "prompt": "În figura alăturată este reprezentat triunghiul isoscel $ABC$ cu $AB = AC$. Înălțimea din vârful $A$ intersectează latura $BC$ în punctul $D$ și $AD = BC$. Înălțimea din vârful $B$ intersectează latura $AC$ în punctul $E$. Înălțimile $AD$ și $BE$ se intersectează în punctul $H$.\n\nArată că unghiurile $DAC$ și $EBC$ au aceeași măsură.",
+      "figureDescription": "Triunghiul isoscel ABC, cu baza BC. Înălțimea AD cade pe BC, înălțimea BE cade pe AC, iar cele două înălțimi se intersectează în H.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Folosește faptul că ambele unghiuri sunt complementare cu unghiul $ACB$.",
+      "solution": [
+        "$\\sphericalangle DAC + \\sphericalangle ACB = 90^\\circ$",
+        "$\\sphericalangle ACB + \\sphericalangle EBC = 90^\\circ$, de unde rezultă $\\sphericalangle DAC = \\sphericalangle EBC$"
+      ]
+    },
+    {
+      "id": "en24j-III-4b",
+      "number": "4.b",
+      "points": 3,
+      "competency": "Geometrie plană",
+      "prompt": "În figura alăturată este reprezentat triunghiul isoscel $ABC$ cu $AB = AC$. Înălțimea din vârful $A$ intersectează latura $BC$ în punctul $D$ și $AD = BC$. Înălțimea din vârful $B$ intersectează latura $AC$ în punctul $E$. Înălțimile $AD$ și $BE$ se intersectează în punctul $H$.\n\nDemonstrează că $AH = 3 \\cdot HD$.",
+      "figureDescription": "Triunghiul isoscel ABC, cu baza BC. Înălțimea AD cade pe BC, înălțimea BE cade pe AC, iar cele două înălțimi se intersectează în H.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Demonstrează asemănarea triunghiurilor $BHD$ și $ACD$ pentru a găsi o relație între laturile lor.",
+      "solution": [
+        "Triunghiul $ABC$ este isoscel și $AD \\perp BC$, deci $BD = DC = \\frac{BC}{2} = \\frac{AD}{2}$",
+        "$\\sphericalangle HBD = \\sphericalangle DAC$, $\\sphericalangle BDH = \\sphericalangle ADC = 90^\\circ$, deci $\\Delta BHD \\sim \\Delta ACD$, de unde obținem $\\frac{HD}{DC} = \\frac{BD}{AD}$",
+        "$\\frac{HD}{\\frac{AD}{2}} = \\frac{\\frac{AD}{2}}{AD} \\Rightarrow HD = \\frac{AD}{4}$, de unde obținem $AH = \\frac{3 \\cdot AD}{4}$, deci $AH = 3 \\cdot HD$"
+      ]
+    },
+    {
+      "id": "en24j-III-5a",
+      "number": "5.a",
+      "points": 2,
+      "competency": "Geometrie plană",
+      "prompt": "În figura alăturată este reprezentat cercul de centru $O$, în care $CD$ este diametru. Punctul $B$ aparține cercului astfel încât dreptele $BO$ și $CD$ sunt perpendiculare. Punctul $M$ aparține arcului mic $BC$, dreptele $DM$ și $BO$ se intersectează în punctul $N$, $DN = 2 \\cdot MN$ și $MN = 4\\text{ cm}$.\n\nArată că măsura unghiului $CMD$ este egală cu $90^\\circ$.",
+      "figureDescription": "Cercul cu centrul O și diametrul CD. Raza OB este perpendiculară pe CD. Punctul M este pe arcul mic BC, iar dreapta DM intersectează BO în N.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Amintește-ți proprietatea unghiului înscris într-un semicerc.",
+      "solution": [
+        "$CD$ este diametru, deci $\\widehat{CD} = 180^\\circ$",
+        "$\\sphericalangle CMD = \\frac{1}{2} \\cdot \\widehat{CD} = 90^\\circ$"
+      ]
+    },
+    {
+      "id": "en24j-III-5b",
+      "number": "5.b",
+      "points": 3,
+      "competency": "Geometrie plană",
+      "prompt": "În figura alăturată este reprezentat cercul de centru $O$, în care $CD$ este diametru. Punctul $B$ aparține cercului astfel încât dreptele $BO$ și $CD$ sunt perpendiculare. Punctul $M$ aparține arcului mic $BC$, dreptele $DM$ și $BO$ se intersectează în punctul $N$, $DN = 2 \\cdot MN$ și $MN = 4\\text{ cm}$.\n\nCalculează aria triunghiului $DON$.",
+      "figureDescription": "Cercul cu centrul O și diametrul CD. Raza OB este perpendiculară pe CD. Punctul M este pe arcul mic BC, iar dreapta DM intersectează BO în N.",
+      "expectedAnswer": "$8\\sqrt{3}\\text{ cm}^2$",
+      "hint": "Exprimă cosinusul unghiului $D$ în două triunghiuri dreptunghice diferite pentru a afla raza cercului.",
+      "solution": [
+        "$\\cos(\\sphericalangle NDO) = \\frac{OD}{ND}$, $\\cos(\\sphericalangle MDC) = \\frac{MD}{CD}$, deci $\\frac{OD}{ND} = \\frac{MD}{CD}$",
+        "$ND = 8\\text{ cm}$, $MD = 12\\text{ cm} \\Rightarrow \\frac{OD}{8} = \\frac{12}{2 \\cdot OD} \\Rightarrow OD = 4\\sqrt{3}\\text{ cm}$",
+        "$ON = \\sqrt{DN^2 - OD^2} = 4\\text{ cm}$ și obținem $\\mathcal{A}_{\\Delta DON} = \\frac{ON \\cdot OD}{2} = 8\\sqrt{3}\\text{ cm}^2$"
+      ]
+    },
+    {
+      "id": "en24j-III-6a",
+      "number": "6.a",
+      "points": 2,
+      "competency": "Geometrie în spațiu",
+      "prompt": "În figura alăturată este reprezentată prisma dreaptă $ABCA'B'C'$ cu baza triunghiul echilateral $ABC$, $AB = 12\\text{ cm}$ și $AA' = 3\\sqrt{3}\\text{ cm}$. Punctul $M$ este mijlocul segmentului $AB$.\n\nArată că aria laterală a prismei $ABCA'B'C'$ este egală cu $108\\sqrt{3}\\text{ cm}^2$.",
+      "figureDescription": "Prisma triunghiulară dreaptă ABCA'B'C', cu baza ABC echilaterală. Punctul M este mijlocul muchiei AB.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Aria laterală a unei prisme drepte este suma ariilor fețelor laterale, care sunt dreptunghiuri.",
+      "solution": [
+        "$\\mathcal{A}_{ABB'A'} = AB \\cdot AA' = 36\\sqrt{3}\\text{ cm}^2$",
+        "$\\mathcal{A}_{lateral\\breve{a}} = 3 \\cdot \\mathcal{A}_{ABB'A'} = 3 \\cdot 36\\sqrt{3} = 108\\sqrt{3}\\text{ cm}^2$"
+      ]
+    },
+    {
+      "id": "en24j-III-6b",
+      "number": "6.b",
+      "points": 3,
+      "competency": "Geometrie în spațiu",
+      "prompt": "În figura alăturată este reprezentată prisma dreaptă $ABCA'B'C'$ cu baza triunghiul echilateral $ABC$, $AB = 12\\text{ cm}$ și $AA' = 3\\sqrt{3}\\text{ cm}$. Punctul $M$ este mijlocul segmentului $AB$.\n\nDetermină distanța de la punctul $M$ la planul $(A'B'C)$.",
+      "figureDescription": "Prisma triunghiulară dreaptă ABCA'B'C', cu baza ABC echilaterală. Punctul M este mijlocul muchiei AB.",
+      "expectedAnswer": "$\\frac{6\\sqrt{15}}{5}\\text{ cm}$",
+      "hint": "Construiește perpendiculara din $M$ pe planul $(A'B'C)$ folosind un plan perpendicular pe acesta.",
+      "solution": [
+        "$A'C = B'C$, deci $CN \\perp A'B'$, unde punctul $N$ este mijlocul segmentului $A'B'$ și, cum $MN \\perp A'B'$, $CN \\cap MN = \\{N\\}$ și $CN, MN \\subset (CMN)$, obținem $A'B' \\perp (CMN)$",
+        "$MP \\perp CN$, $P \\in CN$; $A'B' \\perp (CMN)$, $MP \\subset (CMN)$, deci $A'B' \\perp MP$; cum $A'B' \\cap CN = \\{N\\}$, $A'B'$ și $CN \\subset (A'B'C)$, obținem $MP \\perp (A'B'C)$, deci $d(M, (A'B'C)) = MP$",
+        "Triunghiul $MNC$ este dreptunghic în $M$, $MN = 3\\sqrt{3}\\text{ cm}$, $CM = 6\\sqrt{3}\\text{ cm}$, deci $CN = 3\\sqrt{15}\\text{ cm}$, de unde obținem $MP = \\frac{6\\sqrt{15}}{5}\\text{ cm}$"
+      ]
+    }
+  ]
+}

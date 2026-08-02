@@ -5,18 +5,165 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == uid;
     }
 
-    // request.resource.data is the POST-write document (merged on update),
-    // so optional fields are validated whenever they end up present at all.
-    // Rules can't loop over the turns, but the shape, field types, sizes and
-    // key whitelist are all enforced — a tampered client can't stuff foreign
-    // fields or megabyte titles into the tree.
-    function validProblem(d) {
-      return d.keys().hasOnly(['title', 'topic', 'turns', 'photo', 'createdAt'])
+    function validTurn(uid, t) {
+      return t.keys().hasOnly(['role', 'text', 'imagePath', 'imageW', 'imageH'])
+        && (t.role == 'user' || t.role == 'assistant')
+        && t.text is string && t.text.size() <= 20000
+        && (!('imagePath' in t) || (
+          t.imagePath is string && t.imagePath.size() <= 300 &&
+          t.imagePath.matches('users/' + uid + '/.*')
+        ))
+        && (
+          (!('imageW' in t) && !('imageH' in t)) ||
+          (t.imageW is number && t.imageW > 0 && t.imageW <= 10000 &&
+           t.imageH is number && t.imageH > 0 && t.imageH <= 10000)
+        );
+    }
+
+    // Rules cannot iterate a list. Persisted conversations are capped at 20,
+    // and every possible slot is therefore checked explicitly.
+    function validTurns(uid, turns) {
+      return turns is list && turns.size() <= 20
+        && (turns.size() < 1 || validTurn(uid, turns[0]))
+        && (turns.size() < 2 || validTurn(uid, turns[1]))
+        && (turns.size() < 3 || validTurn(uid, turns[2]))
+        && (turns.size() < 4 || validTurn(uid, turns[3]))
+        && (turns.size() < 5 || validTurn(uid, turns[4]))
+        && (turns.size() < 6 || validTurn(uid, turns[5]))
+        && (turns.size() < 7 || validTurn(uid, turns[6]))
+        && (turns.size() < 8 || validTurn(uid, turns[7]))
+        && (turns.size() < 9 || validTurn(uid, turns[8]))
+        && (turns.size() < 10 || validTurn(uid, turns[9]))
+        && (turns.size() < 11 || validTurn(uid, turns[10]))
+        && (turns.size() < 12 || validTurn(uid, turns[11]))
+        && (turns.size() < 13 || validTurn(uid, turns[12]))
+        && (turns.size() < 14 || validTurn(uid, turns[13]))
+        && (turns.size() < 15 || validTurn(uid, turns[14]))
+        && (turns.size() < 16 || validTurn(uid, turns[15]))
+        && (turns.size() < 17 || validTurn(uid, turns[16]))
+        && (turns.size() < 18 || validTurn(uid, turns[17]))
+        && (turns.size() < 19 || validTurn(uid, turns[18]))
+        && (turns.size() < 20 || validTurn(uid, turns[19]));
+    }
+
+    function validProblem(uid, d) {
+      return d.keys().hasOnly(['title', 'topic', 'turns', 'photo', 'saved', 'createdAt'])
+        && d.keys().hasAll(['title', 'topic', 'turns', 'createdAt'])
         && d.title is string && d.title.size() <= 200
         && (d.topic == null || (d.topic is string && d.topic.size() <= 80))
-        && d.turns is list && d.turns.size() <= 40
+        && validTurns(uid, d.turns)
         && (!('photo' in d) || d.photo is bool)
-        && (!('createdAt' in d) || d.createdAt is timestamp);
+        && (!('saved' in d) || d.saved is bool)
+        && d.createdAt is timestamp;
+    }
+
+    function validLearningProfile(d) {
+      return d.keys().hasOnly([
+          'schemaVersion',
+          'onboardingCompleted',
+          'examGoal',
+          'bacTrack',
+          'createdAt',
+          'updatedAt'
+        ])
+        && d.schemaVersion == 1
+        && d.onboardingCompleted is bool
+        && (d.examGoal == null || d.examGoal == 'en' || d.examGoal == 'bac')
+        && (
+          (d.examGoal == 'bac' && (
+            d.bacTrack == 'mate_info' ||
+            d.bacTrack == 'stiinte_naturii' ||
+            d.bacTrack == 'tehnologic' ||
+            d.bacTrack == 'pedagogic'
+          )) ||
+          (d.examGoal != 'bac' && d.bacTrack == null)
+        )
+        && d.createdAt is timestamp
+        && d.updatedAt is timestamp;
+    }
+
+    function validPracticeAttempt(d) {
+      return d.keys().hasOnly([
+          'schemaVersion', 'setId', 'exam', 'topic', 'profile', 'score', 'total',
+          'startedAt', 'completedAt', 'mode', 'elapsedSeconds',
+          'responseCount', 'assistedCount'
+        ])
+        && d.schemaVersion == 1
+        && d.setId is string && d.setId.size() > 0 && d.setId.size() <= 120
+        && (d.exam == null || d.exam == 'en' || d.exam == 'bac')
+        && (
+          !d.keys().hasAny(['topic']) || d.topic == null ||
+          (d.topic is string && d.topic.size() > 0 && d.topic.size() <= 120)
+        )
+        && (
+          (d.exam == 'en' && d.profile == null) ||
+          (d.exam == 'bac' && (
+            d.profile == 'mate_info' || d.profile == 'stiinte_naturii' ||
+            d.profile == 'tehnologic' || d.profile == 'pedagogic'
+          )) ||
+          (d.exam == null && d.profile == null && d.keys().hasAll(['topic']) && d.topic is string && d.topic.size() > 0)
+        )
+        && d.score is int && d.score >= 0
+        && d.total is int && d.total > 0 && d.total <= 200
+        && d.score <= d.total
+        && d.startedAt is timestamp
+        && d.completedAt is timestamp
+        && d.startedAt <= d.completedAt
+        && (d.mode == 'practice' || d.mode == 'simulation')
+        && d.elapsedSeconds is int && d.elapsedSeconds >= 0 && d.elapsedSeconds <= 86400
+        && d.responseCount is int && d.responseCount >= 0 && d.responseCount <= d.total
+        && d.assistedCount is int && d.assistedCount >= 0 && d.assistedCount <= d.responseCount;
+    }
+
+    function validPracticeResponse(d) {
+      return d.keys().hasOnly(['value', 'correct', 'assistance', 'prompt', 'competency'])
+        && d.value is string && d.value.size() <= 2000
+        && d.correct is bool
+        && (
+          d.assistance == 'none' || d.assistance == 'hint' ||
+          d.assistance == 'ai' || d.assistance == 'solution'
+        )
+        && (!('prompt' in d) || (d.prompt is string && d.prompt.size() > 0 && d.prompt.size() <= 2000))
+        && (!('competency' in d) || (d.competency is string && d.competency.size() > 0 && d.competency.size() <= 160));
+    }
+
+    function validPaperAttempt(d) {
+      return d.keys().hasOnly([
+          'schemaVersion', 'packageId', 'exam', 'year', 'session', 'profile',
+          'mode', 'startedAt', 'completedAt', 'elapsedSeconds', 'exerciseIndex',
+          'responseCount', 'assistedCount', 'score', 'maxScore'
+        ])
+        && d.schemaVersion == 1
+        && d.packageId is string && d.packageId.size() > 0 && d.packageId.size() <= 160
+        && (d.exam == 'en' || d.exam == 'bac')
+        && d.year is int && d.year >= 2000 && d.year <= 2100
+        && d.session is string && d.session.size() > 0 && d.session.size() <= 100
+        && (
+          (d.exam == 'en' && d.profile == null) ||
+          (d.exam == 'bac' && (
+            d.profile == 'mate_info' || d.profile == 'stiinte_naturii' ||
+            d.profile == 'tehnologic' || d.profile == 'pedagogic'
+          ))
+        )
+        && (d.mode == 'study' || d.mode == 'guided' || d.mode == 'simulation')
+        && d.startedAt is timestamp
+        && (d.completedAt == null || (d.completedAt is timestamp && d.startedAt <= d.completedAt))
+        && d.elapsedSeconds is int && d.elapsedSeconds >= 0 && d.elapsedSeconds <= 86400
+        && d.exerciseIndex is int && d.exerciseIndex >= 0 && d.exerciseIndex <= 500
+        && d.responseCount is int && d.responseCount >= 0 && d.responseCount <= 500
+        && d.assistedCount is int && d.assistedCount >= 0 && d.assistedCount <= d.responseCount
+        && (d.score == null || (d.score is int && d.score >= 0 && d.score <= 100))
+        && (d.maxScore == null || (d.maxScore is int && d.maxScore >= 0 && d.maxScore <= 100))
+        && ((d.score == null && d.maxScore == null) || (d.score != null && d.maxScore != null && d.score <= d.maxScore));
+    }
+
+    function validPaperResponse(d) {
+      return d.keys().hasOnly(['value', 'assistance'])
+        && d.value is string && d.value.size() <= 10000
+        && (
+          d.assistance == 'none' || d.assistance == 'hint' ||
+          d.assistance == 'ai' || d.assistance == 'solution'
+        );
     }
 
     // The ONLY thing a client may touch: its own problems, in the app's exact
@@ -25,7 +172,52 @@ service cloud.firestore {
     // only).
     match /users/{uid}/problems/{pid} {
       allow read, delete: if isOwner(uid);
-      allow create, update: if isOwner(uid) && validProblem(request.resource.data);
+      allow create: if isOwner(uid) && validProblem(uid, request.resource.data);
+      allow update: if isOwner(uid)
+        && validProblem(uid, request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt;
+    }
+
+    // The learning profile is the only client-written settings document. A
+    // completed no-exam profile is represented by examGoal=null; BAC always
+    // carries a valid track and other goals can never retain one.
+    match /users/{uid}/profile/{profileId} {
+      allow read: if isOwner(uid) && profileId == 'learning';
+      allow create: if isOwner(uid)
+        && profileId == 'learning'
+        && validLearningProfile(request.resource.data);
+      allow update: if isOwner(uid)
+        && profileId == 'learning'
+        && validLearningProfile(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt;
+    }
+
+    match /users/{uid}/practiceAttempts/{attemptId} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid) && validPracticeAttempt(request.resource.data);
+    }
+
+    match /users/{uid}/practiceAttempts/{attemptId}/responses/{exerciseId} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid) && validPracticeResponse(request.resource.data);
+    }
+
+    match /users/{uid}/paperAttempts/{attemptId} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid) && validPaperAttempt(request.resource.data);
+      allow update: if isOwner(uid)
+        && validPaperAttempt(request.resource.data)
+        && request.resource.data.packageId == resource.data.packageId
+        && request.resource.data.exam == resource.data.exam
+        && request.resource.data.profile == resource.data.profile
+        && request.resource.data.startedAt == resource.data.startedAt
+        && request.resource.data.mode == resource.data.mode
+        && (resource.data.completedAt == null || request.resource.data.completedAt != null);
+    }
+
+    match /users/{uid}/paperAttempts/{attemptId}/responses/{exerciseId} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid) && validPaperResponse(request.resource.data);
     }
 
     // The user doc carries the premium entitlement (tier/premiumUntil),

@@ -1,0 +1,182 @@
+{
+  "id": "III",
+  "title": "SUBIECTUL al III-lea",
+  "instructions": "Scrie rezolvările complete.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "en26j-III-1a",
+      "number": "1.a",
+      "points": 2,
+      "competency": "Rezolvarea problemelor cu ecuații",
+      "prompt": "Mai mulți copii doresc să cumpere împreună o minge. Dacă fiecare copil contribuie cu câte 18 lei, mai sunt necesari 30 de lei.\n\nEste posibil ca mingea să coste 153 de lei? Justifică răspunsul dat.",
+      "expectedAnswer": "Nu este posibil.",
+      "hint": "Exprimă prețul mingii în funcție de numărul de copii și verifică dacă numărul de copii obținut este un număr natural.",
+      "solution": [
+        "Prețul mingii este $18n + 30$, unde $n$ reprezintă numărul de copii.",
+        "$18n + 30 = 153 \\Rightarrow n = \\frac{123}{18}$, care nu este număr natural, deci nu este posibil ca mingea să coste 153 de lei."
+      ]
+    },
+    {
+      "id": "en26j-III-1b",
+      "number": "1.b",
+      "points": 3,
+      "competency": "Rezolvarea problemelor cu ecuații",
+      "prompt": "Mai mulți copii doresc să cumpere împreună o minge. Dacă fiecare copil contribuie cu câte 18 lei, mai sunt necesari 30 de lei.\n\nDacă fiecare copil contribuie cu câte 24 de lei, atunci sunt în plus 12 lei. Determină cât costă mingea.",
+      "expectedAnswer": "156 de lei",
+      "hint": "Egalează cele două expresii care reprezintă prețul mingii pentru a afla numărul de copii.",
+      "solution": [
+        "$18n + 30 = 24n - 12$",
+        "$6n = 42$, de unde obținem $n = 7$",
+        "Mingea costă $18 \\cdot 7 + 30 = 156$ de lei."
+      ]
+    },
+    {
+      "id": "en26j-III-2a",
+      "number": "2.a",
+      "points": 2,
+      "competency": "Calcul algebric",
+      "prompt": "Se consideră expresia $E(x) = \\frac{x}{x-3} + \\frac{1}{x-2} + \\frac{7-3x}{(x-2)(x-3)}$, unde $x$ este număr real, $x \\neq 2$ și $x \\neq 3$.\n\nArată că $E(x) = \\frac{x-2}{x-3}$, pentru orice număr real $x$, $x \\neq 2$ și $x \\neq 3$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Adu fracțiile la același numitor comun și simplifică rezultatul.",
+      "solution": [
+        "$E(x) = \\frac{x(x-2) + 1(x-3) + 7 - 3x}{(x-2)(x-3)} = \\frac{x^2 - 2x + x - 3 + 7 - 3x}{(x-2)(x-3)}$",
+        "$E(x) = \\frac{x^2 - 4x + 4}{(x-2)(x-3)} = \\frac{(x-2)^2}{(x-2)(x-3)} = \\frac{x-2}{x-3}$, pentru orice număr real $x$, $x \\neq 2$ și $x \\neq 3$."
+      ]
+    },
+    {
+      "id": "en26j-III-2b",
+      "number": "2.b",
+      "points": 3,
+      "competency": "Divizibilitate și calcul algebric",
+      "prompt": "Se consideră expresia $E(x) = \\frac{x}{x-3} + \\frac{1}{x-2} + \\frac{7-3x}{(x-2)(x-3)}$, unde $x$ este număr real, $x \\neq 2$ și $x \\neq 3$.\n\nArată că numărul $A = (E(4))^n + (E(4))^{n+3}$ este divizibil cu 18, pentru orice număr natural nenul $n$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Calculează valoarea lui $E(4)$ și înlocuiește-o în expresia lui $A$, apoi dă factor comun.",
+      "solution": [
+        "$E(4) = \\frac{4-2}{4-3} = 2$",
+        "$A = 2^n + 2^{n+3} = 2^n(1 + 2^3) = 2^n \\cdot 9$",
+        "Cum $n$ este număr natural nenul, $2^n \\vdots 2$, deci numărul $A = 2^n \\cdot 9$ este divizibil cu 18."
+      ]
+    },
+    {
+      "id": "en26j-III-3a",
+      "number": "3.a",
+      "points": 2,
+      "competency": "Calcul cu funcții",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\rightarrow \\mathbb{R}$, $f(x) = 3x - 6$.\n\nArată că $f(1) + f(3) = 0$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Calculează separat $f(1)$ și $f(3)$, apoi adună rezultatele.",
+      "solution": [
+        "$f(1) = 3 \\cdot 1 - 6 = -3$",
+        "$f(3) = 3 \\cdot 3 - 6 = 3$, deci $f(1) + f(3) = -3 + 3 = 0$."
+      ],
+      "figureDescription": "Un sistem de axe ortogonale xOy în care este reprezentat graficul unei funcții liniare care intersectează axa Ox în partea pozitivă și axa Oy în partea negativă."
+    },
+    {
+      "id": "en26j-III-3b",
+      "number": "3.b",
+      "points": 3,
+      "competency": "Geometrie analitică",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\rightarrow \\mathbb{R}$, $f(x) = 3x - 6$.\n\nReprezentarea geometrică a graficului funcției $f$ intersectează axele $Ox$ și $Oy$ ale sistemului de axe ortogonale $xOy$ în punctele $A$, respectiv $B$. Calculează lungimea segmentului $OM$, știind că punctul $M$ este mijlocul segmentului $AB$.",
+      "expectedAnswer": "$\\sqrt{10}$",
+      "hint": "Află coordonatele punctelor de intersecție cu axele, apoi folosește teorema medianei în triunghiul dreptunghic format.",
+      "solution": [
+        "Punctele de intersecție cu axele sunt $A(2,0)$ și $B(0,-6)$.",
+        "Triunghiul $AOB$ este dreptunghic în $O$, deci $AB = \\sqrt{2^2 + (-6)^2} = \\sqrt{40} = 2\\sqrt{10}$.",
+        "Cum $M$ este mijlocul segmentului $AB$, $OM$ este mediană corespunzătoare ipotenuzei, deci obținem $OM = \\frac{AB}{2} = \\sqrt{10}$."
+      ],
+      "figureDescription": "Un sistem de axe ortogonale xOy în care este reprezentat graficul unei funcții liniare care intersectează axa Ox în partea pozitivă și axa Oy în partea negativă."
+    },
+    {
+      "id": "en26j-III-4a",
+      "number": "4.a",
+      "points": 2,
+      "competency": "Geometria cercului",
+      "prompt": "În figura alăturată este reprezentat cercul de centru $O$ și raza de $6\\text{ cm}$. Punctele $A$, $B$, $C$ și $D$ aparțin cercului, astfel încât dreptele $AB$ și $CD$ sunt perpendiculare. Punctul $M$ este mijlocul coardei $AB$ și $OM = 3\\text{ cm}$.\n\nArată că $AM = 3\\sqrt{3}\\text{ cm}$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Folosește teorema lui Pitagora în triunghiul dreptunghic format de raza cercului, distanța de la centru la coardă și jumătate din coardă.",
+      "solution": [
+        "$OM$ este mediană în triunghiul isoscel $AOB$, deci $OM$ este înălțime $\\Rightarrow OM \\perp AB$.",
+        "În triunghiul dreptunghic $AOM$, $AM = \\sqrt{OA^2 - OM^2} = \\sqrt{36 - 9} = \\sqrt{27} = 3\\sqrt{3}\\text{ cm}$."
+      ],
+      "figureDescription": "Un cerc de centru O. Punctele A, B, C și D se află pe cerc. Coarda AB este verticală, iar punctul M este mijlocul ei. Segmentul OM este perpendicular pe AB."
+    },
+    {
+      "id": "en26j-III-4b",
+      "number": "4.b",
+      "points": 3,
+      "competency": "Geometria cercului",
+      "prompt": "În figura alăturată este reprezentat cercul de centru $O$ și raza de $6\\text{ cm}$. Punctele $A$, $B$, $C$ și $D$ aparțin cercului, astfel încât dreptele $AB$ și $CD$ sunt perpendiculare. Punctul $M$ este mijlocul coardei $AB$ și $OM = 3\\text{ cm}$.\n\nDemonstrează că $AC^2 + BD^2 = 144\\text{ cm}^2$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Construiește un diametru din punctul B și folosește proprietățile arcelor cuprinse între coarde paralele.",
+      "solution": [
+        "Fie $BE$ diametru $\\Rightarrow \\sphericalangle BAE = \\sphericalangle BDE = 90^\\circ$.",
+        "$AE \\perp AB$ și, cum $CD \\perp AB$, obținem $AE \\parallel CD$, deci arcele cuprinse între ele sunt congruente: $\\widehat{AC} = \\widehat{DE} \\Rightarrow AC = DE$.",
+        "În triunghiul $BDE$, dreptunghic în $D$, aplicăm teorema lui Pitagora: $DE^2 + BD^2 = BE^2$.",
+        "Înlocuind $DE$ cu $AC$ și $BE$ cu $12\\text{ cm}$ (diametrul), obținem $AC^2 + BD^2 = 12^2 = 144\\text{ cm}^2$."
+      ],
+      "figureDescription": "Un cerc de centru O. Punctele A, B, C și D se află pe cerc. Coarda AB este verticală, iar punctul M este mijlocul ei. Segmentul OM este perpendicular pe AB."
+    },
+    {
+      "id": "en26j-III-5a",
+      "number": "5.a",
+      "points": 2,
+      "competency": "Geometria patrulaterelor",
+      "prompt": "În figura alăturată este reprezentat paralelogramul $ABCD$, cu $AB = 10\\text{ cm}$ și $AD = 8\\text{ cm}$. Punctele $M$, $N$ și $T$ sunt mijloacele segmentelor $BC$, $CD$, respectiv $AB$, iar $Q$ este punctul de intersecție a dreptelor $BN$ și $AM$.\n\nCalculează perimetrul patrulaterului $ATND$.",
+      "expectedAnswer": "$26\\text{ cm}$",
+      "hint": "Demonstrează că patrulaterul ATND este un paralelogram și calculează suma lungimilor laturilor sale.",
+      "solution": [
+        "$DN \\parallel AT$ și $DN = AT = 5\\text{ cm} \\Rightarrow ATND$ este paralelogram.",
+        "$P_{ATND} = 2 \\cdot AT + 2 \\cdot AD = 2 \\cdot 5 + 2 \\cdot 8 = 10 + 16 = 26\\text{ cm}$."
+      ],
+      "figureDescription": "Un paralelogram ABCD. Punctul T este pe latura inferioară AB, N este pe latura superioară CD, M este pe latura din dreapta BC. Segmentele AM și BN se intersectează în punctul Q."
+    },
+    {
+      "id": "en26j-III-5b",
+      "number": "5.b",
+      "points": 3,
+      "competency": "Asemănarea triunghiurilor",
+      "prompt": "În figura alăturată este reprezentat paralelogramul $ABCD$, cu $AB = 10\\text{ cm}$ și $AD = 8\\text{ cm}$. Punctele $M$, $N$ și $T$ sunt mijloacele segmentelor $BC$, $CD$, respectiv $AB$, iar $Q$ este punctul de intersecție a dreptelor $BN$ și $AM$.\n\nCalculează valoarea raportului $\\frac{AQ}{QM}$.",
+      "expectedAnswer": "$4$",
+      "hint": "Notează intersecția lui AM cu NT cu S și folosește asemănarea triunghiurilor formate.",
+      "solution": [
+        "Fie $AM \\cap NT = \\{S\\}$. $ST$ este linie mijlocie în triunghiul $ABM \\Rightarrow ST = \\frac{BM}{2} = \\frac{4}{2} = 2\\text{ cm}$, deci $SN = NT - ST = 8 - 2 = 6\\text{ cm}$.",
+        "$SN \\parallel BM \\Rightarrow \\Delta QNS \\sim \\Delta QBM \\Rightarrow \\frac{QS}{QM} = \\frac{SN}{MB} = \\frac{6}{4} = \\frac{3}{2} \\Rightarrow \\frac{SM}{QM} = \\frac{QS + QM}{QM} = \\frac{5}{2}$.",
+        "Cum $S$ este mijlocul lui $AM$, $AM = 2 \\cdot SM \\Rightarrow \\frac{AM}{QM} = 2 \\cdot \\frac{5}{2} = 5$, de unde obținem $\\frac{AQ}{QM} = \\frac{AM - QM}{QM} = 5 - 1 = 4$."
+      ],
+      "figureDescription": "Un paralelogram ABCD. Punctul T este pe latura inferioară AB, N este pe latura superioară CD, M este pe latura din dreapta BC. Segmentele AM și BN se intersectează în punctul Q."
+    },
+    {
+      "id": "en26j-III-6a",
+      "number": "6.a",
+      "points": 2,
+      "competency": "Arii în corpuri geometrice",
+      "prompt": "În figura alăturată este reprezentată prisma dreaptă $ABCDA'B'C'D'$, cu baza pătratul $ABCD$, $AB = 4\\text{ cm}$ și $AA' = 4\\sqrt{2}\\text{ cm}$.\n\nCalculează aria laterală a prismei $ABCDA'B'C'D'$.",
+      "expectedAnswer": "$64\\sqrt{2}\\text{ cm}^2$",
+      "hint": "Aria laterală a unei prisme drepte este egală cu perimetrul bazei înmulțit cu înălțimea.",
+      "solution": [
+        "$\\mathcal{A}_l = 4 \\cdot AB \\cdot AA'$",
+        "$\\mathcal{A}_l = 4 \\cdot 4 \\cdot 4\\sqrt{2} = 64\\sqrt{2}\\text{ cm}^2$."
+      ],
+      "figureDescription": "O prismă patrulateră dreaptă ABCDA'B'C'D'. Baza inferioară este ABCD, baza superioară este A'B'C'D'. Sunt trasate segmentele BD, C'B și C'D, formând triunghiul C'BD."
+    },
+    {
+      "id": "en26j-III-6b",
+      "number": "6.b",
+      "points": 3,
+      "competency": "Distanțe în spațiu",
+      "prompt": "În figura alăturată este reprezentată prisma dreaptă $ABCDA'B'C'D'$, cu baza pătratul $ABCD$, $AB = 4\\text{ cm}$ și $AA' = 4\\sqrt{2}\\text{ cm}$.\n\nArată că distanța de la punctul $A'$ la planul $(C'BD)$ este egală cu $\\frac{8\\sqrt{10}}{5}\\text{ cm}$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Exprimă aria triunghiului A'OC' în două moduri pentru a afla înălțimea corespunzătoare laturii C'O.",
+      "solution": [
+        "$BD \\perp AC$, $BD \\perp A'A$ și, cum $AC \\cap A'A = \\{A\\}$, obținem $BD \\perp (A'AC)$.",
+        "Fie $A'P \\perp C'O$, $P \\in C'O$, unde $AC \\cap BD = \\{O\\}$. Deoarece $A'P \\subset (A'AC) \\Rightarrow A'P \\perp BD$ și, cum $C'O \\cap BD = \\{O\\} \\Rightarrow A'P \\perp (C'BD)$.",
+        "Aria triunghiului $A'OC'$ este $\\mathcal{A}_{\\Delta A'OC'} = \\frac{A'P \\cdot C'O}{2}$.",
+        "Calculăm aria $\\mathcal{A}_{\\Delta A'OC'} = \\frac{A'C' \\cdot AA'}{2} = \\frac{4\\sqrt{2} \\cdot 4\\sqrt{2}}{2} = 16\\text{ cm}^2$.",
+        "Calculăm $C'O = \\sqrt{CC'^2 + CO^2} = \\sqrt{32 + 8} = \\sqrt{40} = 2\\sqrt{10}\\text{ cm}$.",
+        "Obținem $A'P = \\frac{2 \\cdot 16}{2\\sqrt{10}} = \\frac{16}{\\sqrt{10}} = \\frac{8\\sqrt{10}}{5}\\text{ cm}$, deci $d(A', (C'BD)) = \\frac{8\\sqrt{10}}{5}\\text{ cm}$."
+      ],
+      "figureDescription": "O prismă patrulateră dreaptă ABCDA'B'C'D'. Baza inferioară este ABCD, baza superioară este A'B'C'D'. Sunt trasate segmentele BD, C'B și C'D, formând triunghiul C'BD."
+    }
+  ]
+}

@@ -1,0 +1,210 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Încercuiește litera corespunzătoare răspunsului corect.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "en26m-I-1",
+      "number": "1",
+      "points": 5,
+      "competency": "Operații cu numere naturale",
+      "prompt": "Rezultatul calculului $36 : 4 - 4 \\cdot 2$ este egal cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "17"
+        },
+        {
+          "id": "b",
+          "label": "10"
+        },
+        {
+          "id": "c",
+          "label": "1"
+        },
+        {
+          "id": "d",
+          "label": "0"
+        }
+      ],
+      "correctOption": "c",
+      "expectedAnswer": "1",
+      "hint": "Respectă ordinea efectuării operațiilor: mai întâi înmulțirile și împărțirile, apoi adunările și scăderile.",
+      "solution": [
+        "$36 : 4 - 4 \\cdot 2 = 9 - 8 = 1$"
+      ]
+    },
+    {
+      "id": "en26m-I-2",
+      "number": "2",
+      "points": 5,
+      "competency": "Divizibilitate și intervale",
+      "prompt": "Cel mai mare număr natural divizibil cu $5$ din intervalul $[3, 20)$ este:",
+      "options": [
+        {
+          "id": "a",
+          "label": "20"
+        },
+        {
+          "id": "b",
+          "label": "15"
+        },
+        {
+          "id": "c",
+          "label": "5"
+        },
+        {
+          "id": "d",
+          "label": "3"
+        }
+      ],
+      "correctOption": "b",
+      "expectedAnswer": "15",
+      "hint": "Atenție la paranteza rotundă a intervalului, care înseamnă că numărul $20$ nu este inclus.",
+      "solution": [
+        "Numerele naturale din intervalul $[3, 20)$ divizibile cu $5$ sunt $5, 10$ și $15$.",
+        "Cel mai mare dintre acestea este $15$."
+      ]
+    },
+    {
+      "id": "en26m-I-3",
+      "number": "3",
+      "points": 5,
+      "competency": "Proporții și ecuații",
+      "prompt": "Dacă $\\frac{a}{4} = \\frac{5}{2}$, atunci rezultatul calculului $2a + 10$ este egal cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "30"
+        },
+        {
+          "id": "b",
+          "label": "20"
+        },
+        {
+          "id": "c",
+          "label": "15"
+        },
+        {
+          "id": "d",
+          "label": "10"
+        }
+      ],
+      "correctOption": "a",
+      "expectedAnswer": "30",
+      "hint": "Folosește proprietatea fundamentală a proporțiilor pentru a afla valoarea lui $2a$.",
+      "solution": [
+        "Din proporția $\\frac{a}{4} = \\frac{5}{2}$, obținem $2a = 4 \\cdot 5$, deci $2a = 20$.",
+        "Înlocuind în expresie, avem $2a + 10 = 20 + 10 = 30$."
+      ]
+    },
+    {
+      "id": "en26m-I-4",
+      "number": "4",
+      "points": 5,
+      "competency": "Procente",
+      "prompt": "Dintre cei $250$ de elevi participanți la un concurs, $40\\%$ sunt băieți. Numărul băieților care participă la concurs este egal cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "160"
+        },
+        {
+          "id": "b",
+          "label": "150"
+        },
+        {
+          "id": "c",
+          "label": "100"
+        },
+        {
+          "id": "d",
+          "label": "90"
+        }
+      ],
+      "correctOption": "c",
+      "expectedAnswer": "100",
+      "hint": "Calculează $40\\%$ din $250$ înmulțind fracția $\\frac{40}{100}$ cu $250$.",
+      "solution": [
+        "Numărul băieților este $40\\%$ din $250$.",
+        "$\\frac{40}{100} \\cdot 250 = 40 \\cdot 2,5 = 100$."
+      ]
+    },
+    {
+      "id": "en26m-I-5",
+      "number": "5",
+      "points": 5,
+      "competency": "Media aritmetică și numere reale",
+      "prompt": "Patru elevi, Ioan, Mihai, Gabriela și Maria, au calculat media aritmetică a numerelor $a = \\sqrt{12}$ și $b = 10 - 2\\sqrt{3}$. Rezultatele obținute de cei patru elevi sunt prezentate în tabelul de mai jos:\n\n| Ioan | Mihai | Gabriela | Maria |\n|---|---|---|---|\n| $10$ | $5 + 2\\sqrt{3}$ | $5$ | $5 - 2\\sqrt{3}$ |\n\nConform informațiilor din tabel, rezultatul corect a fost obținut de:",
+      "options": [
+        {
+          "id": "a",
+          "label": "Ioan"
+        },
+        {
+          "id": "b",
+          "label": "Mihai"
+        },
+        {
+          "id": "c",
+          "label": "Gabriela"
+        },
+        {
+          "id": "d",
+          "label": "Maria"
+        }
+      ],
+      "correctOption": "c",
+      "expectedAnswer": "Gabriela",
+      "hint": "Scoate factorii de sub radical pentru $a$ și apoi aplică formula mediei aritmetice: $m_a = \\frac{a + b}{2}$.",
+      "solution": [
+        "Simplificăm numărul $a$: $a = \\sqrt{12} = 2\\sqrt{3}$.",
+        "Calculăm media aritmetică: $m_a = \\frac{a + b}{2} = \\frac{2\\sqrt{3} + 10 - 2\\sqrt{3}}{2}$.",
+        "$m_a = \\frac{10}{2} = 5$.",
+        "Rezultatul corect a fost obținut de Gabriela."
+      ]
+    },
+    {
+      "id": "en26m-I-6",
+      "number": "6",
+      "points": 5,
+      "competency": "Interpretare date din diagrame",
+      "prompt": "În diagrama de mai jos sunt prezentate informații despre numărul de mașini vândute de un comerciant în primele patru luni ale anului 2025.\n\nAfirmația: „Conform informațiilor din diagramă, cele mai multe mașini au fost vândute în luna februarie.” este:",
+      "options": [
+        {
+          "id": "a",
+          "label": "adevărată"
+        },
+        {
+          "id": "b",
+          "label": "falsă"
+        }
+      ],
+      "correctOption": "b",
+      "expectedAnswer": "falsă",
+      "hint": "Compară înălțimea barei corespunzătoare lunii februarie cu înălțimea celorlalte bare din diagramă.",
+      "solution": [
+        "Conform diagramei, în luna februarie s-au vândut $2000$ de mașini.",
+        "În luna aprilie s-au vândut $2500$ de mașini, ceea ce reprezintă un număr mai mare decât în luna februarie.",
+        "Prin urmare, afirmația este falsă."
+      ],
+      "figureDescription": "Diagramă cu bare care prezintă numărul de mașini vândute în primele patru luni ale anului 2025. Axa orizontală reprezintă lunile: Ianuarie, Februarie, Martie, Aprilie. Axa verticală reprezintă numărul de mașini, de la 0 la 3000. Valorile sunt: Ianuarie - 1000, Februarie - 2000, Martie - 500, Aprilie - 2500.",
+      "figure": {
+        "kind": "bar-chart",
+        "labels": [
+          "Ianuarie",
+          "Februarie",
+          "Martie",
+          "Aprilie"
+        ],
+        "values": [
+          1000,
+          2000,
+          500,
+          2500
+        ]
+      }
+    }
+  ]
+}

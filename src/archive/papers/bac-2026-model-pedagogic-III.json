@@ -1,0 +1,92 @@
+{
+  "id": "III",
+  "title": "SUBIECTUL al III-lea",
+  "instructions": "Toate subiectele sunt obligatorii. Se acordă zece puncte din oficiu. Timpul de lucru efectiv este de trei ore.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac26m-pd-III-1",
+      "number": "III.1",
+      "points": 5,
+      "competency": "Calculul determinantului unei matrice",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$, $A = \\begin{pmatrix} 1 & 6 \\\\ 0 & -2 \\end{pmatrix}$, $B = \\begin{pmatrix} 1 & 2 \\\\ 0 & 0 \\end{pmatrix}$ și $M(x,y) = xA + yB$, unde $x$ și $y$ sunt numere reale. Arătați că $\\det A = -2$.",
+      "expectedAnswer": "$-2$",
+      "hint": "Folosiți formula determinantului pentru o matrice de ordinul 2: produsul elementelor de pe diagonala principală minus produsul elementelor de pe diagonala secundară.",
+      "solution": [
+        "$\\det A = \\begin{vmatrix} 1 & 6 \\\\ 0 & -2 \\end{vmatrix} = 1 \\cdot (-2) - 6 \\cdot 0 =$",
+        "$= -2 - 0 = -2$"
+      ],
+      "figureDescription": ""
+    },
+    {
+      "id": "bac26m-pd-III-2",
+      "number": "III.2",
+      "points": 5,
+      "competency": "Operații cu matrice",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$, $A = \\begin{pmatrix} 1 & 6 \\\\ 0 & -2 \\end{pmatrix}$, $B = \\begin{pmatrix} 1 & 2 \\\\ 0 & 0 \\end{pmatrix}$ și $M(x,y) = xA + yB$, unde $x$ și $y$ sunt numere reale. Determinați numărul real $a$ pentru care $A + 2I_2 = aB$.",
+      "expectedAnswer": "$a = 3$",
+      "hint": "Calculați mai întâi matricea $A + 2I_2$ adunând elementele corespunzătoare.",
+      "solution": [
+        "$A + 2I_2 = \\begin{pmatrix} 1 & 6 \\\\ 0 & -2 \\end{pmatrix} + \\begin{pmatrix} 2 & 0 \\\\ 0 & 2 \\end{pmatrix} = \\begin{pmatrix} 3 & 6 \\\\ 0 & 0 \\end{pmatrix} = 3B$",
+        "$3B = aB$, de unde obținem $a = 3$"
+      ],
+      "figureDescription": ""
+    },
+    {
+      "id": "bac26m-pd-III-3",
+      "number": "III.3",
+      "points": 5,
+      "competency": "Înmulțirea matricelor",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$, $A = \\begin{pmatrix} 1 & 6 \\\\ 0 & -2 \\end{pmatrix}$, $B = \\begin{pmatrix} 1 & 2 \\\\ 0 & 0 \\end{pmatrix}$ și $M(x,y) = xA + yB$, unde $x$ și $y$ sunt numere reale. Arătați că $A \\cdot A + A = 2I_2$.",
+      "expectedAnswer": "Demonstrație completă.",
+      "hint": "Calculați produsul $A \\cdot A$ înmulțind liniile primei matrice cu coloanele celeilalte.",
+      "solution": [
+        "$A \\cdot A = \\begin{pmatrix} 1 & -6 \\\\ 0 & 4 \\end{pmatrix}$",
+        "$A \\cdot A + A = \\begin{pmatrix} 2 & 0 \\\\ 0 & 2 \\end{pmatrix} = 2 \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix} = 2I_2$"
+      ],
+      "figureDescription": ""
+    },
+    {
+      "id": "bac26m-pd-III-4",
+      "number": "III.4",
+      "points": 5,
+      "competency": "Ecuații matriceale",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$, $A = \\begin{pmatrix} 1 & 6 \\\\ 0 & -2 \\end{pmatrix}$, $B = \\begin{pmatrix} 1 & 2 \\\\ 0 & 0 \\end{pmatrix}$ și $M(x,y) = xA + yB$, unde $x$ și $y$ sunt numere reale. Determinați numerele reale $x$ și $y$ pentru care $M(x,y) \\cdot A = B$.",
+      "expectedAnswer": "$x = 0$ și $y = 1$",
+      "hint": "Calculați matricea $M(x,y)$ și apoi produsul $M(x,y) \\cdot A$, egalând rezultatul cu $B$ element cu element.",
+      "solution": [
+        "$M(x,y) = \\begin{pmatrix} x+y & 6x+2y \\\\ 0 & -2x \\end{pmatrix} \\Rightarrow M(x,y) \\cdot A = \\begin{pmatrix} x+y & -6x+2y \\\\ 0 & 4x \\end{pmatrix}$, pentru orice numere reale $x$ și $y$",
+        "$\\begin{pmatrix} x+y & -6x+2y \\\\ 0 & 4x \\end{pmatrix} = \\begin{pmatrix} 1 & 2 \\\\ 0 & 0 \\end{pmatrix}$, de unde obținem $x = 0$ și $y = 1$"
+      ],
+      "figureDescription": ""
+    },
+    {
+      "id": "bac26m-pd-III-5",
+      "number": "III.5",
+      "points": 5,
+      "competency": "Proprietăți ale determinanților",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$, $A = \\begin{pmatrix} 1 & 6 \\\\ 0 & -2 \\end{pmatrix}$, $B = \\begin{pmatrix} 1 & 2 \\\\ 0 & 0 \\end{pmatrix}$ și $M(x,y) = xA + yB$, unde $x$ și $y$ sunt numere reale. Arătați că, dacă $x$ și $y$ sunt numere reale distincte astfel încât $\\det(M(x,y)) = \\det(M(y,x))$, atunci $x + y = 0$.",
+      "expectedAnswer": "Demonstrație completă.",
+      "hint": "Exprimați determinantul matricei $M(x,y)$ în funcție de $x$ și $y$, apoi folosiți ipoteza că $x \\neq y$.",
+      "solution": [
+        "$\\det(M(x,y)) = -2x(x+y)$, $\\det(M(y,x)) = -2y(x+y)$, pentru orice numere reale $x$ și $y$",
+        "$-2x(x+y) = -2y(x+y)$, deci $(x+y)(x-y) = 0$ și, cum $x$ și $y$ sunt numere reale distincte, rezultă că $x+y = 0$"
+      ],
+      "figureDescription": ""
+    },
+    {
+      "id": "bac26m-pd-III-6",
+      "number": "III.6",
+      "points": 5,
+      "competency": "Ecuații cu matrice",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$, $A = \\begin{pmatrix} 1 & 6 \\\\ 0 & -2 \\end{pmatrix}$, $B = \\begin{pmatrix} 1 & 2 \\\\ 0 & 0 \\end{pmatrix}$ și $M(x,y) = xA + yB$, unde $x$ și $y$ sunt numere reale. Determinați numerele reale $x$ pentru care $M(x,x) \\cdot M(x,-x) = M(-2,2)$.",
+      "expectedAnswer": "$x \\in \\{-1, 1\\}$",
+      "hint": "Calculați $M(x,x)$ și $M(x,-x)$, apoi efectuați înmulțirea și identificați ecuația în $x$.",
+      "solution": [
+        "$M(x,x) \\cdot M(x,-x) = \\begin{pmatrix} 2x & 8x \\\\ 0 & -2x \\end{pmatrix} \\begin{pmatrix} 0 & 4x \\\\ 0 & -2x \\end{pmatrix} = x^2 \\begin{pmatrix} 0 & -8 \\\\ 0 & 4 \\end{pmatrix} = x^2 M(-2,2)$, pentru orice număr real $x$",
+        "$x^2 M(-2,2) = M(-2,2)$, de unde obținem $x = -1$ sau $x = 1$"
+      ],
+      "figureDescription": ""
+    }
+  ]
+}

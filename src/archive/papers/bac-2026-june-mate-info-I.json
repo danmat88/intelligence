@@ -1,0 +1,93 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Toate subiectele sunt obligatorii. Se acordă zece puncte din oficiu. Timpul de lucru efectiv este de trei ore.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac26j-mi-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Numere complexe",
+      "prompt": "Se consideră numărul complex $z = 3 - i$. Arătați că $z(z + 2i) = 10$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Înlocuiește $z$ în expresia dată și folosește faptul că $i^2 = -1$.",
+      "solution": [
+        "$z(z + 2i) = (3 - i)(3 - i + 2i) = (3 - i)(3 + i)$",
+        "Folosind formula $(a-b)(a+b) = a^2 - b^2$, obținem $3^2 - i^2 = 9 - i^2$.",
+        "Cum $i^2 = -1$, rezultă $9 - (-1) = 10$."
+      ]
+    },
+    {
+      "id": "bac26j-mi-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Funcții",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 3x - 4$. Determinați numărul real $a$ pentru care $f(a) + f(-2a) = a$.",
+      "expectedAnswer": "$a = -2$",
+      "hint": "Calculează $f(a)$ și $f(-2a)$ folosind expresia funcției, apoi înlocuiește în ecuația dată.",
+      "solution": [
+        "$f(a) = 3a - 4$ și $f(-2a) = 3(-2a) - 4 = -6a - 4$, pentru orice număr real $a$.",
+        "Ecuația devine $3a - 4 + (-6a - 4) = a$, adică $-3a - 8 = a$.",
+        "$-4a = 8$, de unde obținem $a = -2$."
+      ]
+    },
+    {
+      "id": "bac26j-mi-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Ecuații iraționale",
+      "prompt": "Rezolvați în mulțimea numerelor reale ecuația $\\sqrt{x^2 + 7} = 2\\sqrt{x + 1}$.",
+      "expectedAnswer": "$x \\in \\{1, 3\\}$",
+      "hint": "Ridică ambii membri ai ecuației la pătrat și rezolvă ecuația de gradul al doilea rezultată, apoi verifică soluțiile.",
+      "solution": [
+        "Prin ridicarea la pătrat a ambilor membri, obținem $x^2 + 7 = 4(x + 1)$.",
+        "Ecuația devine $x^2 + 7 = 4x + 4$, adică $x^2 - 4x + 3 = 0$.",
+        "Soluțiile ecuației de gradul al doilea sunt $x = 1$ și $x = 3$.",
+        "Ambele soluții verifică ecuația inițială, deci convin."
+      ]
+    },
+    {
+      "id": "bac26j-mi-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Combinatorică",
+      "prompt": "Se consideră mulțimea $A = \\{1, 2, 3, 5, 7\\}$. Determinați câte dintre submulțimile mulțimii $A$ au exact trei elemente și conțin numărul $5$.",
+      "expectedAnswer": "$6$",
+      "hint": "Dacă o submulțime de trei elemente conține deja numărul 5, mai trebuie alese două elemente din restul elementelor mulțimii A.",
+      "solution": [
+        "Numărul submulțimilor cu exact trei elemente ale mulțimii $A$, care conțin elementul $5$, este egal cu numărul submulțimilor cu exact două elemente ale mulțimii $A \\setminus \\{5\\}$.",
+        "Mulțimea $A \\setminus \\{5\\} = \\{1, 2, 3, 7\\}$ are $4$ elemente.",
+        "Numărul submulțimilor cu exact două elemente este $C_4^2 = \\frac{4!}{2!2!} = 6$."
+      ]
+    },
+    {
+      "id": "bac26j-mi-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Geometrie analitică",
+      "prompt": "În reperul cartezian $xOy$ se consideră punctele $A(3,6)$, $B(4,1)$ și $C(5,a)$, unde $a$ este număr real. Determinați numărul real $a$ pentru care dreptele $OA$ și $BC$ sunt paralele.",
+      "expectedAnswer": "$a = 3$",
+      "hint": "Două drepte sunt paralele dacă și numai dacă au pantele egale. Calculează pantele dreptelor OA și BC.",
+      "solution": [
+        "Panta dreptei $OA$ este $m_{OA} = \\frac{y_A - y_O}{x_A - x_O} = \\frac{6 - 0}{3 - 0} = 2$.",
+        "Panta dreptei $BC$ este $m_{BC} = \\frac{y_C - y_B}{x_C - x_B} = \\frac{a - 1}{5 - 4} = a - 1$.",
+        "Dreptele $OA$ și $BC$ sunt paralele dacă $m_{OA} = m_{BC}$, deci $a - 1 = 2$, de unde obținem $a = 3$."
+      ]
+    },
+    {
+      "id": "bac26j-mi-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Trigonometrie",
+      "prompt": "Se consideră expresia $E(x) = (1 + \\operatorname{tg}^2 x) \\sin \\frac{x}{2} + \\cos 3x$, unde $x \\in \\left(0, \\frac{\\pi}{2}\\right)$. Arătați că $E\\left(\\frac{\\pi}{3}\\right) = 1$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Calculează valorile funcțiilor trigonometrice pentru unghiurile obținute prin înlocuirea lui $x$ cu $\\frac{\\pi}{3}$.",
+      "solution": [
+        "Pentru $x = \\frac{\\pi}{3}$, avem $\\operatorname{tg} \\frac{\\pi}{3} = \\sqrt{3}$, $\\sin \\frac{\\pi}{6} = \\frac{1}{2}$ și $\\cos \\pi = -1$.",
+        "Înlocuind în expresie, obținem $E\\left(\\frac{\\pi}{3}\\right) = \\left(1 + (\\sqrt{3})^2\\right) \\cdot \\frac{1}{2} + (-1)$.",
+        "$E\\left(\\frac{\\pi}{3}\\right) = (1 + 3) \\cdot \\frac{1}{2} - 1 = 4 \\cdot \\frac{1}{2} - 1 = 2 - 1 = 1$."
+      ]
+    }
+  ]
+}

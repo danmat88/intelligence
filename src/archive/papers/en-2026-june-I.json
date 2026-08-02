@@ -1,0 +1,217 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Încercuiește litera corespunzătoare răspunsului corect.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "en26j-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Operații cu numere întregi",
+      "prompt": "Rezultatul calculului $12 - 2 \\cdot 5$ este egal cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$50$"
+        },
+        {
+          "id": "b",
+          "label": "$22$"
+        },
+        {
+          "id": "c",
+          "label": "$2$"
+        },
+        {
+          "id": "d",
+          "label": "$0$"
+        }
+      ],
+      "correctOption": "c",
+      "expectedAnswer": "$2$",
+      "hint": "Efectuează mai întâi înmulțirea, apoi scăderea.",
+      "solution": [
+        "Respectând ordinea efectuării operațiilor, calculăm mai întâi produsul:",
+        "$2 \\cdot 5 = 10$",
+        "Apoi efectuăm scăderea:",
+        "$12 - 10 = 2$"
+      ]
+    },
+    {
+      "id": "en26j-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Calcul procentual",
+      "prompt": "Dintre cei $250$ de elevi participanți la un concurs, $40\\%$ sunt băieți. Numărul băieților participanți la acest concurs este egal cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$150$"
+        },
+        {
+          "id": "b",
+          "label": "$125$"
+        },
+        {
+          "id": "c",
+          "label": "$100$"
+        },
+        {
+          "id": "d",
+          "label": "$90$"
+        }
+      ],
+      "correctOption": "c",
+      "expectedAnswer": "$100$",
+      "hint": "Calculează $40\\%$ din $250$ înmulțind fracția $\\frac{40}{100}$ cu $250$.",
+      "solution": [
+        "Numărul băieților reprezintă $40\\%$ din totalul de $250$ de elevi.",
+        "Calculăm: $\\frac{40}{100} \\cdot 250 = \\frac{4}{10} \\cdot 250 = 4 \\cdot 25 = 100$."
+      ]
+    },
+    {
+      "id": "en26j-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Opusul unui număr",
+      "prompt": "Suma dintre numărul $10$ și opusul numărului $10$ este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$\\frac{101}{10}$"
+        },
+        {
+          "id": "b",
+          "label": "$\\frac{11}{10}$"
+        },
+        {
+          "id": "c",
+          "label": "$1$"
+        },
+        {
+          "id": "d",
+          "label": "$0$"
+        }
+      ],
+      "correctOption": "d",
+      "expectedAnswer": "$0$",
+      "hint": "Opusul unui număr $x$ este $-x$. Suma a două numere opuse este întotdeauna $0$.",
+      "solution": [
+        "Opusul numărului $10$ este $-10$.",
+        "Suma lor este: $10 + (-10) = 10 - 10 = 0$."
+      ]
+    },
+    {
+      "id": "en26j-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Transformarea fracțiilor zecimale",
+      "prompt": "Transformând fracția zecimală $1,(2)$ în fracție ordinară se obține:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$\\frac{11}{10}$"
+        },
+        {
+          "id": "b",
+          "label": "$\\frac{6}{5}$"
+        },
+        {
+          "id": "c",
+          "label": "$\\frac{11}{9}$"
+        },
+        {
+          "id": "d",
+          "label": "$\\frac{4}{3}$"
+        }
+      ],
+      "correctOption": "c",
+      "expectedAnswer": "$\\frac{11}{9}$",
+      "hint": "Pentru a transforma o fracție zecimală periodică simplă, scade partea întreagă din numărul format (fără virgulă) și împarte la atâția de $9$ câte cifre are perioada.",
+      "solution": [
+        "Aplicăm regula de transformare a fracțiilor zecimale periodice simple:",
+        "$1,(2) = \\frac{12 - 1}{9} = \\frac{11}{9}$."
+      ]
+    },
+    {
+      "id": "en26j-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Proporții și numere reale",
+      "prompt": "Patru elevi, Ioana, Andreea, Luca și Radu, determină numărul real $x$ din proporția $\\frac{\\sqrt{5} - 1}{2} = \\frac{x}{\\sqrt{5} + 1}$.\n\nRăspunsurile date de cei patru elevi sunt prezentate în tabelul de mai jos:\n\n| Ioana | Andreea | Luca | Radu |\n|---|---|---|---|\n| $1$ | $2$ | $3$ | $4$ |\n\nRăspunsul corect a fost obținut de către:",
+      "options": [
+        {
+          "id": "a",
+          "label": "Ioana"
+        },
+        {
+          "id": "b",
+          "label": "Andreea"
+        },
+        {
+          "id": "c",
+          "label": "Luca"
+        },
+        {
+          "id": "d",
+          "label": "Radu"
+        }
+      ],
+      "correctOption": "b",
+      "expectedAnswer": "Andreea",
+      "hint": "Într-o proporție, produsul extremilor este egal cu produsul mezilor. Folosește formula $(a-b)(a+b) = a^2 - b^2$.",
+      "solution": [
+        "Din proporția $\\frac{\\sqrt{5} - 1}{2} = \\frac{x}{\\sqrt{5} + 1}$, obținem:",
+        "$2x = (\\sqrt{5} - 1)(\\sqrt{5} + 1)$",
+        "Aplicăm formula diferenței de pătrate: $2x = (\\sqrt{5})^2 - 1^2 = 5 - 1 = 4$",
+        "$x = \\frac{4}{2} = 2$",
+        "Elevul care a obținut rezultatul $2$ este Andreea."
+      ]
+    },
+    {
+      "id": "en26j-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Interpretarea diagramelor",
+      "prompt": "În diagrama de mai jos sunt prezentate informații despre numărul de mașini vândute de un comerciant în primele patru luni ale anului 2026.\n\nAfirmația: „Conform informațiilor din diagramă, cele mai puține mașini au fost vândute în luna martie.” este:",
+      "options": [
+        {
+          "id": "a",
+          "label": "adevărată"
+        },
+        {
+          "id": "b",
+          "label": "falsă"
+        }
+      ],
+      "correctOption": "a",
+      "expectedAnswer": "adevărată",
+      "hint": "Compară înălțimea barelor din diagramă pentru a găsi luna cu cele mai puține vânzări.",
+      "solution": [
+        "Analizând diagrama, observăm numărul de mașini vândute în fiecare lună:",
+        "Ianuarie: $1000$",
+        "Februarie: $2000$",
+        "Martie: $500$",
+        "Aprilie: $2500$",
+        "Cea mai mică valoare este $500$, corespunzătoare lunii martie. Prin urmare, afirmația este adevărată."
+      ],
+      "figureDescription": "O diagramă cu bare care prezintă numărul de mașini vândute în primele patru luni ale anului 2026. Axa orizontală reprezintă lunile: Ianuarie, Februarie, Martie, Aprilie. Axa verticală reprezintă numărul de mașini, de la 0 la 3000, din 500 în 500. Bara pentru Ianuarie este la 1000, Februarie la 2000, Martie la 500, Aprilie la 2500.",
+      "figure": {
+        "kind": "bar-chart",
+        "labels": [
+          "Ianuarie",
+          "Februarie",
+          "Martie",
+          "Aprilie"
+        ],
+        "values": [
+          1000,
+          2000,
+          500,
+          2500
+        ]
+      }
+    }
+  ]
+}

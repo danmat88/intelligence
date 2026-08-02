@@ -1,0 +1,95 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Rezolvați toate exercițiile, scriind rezolvările complete.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac23j-th-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Calcul aritmetic",
+      "prompt": "Arătați că $3 \\cdot \\left(1 + \\frac{1}{2}\\right) - \\frac{1}{2} = 4$.",
+      "expectedAnswer": "4",
+      "hint": "Aduceți la același numitor în paranteză, apoi efectuați înmulțirea.",
+      "solution": [
+        "$3 \\cdot \\left(1 + \\frac{1}{2}\\right) - \\frac{1}{2} = 3 \\cdot \\left(\\frac{2}{2} + \\frac{1}{2}\\right) - \\frac{1}{2}$",
+        "$= 3 \\cdot \\frac{3}{2} - \\frac{1}{2}$",
+        "$= \\frac{9}{2} - \\frac{1}{2} = \\frac{8}{2} = 4$"
+      ]
+    },
+    {
+      "id": "bac23j-th-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Valoarea unei funcții",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = x + 2$. Determinați numărul real $a$ pentru care $f(a) = 6$.",
+      "expectedAnswer": "$a = 4$",
+      "hint": "Înlocuiți $x$ cu $a$ în expresia funcției și egalați rezultatul cu 6.",
+      "solution": [
+        "Calculăm valoarea funcției în punctul $a$: $f(a) = a + 2$.",
+        "Din ipoteză, $f(a) = 6$, deci obținem ecuația $a + 2 = 6$.",
+        "Rezolvând ecuația, rezultă $a = 4$."
+      ]
+    },
+    {
+      "id": "bac23j-th-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Ecuații logaritmice",
+      "prompt": "Rezolvați în mulțimea numerelor reale ecuația $\\log_7(2x + 1) = \\log_7 9$.",
+      "expectedAnswer": "$x = 4$",
+      "hint": "Datorită injectivității funcției logaritmice, argumentele celor doi logaritmi trebuie să fie egale.",
+      "solution": [
+        "Din egalitatea logaritmilor cu aceeași bază, rezultă egalitatea argumentelor: $2x + 1 = 9$.",
+        "Rezolvăm ecuația de gradul întâi: $2x = 8 \\implies x = 4$.",
+        "Verificăm condiția de existență a logaritmului: $2(4) + 1 = 9 > 0$, deci soluția $x = 4$ convine."
+      ]
+    },
+    {
+      "id": "bac23j-th-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Probabilități",
+      "prompt": "Calculați probabilitatea ca, alegând un număr $n$ din mulțimea $A = \\{1, 2, 3, \\dots, 23\\}$, acesta să verifice inegalitatea $n \\ge 10$.",
+      "expectedAnswer": "$p = \\frac{14}{23}$",
+      "hint": "Probabilitatea este raportul dintre numărul cazurilor favorabile și numărul total de cazuri posibile.",
+      "solution": [
+        "Mulțimea $A$ are $23$ de elemente, deci numărul cazurilor posibile este $23$.",
+        "Cazurile favorabile sunt numerele $n \\in A$ care verifică inegalitatea $n \\ge 10$, adică elementele $\\{10, 11, \\dots, 23\\}$.",
+        "Numărul cazurilor favorabile este $23 - 10 + 1 = 14$.",
+        "Probabilitatea este $p = \\frac{\\text{nr. cazuri favorabile}}{\\text{nr. cazuri posibile}} = \\frac{14}{23}$."
+      ]
+    },
+    {
+      "id": "bac23j-th-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Geometrie analitică",
+      "prompt": "În reperul cartezian $xOy$ se consideră punctele $A(-1, 2)$ și $B(1, 6)$. Determinați coordonatele mijlocului segmentului $AB$.",
+      "expectedAnswer": "$M(0, 4)$",
+      "hint": "Coordonatele mijlocului unui segment sunt mediile aritmetice ale coordonatelor capetelor sale.",
+      "solution": [
+        "Fie $M(x_M, y_M)$ mijlocul segmentului $AB$.",
+        "Abscisa punctului $M$ este $x_M = \\frac{x_A + x_B}{2} = \\frac{-1 + 1}{2} = 0$.",
+        "Ordonata punctului $M$ este $y_M = \\frac{y_A + y_B}{2} = \\frac{2 + 6}{2} = \\frac{8}{2} = 4$.",
+        "Coordonatele mijlocului segmentului $AB$ sunt $M(0, 4)$."
+      ]
+    },
+    {
+      "id": "bac23j-th-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Teorema lui Pitagora",
+      "prompt": "Se consideră triunghiul $ABC$, dreptunghic în $A$, cu $AC = \\sqrt{2}$ și $BC = 2$. Arătați că triunghiul $ABC$ este isoscel.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Folosiți teorema lui Pitagora pentru a calcula lungimea catetei $AB$.",
+      "solution": [
+        "Aplicăm teorema lui Pitagora în triunghiul dreptunghic $ABC$: $AB^2 + AC^2 = BC^2$.",
+        "Calculăm lungimea catetei $AB$: $AB = \\sqrt{BC^2 - AC^2} = \\sqrt{2^2 - (\\sqrt{2})^2}$.",
+        "$AB = \\sqrt{4 - 2} = \\sqrt{2}$.",
+        "Deoarece $AB = \\sqrt{2}$ și $AC = \\sqrt{2}$, rezultă că $AB = AC$, deci triunghiul $ABC$ este isoscel."
+      ]
+    }
+  ]
+}

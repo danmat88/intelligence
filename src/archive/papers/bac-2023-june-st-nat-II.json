@@ -1,0 +1,95 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL al II-lea",
+  "instructions": "Rezolvați toate exercițiile.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac23j-sn-II-1",
+      "number": "1.a)",
+      "points": 5,
+      "competency": "Calculul determinantului unei matrice",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$ și $A(a) = \\begin{pmatrix} 3+a & 2-2a \\\\ 1-a & 1+3a \\end{pmatrix}$, unde $a$ este număr real.\n\nArătați că $\\det(A(0)) = 1$.",
+      "expectedAnswer": "$1$",
+      "hint": "Înlocuiți $a$ cu $0$ în expresia matricei $A(a)$ și calculați determinantul matricei obținute.",
+      "solution": [
+        "$A(0) = \\begin{pmatrix} 3 & 2 \\\\ 1 & 1 \\end{pmatrix}$",
+        "$\\det(A(0)) = \\begin{vmatrix} 3 & 2 \\\\ 1 & 1 \\end{vmatrix} = 3 \\cdot 1 - 2 \\cdot 1 = 3 - 2 = 1$"
+      ]
+    },
+    {
+      "id": "bac23j-sn-II-2",
+      "number": "1.b)",
+      "points": 5,
+      "competency": "Operații cu matrice",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$ și $A(a) = \\begin{pmatrix} 3+a & 2-2a \\\\ 1-a & 1+3a \\end{pmatrix}$, unde $a$ este număr real.\n\nArătați că $A(0) \\cdot (A(a) - A(0)) = a I_2$, pentru orice număr real $a$.",
+      "expectedAnswer": "Egalitatea este adevărată.",
+      "hint": "Calculați mai întâi diferența $A(a) - A(0)$, apoi înmulțiți rezultatul la stânga cu matricea $A(0)$.",
+      "solution": [
+        "$A(a) - A(0) = \\begin{pmatrix} 3+a & 2-2a \\\\ 1-a & 1+3a \\end{pmatrix} - \\begin{pmatrix} 3 & 2 \\\\ 1 & 1 \\end{pmatrix} = \\begin{pmatrix} a & -2a \\\\ -a & 3a \\end{pmatrix}$",
+        "$A(0) \\cdot (A(a) - A(0)) = \\begin{pmatrix} 3 & 2 \\\\ 1 & 1 \\end{pmatrix} \\cdot \\begin{pmatrix} a & -2a \\\\ -a & 3a \\end{pmatrix} = \\begin{pmatrix} 3a - 2a & -6a + 6a \\\\ a - a & -2a + 3a \\end{pmatrix} = \\begin{pmatrix} a & 0 \\\\ 0 & a \\end{pmatrix}$",
+        "$\\begin{pmatrix} a & 0 \\\\ 0 & a \\end{pmatrix} = a \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix} = a I_2$, pentru orice număr real $a$."
+      ]
+    },
+    {
+      "id": "bac23j-sn-II-3",
+      "number": "1.c)",
+      "points": 5,
+      "competency": "Determinantul unei expresii matriceale",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$ și $A(a) = \\begin{pmatrix} 3+a & 2-2a \\\\ 1-a & 1+3a \\end{pmatrix}$, unde $a$ este număr real.\n\nDemonstrați că $\\det(A(a^2) - a A(a)) \\ge 0$, pentru orice număr real $a$.",
+      "expectedAnswer": "$\\det(A(a^2) - a A(a)) = (1-a)^2 \\ge 0$",
+      "hint": "Calculați matricea $A(a^2) - a A(a)$ și apoi determinantul acesteia, arătând că este un pătrat perfect.",
+      "solution": [
+        "$A(a^2) = \\begin{pmatrix} 3+a^2 & 2-2a^2 \\\\ 1-a^2 & 1+3a^2 \\end{pmatrix}$",
+        "$a A(a) = \\begin{pmatrix} 3a+a^2 & 2a-2a^2 \\\\ a-a^2 & a+3a^2 \\end{pmatrix}$",
+        "$A(a^2) - a A(a) = \\begin{pmatrix} 3-3a & 2-2a \\\\ 1-a & 1-a \\end{pmatrix}$",
+        "$\\det(A(a^2) - a A(a)) = (3-3a)(1-a) - (2-2a)(1-a) = 3(1-a)^2 - 2(1-a)^2 = (1-a)^2$",
+        "Cum $(1-a)^2 \\ge 0$ pentru orice număr real $a$, rezultă că $\\det(A(a^2) - a A(a)) \\ge 0$."
+      ]
+    },
+    {
+      "id": "bac23j-sn-II-4",
+      "number": "2.a)",
+      "points": 5,
+      "competency": "Calculul valorii unei legi de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x \\circ y = x^2 - 4xy + 3y^2$.\n\nArătați că $0 \\circ 2 = 12$.",
+      "expectedAnswer": "$12$",
+      "hint": "Înlocuiți $x$ cu $0$ și $y$ cu $2$ în expresia legii de compoziție.",
+      "solution": [
+        "$0 \\circ 2 = 0^2 - 4 \\cdot 0 \\cdot 2 + 3 \\cdot 2^2$",
+        "$0 \\circ 2 = 0 - 0 + 12 = 12$"
+      ]
+    },
+    {
+      "id": "bac23j-sn-II-5",
+      "number": "2.b)",
+      "points": 5,
+      "competency": "Rezolvarea unei ecuații folosind legea de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x \\circ y = x^2 - 4xy + 3y^2$.\n\nDeterminați numerele reale $x$ pentru care $(2x) \\circ x = -1$.",
+      "expectedAnswer": "$x \\in \\{-1, 1\\}$",
+      "hint": "Calculați $(2x) \\circ x$ folosind definiția legii de compoziție și egalați rezultatul cu $-1$.",
+      "solution": [
+        "$(2x) \\circ x = (2x)^2 - 4(2x)x + 3x^2 = 4x^2 - 8x^2 + 3x^2 = -x^2$, pentru orice număr real $x$.",
+        "Ecuația devine $-x^2 = -1$, adică $x^2 = 1$.",
+        "Obținem soluțiile $x = -1$ sau $x = 1$."
+      ]
+    },
+    {
+      "id": "bac23j-sn-II-6",
+      "number": "2.c)",
+      "points": 5,
+      "competency": "Rezolvarea unei ecuații diofantice folosind legea de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x \\circ y = x^2 - 4xy + 3y^2$.\n\nDeterminați perechile $(m, n)$ de numere întregi, cu $m < n$, pentru care $m \\circ n = 3$.",
+      "expectedAnswer": "$(-4, -1)$ și $(0, 1)$",
+      "hint": "Descompuneți expresia $m \\circ n$ în factori și folosiți faptul că $m$ și $n$ sunt numere întregi cu $m < n$.",
+      "solution": [
+        "$m \\circ n = m^2 - 4mn + 3n^2 = m^2 - mn - 3mn + 3n^2 = m(m-n) - 3n(m-n) = (m-n)(m-3n)$",
+        "Ecuația devine $(m-n)(m-3n) = 3$, unde $m, n \\in \\mathbb{Z}$.",
+        "Cum $m < n$, rezultă că $m - n < 0$. Divizorii întregi negativi ai lui $3$ sunt $-1$ și $-3$.",
+        "Cazul 1: $m - n = -1$ și $m - 3n = -3$. Scăzând ecuațiile obținem $2n = 2 \\Rightarrow n = 1$, de unde $m = 0$.",
+        "Cazul 2: $m - n = -3$ și $m - 3n = -1$. Scăzând ecuațiile obținem $2n = -2 \\Rightarrow n = -1$, de unde $m = -4$.",
+        "Obținem perechile $(-4, -1)$ și $(0, 1)$."
+      ]
+    }
+  ]
+}

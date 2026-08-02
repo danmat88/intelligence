@@ -6,15 +6,15 @@ import Animated, {
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
-  withSpring,
   withTiming,
 } from 'react-native-reanimated'
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 
 /**
- * Tactile feedback entirely on the UI thread. Fast taps cancel the previous
- * response instead of stacking animations and delaying the next action.
+ * Tactile feedback entirely on the UI thread. A fixed, very short timing is
+ * used instead of a spring so controls never remain visually "pressed" while
+ * the next screen is already opening.
  *
  * Layout and visuals intentionally live on the same native node. Keeping flex,
  * percentage width or absolute positioning on an animated child makes the
@@ -24,8 +24,8 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 export default function Press({
   style,
   containerStyle,
-  scaleTo = 0.98,
-  pressDepth = 3.5,
+  scaleTo = 0.985,
+  pressDepth = 2,
   children,
   ...rest
 }: Omit<PressableProps, 'style' | 'children'> & {
@@ -37,21 +37,21 @@ export default function Press({
 }) {
   const reduceMotion = useReducedMotion()
   const pressed = useSharedValue(0)
+  const effectiveDepth = Math.min(Math.max(pressDepth, 0), 8)
 
   const move = (to: number) => {
     cancelAnimation(pressed)
     pressed.value = reduceMotion
       ? to
-      : withSpring(to, {
-          damping: 18,
-          stiffness: 350,
-          mass: 0.4,
+      : withTiming(to, {
+          duration: to === 1 ? 42 : 72,
+          easing: Easing.out(Easing.quad),
         })
   }
 
   const animated = useAnimatedStyle(() => ({
     transform: [
-      { translateY: pressed.value * pressDepth },
+      { translateY: pressed.value * effectiveDepth },
       { scale: 1 - pressed.value * (1 - scaleTo) },
     ],
   }))
@@ -59,6 +59,7 @@ export default function Press({
   return (
     <AnimatedPressable
       {...rest}
+      unstable_pressDelay={0}
       style={[style, containerStyle, animated]}
       onPressIn={(event) => {
         if (!rest.disabled) move(1)

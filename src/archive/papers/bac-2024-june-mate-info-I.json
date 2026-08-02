@@ -1,0 +1,86 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Toate subiectele sunt obligatorii. Se acordă zece puncte din oficiu. Timpul de lucru efectiv este de trei ore.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac24j-mi-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Calcul cu logaritmi",
+      "prompt": "Arătați că $2\\lg 100 + \\lg 2 + \\lg 5 = 5$.",
+      "expectedAnswer": "5",
+      "hint": "Folosiți proprietatea logaritmilor $\\lg a + \\lg b = \\lg(a \\cdot b)$ și faptul că $\\lg 100 = 2$.",
+      "solution": [
+        "$2\\lg 100 + \\lg 2 + \\lg 5 = 2 \\cdot 2 + \\lg 10 =$",
+        "$= 4 + 1 = 5$"
+      ]
+    },
+    {
+      "id": "bac24j-mi-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Ecuații cu funcții",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = x - 6$. Determinați numărul real $a$ pentru care $f(a) + f(3a) = 0$.",
+      "expectedAnswer": "$a = 3$",
+      "hint": "Calculați $f(a)$ și $f(3a)$ înlocuind pe $x$ cu $a$, respectiv $3a$, apoi rezolvați ecuația obținută.",
+      "solution": [
+        "$f(a) = a - 6$, $f(3a) = 3a - 6$",
+        "$a - 6 + 3a - 6 = 0$, de unde obținem $a = 3$"
+      ]
+    },
+    {
+      "id": "bac24j-mi-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Ecuații exponențiale",
+      "prompt": "Rezolvați în mulțimea numerelor reale ecuația $5^{3x} \\cdot 5^2 = 5^x$.",
+      "expectedAnswer": "$x = -1$",
+      "hint": "Folosiți regula de înmulțire a puterilor cu aceeași bază: $a^m \\cdot a^n = a^{m+n}$.",
+      "solution": [
+        "$5^{3x+2} = 5^x$, de unde obținem $3x + 2 = x$",
+        "$x = -1$"
+      ]
+    },
+    {
+      "id": "bac24j-mi-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Combinatorică",
+      "prompt": "Determinați câte submulțimi cu două elemente, ambele numere pare, are mulțimea $A = \\{1, 2, 4, 6, 8, 9\\}$.",
+      "expectedAnswer": "6",
+      "hint": "Identificați numerele pare din mulțimea $A$ și calculați combinări de $n$ luate câte $2$, unde $n$ este numărul acestora.",
+      "solution": [
+        "În mulțimea $A$ sunt $4$ numere pare.",
+        "Sunt $C_4^2 = \\frac{4!}{2! \\cdot 2!} = 6$ submulțimi cu două elemente, ambele numere pare."
+      ]
+    },
+    {
+      "id": "bac24j-mi-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Vectori în plan",
+      "prompt": "În reperul cartezian $xOy$ se consideră punctele $A(3,1)$ și $B(3,0)$. Determinați coordonatele punctului $C$ pentru care $\\overrightarrow{AC} = \\overrightarrow{OB}$.",
+      "expectedAnswer": "$C(6, 1)$",
+      "hint": "Exprimați vectorii $\\overrightarrow{AC}$ și $\\overrightarrow{OB}$ în funcție de coordonatele punctelor și egalați componentele corespunzătoare.",
+      "solution": [
+        "$\\overrightarrow{AC} = (x_C - 3)\\vec{i} + (y_C - 1)\\vec{j}$, $\\overrightarrow{OB} = 3\\vec{i}$",
+        "$(x_C - 3)\\vec{i} + (y_C - 1)\\vec{j} = 3\\vec{i}$, de unde obținem $x_C = 6$ și $y_C = 1$"
+      ]
+    },
+    {
+      "id": "bac24j-mi-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Geometrie plană și trigonometrie",
+      "prompt": "Se consideră triunghiul $ABC$, dreptunghic în $A$, cu aria egală cu $18$ și $B = \\frac{\\pi}{4}$. Arătați că $AB = 6$.",
+      "expectedAnswer": "$AB = 6$",
+      "hint": "Într-un triunghi dreptunghic cu un unghi de $\\frac{\\pi}{4}$, catetele sunt egale. Folosiți formula ariei triunghiului dreptunghic.",
+      "solution": [
+        "$AB = AC$",
+        "$\\frac{AB \\cdot AB}{2} = 18$, deci $AB^2 = 36$, de unde obținem $AB = 6$"
+      ]
+    }
+  ]
+}

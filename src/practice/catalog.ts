@@ -144,9 +144,9 @@ const EN_QUICK: PracticeSet = {
 }
 
 const EN_SIMULATION: PracticeSet = {
-  id: 'en-simulare-profu-1',
+  id: 'en-test-mixt-1',
   exam: 'en',
-  title: 'Simulare Profu’',
+  title: 'Test mixt',
   subtitle: 'Set mixt · nivel introductiv',
   duration: 'aprox. 12 minute',
   exercises: [
@@ -218,9 +218,9 @@ const BAC_QUICK: PracticeSet = {
 }
 
 const BAC_SIMULATION: PracticeSet = {
-  id: 'bac-simulare-profu-1',
+  id: 'bac-test-mixt-1',
   exam: 'bac',
-  title: 'Simulare Profu’',
+  title: 'Test mixt',
   subtitle: 'Set mixt · nivel introductiv',
   duration: 'aprox. 14 minute',
   exercises: [

@@ -1,4 +1,5 @@
 import type { PracticeExam, PracticeExercise, PracticeSet } from './catalog'
+import type { BacTrack } from '../product/profile'
 
 export type PracticeChapter =
   | 'mixt'
@@ -7,6 +8,7 @@ export type PracticeChapter =
   | 'geometrie'
   | 'analiza'
   | 'probabilitati'
+  | 'matrice'
 
 export type PracticeConfig = {
   chapter: PracticeChapter
@@ -16,17 +18,31 @@ export type PracticeConfig = {
 
 export const CHAPTERS: Record<PracticeExam, Array<{ id: PracticeChapter; label: string; detail: string }>> = {
   en: [
-    { id: 'mixt', label: 'Mixt', detail: 'Toată programa' },
+    { id: 'mixt', label: 'Mixt', detail: 'Din tipurile disponibile' },
     { id: 'numere', label: 'Numere', detail: 'Calcul, fracții, procente' },
     { id: 'algebra', label: 'Algebră', detail: 'Ecuații și expresii' },
     { id: 'geometrie', label: 'Geometrie', detail: 'Figuri plane și măsurători' },
   ],
   bac: [
-    { id: 'mixt', label: 'Mixt', detail: 'Subiectele I–III' },
+    { id: 'mixt', label: 'Mixt', detail: 'Din tipurile disponibile' },
     { id: 'algebra', label: 'Algebră', detail: 'Ecuații, matrice, progresii' },
     { id: 'analiza', label: 'Analiză', detail: 'Limite, derivate, integrale' },
     { id: 'probabilitati', label: 'Probabilități', detail: 'Numărare și probabilități' },
+    { id: 'matrice', label: 'Matrice', detail: 'Operații, determinanți și sisteme' },
   ],
+}
+
+const BAC_CHAPTERS_BY_TRACK: Record<BacTrack, PracticeChapter[]> = {
+  mate_info: ['mixt', 'algebra', 'analiza', 'probabilitati', 'matrice'],
+  stiinte_naturii: ['mixt', 'algebra', 'analiza', 'probabilitati', 'matrice'],
+  tehnologic: ['mixt', 'algebra', 'analiza', 'probabilitati', 'matrice'],
+  pedagogic: ['mixt', 'algebra', 'geometrie', 'probabilitati', 'matrice'],
+}
+
+export function chaptersFor(exam: PracticeExam, bacTrack?: BacTrack | null) {
+  if (exam === 'en') return CHAPTERS.en
+  const allowed = new Set(BAC_CHAPTERS_BY_TRACK[bacTrack ?? 'mate_info'])
+  return CHAPTERS.bac.filter((chapter) => allowed.has(chapter.id))
 }
 
 const positiveMod = (value: number, modulo: number) => ((value % modulo) + modulo) % modulo
@@ -149,6 +165,39 @@ function bacProbability(seed: number, index: number): PracticeExercise {
   }
 }
 
+function bacMatrix(seed: number, index: number): PracticeExercise {
+  const a = pick(seed, index, 1, 8)
+  const b = pick(seed, index, -4, 10, 1)
+  const c = pick(seed, index, -4, 10, 2)
+  const d = pick(seed, index, 1, 8, 3)
+  const determinant = a * d - b * c
+  return {
+    id: `generated-bac-matrice-${seed}-${index}`,
+    competency: 'Determinanți de ordinul al II-lea',
+    prompt: `Calculează determinantul matricei cu liniile (${a}, ${b}) și (${c}, ${d}).`,
+    answerLabel: 'Determinantul',
+    accepted: [`${determinant}`, `det=${determinant}`],
+    hint: 'Pentru o matrice 2×2, determinantul este produsul diagonalei principale minus produsul celeilalte diagonale.',
+    explanation: `det = ${a} · ${d} − (${b}) · (${c}) = ${determinant}.`,
+  }
+}
+
+function bacGeometry(seed: number, index: number): PracticeExercise {
+  const x1 = pick(seed, index, -5, 11)
+  const x2 = x1 + pick(seed, index, 2, 9, 1)
+  const y = pick(seed, index, -5, 11, 2)
+  const distance = Math.abs(x2 - x1)
+  return {
+    id: `generated-bac-geometrie-${seed}-${index}`,
+    competency: 'Distanța dintre două puncte în plan',
+    prompt: `În planul cartezian se consideră punctele A(${x1}, ${y}) și B(${x2}, ${y}). Calculează lungimea segmentului AB.`,
+    answerLabel: 'AB =',
+    accepted: [`${distance}`, `${distance}u`, `AB=${distance}`],
+    hint: 'Punctele au aceeași ordonată, deci segmentul este paralel cu axa Ox.',
+    explanation: `AB = |${x2} − (${x1})| = ${distance}.`,
+  }
+}
+
 function gcd(a: number, b: number): number {
   let x = Math.abs(a)
   let y = Math.abs(b)
@@ -156,16 +205,31 @@ function gcd(a: number, b: number): number {
   return x || 1
 }
 
-function chapterFor(exam: PracticeExam, chapter: PracticeChapter, index: number): PracticeChapter {
+function chapterFor(
+  exam: PracticeExam,
+  chapter: PracticeChapter,
+  index: number,
+  bacTrack?: BacTrack | null,
+): PracticeChapter {
   if (chapter !== 'mixt') return chapter
   const chapters: PracticeChapter[] =
-    exam === 'en' ? ['numere', 'algebra', 'geometrie'] : ['algebra', 'analiza', 'probabilitati']
+    exam === 'en'
+      ? ['numere', 'algebra', 'geometrie']
+      : chaptersFor('bac', bacTrack).map((item) => item.id).filter((item) => item !== 'mixt')
   return chapters[index % chapters.length]
 }
 
-export function buildConfiguredSet(exam: PracticeExam, config: PracticeConfig): PracticeSet {
+export function buildConfiguredSet(
+  exam: PracticeExam,
+  config: PracticeConfig,
+  bacTrack?: BacTrack | null,
+): PracticeSet {
+  const available = chaptersFor(exam, bacTrack)
+  if (!available.some((chapter) => chapter.id === config.chapter)) {
+    throw new Error('Capitolul nu este disponibil pentru profilul selectat.')
+  }
   const exercises = Array.from({ length: config.count }, (_, index) => {
-    const chapter = chapterFor(exam, config.chapter, index)
+    const chapter = chapterFor(exam, config.chapter, index, bacTrack)
     if (exam === 'en') {
       if (chapter === 'numere') return enNumber(config.seed, index)
       if (chapter === 'geometrie') return enGeometry(config.seed, index)
@@ -173,11 +237,14 @@ export function buildConfiguredSet(exam: PracticeExam, config: PracticeConfig): 
     }
     if (chapter === 'analiza') return bacAnalysis(config.seed, index)
     if (chapter === 'probabilitati') return bacProbability(config.seed, index)
+    if (chapter === 'matrice') return bacMatrix(config.seed, index)
+    if (chapter === 'geometrie') return bacGeometry(config.seed, index)
     return bacAlgebra(config.seed, index)
   })
-  const label = CHAPTERS[exam].find((chapter) => chapter.id === config.chapter)?.label ?? 'Mixt'
+  const label = available.find((chapter) => chapter.id === config.chapter)?.label ?? 'Mixt'
+  const trackPart = exam === 'bac' ? `-${bacTrack ?? 'mate_info'}` : ''
   return {
-    id: `configured-${exam}-${config.chapter}-${config.count}-${config.seed}`,
+    id: `configured-${exam}${trackPart}-${config.chapter}-${config.count}-${config.seed}`,
     exam,
     title: config.chapter === 'mixt' ? 'Test personalizat' : label,
     subtitle: `${label} · set generat și verificat`,
@@ -187,14 +254,19 @@ export function buildConfiguredSet(exam: PracticeExam, config: PracticeConfig): 
 }
 
 export function configuredSetFromId(setId: string): PracticeSet | null {
-  const match = /^configured-(en|bac)-([a-z]+)-(5|10|15)-(\d+)$/.exec(setId)
-  if (!match) return null
-  const [, exam, chapter, count, seed] = match
-  const validChapter = CHAPTERS[exam as PracticeExam].some((item) => item.id === chapter)
+  const enMatch = /^configured-en-([a-z]+)-(5|10|15)-(\d+)$/.exec(setId)
+  const bacMatch = /^configured-bac-(mate_info|stiinte_naturii|tehnologic|pedagogic)-([a-z]+)-(5|10|15)-(\d+)$/.exec(setId)
+  if (!enMatch && !bacMatch) return null
+  const exam: PracticeExam = enMatch ? 'en' : 'bac'
+  const bacTrack = bacMatch?.[1] as BacTrack | undefined
+  const chapter = (enMatch?.[1] ?? bacMatch?.[2]) as PracticeChapter
+  const count = enMatch?.[2] ?? bacMatch?.[3]
+  const seed = enMatch?.[3] ?? bacMatch?.[4]
+  const validChapter = chaptersFor(exam, bacTrack).some((item) => item.id === chapter)
   if (!validChapter) return null
-  return buildConfiguredSet(exam as PracticeExam, {
-    chapter: chapter as PracticeChapter,
+  return buildConfiguredSet(exam, {
+    chapter,
     count: Number(count) as 5 | 10 | 15,
     seed: Number(seed),
-  })
+  }, bacTrack)
 }

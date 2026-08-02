@@ -24,3 +24,10 @@ export async function getInstallId(): Promise<string> {
   AsyncStorage.setItem(KEY, id).catch(() => {})
   return id
 }
+
+/** Account erasure removes the matching server counter before this is called;
+ * dropping the local pseudonym prevents the new guest session from reusing it. */
+export async function resetInstallId(): Promise<void> {
+  cached = null
+  await AsyncStorage.removeItem(KEY).catch(() => {})
+}

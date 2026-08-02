@@ -1,0 +1,97 @@
+{
+  "id": "III",
+  "title": "SUBIECTUL al III-lea",
+  "instructions": "Rezolvați următoarele probleme.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac26j-sn-III-1",
+      "number": "III.1.a",
+      "points": 5,
+      "competency": "Derivarea funcțiilor",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = e^x(2x^2 - 3x)$.\n\nArătați că $f'(x) = e^x(2x+3)(x-1)$, $x \\in \\mathbb{R}$.",
+      "expectedAnswer": "$f'(x) = e^x(2x+3)(x-1)$",
+      "hint": "Aplicați regula de derivare a produsului a două funcții: $(u \\cdot v)' = u'v + uv'$.",
+      "solution": [
+        "$f'(x) = (e^x)'(2x^2 - 3x) + e^x(2x^2 - 3x)' =$",
+        "$= e^x(2x^2 - 3x) + e^x(4x - 3) =$",
+        "$= e^x(2x^2 + x - 3) = e^x(2x+3)(x-1)$, pentru orice $x \\in \\mathbb{R}$."
+      ]
+    },
+    {
+      "id": "bac26j-sn-III-2",
+      "number": "III.1.b",
+      "points": 5,
+      "competency": "Calculul limitelor de funcții",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = e^x(2x^2 - 3x)$.\n\nArătați că $\\lim_{x \\to 0} \\frac{f(x) - x}{f(x) + x} = 2$.",
+      "expectedAnswer": "$2$",
+      "hint": "Verificați dacă limita este un caz exceptat și aplicați regula lui l'Hôpital.",
+      "solution": [
+        "Deoarece $f(0) = 0$, limita este în cazul $\\frac{0}{0}$. Aplicând regula lui l'Hôpital, obținem:",
+        "$\\lim_{x \\to 0} \\frac{f(x) - x}{f(x) + x} = \\lim_{x \\to 0} \\frac{(f(x) - x)'}{(f(x) + x)'} =$",
+        "$= \\lim_{x \\to 0} \\frac{f'(x) - 1}{f'(x) + 1} =$",
+        "$= \\lim_{x \\to 0} \\frac{e^x(2x+3)(x-1) - 1}{e^x(2x+3)(x-1) + 1} = \\frac{-3 - 1}{-3 + 1} = \\frac{-4}{-2} = 2$."
+      ]
+    },
+    {
+      "id": "bac26j-sn-III-3",
+      "number": "III.1.c",
+      "points": 5,
+      "competency": "Tangenta la graficul funcției",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = e^x(2x^2 - 3x)$.\n\nDeterminați numerele reale $a$ pentru care tangenta la graficul funcției $f$ în punctul de abscisă $x = a$, situat pe graficul funcției $f$, are panta egală cu $0$.",
+      "expectedAnswer": "$a \\in \\{-\\frac{3}{2}, 1\\}$",
+      "hint": "Panta tangentei la graficul funcției în punctul de abscisă $x=a$ este egală cu $f'(a)$.",
+      "solution": [
+        "Panta tangentei este $f'(a)$, deci trebuie să rezolvăm ecuația $f'(a) = 0$.",
+        "Avem $e^a(2a+3)(a-1) = 0$.",
+        "Cum $e^a > 0$ pentru orice $a \\in \\mathbb{R}$, obținem $(2a+3)(a-1) = 0$.",
+        "Soluțiile sunt $a = -\\frac{3}{2}$ sau $a = 1$."
+      ]
+    },
+    {
+      "id": "bac26j-sn-III-4",
+      "number": "III.2.a",
+      "points": 5,
+      "competency": "Calcul integral",
+      "prompt": "Se consideră funcția $f : (-1, +\\infty) \\to \\mathbb{R}$, $f(x) = (2x^2 + 4x)\\sqrt{x+1}$.\n\nArătați că $\\int_0^3 \\frac{f(x)}{\\sqrt{x+1}} dx = 36$.",
+      "expectedAnswer": "$36$",
+      "hint": "Înlocuiți expresia funcției $f(x)$ în integrală și simplificați fracția.",
+      "solution": [
+        "$\\int_0^3 \\frac{f(x)}{\\sqrt{x+1}} dx = \\int_0^3 \\frac{(2x^2 + 4x)\\sqrt{x+1}}{\\sqrt{x+1}} dx =$",
+        "$= \\int_0^3 (2x^2 + 4x) dx = \\left( \\frac{2x^3}{3} + 2x^2 \\right) \\bigg|_0^3 =$",
+        "$= \\left( \\frac{2 \\cdot 27}{3} + 2 \\cdot 9 \\right) - 0 = 18 + 18 = 36$."
+      ]
+    },
+    {
+      "id": "bac26j-sn-III-5",
+      "number": "III.2.b",
+      "points": 5,
+      "competency": "Integrarea prin metoda substituției",
+      "prompt": "Se consideră funcția $f : (-1, +\\infty) \\to \\mathbb{R}$, $f(x) = (2x^2 + 4x)\\sqrt{x+1}$.\n\nArătați că $\\int_3^8 \\frac{x^2 + 2x}{f(x)} dx = 1$.",
+      "expectedAnswer": "$1$",
+      "hint": "Observați că $2x^2 + 4x = 2(x^2 + 2x)$ și simplificați integrantul.",
+      "solution": [
+        "$\\int_3^8 \\frac{x^2 + 2x}{f(x)} dx = \\int_3^8 \\frac{x^2 + 2x}{(2x^2 + 4x)\\sqrt{x+1}} dx =$",
+        "$= \\int_3^8 \\frac{x^2 + 2x}{2(x^2 + 2x)\\sqrt{x+1}} dx = \\int_3^8 \\frac{1}{2\\sqrt{x+1}} dx =$",
+        "$= \\int_3^8 \\frac{(x+1)'}{2\\sqrt{x+1}} dx = \\sqrt{x+1} \\bigg|_3^8 =$",
+        "$= \\sqrt{9} - \\sqrt{4} = 3 - 2 = 1$."
+      ]
+    },
+    {
+      "id": "bac26j-sn-III-6",
+      "number": "III.2.c",
+      "points": 5,
+      "competency": "Aria suprafețelor plane",
+      "prompt": "Se consideră funcția $f : (-1, +\\infty) \\to \\mathbb{R}$, $f(x) = (2x^2 + 4x)\\sqrt{x+1}$.\nSe consideră funcția $g : (0, +\\infty) \\to \\mathbb{R}$, $g(x) = \\frac{4\\sqrt{x+1}}{f(x)}$. Determinați aria suprafeței plane delimitate de graficul funcției $g$, axa $Ox$ și dreptele de ecuații $x = 1$ și $x = 4$.",
+      "expectedAnswer": "$\\ln 2$",
+      "hint": "Aduceți funcția $g(x)$ la o formă mai simplă și descompuneți în fracții simple.",
+      "solution": [
+        "Pentru $x \\in (0, +\\infty)$, $g(x) = \\frac{4\\sqrt{x+1}}{(2x^2 + 4x)\\sqrt{x+1}} = \\frac{4}{2x(x+2)} = \\frac{2}{x^2 + 2x}$.",
+        "Aria suprafeței este $\\mathcal{A} = \\int_1^4 |g(x)| dx = \\int_1^4 \\frac{2}{x(x+2)} dx$.",
+        "Descompunem în fracții simple: $\\frac{2}{x(x+2)} = \\frac{1}{x} - \\frac{1}{x+2}$.",
+        "Atunci $\\mathcal{A} = \\int_1^4 \\left( \\frac{1}{x} - \\frac{1}{x+2} \\right) dx = \\left( \\ln x - \\ln(x+2) \\right) \\bigg|_1^4 =$",
+        "$= (\\ln 4 - \\ln 6) - (\\ln 1 - \\ln 3) = \\ln \\frac{4}{6} + \\ln 3 = \\ln \\frac{2}{3} + \\ln 3 = \\ln 2$."
+      ]
+    }
+  ]
+}

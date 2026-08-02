@@ -1,0 +1,135 @@
+{
+  "id": "III",
+  "title": "SUBIECTUL al III-lea",
+  "instructions": "Scrieți rezolvările complete.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "en22j-III-1a",
+      "number": "III.1.a",
+      "points": 2,
+      "competency": "Aritmetică",
+      "prompt": "Ana, Maria și Vlad au în total $396$ de timbre. Ana are cu $25$ de timbre mai multe decât Maria și cu $16$ timbre mai puține decât Vlad.\n\nPoate avea Ana $132$ de timbre? Justifică răspunsul dat.",
+      "expectedAnswer": "Nu, Ana nu poate avea 132 de timbre.",
+      "hint": "Presupune că Ana are 132 de timbre și determină câte ar avea ceilalți doi copii.",
+      "solution": ["Dacă Ana ar avea $132$ de timbre, atunci Maria ar avea $132 - 25 = 107$ timbre, iar Vlad ar avea $132 + 16 = 148$ timbre.", "$132 + 107 + 148 = 387 \\neq 396$, deci Ana nu poate avea $132$ de timbre."]
+    },
+    {
+      "id": "en22j-III-1b",
+      "number": "III.1.b",
+      "points": 3,
+      "competency": "Ecuații",
+      "prompt": "Ana, Maria și Vlad au în total $396$ de timbre. Ana are cu $25$ de timbre mai multe decât Maria și cu $16$ timbre mai puține decât Vlad.\n\nDetermină numărul de timbre pe care îl are Vlad.",
+      "expectedAnswer": "$151$ de timbre",
+      "hint": "Notează cu $x$ numărul de timbre ale lui Vlad și exprimă numerele Anei și Mariei în funcție de $x$.",
+      "solution": ["Dacă Vlad are $x$ timbre, Ana are $x - 16$, iar Maria are $x - 41$.", "$x + x - 16 + x - 41 = 396$", "$3x = 453$, deci $x = 151$."]
+    },
+    {
+      "id": "en22j-III-2a",
+      "number": "III.2.a",
+      "points": 2,
+      "competency": "Calcul algebric",
+      "prompt": "Se consideră expresia $E(x) = (x + 1)^2 + 2(x - 1)^2 - 3(x^2 - 1)$, unde $x$ este număr real.\n\nArată că $E(x) = 6 - 2x$, pentru orice număr real $x$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Dezvoltă cele trei pătrate și redu termenii asemenea.",
+      "solution": ["$E(x) = x^2 + 2x + 1 + 2(x^2 - 2x + 1) - 3x^2 + 3$", "$E(x) = x^2 + 2x + 1 + 2x^2 - 4x + 2 - 3x^2 + 3 = 6 - 2x$."]
+    },
+    {
+      "id": "en22j-III-2b",
+      "number": "III.2.b",
+      "points": 3,
+      "competency": "Inecuații",
+      "prompt": "Se consideră expresia $E(x) = (x + 1)^2 + 2(x - 1)^2 - 3(x^2 - 1)$, unde $x$ este număr real.\n\nDetermină mulțimea numerelor reale $x$ pentru care $E(x) < x$.",
+      "expectedAnswer": "$x \\in (2, +\\infty)$",
+      "hint": "Folosește forma simplificată a expresiei și rezolvă inecuația liniară.",
+      "solution": ["$E(x) = 6 - 2x$, deci $6 - 2x < x$.", "$3x > 6$, de unde $x > 2$.", "Mulțimea soluțiilor este $(2, +\\infty)$."]
+    },
+    {
+      "id": "en22j-III-3a",
+      "number": "III.3.a",
+      "points": 2,
+      "competency": "Funcții",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = x - 1$.\n\nArată că $f(0) + f(1) = -1$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Calculează separat cele două valori ale funcției.",
+      "solution": ["$f(0) = -1$ și $f(1) = 0$.", "Prin urmare, $f(0) + f(1) = -1$."]
+    },
+    {
+      "id": "en22j-III-3b",
+      "number": "III.3.b",
+      "points": 3,
+      "competency": "Geometrie analitică",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = x - 1$. Punctele $A$ și $B$ sunt punctele de intersecție ale reprezentării grafice a funcției $f$ cu axele $Ox$, respectiv $Oy$, iar punctul $C$ este mijlocul segmentului $AB$.\n\nCalculează aria triunghiului $OBC$.",
+      "expectedAnswer": "$\\frac{1}{4}$",
+      "hint": "Determină coordonatele intersecțiilor și observă ce fracție din aria triunghiului $AOB$ reprezintă triunghiul $BOC$.",
+      "solution": ["$A(1,0)$ și $B(0,-1)$.", "$\\mathcal{A}_{\\triangle AOB} = \\frac{OA \\cdot OB}{2} = \\frac{1}{2}$.", "Cum $C$ este mijlocul lui $AB$, triunghiurile $AOC$ și $BOC$ au arii egale, deci $\\mathcal{A}_{\\triangle BOC} = \\frac{1}{4}$."] ,
+      "figureDescription": "Sistem de axe ortogonale xOy cu dreapta y = x - 1. Dreapta intersectează Ox în A și Oy în B, iar C este mijlocul segmentului AB."
+    },
+    {
+      "id": "en22j-III-4a",
+      "number": "III.4.a",
+      "points": 2,
+      "competency": "Aria triunghiului",
+      "prompt": "În figura alăturată sunt reprezentate punctele $A$, $B$, $C$, $D$ și $E$ astfel încât $AB = 4\\text{ cm}$, $AC = 8\\text{ cm}$, $AD = 10\\text{ cm}$ și $AE = 20\\text{ cm}$. Măsura unghiului $BAC$ este egală cu măsura unghiului $DAE$ și $\\sphericalangle CAD = 30^\\circ$.\n\nArată că aria triunghiului $CAD$ este egală cu $20\\text{ cm}^2$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Folosește formula ariei cu două laturi și sinusul unghiului cuprins.",
+      "solution": ["$\\sphericalangle CAD = 30^\\circ$, deci", "$\\mathcal{A}_{\\triangle CAD} = \\frac{AC \\cdot AD \\cdot \\sin 30^\\circ}{2} = \\frac{8 \\cdot 10 \\cdot \\frac{1}{2}}{2} = 20\\text{ cm}^2$."] ,
+      "figureDescription": "Din A pornesc, în această ordine, semidreptele AB, AC, AD și AE. Unghiurile BAC și DAE sunt egale, iar unghiul CAD are 30 de grade."
+    },
+    {
+      "id": "en22j-III-4b",
+      "number": "III.4.b",
+      "points": 3,
+      "competency": "Asemănarea triunghiurilor",
+      "prompt": "În figura alăturată sunt reprezentate punctele $A$, $B$, $C$, $D$ și $E$ astfel încât $AB = 4\\text{ cm}$, $AC = 8\\text{ cm}$, $AD = 10\\text{ cm}$ și $AE = 20\\text{ cm}$. Măsura unghiului $BAC$ este egală cu măsura unghiului $DAE$ și $\\sphericalangle CAD = 30^\\circ$.\n\nDemonstrează că $CE = 2 \\cdot BD$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Compară triunghiurile $BAD$ și $CAE$ folosind două laturi proporționale și unghiul cuprins.",
+      "solution": ["$\\sphericalangle BAD = \\sphericalangle BAC + \\sphericalangle CAD$ și $\\sphericalangle CAE = \\sphericalangle CAD + \\sphericalangle DAE$, deci $\\sphericalangle BAD = \\sphericalangle CAE$.", "$\\frac{AB}{AC} = \\frac{AD}{AE} = \\frac{1}{2}$, deci $\\triangle BAD \\sim \\triangle CAE$.", "$\\frac{BD}{CE} = \\frac{1}{2}$, de unde $CE = 2 \\cdot BD$."] ,
+      "figureDescription": "Din A pornesc, în această ordine, semidreptele AB, AC, AD și AE. Unghiurile BAC și DAE sunt egale, iar unghiul CAD are 30 de grade."
+    },
+    {
+      "id": "en22j-III-5a",
+      "number": "III.5.a",
+      "points": 2,
+      "competency": "Trapez",
+      "prompt": "În figura alăturată este reprezentat trapezul dreptunghic $ABCD$ cu $AB \\parallel CD$, $\\sphericalangle ABC = 45^\\circ$ și $AD = CD = 10\\text{ cm}$. Paralela prin $D$ la dreapta $BC$ intersectează dreapta $AB$ în punctul $R$. Dreptele $AD$ și $BC$ se intersectează în punctul $T$, iar $O$ este punctul de intersecție al dreptelor $TR$ și $AC$.\n\nArată că punctul $R$ este mijlocul segmentului $AB$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Arată mai întâi că $BCDR$ este paralelogram, apoi studiază triunghiul $ADR$.",
+      "solution": ["$CD \\parallel AB$ și $DR \\parallel BC$, deci $BCDR$ este paralelogram și $BR = CD = 10\\text{ cm}$.", "$\\sphericalangle DAR = 90^\\circ$ și $\\sphericalangle ARD = 45^\\circ$, deci triunghiul $ADR$ este dreptunghic isoscel și $AR = AD = 10\\text{ cm}$.", "$AR = RB$, deci $R$ este mijlocul segmentului $AB$."] ,
+      "figureDescription": "Trapezul dreptunghic ABCD cu AB paralelă cu CD. Prin D se trasează DR paralelă cu BC, cu R pe AB. Prelungirile AD și BC se întâlnesc în T, iar TR și AC se întâlnesc în O."
+    },
+    {
+      "id": "en22j-III-5b",
+      "number": "III.5.b",
+      "points": 3,
+      "competency": "Centrul de greutate",
+      "prompt": "În figura alăturată este reprezentat trapezul dreptunghic $ABCD$ cu $AB \\parallel CD$, $\\sphericalangle ABC = 45^\\circ$ și $AD = CD = 10\\text{ cm}$. Paralela prin $D$ la dreapta $BC$ intersectează dreapta $AB$ în punctul $R$. Dreptele $AD$ și $BC$ se intersectează în punctul $T$, iar $O$ este punctul de intersecție al dreptelor $TR$ și $AC$.\n\nCalculează lungimea segmentului $TO$.",
+      "expectedAnswer": "$\\frac{20\\sqrt{5}}{3}\\text{ cm}$",
+      "hint": "Identifică liniile mijlocii din triunghiul $TAB$ și poziția centrului său de greutate.",
+      "solution": ["$CD \\parallel AB$ și $CD = \\frac{AB}{2}$, deci $CD$ este linie mijlocie în triunghiul $TAB$; astfel $C$ este mijlocul lui $TB$, iar $D$ este mijlocul lui $TA$.", "$TR = \\sqrt{TA^2 + AR^2} = \\sqrt{20^2 + 10^2} = 10\\sqrt{5}\\text{ cm}$.", "$AC$ și $TR$ sunt mediane ale triunghiului $TAB$, deci $O$ este centrul de greutate și $TO = \\frac{2}{3}TR = \\frac{20\\sqrt{5}}{3}\\text{ cm}$."] ,
+      "figureDescription": "Trapezul dreptunghic ABCD cu AB paralelă cu CD. Prin D se trasează DR paralelă cu BC, cu R pe AB. Prelungirile AD și BC se întâlnesc în T, iar TR și AC se întâlnesc în O."
+    },
+    {
+      "id": "en22j-III-6a",
+      "number": "III.6.a",
+      "points": 2,
+      "competency": "Volumul prismei",
+      "prompt": "În figura alăturată este reprezentată prisma dreaptă $ABCDEF$ cu baza triunghiul echilateral $ABC$ și $AB = AD = 10\\text{ cm}$. Punctul $M$ este mijlocul segmentului $AB$.\n\nArată că volumul prismei $ABCDEF$ este egal cu $250\\sqrt{3}\\text{ cm}^3$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Calculează aria triunghiului echilateral de bază și înmulțește-o cu înălțimea prismei.",
+      "solution": ["$\\mathcal{A}_{\\triangle ABC} = \\frac{AB^2\\sqrt{3}}{4} = 25\\sqrt{3}\\text{ cm}^2$.", "$V_{ABCDEF} = \\mathcal{A}_{\\triangle ABC} \\cdot AD = 25\\sqrt{3} \\cdot 10 = 250\\sqrt{3}\\text{ cm}^3$."] ,
+      "figureDescription": "Prisma triunghiulară dreaptă ABCDEF, cu baza ABC echilaterală și muchiile laterale AD, BE și CF. M este mijlocul lui AB."
+    },
+    {
+      "id": "en22j-III-6b",
+      "number": "III.6.b",
+      "points": 3,
+      "competency": "Distanța la un plan",
+      "prompt": "În figura alăturată este reprezentată prisma dreaptă $ABCDEF$ cu baza triunghiul echilateral $ABC$ și $AB = AD = 10\\text{ cm}$. Punctul $M$ este mijlocul segmentului $AB$.\n\nDemonstrează că distanța de la punctul $B$ la planul $(EMC)$ este egală cu $2\\sqrt{5}\\text{ cm}$.",
+      "expectedAnswer": "$2\\sqrt{5}\\text{ cm}$",
+      "hint": "În triunghiul dreptunghic $BME$, construiește înălțimea din $B$ pe $EM$ și arată că ea este perpendiculară și pe $CM$.",
+      "solution": ["Fie $P \\in EM$ astfel încât $BP \\perp EM$.", "$CM \\perp AB$ și $CM \\perp AD$, iar $AB$ și $AD$ sunt drepte concurente din planul $(BAD)$; deci $CM \\perp (BAD)$ și, în particular, $CM \\perp BP$.", "Cum $EM$ și $CM$ sunt drepte concurente din planul $(EMC)$, rezultă $BP \\perp (EMC)$.", "$BM = 5\\text{ cm}$, $BE = 10\\text{ cm}$ și $EM = 5\\sqrt{5}\\text{ cm}$, astfel $d(B,(EMC)) = BP = \\frac{BM \\cdot BE}{EM} = 2\\sqrt{5}\\text{ cm}$."] ,
+      "figureDescription": "Prisma triunghiulară dreaptă ABCDEF, cu baza ABC echilaterală și muchiile laterale AD, BE și CF. M este mijlocul lui AB."
+    }
+  ]
+}

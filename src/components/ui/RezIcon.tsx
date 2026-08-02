@@ -16,6 +16,7 @@ export type RezIconName =
   | 'check'
   | 'shield'
   | 'document'
+  | 'bookmark'
   | 'language'
   | 'logout'
   | 'login'
@@ -290,6 +291,13 @@ export default function RezIcon({ name, size = 20, color = '#193149', accent = c
           <>
             <Path d="M7 8.4h.3l1.4-2.2h6.6l1.4 2.2h3.1v8.8M17.2 19.5H5.9a1.7 1.7 0 0 1-1.7-1.7V9.2" {...line} />
             <Path d="M9.2 12.2a3.1 3.1 0 0 0 4.5 4M4.2 4.2l15.6 15.6" {...line} stroke={accent} />
+          </>
+        )
+      case 'bookmark':
+        return (
+          <>
+            <Path d="M6.2 4.2h11.6v16l-5.8-3.7-5.8 3.7Z" {...line} />
+            <Circle cx="16.8" cy="5.2" r="1.25" {...signal} />
           </>
         )
       case 'workspace':

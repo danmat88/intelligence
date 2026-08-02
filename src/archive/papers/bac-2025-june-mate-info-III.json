@@ -1,0 +1,86 @@
+{
+  "id": "III",
+  "title": "SUBIECTUL al III-lea",
+  "instructions": "Rezolvați următoarele probleme:",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac25j-mi-III-1a",
+      "number": "III.1.a",
+      "points": 5,
+      "competency": "Derivarea funcțiilor",
+      "prompt": "Se consideră funcția $f : (0, +\\infty) \\to \\mathbb{R}$, $f(x) = 2x + \\ln\\frac{x}{x+2}$. Arătați că $f'(x) = \\frac{2(x+1)^2}{x(x+2)}$, $x \\in (0, +\\infty)$.",
+      "expectedAnswer": "$f'(x) = \\frac{2(x+1)^2}{x(x+2)}$",
+      "hint": "Derivați funcția $f$ folosind regulile de derivare pentru sumă și logaritmul unui cât.",
+      "solution": [
+        "$f'(x) = 2 + \\frac{x+2}{x} \\cdot \\frac{x+2-x}{(x+2)^2} = 2 + \\frac{2}{x(x+2)}$",
+        "$= \\frac{2x^2 + 4x + 2}{x(x+2)} = \\frac{2(x+1)^2}{x(x+2)}$, $x \\in (0, +\\infty)$"
+      ]
+    },
+    {
+      "id": "bac25j-mi-III-1b",
+      "number": "III.1.b",
+      "points": 5,
+      "competency": "Asimptote",
+      "prompt": "Se consideră funcția $f : (0, +\\infty) \\to \\mathbb{R}$, $f(x) = 2x + \\ln\\frac{x}{x+2}$. Determinați ecuația asimptotei oblice spre $+\\infty$ la graficul funcției $f$.",
+      "expectedAnswer": "$y = 2x$",
+      "hint": "Calculați limitele $m = \\lim_{x \\to +\\infty} \\frac{f(x)}{x}$ și $n = \\lim_{x \\to +\\infty} (f(x) - mx)$.",
+      "solution": [
+        "$\\lim_{x \\to +\\infty} \\frac{f(x)}{x} = \\lim_{x \\to +\\infty} \\left(2 + \\frac{1}{x}\\ln\\frac{x}{x+2}\\right) = 2$",
+        "$\\lim_{x \\to +\\infty} (f(x) - 2x) = \\lim_{x \\to +\\infty} \\ln\\frac{x}{x+2} = 0$, deci dreapta de ecuație $y = 2x$ este asimptota oblică spre $+\\infty$ la graficul funcției $f$"
+      ]
+    },
+    {
+      "id": "bac25j-mi-III-1c",
+      "number": "III.1.c",
+      "points": 5,
+      "competency": "Studiul funcțiilor cu ajutorul derivatelor",
+      "prompt": "Se consideră funcția $f : (0, +\\infty) \\to \\mathbb{R}$, $f(x) = 2x + \\ln\\frac{x}{x+2}$. Demonstrați că funcția $f$ este bijectivă.",
+      "expectedAnswer": "Funcția $f$ este strict crescătoare și surjectivă, deci bijectivă.",
+      "hint": "Studiați semnul derivatei pentru a arăta injectivitatea și calculați limitele la capetele domeniului pentru a arăta surjectivitatea.",
+      "solution": [
+        "Pentru orice $x \\in (0, +\\infty)$, $f'(x) > 0 \\Rightarrow f$ este strict crescătoare, deci $f$ este injectivă",
+        "$\\lim_{x \\to 0} f(x) = -\\infty$, $\\lim_{x \\to +\\infty} f(x) = +\\infty$ și $f$ este continuă, deci $f$ este surjectivă, de unde obținem că $f$ este bijectivă"
+      ]
+    },
+    {
+      "id": "bac25j-mi-III-2a",
+      "number": "III.2.a",
+      "points": 5,
+      "competency": "Integrala definită",
+      "prompt": "Se consideră funcția $f : (-1, +\\infty) \\to \\mathbb{R}$, $f(x) = \\frac{x^2}{(x+1)^3}$. Arătați că $\\int_0^3 f(x)(x+1)^3 dx = 9$.",
+      "expectedAnswer": "$9$",
+      "hint": "Înlocuiți expresia funcției $f(x)$ în integrală și simplificați.",
+      "solution": [
+        "$\\int_0^3 f(x)(x+1)^3 dx = \\int_0^3 x^2 dx = \\frac{x^3}{3} \\bigg|_0^3$",
+        "$= 9 - 0 = 9$"
+      ]
+    },
+    {
+      "id": "bac25j-mi-III-2b",
+      "number": "III.2.b",
+      "points": 5,
+      "competency": "Metode de integrare",
+      "prompt": "Se consideră funcția $f : (-1, +\\infty) \\to \\mathbb{R}$, $f(x) = \\frac{x^2}{(x+1)^3}$. Arătați că $\\int_0^1 \\sqrt{f(x)(x+1)} dx = 1 - \\ln 2$.",
+      "expectedAnswer": "$1 - \\ln 2$",
+      "hint": "Observați că pentru $x \\in [0, 1]$, $\\sqrt{f(x)(x+1)} = \\frac{x}{x+1}$.",
+      "solution": [
+        "$\\int_0^1 \\sqrt{f(x)(x+1)} dx = \\int_0^1 \\frac{x}{x+1} dx = \\int_0^1 \\left(1 - \\frac{1}{x+1}\\right) dx = (x - \\ln(x+1)) \\bigg|_0^1$",
+        "$= 1 - 0 - \\ln 2 + \\ln 1 = 1 - \\ln 2$"
+      ]
+    },
+    {
+      "id": "bac25j-mi-III-2c",
+      "number": "III.2.c",
+      "points": 5,
+      "competency": "Aplicații ale integralei definite",
+      "prompt": "Se consideră funcția $f : (-1, +\\infty) \\to \\mathbb{R}$, $f(x) = \\frac{x^2}{(x+1)^3}$. Arătați că aria suprafeței plane delimitate de graficul funcției $g : \\mathbb{R} \\to \\mathbb{R}$, $g(x) = \\frac{f(e^x)}{e^x}$, axa $Ox$ și dreptele de ecuații $x = -1$ și $x = 1$ este egală cu $\\frac{e-1}{2(e+1)}$.",
+      "expectedAnswer": "$\\frac{e-1}{2(e+1)}$",
+      "hint": "Exprimați funcția $g(x)$ și folosiți formula ariei $\\mathcal{A} = \\int_{-1}^1 |g(x)| dx$.",
+      "solution": [
+        "$g(x) = \\frac{e^x}{(e^x+1)^3}$, $x \\in \\mathbb{R} \\Rightarrow \\mathcal{A} = \\int_{-1}^1 |g(x)| dx = \\int_{-1}^1 \\frac{e^x}{(e^x+1)^3} dx = \\int_{-1}^1 \\frac{(e^x+1)'}{(e^x+1)^3} dx = -\\frac{1}{2(e^x+1)^2} \\bigg|_{-1}^1$",
+        "$= \\frac{e^2-1}{2(e+1)^2} = \\frac{e-1}{2(e+1)}$"
+      ]
+    }
+  ]
+}

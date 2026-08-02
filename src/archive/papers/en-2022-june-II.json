@@ -1,0 +1,86 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL al II-lea",
+  "instructions": "Încercuiește litera corespunzătoare răspunsului corect.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "en22j-II-1",
+      "number": "II.1",
+      "points": 5,
+      "competency": "Segmente",
+      "prompt": "În figura alăturată este reprezentat segmentul $AB$ cu lungimea de $10\\text{ cm}$. Punctul $A$ este mijlocul segmentului $CB$, iar punctul $B$ este mijlocul segmentului $CD$. Lungimea segmentului $CD$ este egală cu:",
+      "options": [{ "id": "a", "label": "$10\\text{ cm}$" }, { "id": "b", "label": "$20\\text{ cm}$" }, { "id": "c", "label": "$30\\text{ cm}$" }, { "id": "d", "label": "$40\\text{ cm}$" }],
+      "correctOption": "d",
+      "expectedAnswer": "$40\\text{ cm}$",
+      "hint": "Folosește pe rând definiția mijlocului pentru segmentele $CB$ și $CD$.",
+      "solution": ["$A$ este mijlocul lui $CB$, deci $CA = AB = 10\\text{ cm}$ și $CB = 20\\text{ cm}$.", "$B$ este mijlocul lui $CD$, deci $CD = 2 \\cdot CB = 40\\text{ cm}$."] ,
+      "figureDescription": "Punctele C, A, B și D sunt coliniare, în această ordine. A este mijlocul lui CB, iar B este mijlocul lui CD."
+    },
+    {
+      "id": "en22j-II-2",
+      "number": "II.2",
+      "points": 5,
+      "competency": "Unghiuri opuse la vârf",
+      "prompt": "În figura alăturată sunt reprezentate unghiurile opuse la vârf $AOC$ și $BOD$. Măsura unghiului $AOC$ este egală cu $60^\\circ$. Măsura unghiului $BOD$ este egală cu:",
+      "options": [{ "id": "a", "label": "$30^\\circ$" }, { "id": "b", "label": "$60^\\circ$" }, { "id": "c", "label": "$90^\\circ$" }, { "id": "d", "label": "$120^\\circ$" }],
+      "correctOption": "b",
+      "expectedAnswer": "$60^\\circ$",
+      "hint": "Unghiurile opuse la vârf sunt congruente.",
+      "solution": ["$\\sphericalangle AOC$ și $\\sphericalangle BOD$ sunt opuse la vârf, deci au aceeași măsură: $60^\\circ$."] ,
+      "figureDescription": "Două drepte se intersectează în O. Punctele A, O, D sunt coliniare, iar punctele B, O, C sunt coliniare."
+    },
+    {
+      "id": "en22j-II-3",
+      "number": "II.3",
+      "points": 5,
+      "competency": "Romb",
+      "prompt": "În figura alăturată este reprezentat rombul $ABCD$ cu $AB = BD = 12\\text{ cm}$. Punctul $M$ este mijlocul segmentului $CD$ și dreapta $BM$ intersectează dreapta $AC$ în punctul $G$. Lungimea segmentului $AG$ este egală cu:",
+      "options": [{ "id": "a", "label": "$12\\sqrt{3}\\text{ cm}$" }, { "id": "b", "label": "$10\\sqrt{3}\\text{ cm}$" }, { "id": "c", "label": "$9\\sqrt{3}\\text{ cm}$" }, { "id": "d", "label": "$8\\sqrt{3}\\text{ cm}$" }],
+      "correctOption": "d",
+      "expectedAnswer": "$8\\sqrt{3}\\text{ cm}$",
+      "hint": "Privește triunghiul echilateral $ABD$ și folosește centrul de greutate al triunghiului $BCD$.",
+      "solution": ["În romb, $AD = AB = 12\\text{ cm}$, iar $BD = 12\\text{ cm}$, deci triunghiul $ABD$ este echilateral.", "Diagonalele rombului se înjumătățesc și sunt perpendiculare, de unde $AC = 12\\sqrt{3}\\text{ cm}$.", "În triunghiul $BCD$, segmentele $BM$ și $DO$, unde $O = AC \\cap BD$, sunt mediane; astfel $G$ este centrul de greutate. Rezultă $OG = \\frac{1}{3}OC = 2\\sqrt{3}\\text{ cm}$.", "$AG = AO + OG = 6\\sqrt{3} + 2\\sqrt{3} = 8\\sqrt{3}\\text{ cm}$."] ,
+      "figureDescription": "Rombul ABCD, cu diagonalele AC și BD. M este mijlocul laturii CD, iar BM intersectează AC în G."
+    },
+    {
+      "id": "en22j-II-4",
+      "number": "II.4",
+      "points": 5,
+      "competency": "Trapez dreptunghic",
+      "prompt": "În figura alăturată este reprezentat trapezul $ABCD$ cu bazele $AB$ și $CD$, în care măsura unghiului $BAD$ este egală cu $90^\\circ$, $AD = DC = 5\\text{ cm}$ și $AB = 10\\text{ cm}$. Măsura unghiului $ABC$ este egală cu:",
+      "options": [{ "id": "a", "label": "$30^\\circ$" }, { "id": "b", "label": "$45^\\circ$" }, { "id": "c", "label": "$60^\\circ$" }, { "id": "d", "label": "$90^\\circ$" }],
+      "correctOption": "b",
+      "expectedAnswer": "$45^\\circ$",
+      "hint": "Coboară perpendiculara din $C$ pe $AB$ și compară catetele triunghiului dreptunghic obținut.",
+      "solution": ["Dacă $E$ este proiecția lui $C$ pe $AB$, atunci $AE = DC = 5\\text{ cm}$ și $BE = AB - AE = 5\\text{ cm}$.", "$CE = AD = 5\\text{ cm}$, deci triunghiul $BCE$ este dreptunghic isoscel și $\\sphericalangle ABC = 45^\\circ$."] ,
+      "figureDescription": "Trapezul dreptunghic ABCD, cu AB baza mare, CD baza mică și unghi drept în A."
+    },
+    {
+      "id": "en22j-II-5",
+      "number": "II.5",
+      "points": 5,
+      "competency": "Cerc și coarde",
+      "prompt": "În figura alăturată este reprezentat cercul de centru $O$ și diametru $BC = 10\\text{ cm}$. Punctul $A$ aparține cercului astfel încât măsura arcului mic $AC$ este de $120^\\circ$. Lungimea segmentului $AB$ este egală cu:",
+      "options": [{ "id": "a", "label": "$5\\text{ cm}$" }, { "id": "b", "label": "$5\\sqrt{2}\\text{ cm}$" }, { "id": "c", "label": "$5\\sqrt{3}\\text{ cm}$" }, { "id": "d", "label": "$10\\text{ cm}$" }],
+      "correctOption": "a",
+      "expectedAnswer": "$5\\text{ cm}$",
+      "hint": "Arcul $BC$ este un semicerc; află mai întâi măsura arcului $AB$.",
+      "solution": ["Arcul $BC$ are $180^\\circ$, deci arcul mic $AB$ are $180^\\circ - 120^\\circ = 60^\\circ$.", "$OA = OB = 5\\text{ cm}$ și $\\sphericalangle AOB = 60^\\circ$, deci triunghiul $AOB$ este echilateral și $AB = 5\\text{ cm}$."] ,
+      "figureDescription": "Cercul de centru O cu diametrul orizontal CB. Punctul A este pe semicercul superior și sunt trasate segmentele AB și AC."
+    },
+    {
+      "id": "en22j-II-6",
+      "number": "II.6",
+      "points": 5,
+      "competency": "Paralelipiped dreptunghic",
+      "prompt": "În figura alăturată este reprezentat paralelipipedul dreptunghic $ABCDEFGH$ cu $AB = 4\\text{ cm}$, $BC = 3\\text{ cm}$ și $AE = 12\\text{ cm}$. Lungimea diagonalei $AG$ a paralelipipedului este egală cu:",
+      "options": [{ "id": "a", "label": "$5\\text{ cm}$" }, { "id": "b", "label": "$13\\text{ cm}$" }, { "id": "c", "label": "$14\\text{ cm}$" }, { "id": "d", "label": "$19\\text{ cm}$" }],
+      "correctOption": "b",
+      "expectedAnswer": "$13\\text{ cm}$",
+      "hint": "Aplică teorema lui Pitagora pentru diagonala bazei, apoi pentru diagonala spațială.",
+      "solution": ["$AC = \\sqrt{AB^2 + BC^2} = \\sqrt{4^2 + 3^2} = 5\\text{ cm}$.", "$AG = \\sqrt{AC^2 + AE^2} = \\sqrt{5^2 + 12^2} = 13\\text{ cm}$."] ,
+      "figureDescription": "Paralelipipedul dreptunghic ABCDEFGH, cu baza ABCD, fața superioară EFGH și diagonala spațială AG."
+    }
+  ]
+}

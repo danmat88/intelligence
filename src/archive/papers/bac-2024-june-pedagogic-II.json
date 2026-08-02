@@ -1,0 +1,101 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL al II-lea",
+  "instructions": "Pe mulțimea $M = (0, +\\infty)$ se definește legea de compoziție $x \\circ y = \\frac{1}{x} + \\frac{1}{y} + 1$.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac24j-pd-II-1",
+      "number": "II.1",
+      "points": 5,
+      "competency": "Calculul valorii unei legi de compoziție",
+      "prompt": "Pe mulțimea $M = (0, +\\infty)$ se definește legea de compoziție $x \\circ y = \\frac{1}{x} + \\frac{1}{y} + 1$. Arătați că $1 \\circ 1 = 3$.",
+      "expectedAnswer": "Demonstrație directă prin înlocuirea lui $x$ și $y$ cu $1$.",
+      "hint": "Înlocuiește $x$ și $y$ cu $1$ în formula legii de compoziție.",
+      "solution": [
+        "$1 \\circ 1 = \\frac{1}{1} + \\frac{1}{1} + 1$",
+        "$= 1 + 1 + 1 = 3$"
+      ]
+    },
+    {
+      "id": "bac24j-pd-II-2",
+      "number": "II.2",
+      "points": 5,
+      "competency": "Rezolvarea unei ecuații cu lege de compoziție",
+      "prompt": "Pe mulțimea $M = (0, +\\infty)$ se definește legea de compoziție $x \\circ y = \\frac{1}{x} + \\frac{1}{y} + 1$. Determinați $x \\in M$ pentru care $x \\circ x = 2$.",
+      "expectedAnswer": "$x = 2$",
+      "hint": "Calculează $x \\circ x$ și egalează rezultatul cu $2$.",
+      "solution": [
+        "$x \\circ x = \\frac{1}{x} + \\frac{1}{x} + 1 = \\frac{2}{x} + 1$, pentru orice $x \\in M$",
+        "$\\frac{2}{x} + 1 = 2 \\implies \\frac{2}{x} = 1$",
+        "Obținem $x = 2$, care convine."
+      ]
+    },
+    {
+      "id": "bac24j-pd-II-3",
+      "number": "II.3",
+      "points": 5,
+      "competency": "Demonstrarea comutativității unei legi de compoziție",
+      "prompt": "Pe mulțimea $M = (0, +\\infty)$ se definește legea de compoziție $x \\circ y = \\frac{1}{x} + \\frac{1}{y} + 1$. Arătați că legea de compoziție „$\\circ$” este comutativă.",
+      "expectedAnswer": "Demonstrație bazată pe comutativitatea adunării numerelor reale.",
+      "hint": "Calculează $y \\circ x$ și arată că este egal cu $x \\circ y$.",
+      "solution": [
+        "$y \\circ x = \\frac{1}{y} + \\frac{1}{x} + 1$",
+        "$= \\frac{1}{x} + \\frac{1}{y} + 1 = x \\circ y$, pentru orice $x \\in M$ și $y \\in M$",
+        "Deci legea de compoziție „$\\circ$” este comutativă."
+      ]
+    },
+    {
+      "id": "bac24j-pd-II-4",
+      "number": "II.4",
+      "points": 5,
+      "competency": "Rezolvarea unei ecuații cu lege de compoziție",
+      "prompt": "Pe mulțimea $M = (0, +\\infty)$ se definește legea de compoziție $x \\circ y = \\frac{1}{x} + \\frac{1}{y} + 1$. Determinați $x \\in M$ pentru care $x \\circ \\frac{1}{x} = 3$.",
+      "expectedAnswer": "$x = 1$",
+      "hint": "Calculează $x \\circ \\frac{1}{x}$ și rezolvă ecuația obținută.",
+      "solution": [
+        "$x \\circ \\frac{1}{x} = \\frac{1}{x} + \\frac{1}{\\frac{1}{x}} + 1 = \\frac{1}{x} + x + 1 = \\frac{x^2 + x + 1}{x}$, pentru orice $x \\in M$",
+        "$\\frac{x^2 + x + 1}{x} = 3 \\implies x^2 + x + 1 = 3x$",
+        "$x^2 - 2x + 1 = 0$",
+        "Obținem $x = 1$, care convine."
+      ]
+    },
+    {
+      "id": "bac24j-pd-II-5",
+      "number": "II.5",
+      "points": 5,
+      "competency": "Determinarea unor numere naturale din condiții de divizibilitate",
+      "prompt": "Pe mulțimea $M = (0, +\\infty)$ se definește legea de compoziție $x \\circ y = \\frac{1}{x} + \\frac{1}{y} + 1$. Determinați numerele naturale $n$ pentru care $(n + 1) \\circ (n + 1)$ este număr natural.",
+      "expectedAnswer": "$n \\in \\{0, 1\\}$",
+      "hint": "Calculează $(n + 1) \\circ (n + 1)$ și pune condiția ca rezultatul să fie număr natural.",
+      "solution": [
+        "$(n + 1) \\circ (n + 1) = \\frac{1}{n + 1} + \\frac{1}{n + 1} + 1 = \\frac{2}{n + 1} + 1$, pentru orice număr natural $n$",
+        "$(n + 1) \\circ (n + 1)$ este număr natural dacă și numai dacă $\\frac{2}{n + 1}$ este număr întreg.",
+        "Deoarece $n$ este număr natural, $n + 1$ trebuie să fie divizor natural al lui $2$.",
+        "Divizorii naturali ai lui $2$ sunt $1$ și $2$.",
+        "Din $n + 1 = 1$ obținem $n = 0$.",
+        "Din $n + 1 = 2$ obținem $n = 1$.",
+        "Ambele valori convin."
+      ]
+    },
+    {
+      "id": "bac24j-pd-II-6",
+      "number": "II.6",
+      "points": 5,
+      "competency": "Rezolvarea unei ecuații logaritmice cu lege de compoziție",
+      "prompt": "Pe mulțimea $M = (0, +\\infty)$ se definește legea de compoziție $x \\circ y = \\frac{1}{x} + \\frac{1}{y} + 1$. Determinați $x \\in (1, +\\infty)$ pentru care $(\\log_2 x) \\circ (\\log_x 2) = \\frac{7}{2}$.",
+      "expectedAnswer": "$x \\in \\{\\sqrt{2}, 4\\}$",
+      "hint": "Folosește proprietatea $\\frac{1}{\\log_x 2} = \\log_2 x$ și notează $\\log_2 x = t$.",
+      "solution": [
+        "$(\\log_2 x) \\circ (\\log_x 2) = \\frac{1}{\\log_2 x} + \\frac{1}{\\log_x 2} + 1$, pentru orice $x \\in (1, +\\infty)$",
+        "Ecuația devine $\\frac{1}{\\log_2 x} + \\frac{1}{\\log_x 2} + 1 = \\frac{7}{2}$.",
+        "Cum $\\frac{1}{\\log_x 2} = \\log_2 x$, obținem $\\frac{1}{\\log_2 x} + \\log_2 x + 1 = \\frac{7}{2}$.",
+        "Notând $\\log_2 x = t$, ecuația devine $\\frac{1}{t} + t = \\frac{5}{2} \\implies 2t^2 - 5t + 2 = 0$.",
+        "Soluțiile ecuației sunt $t = 2$ și $t = \\frac{1}{2}$.",
+        "Pentru $\\log_2 x = 2$, obținem $x = 2^2 = 4$.",
+        "Pentru $\\log_2 x = \\frac{1}{2}$, obținem $x = 2^{\\frac{1}{2}} = \\sqrt{2}$.",
+        "Ambele valori sunt în intervalul $(1, +\\infty)$, deci convin."
+      ]
+    }
+  ]
+}

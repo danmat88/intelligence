@@ -1,0 +1,68 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL al II-lea",
+  "instructions": "Pe mulțimea numerelor reale se definește legea de compoziție asociativă $x * y = xy - \\sqrt{3}(x + y) + \\sqrt{3} + 3$.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac22j-pd-II-1",
+      "number": "II.1",
+      "points": 5,
+      "competency": "Lege de compoziție",
+      "prompt": "Pe $\\mathbb{R}$ se definește $x * y = xy - \\sqrt{3}(x + y) + \\sqrt{3} + 3$. Arătați că $1 * 0 = 3$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Înlocuiește direct $x=1$ și $y=0$.",
+      "solution": ["$1 * 0 = 1 \\cdot 0 - \\sqrt{3}(1 + 0) + \\sqrt{3} + 3$", "$1 * 0 = 0 - \\sqrt{3} + \\sqrt{3} + 3 = 3$."]
+    },
+    {
+      "id": "bac22j-pd-II-2",
+      "number": "II.2",
+      "points": 5,
+      "competency": "Factorizare",
+      "prompt": "Pe $\\mathbb{R}$ se definește $x * y = xy - \\sqrt{3}(x + y) + \\sqrt{3} + 3$. Demonstrați că $x * y = (x - \\sqrt{3})(y - \\sqrt{3}) + \\sqrt{3}$, pentru orice numere reale $x$ și $y$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Dezvoltă produsul din membrul drept.",
+      "solution": ["$(x - \\sqrt{3})(y - \\sqrt{3}) + \\sqrt{3} = xy - \\sqrt{3}x - \\sqrt{3}y + 3 + \\sqrt{3}$", "$= xy - \\sqrt{3}(x+y) + \\sqrt{3} + 3 = x*y$."]
+    },
+    {
+      "id": "bac22j-pd-II-3",
+      "number": "II.3",
+      "points": 5,
+      "competency": "Ecuație cu lege de compoziție",
+      "prompt": "Pe $\\mathbb{R}$ se definește $x * y = xy - \\sqrt{3}(x + y) + \\sqrt{3} + 3$. Determinați numărul real $x$ pentru care $x * x = \\sqrt{3}$.",
+      "expectedAnswer": "$x = \\sqrt{3}$",
+      "hint": "Folosește forma factorizată a legii.",
+      "solution": ["$x*x = (x-\\sqrt{3})^2 + \\sqrt{3}$.", "$x*x = \\sqrt{3} \\Leftrightarrow (x-\\sqrt{3})^2 = 0$, deci $x=\\sqrt{3}$."]
+    },
+    {
+      "id": "bac22j-pd-II-4",
+      "number": "II.4",
+      "points": 5,
+      "competency": "Element neutru",
+      "prompt": "Pe $\\mathbb{R}$ se definește $x * y = xy - \\sqrt{3}(x + y) + \\sqrt{3} + 3$. Arătați că $e = \\sqrt{3} + 1$ este elementul neutru al legii de compoziție $*$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Calculează atât $x*e$, cât și $e*x$.",
+      "solution": ["$x*(\\sqrt{3}+1)=(x-\\sqrt{3})((\\sqrt{3}+1)-\\sqrt{3})+\\sqrt{3}=x$.", "În mod analog, $(\\sqrt{3}+1)*x=x$, pentru orice $x\\in\\mathbb{R}$.", "Prin urmare, $e=\\sqrt{3}+1$ este element neutru."]
+    },
+    {
+      "id": "bac22j-pd-II-5",
+      "number": "II.5",
+      "points": 5,
+      "competency": "Element absorbant",
+      "prompt": "Pe $\\mathbb{R}$ se definește $x * y = xy - \\sqrt{3}(x + y) + \\sqrt{3} + 3$. Arătați că $\\sqrt{3} * x = \\sqrt{3}$, pentru orice număr real $x$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "În forma factorizată apare factorul $\\sqrt{3}-\\sqrt{3}$.",
+      "solution": ["$\\sqrt{3}*x=(\\sqrt{3}-\\sqrt{3})(x-\\sqrt{3})+\\sqrt{3}=\\sqrt{3}$, pentru orice $x\\in\\mathbb{R}$."]
+    },
+    {
+      "id": "bac22j-pd-II-6",
+      "number": "II.6",
+      "points": 5,
+      "competency": "Asociativitate",
+      "prompt": "Pe $\\mathbb{R}$ se definește legea asociativă $x * y = xy - \\sqrt{3}(x + y) + \\sqrt{3} + 3$. Determinați numărul natural $n$ pentru care $\\sqrt{3} * \\sqrt{4} * \\sqrt{5} * \\ldots * \\sqrt{2022} = \\sqrt{n}$.",
+      "expectedAnswer": "$n = 3$",
+      "hint": "Primul factor este absorbant pentru această lege.",
+      "solution": ["Deoarece $\\sqrt{3}*x=\\sqrt{3}$ pentru orice număr real $x$ și legea este asociativă, rezultă $\\sqrt{3} * \\sqrt{4} * \\ldots * \\sqrt{2022}=\\sqrt{3}$.", "$\\sqrt{n}=\\sqrt{3}$, deci $n=3$."]
+    }
+  ]
+}

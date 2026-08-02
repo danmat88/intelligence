@@ -1,105 +1,211 @@
 import { onRequest } from 'firebase-functions/v2/https'
 import { logger } from 'firebase-functions'
-import { getAuth } from 'firebase-admin/auth'
-import { getFirestore } from 'firebase-admin/firestore'
+import { getAuth, type DecodedIdToken } from 'firebase-admin/auth'
+import { getFirestore, type DocumentData, type DocumentReference } from 'firebase-admin/firestore'
 import { getStorage } from 'firebase-admin/storage'
 import { OAuth2Client } from 'google-auth-library'
-import { randomUUID } from 'node:crypto'
 import { underRateLimit } from './ratelimit'
+import { APP_CHECK_ENFORCED, hasValidAppCheckToken } from './appcheck'
 
 /**
- * Account lifecycle endpoint — the server-side owner of every operation that
- * crosses identities or destroys data. The client only ever proves who it is
- * (Firebase ID token + a Google ID token where a second identity is involved);
- * the Admin SDK does the actual moving and wiping that security rules
- * correctly forbid on the client.
+ * Server-side owner of cross-identity, export and destructive account work.
+ * The client proves identity; the Admin SDK performs the privileged operation.
  *
- *   POST /migrate  body {googleIdToken}  auth: GUEST token
- *     The guest is signing into a Google account that ALREADY exists, so
- *     linking is impossible and the client must switch uids. This moves the
- *     guest's whole tree into the target account FIRST — problem docs AND the
- *     photos in Storage (fresh download tokens, refs rewritten) — then deletes
- *     the guest's Firestore tree, Storage folder, and auth user. The client
- *     only performs the switch after this succeeds: a failure means the user
- *     stays a guest with everything intact (block-the-switch contract).
- *
- *   POST /delete   auth: token with auth_time < 5 min (client reauths first)
- *     Deletes the account and every trace of it: Storage prefix, Firestore
- *     subtree, rate-limit doc, auth user. This is what makes the Play-policy
- *     data-deletion promise literally true — including photos that were
- *     migrated in from a guest session.
+ *   POST /migrate {googleIdToken} as guest
+ *   POST /export as any authenticated user
+ *   POST /delete with a recent non-anonymous sign-in
  */
 
-// The OAuth *web* client id the app mints Google ID tokens against
-// (google-services.json, client_type 3). Public by nature — this is audience
-// pinning, not a secret: a Google token minted for any other app is rejected.
-const WEB_CLIENT_ID = '781036746021-g2p1lnmu4617b25042lgo6pc13a1tblu.apps.googleusercontent.com'
+// Public OAuth audience used to verify the Google token that identifies the
+// migration target. Deployment may override it without changing source.
+const WEB_CLIENT_ID = process.env.GOOGLE_WEB_CLIENT_ID ?? '781036746021-g2p1lnmu4617b25042lgo6pc13a1tblu.apps.googleusercontent.com'
 const googleVerifier = new OAuth2Client()
-
-const STORAGE_HOST = 'https://firebasestorage.googleapis.com/v0/b'
-
-// Destroying an account is not something a fast finger should be able to do
-// twice, and migration lists+copies with admin powers — keep both rare.
-const ACCOUNT_RATE_LIMIT = 5 // requests / minute / uid
-// Deletion demands a RECENT sign-in (the client reauthenticates right before).
+const ACCOUNT_RATE_LIMIT = 5
 const MAX_AUTH_AGE_S = 5 * 60
 
-/** Every trace of a uid: Storage prefix, Firestore subtree, rate-limit doc,
- *  auth user. Shared by /delete, /migrate (guest teardown) and the scheduled
- *  guest purge. Idempotent — a retry after partial failure just re-runs. */
-export async function wipeUserData(uid: string): Promise<void> {
+/** Every server-side trace addressable by uid. The optional install id removes
+ * the guest meter as well; purge jobs cannot know it, but those counters have
+ * a 48-hour Firestore TTL. Idempotent so partial operations are safe to retry. */
+export async function wipeUserData(uid: string, deviceId?: string): Promise<void> {
   const db = getFirestore()
   await getStorage().bucket().deleteFiles({ prefix: `users/${uid}/` })
   await db.recursiveDelete(db.doc(`users/${uid}`))
-  await db.doc(`rate_limits/${uid}`).delete()
+
+  const cleanup = db.batch()
+  cleanup.delete(db.doc(`rate_limits/${uid}`))
+  cleanup.delete(db.doc(`rate_limits/account_${uid}`))
+  cleanup.delete(db.doc(`daily_solves/${uid}`))
+  if (deviceId && /^[A-Za-z0-9_-]{8,64}$/.test(deviceId)) {
+    cleanup.delete(db.doc(`daily_solves/device_${deviceId}`))
+  }
+  await cleanup.commit()
+
   try {
     await getAuth().deleteUser(uid)
-  } catch (e) {
-    // a retried run already deleted the auth user — that's success, not failure
-    if ((e as { code?: string }).code !== 'auth/user-not-found') throw e
+  } catch (error) {
+    if ((error as { code?: string }).code !== 'auth/user-not-found') throw error
   }
 }
 
-/** Move users/{fromUid} into users/{toUid}: photos first (copy + fresh
- *  download token), then problem docs with image refs rewritten, then the
- *  guest tree is destroyed. Docs keep their ids so a retried half-migration
- *  overwrites instead of duplicating. Returns how many problems moved. */
-async function migrateTree(fromUid: string, toUid: string): Promise<number> {
+type CollectedDoc = { relativePath: string; data: DocumentData }
+
+/** Enumerate every descendant doc, including nested response subcollections. */
+async function collectUserDocs(uid: string): Promise<CollectedDoc[]> {
+  const out: CollectedDoc[] = []
+  const walk = async (parent: DocumentReference, parentPath: string): Promise<void> => {
+    const collections = await parent.listCollections()
+    for (const collection of collections) {
+      const snap = await collection.get()
+      for (const doc of snap.docs) {
+        const relativePath = parentPath
+          ? `${parentPath}/${collection.id}/${doc.id}`
+          : `${collection.id}/${doc.id}`
+        out.push({ relativePath, data: doc.data() })
+        await walk(doc.ref, relativePath)
+      }
+    }
+  }
+  await walk(getFirestore().doc(`users/${uid}`), '')
+  return out
+}
+
+/** Recursively updates private image paths while preserving Firestore
+ * Timestamp and other special values (which are not plain objects). */
+function rewriteStorageRefs(value: unknown, moved: Map<string, { path: string }>): unknown {
+  if (Array.isArray(value)) return value.map((item) => rewriteStorageRefs(item, moved))
+  if (!value || typeof value !== 'object' || Object.getPrototypeOf(value) !== Object.prototype) return value
+
+  const source = value as Record<string, unknown>
+  const rewritten: Record<string, unknown> = {}
+  for (const [key, item] of Object.entries(source)) rewritten[key] = rewriteStorageRefs(item, moved)
+
+  const oldPath = typeof source.imagePath === 'string' ? source.imagePath : null
+  const replacement = oldPath ? moved.get(oldPath) : undefined
+  if (replacement) {
+    rewritten.imagePath = replacement.path
+    delete rewritten.imageUrl
+  }
+  return rewritten
+}
+
+async function destinationExists(paths: string[]): Promise<Set<string>> {
+  const db = getFirestore()
+  const existing = new Set<string>()
+  for (let index = 0; index < paths.length; index += 100) {
+    const chunk = paths.slice(index, index + 100)
+    if (chunk.length === 0) continue
+    const snaps = await db.getAll(...chunk.map((path) => db.doc(path)))
+    snaps.forEach((snap, offset) => {
+      if (snap.exists) existing.add(chunk[offset])
+    })
+  }
+  return existing
+}
+
+/** Every imported top-level document receives a deterministic guest prefix,
+ * so a collision can never discard data. The learning profile is the sole
+ * exception: the destination account's existing choice intentionally wins. */
+function importedRelativePath(relativePath: string, fromUid: string): string {
+  const parts = relativePath.split('/')
+  if (parts.length >= 2 && parts[0] !== 'profile') {
+    parts[1] = `guest_${fromUid}_${parts[1]}`
+  }
+  return parts.join('/')
+}
+
+/** Carry the complete guest subtree into an existing Google account.
+ * Destination documents win on collision, so existing profile and paid state
+ * are never replaced by guest state. Guest Storage goes into a deterministic
+ * namespace, which prevents collisions and makes retries idempotent. */
+async function migrateTree(fromUid: string, toUid: string, deviceId?: string): Promise<number> {
   const db = getFirestore()
   const bucket = getStorage().bucket()
 
-  const [files] = await bucket.getFiles({ prefix: `users/${fromUid}/images/` })
-  const movedImages = new Map<string, { path: string; url: string }>()
-  for (const f of files) {
-    const dest = f.name.replace(`users/${fromUid}/`, `users/${toUid}/`)
-    const token = randomUUID()
-    const [copy] = await f.copy(bucket.file(dest))
-    // The tokened URL is what the app's <img> tags load — mint a fresh one
-    // owned by the destination object (the old token dies with the old object).
-    await copy.setMetadata({ metadata: { firebaseStorageDownloadTokens: token } })
-    movedImages.set(f.name, {
-      path: dest,
-      url: `${STORAGE_HOST}/${bucket.name}/o/${encodeURIComponent(dest)}?alt=media&token=${token}`,
-    })
+  const [files] = await bucket.getFiles({ prefix: `users/${fromUid}/` })
+  const movedFiles = new Map<string, { path: string }>()
+  for (const file of files) {
+    const relative = file.name.slice(`users/${fromUid}/`.length)
+    const destination = `users/${toUid}/imports/${fromUid}/${relative}`
+    await file.copy(bucket.file(destination))
+    movedFiles.set(file.name, { path: destination })
   }
 
-  const snap = await db.collection(`users/${fromUid}/problems`).get()
+  const docs = await collectUserDocs(fromUid)
+  const destinationPaths = docs.map(
+    (doc) => `users/${toUid}/${importedRelativePath(doc.relativePath, fromUid)}`,
+  )
+  const existing = await destinationExists(destinationPaths)
   const writer = db.bulkWriter()
-  for (const d of snap.docs) {
-    const data = d.data()
-    if (Array.isArray(data.turns)) {
-      data.turns = data.turns.map((t: { imagePath?: string; imageUrl?: string }) => {
-        const moved = t?.imagePath ? movedImages.get(t.imagePath) : undefined
-        return moved ? { ...t, imagePath: moved.path, imageUrl: moved.url } : t
-      })
+  for (const doc of docs) {
+    const destination = `users/${toUid}/${importedRelativePath(doc.relativePath, fromUid)}`
+    if (!existing.has(destination)) {
+      writer.set(db.doc(destination), rewriteStorageRefs(doc.data, movedFiles) as DocumentData)
     }
-    writer.set(db.doc(`users/${toUid}/problems/${d.id}`), data)
   }
   await writer.close()
 
-  // Only now — everything safely owned by the target — is the guest disposable.
-  await wipeUserData(fromUid)
-  return snap.size
+  await wipeUserData(fromUid, deviceId)
+  return docs.filter((doc) => /^problems\/[^/]+$/.test(doc.relativePath)).length
+}
+
+/** JSON-safe, explicit encoding for Firestore values used in portability
+ * exports. Timestamps remain distinguishable from ordinary strings. */
+function exportValue(value: unknown): unknown {
+  if (value === null || value === undefined) return null
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value
+  if (Array.isArray(value)) return value.map(exportValue)
+  if (value instanceof Date) return { type: 'date', value: value.toISOString() }
+  if (Buffer.isBuffer(value)) return { type: 'bytes', value: value.toString('base64') }
+  if (typeof value === 'object' && 'toDate' in value && typeof (value as { toDate?: unknown }).toDate === 'function') {
+    return { type: 'timestamp', value: (value as { toDate: () => Date }).toDate().toISOString() }
+  }
+  if (typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, item]) => [key, exportValue(item)]),
+    )
+  }
+  return String(value)
+}
+
+async function buildAccountExport(decoded: DecodedIdToken) {
+  const db = getFirestore()
+  const bucket = getStorage().bucket()
+  const [root, docs, files] = await Promise.all([
+    db.doc(`users/${decoded.uid}`).get(),
+    collectUserDocs(decoded.uid),
+    bucket.getFiles({ prefix: `users/${decoded.uid}/` }).then(([items]) => items),
+  ])
+  const expires = Date.now() + 15 * 60 * 1000
+  const storage = await Promise.all(files.map(async (file) => {
+    const [[metadata], [downloadUrl]] = await Promise.all([
+      file.getMetadata(),
+      file.getSignedUrl({ action: 'read', expires }),
+    ])
+    return {
+      path: file.name,
+      contentType: metadata.contentType ?? null,
+      size: Number(metadata.size ?? 0),
+      updatedAt: metadata.updated ?? null,
+      downloadUrl,
+      downloadUrlExpiresAt: new Date(expires).toISOString(),
+    }
+  }))
+
+  return {
+    format: 'rezolvo-account-export',
+    version: 1,
+    generatedAt: new Date().toISOString(),
+    identity: {
+      uid: decoded.uid,
+      email: decoded.email ?? null,
+      signInProvider: decoded.firebase?.sign_in_provider ?? null,
+    },
+    firestore: {
+      account: root.exists ? exportValue(root.data()) : null,
+      documents: docs.map((doc) => ({ path: doc.relativePath, data: exportValue(doc.data) })),
+    },
+    storage,
+  }
 }
 
 export const account = onRequest(
@@ -114,23 +220,33 @@ export const account = onRequest(
       res.status(401).json({ error: 'Missing auth token' })
       return
     }
-    let decoded
+
+    const attestation = req.headers['x-firebase-appcheck']
+    const appChecked = await hasValidAppCheckToken(attestation)
+    if (!appChecked && APP_CHECK_ENFORCED) {
+      res.status(403).json({ error: 'App integrity check failed.' })
+      return
+    }
+    if (!appChecked) logger.info(`[appcheck] unverified account request token=${attestation ? 'invalid' : 'missing'}`)
+
+    let decoded: DecodedIdToken
     try {
       decoded = await getAuth().verifyIdToken(bearer[1])
     } catch {
       res.status(401).json({ error: 'Invalid or expired auth token' })
       return
     }
-    if (!(await underRateLimit(decoded.uid, ACCOUNT_RATE_LIMIT))) {
+    if (!(await underRateLimit(`account_${decoded.uid}`, ACCOUNT_RATE_LIMIT))) {
       res.status(429).json({ error: 'Too many requests - please wait a moment.' })
       return
     }
+
     const isGuest = decoded.firebase?.sign_in_provider === 'anonymous'
+    const deviceRaw = String(req.headers['x-rezolvo-device'] ?? '')
+    const deviceId = /^[A-Za-z0-9_-]{8,64}$/.test(deviceRaw) ? deviceRaw : undefined
 
     try {
       if (req.path.endsWith('/migrate')) {
-        // Only a guest has work that needs carrying — a Google-signed session
-        // asking to "migrate" is a tampered client.
         if (!isGuest) {
           res.status(403).json({ error: 'Only guest sessions migrate' })
           return
@@ -140,8 +256,7 @@ export const account = onRequest(
           res.status(400).json({ error: 'Missing googleIdToken' })
           return
         }
-        // The Google token proves the caller really holds the target identity —
-        // without this check, any guest could dump docs into any account.
+
         let payload
         try {
           const ticket = await googleVerifier.verifyIdToken({ idToken: googleIdToken, audience: WEB_CLIENT_ID })
@@ -154,27 +269,25 @@ export const account = onRequest(
           res.status(401).json({ error: 'Invalid Google token' })
           return
         }
+
         let target
         try {
           target = await getAuth().getUserByProviderUid('google.com', payload.sub)
         } catch {
-          // linking failed with email-already-in-use: same email, provider not
-          // yet attached — the email lookup finds the account the switch lands in
           if (payload.email) target = await getAuth().getUserByEmail(payload.email).catch(() => undefined)
         }
         if (!target) {
           res.status(404).json({ error: 'No existing account for this Google identity' })
           return
         }
-        const migrated = target.uid === decoded.uid ? 0 : await migrateTree(decoded.uid, target.uid)
+
+        const migrated = target.uid === decoded.uid ? 0 : await migrateTree(decoded.uid, target.uid, deviceId)
         logger.info(`[account] migrated ${migrated} problem(s): ${decoded.uid} -> ${target.uid}`)
         res.json({ migrated })
         return
       }
 
       if (req.path.endsWith('/delete')) {
-        // Guests can't reauthenticate (no credential exists); Google sessions
-        // must prove recent presence before destruction.
         if (!isGuest) {
           const authAge = Math.floor(Date.now() / 1000) - (decoded.auth_time ?? 0)
           if (authAge > MAX_AUTH_AGE_S) {
@@ -182,17 +295,22 @@ export const account = onRequest(
             return
           }
         }
-        await wipeUserData(decoded.uid)
+        await wipeUserData(decoded.uid, deviceId)
         logger.info(`[account] deleted account ${decoded.uid}`)
         res.json({ ok: true })
         return
       }
 
+      if (req.path.endsWith('/export')) {
+        const data = await buildAccountExport(decoded)
+        res.set('Cache-Control', 'private, no-store')
+        res.json(data)
+        return
+      }
+
       res.status(404).json({ error: 'Unknown operation' })
-    } catch (e) {
-      // Partial work is safe to retry (idempotent by construction) — surface a
-      // clean 500 so the client blocks the switch / shows the delete error.
-      logger.error('[account] operation failed', e)
+    } catch (error) {
+      logger.error('[account] operation failed', error)
       res.status(500).json({ error: 'Account operation failed - please retry.' })
     }
   },

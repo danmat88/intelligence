@@ -13,10 +13,7 @@ type Props = {
   tone?: 'accent' | 'ink' | 'chalk'
 }
 
-/**
- * Big, chunky 3D CTA button used for primary actions across the app.
- * Three tone variants: accent (red), ink (blue), chalk (green).
- */
+/** Chunky, tactile primary CTA shared by the product's task flows. */
 export default function PrimaryAction({
   title,
   detail,

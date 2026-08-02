@@ -1,0 +1,97 @@
+{
+    "id": "I",
+    "title": "SUBIECTUL I",
+    "instructions": "Toate subiectele sunt obligatorii. Se acordă zece puncte din oficiu. Timpul de lucru efectiv este de trei ore.",
+    "points": 30,
+    "exercises": [
+      {
+        "id": "bac25-mate-info-I-1",
+        "number": "I.1",
+        "points": 5,
+        "competency": "Numere complexe",
+        "prompt": "Se consideră numerele complexe $z_1 = 1 - i$ și $z_2 = 2 + i$. Arătați că $2z_1 + iz_2 = 1$.",
+        "expectedAnswer": "1",
+        "hint": "Înlocuiți $z_1$ și $z_2$ în expresie și folosiți faptul că $i^2 = -1$.",
+        "solution": [
+          "$2z_1 + iz_2 = 2(1 - i) + i(2 + i)$",
+          "$= 2 - 2i + 2i + i^2$",
+          "$= 2 - 1 = 1$"
+        ]
+      },
+      {
+        "id": "bac25-mate-info-I-2",
+        "number": "I.2",
+        "points": 5,
+        "competency": "Funcții și compunerea funcțiilor",
+        "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = x + 3$. Determinați numărul real $a$ pentru care $(f \\circ f)(a) = 9$.",
+        "expectedAnswer": "$a = 3$",
+        "hint": "Calculați mai întâi expresia pentru $(f \\circ f)(a)$ aplicând funcția $f$ de două ori.",
+        "solution": [
+          "$f(a) = a + 3$",
+          "$(f \\circ f)(a) = f(f(a)) = f(a + 3) = (a + 3) + 3 = a + 6$, pentru orice număr real $a$.",
+          "Din ecuația $a + 6 = 9$, obținem $a = 3$."
+        ]
+      },
+      {
+        "id": "bac25-mate-info-I-3",
+        "number": "I.3",
+        "points": 5,
+        "competency": "Ecuații iraționale",
+        "prompt": "Rezolvați în mulțimea numerelor reale ecuația $\\sqrt{2x^2 - 3x + 2} = x$.",
+        "expectedAnswer": "$x \\in \\{1, 2\\}$",
+        "hint": "Ridicați ambele membre ale ecuației la pătrat și nu uitați să verificați dacă soluțiile obținute convin.",
+        "solution": [
+          "Prin ridicarea la pătrat a ambilor membri, obținem $2x^2 - 3x + 2 = x^2$.",
+          "Ecuația devine $x^2 - 3x + 2 = 0$.",
+          "Soluțiile ecuației de gradul al doilea sunt $x = 1$ și $x = 2$.",
+          "Ambele soluții convin (deoarece $x \\ge 0$ și verifică ecuația inițială)."
+        ]
+      },
+      {
+        "id": "bac25-mate-info-I-4",
+        "number": "I.4",
+        "points": 5,
+        "competency": "Probabilități",
+        "prompt": "Determinați probabilitatea ca, alegând un număr din mulțimea numerelor naturale de două cifre, acesta să fie divizor al numărului $2^6$.",
+        "expectedAnswer": "$\\frac{1}{30}$",
+        "hint": "Numărul cazurilor favorabile este dat de numărul divizorilor lui $2^6$ care au exact două cifre.",
+        "solution": [
+          "Mulțimea numerelor naturale de două cifre este $\\{10, 11, \\dots, 99\\}$ și are $90$ de elemente, deci sunt $90$ de cazuri posibile.",
+          "Divizorii naturali ai lui $2^6 = 64$ sunt $1, 2, 4, 8, 16, 32, 64$.",
+          "În mulțimea numerelor naturale de două cifre sunt $3$ divizori ai numărului $2^6$ (adică $16, 32, 64$), deci sunt $3$ cazuri favorabile.",
+          "Probabilitatea este $p = \\frac{\\text{nr. cazuri favorabile}}{\\text{nr. cazuri posibile}} = \\frac{3}{90} = \\frac{1}{30}$."
+        ]
+      },
+      {
+        "id": "bac25-mate-info-I-5",
+        "number": "I.5",
+        "points": 5,
+        "competency": "Geometrie analitică",
+        "prompt": "În reperul cartezian $xOy$ se consideră punctele $A(0,1)$, $B(5,0)$, $C(6,3)$ și $D(a,b)$, unde $a$ și $b$ sunt numere reale. Determinați numerele reale $a$ și $b$, știind că segmentele $AC$ și $BD$ au același mijloc.",
+        "expectedAnswer": "$a = 1, b = 4$",
+        "hint": "Coordonatele mijlocului unui segment sunt media aritmetică a coordonatelor capetelor sale.",
+        "solution": [
+          "Mijlocul segmentului $AC$ are coordonatele $x_M = \\frac{0 + 6}{2} = 3$ și $y_M = \\frac{1 + 3}{2} = 2$. Deci mijlocul este $M(3,2)$.",
+          "Mijlocul segmentului $BD$ are coordonatele $\\left(\\frac{5+a}{2}, \\frac{0+b}{2}\\right) = \\left(\\frac{5+a}{2}, \\frac{b}{2}\\right)$.",
+          "Deoarece segmentele au același mijloc, egalăm coordonatele: $\\frac{5+a}{2} = 3$ și $\\frac{b}{2} = 2$.",
+          "Obținem $5 + a = 6 \\implies a = 1$ și $b = 4$."
+        ]
+      },
+      {
+        "id": "bac25-mate-info-I-6",
+        "number": "I.6",
+        "points": 5,
+        "competency": "Trigonometrie și geometrie",
+        "prompt": "Se consideră triunghiul $ABC$, dreptunghic în $A$, cu $AB = 2$ și $\\operatorname{tg} B = 3$. Arătați că $BC = 2\\sqrt{10}$.",
+        "expectedAnswer": "$2\\sqrt{10}$",
+        "hint": "Folosiți definiția tangentei în triunghiul dreptunghic pentru a afla cateta $AC$, apoi aplicați teorema lui Pitagora.",
+        "solution": [
+          "În triunghiul $ABC$ dreptunghic în $A$, $\\operatorname{tg} B = \\frac{AC}{AB}$.",
+          "Înlocuind valorile cunoscute, obținem $3 = \\frac{AC}{2}$, de unde $AC = 6$.",
+          "Aplicând teorema lui Pitagora în triunghiul $ABC$, avem $BC^2 = AB^2 + AC^2$.",
+          "$BC^2 = 2^2 + 6^2 = 4 + 36 = 40$.",
+          "Obținem $BC = \\sqrt{40} = 2\\sqrt{10}$."
+        ]
+      }
+    ]
+}

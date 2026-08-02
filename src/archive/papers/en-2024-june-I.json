@@ -1,0 +1,204 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Încercuiește litera corespunzătoare răspunsului corect.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "en24j-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Operații cu numere naturale",
+      "prompt": "Rezultatul calculului $8 + 14 : 2$ este egal cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "22"
+        },
+        {
+          "id": "b",
+          "label": "15"
+        },
+        {
+          "id": "c",
+          "label": "11"
+        },
+        {
+          "id": "d",
+          "label": "6"
+        }
+      ],
+      "correctOption": "b",
+      "expectedAnswer": "15",
+      "hint": "Respectă ordinea efectuării operațiilor: mai întâi împărțirea, apoi adunarea.",
+      "solution": [
+        "Efectuăm mai întâi împărțirea: $14 : 2 = 7$.",
+        "Apoi efectuăm adunarea: $8 + 7 = 15$."
+      ]
+    },
+    {
+      "id": "en24j-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Procente și reduceri",
+      "prompt": "Un album costă $200$ de lei. După o reducere cu $20\\%$, prețul albumului este egal cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "20 de lei"
+        },
+        {
+          "id": "b",
+          "label": "40 de lei"
+        },
+        {
+          "id": "c",
+          "label": "160 de lei"
+        },
+        {
+          "id": "d",
+          "label": "180 de lei"
+        }
+      ],
+      "correctOption": "c",
+      "expectedAnswer": "160 de lei",
+      "hint": "Calculează valoarea reducerii aplicând procentul la prețul inițial, apoi scade această valoare din prețul inițial.",
+      "solution": [
+        "Calculăm valoarea reducerii: $20\\% \\text{ din } 200 = \\frac{20}{100} \\cdot 200 = 40$ de lei.",
+        "Scădem reducerea din prețul inițial pentru a afla noul preț: $200 - 40 = 160$ de lei."
+      ]
+    },
+    {
+      "id": "en24j-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Intersecția intervalelor",
+      "prompt": "Se consideră intervalele de numere reale $I = (-\\infty, 6]$ și $J = (4, +\\infty)$. Intersecția intervalelor $I$ și $J$ este intervalul:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$(-\\infty, 4]$"
+        },
+        {
+          "id": "b",
+          "label": "$[4, 6)$"
+        },
+        {
+          "id": "c",
+          "label": "$(6, +\\infty)$"
+        },
+        {
+          "id": "d",
+          "label": "$(4, 6]$"
+        }
+      ],
+      "correctOption": "d",
+      "expectedAnswer": "$(4, 6]$",
+      "hint": "Intersecția a două intervale conține numerele care se află simultan în ambele intervale.",
+      "solution": [
+        "Intervalul $I = (-\\infty, 6]$ conține toate numerele reale mai mici sau egale cu $6$.",
+        "Intervalul $J = (4, +\\infty)$ conține toate numerele reale strict mai mari decât $4$.",
+        "Numerele care aparțin ambelor intervale sunt cele strict mai mari decât $4$ și mai mici sau egale cu $6$.",
+        "Așadar, $I \\cap J = (4, 6]$."
+      ]
+    },
+    {
+      "id": "en24j-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Compararea numerelor zecimale",
+      "prompt": "Cel mai mare număr din mulțimea $A = \\{5,(024); 5,(24); 5,2(4); 5,24\\}$ este:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$5,(024)$"
+        },
+        {
+          "id": "b",
+          "label": "$5,(24)$"
+        },
+        {
+          "id": "c",
+          "label": "$5,2(4)$"
+        },
+        {
+          "id": "d",
+          "label": "$5,24$"
+        }
+      ],
+      "correctOption": "c",
+      "expectedAnswer": "$5,2(4)$",
+      "hint": "Scrie fiecare număr cu mai multe zecimale pentru a le putea compara cifră cu cifră.",
+      "solution": [
+        "Scriem numerele cu primele câteva zecimale:",
+        "$5,(024) = 5,024024\\dots$",
+        "$5,(24) = 5,242424\\dots$",
+        "$5,2(4) = 5,244444\\dots$",
+        "$5,24 = 5,240000\\dots$",
+        "Comparând zecimalele, observăm că $5,244444\\dots$ este cel mai mare număr.",
+        "Deci, cel mai mare număr este $5,2(4)$."
+      ]
+    },
+    {
+      "id": "en24j-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Ecuații cu modul",
+      "prompt": "Patru elevi, Alin, Ioana, Dana și Vlad, calculează suma numerelor reale $a$ și $b$ pentru care $|a + 3| + |b - 4| = 0$. Răspunsurile date de cei patru elevi sunt prezentate în tabelul de mai jos:\n\n| Alin | Ioana | Dana | Vlad |\n|---|---|---|---|\n| $-7$ | $-1$ | $1$ | $7$ |\n\nRezultatul corect a fost obținut de către:",
+      "options": [
+        {
+          "id": "a",
+          "label": "Alin"
+        },
+        {
+          "id": "b",
+          "label": "Ioana"
+        },
+        {
+          "id": "c",
+          "label": "Dana"
+        },
+        {
+          "id": "d",
+          "label": "Vlad"
+        }
+      ],
+      "correctOption": "c",
+      "expectedAnswer": "Dana",
+      "hint": "Suma a două module este zero doar dacă fiecare modul este egal cu zero.",
+      "solution": [
+        "Deoarece modulul oricărui număr real este mai mare sau egal cu zero, suma $|a + 3| + |b - 4| = 0$ implică $|a + 3| = 0$ și $|b - 4| = 0$.",
+        "Din $|a + 3| = 0$ obținem $a + 3 = 0$, deci $a = -3$.",
+        "Din $|b - 4| = 0$ obținem $b - 4 = 0$, deci $b = 4$.",
+        "Suma numerelor este $a + b = -3 + 4 = 1$.",
+        "Acest rezultat a fost obținut de Dana."
+      ]
+    },
+    {
+      "id": "en24j-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Verificarea soluției unei ecuații",
+      "prompt": "Afirmația: „Numărul $1$ este soluția ecuației $2x + 3 = 4x + 1$.” este:",
+      "options": [
+        {
+          "id": "a",
+          "label": "adevărată"
+        },
+        {
+          "id": "b",
+          "label": "falsă"
+        }
+      ],
+      "correctOption": "a",
+      "expectedAnswer": "adevărată",
+      "hint": "Înlocuiește pe $x$ cu $1$ în ecuație și verifică dacă egalitatea obținută este adevărată.",
+      "solution": [
+        "Înlocuim $x = 1$ în ecuația $2x + 3 = 4x + 1$.",
+        "Obținem $2 \\cdot 1 + 3 = 4 \\cdot 1 + 1$.",
+        "$2 + 3 = 4 + 1$, adică $5 = 5$.",
+        "Deoarece egalitatea este adevărată, numărul $1$ este soluția ecuației, deci afirmația este adevărată."
+      ]
+    }
+  ]
+}

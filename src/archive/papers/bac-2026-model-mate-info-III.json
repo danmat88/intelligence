@@ -1,0 +1,86 @@
+{
+  "id": "III",
+  "title": "SUBIECTUL al III-lea",
+  "instructions": "Rezolvați următoarele probleme.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac26m-mi-III-1",
+      "number": "III.1.a",
+      "points": 5,
+      "competency": "Derivarea funcțiilor",
+      "prompt": "Se consideră funcția $f : (0, +\\infty) \\to \\mathbb{R}$, $f(x) = x + \\ln^2 x - x \\ln x$.\n\na) Arătați că $f'(x) = \\frac{(2 - x)\\ln x}{x}$, $x \\in (0, +\\infty)$.",
+      "expectedAnswer": "$f'(x) = \\frac{(2 - x)\\ln x}{x}$",
+      "hint": "Aplicați regulile de derivare pentru suma și produsul funcțiilor, precum și derivata funcției logaritmice.",
+      "solution": [
+        "$f'(x) = 1 + \\frac{2\\ln x}{x} - \\ln x - 1 =$",
+        "$= \\frac{2\\ln x - x\\ln x}{x} = \\frac{(2 - x)\\ln x}{x}$, $x \\in (0, +\\infty)$"
+      ]
+    },
+    {
+      "id": "bac26m-mi-III-2",
+      "number": "III.1.b",
+      "points": 5,
+      "competency": "Tangenta la graficul funcției",
+      "prompt": "Se consideră funcția $f : (0, +\\infty) \\to \\mathbb{R}$, $f(x) = x + \\ln^2 x - x \\ln x$.\n\nb) Determinați abscisele punctelor situate pe graficul funcției $f$ în care tangenta la graficul funcției $f$ este paralelă cu axa $Ox$.",
+      "expectedAnswer": "$a = 1$ sau $a = 2$",
+      "hint": "Tangenta la graficul funcției este paralelă cu axa $Ox$ dacă și numai dacă derivata funcției în acel punct este zero.",
+      "solution": [
+        "Tangenta la graficul funcției $f$ în punctul $A(a, f(a))$ este paralelă cu axa $Ox \\iff f'(a) = 0$, $a \\in (0, +\\infty)$",
+        "$\\frac{(2 - a)\\ln a}{a} = 0$, de unde obținem $a = 1$ sau $a = 2$, care convin"
+      ]
+    },
+    {
+      "id": "bac26m-mi-III-3",
+      "number": "III.1.c",
+      "points": 5,
+      "competency": "Studiul variației funcției",
+      "prompt": "Se consideră funcția $f : (0, +\\infty) \\to \\mathbb{R}$, $f(x) = x + \\ln^2 x - x \\ln x$.\n\nc) Demonstrați că ecuația $f(x) = 0$ are soluție unică.",
+      "expectedAnswer": "Ecuația $f(x) = 0$ are soluție unică.",
+      "hint": "Studiați semnul derivatei pentru a determina intervalele de monotonie ale funcției și folosiți limitele la capetele domeniului.",
+      "solution": [
+        "Pentru orice $x \\in (0, 1]$, $f'(x) \\le 0$, deci $f$ este descrescătoare pe $(0, 1]$, pentru orice $x \\in [1, 2]$, $f'(x) \\ge 0$, deci $f$ este crescătoare pe $[1, 2]$ și, pentru orice $x \\in (2, +\\infty)$, $f'(x) < 0$, deci $f$ este strict descrescătoare pe $(2, +\\infty)$",
+        "Cum $f(1) = 1$, $\\lim_{x \\to +\\infty} f(x) = -\\infty$ și $f$ este continuă, obținem că ecuația $f(x) = 0$ are soluție unică"
+      ]
+    },
+    {
+      "id": "bac26m-mi-III-4",
+      "number": "III.2.a",
+      "points": 5,
+      "competency": "Calcul integral",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = x^2 - 2 + \\sqrt{x^2 + 4}$.\n\na) Arătați că $\\int_0^3 \\left(f(x) - \\sqrt{x^2 + 4}\\right) dx = 3$.",
+      "expectedAnswer": "$3$",
+      "hint": "Înlocuiți expresia funcției $f(x)$ în integrală și calculați integrala polinomului rezultat.",
+      "solution": [
+        "$\\int_0^3 \\left(f(x) - \\sqrt{x^2 + 4}\\right) dx = \\int_0^3 (x^2 - 2) dx = \\left(\\frac{x^3}{3} - 2x\\right)\\bigg|_0^3 =$",
+        "$= 9 - 6 = 3$"
+      ]
+    },
+    {
+      "id": "bac26m-mi-III-5",
+      "number": "III.2.b",
+      "points": 5,
+      "competency": "Integrare prin substituție",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = x^2 - 2 + \\sqrt{x^2 + 4}$.\n\nb) Arătați că $\\int_0^{\\sqrt{5}} \\frac{x}{f(x) - x^2 + 2} dx = 1$.",
+      "expectedAnswer": "$1$",
+      "hint": "Simplificați numitorul și observați că numărătorul este legat de derivata cantității de sub radical.",
+      "solution": [
+        "$\\int_0^{\\sqrt{5}} \\frac{x}{f(x) - x^2 + 2} dx = \\int_0^{\\sqrt{5}} \\frac{x}{\\sqrt{x^2 + 4}} dx = \\int_0^{\\sqrt{5}} \\frac{(x^2 + 4)'}{2\\sqrt{x^2 + 4}} dx = \\sqrt{x^2 + 4}\\bigg|_0^{\\sqrt{5}} =$",
+        "$= 3 - 2 = 1$"
+      ]
+    },
+    {
+      "id": "bac26m-mi-III-6",
+      "number": "III.2.c",
+      "points": 5,
+      "competency": "Regula lui l'Hôpital și Teorema fundamentală a calculului integral",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = x^2 - 2 + \\sqrt{x^2 + 4}$.\n\nc) Demonstrați că $\\lim_{x \\to 0} \\frac{1}{x^2} \\int_0^x F(t) dt = 0$, unde $F : \\mathbb{R} \\to \\mathbb{R}$ este primitiva funcției $f$ pentru care $F(0) = 0$.",
+      "expectedAnswer": "$0$",
+      "hint": "Aplicați Regula lui l'Hôpital de două ori, folosind faptul că derivata integralei este funcția de sub integrală.",
+      "solution": [
+        "$\\lim_{x \\to 0} \\frac{1}{x^2} \\int_0^x F(t) dt = \\lim_{x \\to 0} \\frac{\\left(\\int_0^x F(t) dt\\right)'}{(x^2)'} = \\lim_{x \\to 0} \\frac{F(x)}{2x} = \\lim_{x \\to 0} \\frac{F'(x)}{(2x)'} =$",
+        "$= \\lim_{x \\to 0} \\frac{f(x)}{2} = \\frac{f(0)}{2} = 0$"
+      ]
+    }
+  ]
+}

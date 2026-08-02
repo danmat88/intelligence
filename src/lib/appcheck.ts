@@ -5,12 +5,11 @@ import { initializeAppCheck, getToken, ReactNativeFirebaseAppCheckProvider } fro
  * App Check — proof that requests come from OUR app on a real device, not a
  * script with a stolen anonymous token. Dev builds use the debug provider
  * (register the logcat debug token in Firebase console → App Check); release
- * builds use Play Integrity (attestation works once distributed via Play).
+ * builds use Play Integrity on Android and App Attest with DeviceCheck
+ * fallback on Apple devices.
  *
- * Rollout is MONITOR-ONLY: the proxy verifies the token when present and just
- * logs when it's missing/invalid (functions/src/gemini.ts). Enforcement is a
- * single env flip (APPCHECK_ENFORCE=true) AFTER the installed fleet sends
- * tokens — flipping it earlier would lock out every existing install.
+ * Functions monitor missing/invalid attestation during development; release
+ * enforcement is enabled explicitly after valid-token metrics are confirmed.
  */
 let instance: Promise<Awaited<ReturnType<typeof initializeAppCheck>> | null> | null = null
 
@@ -22,7 +21,7 @@ export function initAppCheck() {
       const provider = new ReactNativeFirebaseAppCheckProvider()
       provider.configure({
         android: { provider: __DEV__ ? 'debug' : 'playIntegrity' },
-        apple: { provider: 'debug' },
+        apple: { provider: __DEV__ ? 'debug' : 'appAttestWithDeviceCheckFallback' },
       })
       return await initializeAppCheck(getApp(), { provider, isTokenAutoRefreshEnabled: true })
     } catch {

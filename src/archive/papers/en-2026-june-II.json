@@ -1,0 +1,237 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL al II-lea",
+  "instructions": "Încercuiește litera corespunzătoare răspunsului corect.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "en26j-II-1",
+      "number": "II.1",
+      "points": 5,
+      "competency": "Determinarea lungimii unui segment",
+      "prompt": "În figura alăturată, punctele $A$, $B$, $C$ și $D$ sunt coliniare, în această ordine, astfel încât $AB = 1\\text{ cm}$ și $AD = 6\\text{ cm}$. Punctul $C$ este mijlocul segmentului $AD$. Lungimea segmentului $BC$ este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$5\\text{ cm}$"
+        },
+        {
+          "id": "b",
+          "label": "$3\\text{ cm}$"
+        },
+        {
+          "id": "c",
+          "label": "$2\\text{ cm}$"
+        },
+        {
+          "id": "d",
+          "label": "$1\\text{ cm}$"
+        }
+      ],
+      "correctOption": "c",
+      "expectedAnswer": "$2\\text{ cm}$",
+      "hint": "Află mai întâi lungimea segmentului $AC$ folosind faptul că $C$ este mijlocul lui $AD$.",
+      "solution": [
+        "Deoarece $C$ este mijlocul segmentului $AD$, avem $AC = \\frac{AD}{2} = \\frac{6}{2} = 3\\text{ cm}$.",
+        "Punctele $A$, $B$, $C$ sunt coliniare în această ordine, deci $BC = AC - AB = 3 - 1 = 2\\text{ cm}$."
+      ],
+      "figureDescription": "O dreaptă pe care sunt marcate punctele coliniare A, B, C și D, în această ordine.",
+      "figure": {
+        "kind": "segment",
+        "points": [
+          {
+            "label": "A",
+            "position": 0
+          },
+          {
+            "label": "B",
+            "position": 1
+          },
+          {
+            "label": "C",
+            "position": 3
+          },
+          {
+            "label": "D",
+            "position": 6
+          }
+        ]
+      }
+    },
+    {
+      "id": "en26j-II-2",
+      "number": "II.2",
+      "points": 5,
+      "competency": "Calculul măsurii unui unghi determinat de drepte paralele",
+      "prompt": "În figura alăturată sunt reprezentate dreptele paralele $AB$ și $CD$. Punctele $E$, $A$ și $C$ sunt coliniare, în această ordine, iar punctele $B$ și $D$ sunt situate de o parte și de alta a dreptei $AC$. Măsura unghiului $DCA$ este egală cu $80^\\circ$. Măsura unghiului $EAB$ este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$110^\\circ$"
+        },
+        {
+          "id": "b",
+          "label": "$100^\\circ$"
+        },
+        {
+          "id": "c",
+          "label": "$90^\\circ$"
+        },
+        {
+          "id": "d",
+          "label": "$80^\\circ$"
+        }
+      ],
+      "correctOption": "b",
+      "expectedAnswer": "$100^\\circ$",
+      "hint": "Folosește proprietatea unghiurilor alterne interne formate de două drepte paralele tăiate de o secantă pentru a afla măsura unghiului $BAC$.",
+      "solution": [
+        "Dreptele $AB$ și $CD$ sunt paralele, iar $AC$ este secantă. Unghiurile $\\angle BAC$ și $\\angle DCA$ sunt alterne interne, deci $\\angle BAC = \\angle DCA = 80^\\circ$.",
+        "Punctele $E$, $A$ și $C$ sunt coliniare, deci unghiurile $\\angle EAB$ și $\\angle BAC$ sunt suplementare.",
+        "$\\angle EAB = 180^\\circ - \\angle BAC = 180^\\circ - 80^\\circ = 100^\\circ$."
+      ],
+      "figureDescription": "Două drepte paralele AB și CD tăiate de secanta EC. Punctul A se află pe prima dreaptă, iar C pe a doua. Punctul E este pe prelungirea segmentului CA dincolo de A. Unghiul DCA are măsura de 80 de grade."
+    },
+    {
+      "id": "en26j-II-3",
+      "number": "II.3",
+      "points": 5,
+      "competency": "Calculul ariei unui triunghi folosind centrul de greutate",
+      "prompt": "În figura alăturată este reprezentat triunghiul $ABC$. Punctul $D$ este mijlocul segmentului $BC$ și punctul $G$ este centrul de greutate al triunghiului $ABC$. Aria triunghiului $DGC$ este egală cu $15\\text{ cm}^2$. Aria triunghiului $ABC$ este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$30\\text{ cm}^2$"
+        },
+        {
+          "id": "b",
+          "label": "$45\\text{ cm}^2$"
+        },
+        {
+          "id": "c",
+          "label": "$60\\text{ cm}^2$"
+        },
+        {
+          "id": "d",
+          "label": "$90\\text{ cm}^2$"
+        }
+      ],
+      "correctOption": "d",
+      "expectedAnswer": "$90\\text{ cm}^2$",
+      "hint": "Amintește-ți că centrul de greutate împarte mediana în raportul 1:2 și folosește raportul ariilor triunghiurilor cu aceeași înălțime.",
+      "solution": [
+        "Punctul $D$ este mijlocul lui $BC$, deci $AD$ este mediană în triunghiul $ABC$.",
+        "$G$ este centrul de greutate al triunghiului $ABC$, deci $G \\in AD$ și $GD = \\frac{1}{3}AD$.",
+        "Triunghiurile $DGC$ și $ADC$ au aceeași înălțime din $C$, deci $\\frac{\\text{Aria}(\\triangle DGC)}{\\text{Aria}(\\triangle ADC)} = \\frac{GD}{AD} = \\frac{1}{3}$.",
+        "Rezultă că $\\text{Aria}(\\triangle ADC) = 3 \\cdot \\text{Aria}(\\triangle DGC) = 3 \\cdot 15 = 45\\text{ cm}^2$.",
+        "Deoarece $AD$ este mediană, $\\text{Aria}(\\triangle ABC) = 2 \\cdot \\text{Aria}(\\triangle ADC) = 2 \\cdot 45 = 90\\text{ cm}^2$."
+      ],
+      "figureDescription": "Un triunghi ABC cu punctul D pe latura BC și punctul G în interiorul triunghiului. Sunt trasate segmentele AD și GC."
+    },
+    {
+      "id": "en26j-II-4",
+      "number": "II.4",
+      "points": 5,
+      "competency": "Calculul ariei unui paralelogram",
+      "prompt": "În figura alăturată este reprezentat paralelogramul $ABCD$, cu diagonala $BD$ perpendiculară pe latura $BC$ și $BD \\cdot BC = 12\\text{ cm}^2$. Aria paralelogramului $ABCD$ este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$6\\text{ cm}^2$"
+        },
+        {
+          "id": "b",
+          "label": "$12\\text{ cm}^2$"
+        },
+        {
+          "id": "c",
+          "label": "$18\\text{ cm}^2$"
+        },
+        {
+          "id": "d",
+          "label": "$24\\text{ cm}^2$"
+        }
+      ],
+      "correctOption": "b",
+      "expectedAnswer": "$12\\text{ cm}^2$",
+      "hint": "Aria paralelogramului este dublul ariei triunghiului format de două laturi alăturate și o diagonală.",
+      "solution": [
+        "Diagonala $BD$ împarte paralelogramul $ABCD$ în două triunghiuri congruente: $\\triangle ABD$ și $\\triangle CDB$.",
+        "Aria paralelogramului $ABCD$ este $2 \\cdot \\text{Aria}(\\triangle CDB)$.",
+        "Deoarece $BD \\perp BC$, triunghiul $CDB$ este dreptunghic în $B$.",
+        "$\\text{Aria}(\\triangle CDB) = \\frac{BD \\cdot BC}{2} = \\frac{12}{2} = 6\\text{ cm}^2$.",
+        "Aria paralelogramului $ABCD = 2 \\cdot 6 = 12\\text{ cm}^2$."
+      ],
+      "figureDescription": "Un paralelogram ABCD cu diagonala BD trasată. Unghiul DBC este marcat ca fiind drept."
+    },
+    {
+      "id": "en26j-II-5",
+      "number": "II.5",
+      "points": 5,
+      "competency": "Calculul măsurii unui unghi înscris în cerc",
+      "prompt": "În figura alăturată este reprezentat cercul de centru $O$. Punctele $A$, $B$, $C$ și $D$ sunt situate pe cerc, în această ordine, astfel încât $AC$ este diametru și măsura unghiului $BDC$ este egală cu $40^\\circ$. Măsura unghiului $BCA$ este egală cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$40^\\circ$"
+        },
+        {
+          "id": "b",
+          "label": "$50^\\circ$"
+        },
+        {
+          "id": "c",
+          "label": "$60^\\circ$"
+        },
+        {
+          "id": "d",
+          "label": "$80^\\circ$"
+        }
+      ],
+      "correctOption": "b",
+      "expectedAnswer": "$50^\\circ$",
+      "hint": "Unghiurile înscrise în cerc care subîntind același arc sunt congruente, iar unghiul înscris într-un semicerc este drept.",
+      "solution": [
+        "Unghiurile $\\angle BAC$ și $\\angle BDC$ sunt unghiuri înscrise în cerc care subîntind același arc $BC$, deci $\\angle BAC = \\angle BDC = 40^\\circ$.",
+        "Deoarece $AC$ este diametru, unghiul $\\angle ABC$ este înscris într-un semicerc, deci $\\angle ABC = 90^\\circ$.",
+        "În triunghiul dreptunghic $ABC$, suma măsurilor unghiurilor ascuțite este $90^\\circ$.",
+        "$\\angle BCA = 90^\\circ - \\angle BAC = 90^\\circ - 40^\\circ = 50^\\circ$."
+      ],
+      "figureDescription": "Un cerc de centru O cu punctele A, B, C, D pe cerc. AC este diametru. Sunt trasate coardele AB, BC, CD, DA și BD."
+    },
+    {
+      "id": "en26j-II-6",
+      "number": "II.6",
+      "points": 5,
+      "competency": "Calculul volumului unei piramide patrulatere regulate",
+      "prompt": "În figura alăturată este reprezentată piramida patrulateră regulată $VABCD$, cu înălțimea $VO = 6\\text{ cm}$ și $AB = 4\\text{ cm}$. Volumul piramidei $VABCD$ este egal cu:",
+      "options": [
+        {
+          "id": "a",
+          "label": "$32\\text{ cm}^3$"
+        },
+        {
+          "id": "b",
+          "label": "$48\\text{ cm}^3$"
+        },
+        {
+          "id": "c",
+          "label": "$72\\text{ cm}^3$"
+        },
+        {
+          "id": "d",
+          "label": "$96\\text{ cm}^3$"
+        }
+      ],
+      "correctOption": "a",
+      "expectedAnswer": "$32\\text{ cm}^3$",
+      "hint": "Volumul unei piramide este o treime din produsul dintre aria bazei și înălțime.",
+      "solution": [
+        "Baza piramidei este pătratul $ABCD$, deci aria bazei este $\\mathcal{A}_{bază} = AB^2 = 4^2 = 16\\text{ cm}^2$.",
+        "Volumul piramidei este $\\mathcal{V} = \\frac{\\mathcal{A}_{bază} \\cdot VO}{3}$.",
+        "$\\mathcal{V} = \\frac{16 \\cdot 6}{3} = 16 \\cdot 2 = 32\\text{ cm}^3$."
+      ],
+      "figureDescription": "O piramidă patrulateră regulată VABCD cu vârful V și baza ABCD. Centrul bazei este marcat cu O, iar înălțimea VO este trasată cu linie punctată."
+    }
+  ]
+}

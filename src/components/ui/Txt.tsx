@@ -11,7 +11,7 @@ type Props = TextProps & {
 }
 
 /**
- * The app's only text primitive. Applies the Inter family for the given weight
+ * The app's only text primitive. Applies the Nunito family for the given weight
  * (named families carry their own weight, so we never set fontWeight alongside).
  * Use this instead of <Text> everywhere for consistent typography.
  *

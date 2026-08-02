@@ -1,0 +1,93 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL II",
+  "instructions": "Rezolvați următoarele exerciții.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac24j-th-II-1",
+      "number": "II.1.a",
+      "points": 5,
+      "competency": "Calculul determinantului unei matrice",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$ și $A(x) = \\begin{pmatrix} x & x-1 \\\\ -2x & 2 \\end{pmatrix}$, unde $x$ este număr real.\n\na) Arătați că $\\det(A(1)) = 2$.",
+      "expectedAnswer": "$2$",
+      "hint": "Înlocuiți $x$ cu $1$ în expresia matricei $A(x)$ și calculați determinantul.",
+      "solution": [
+        "$A(1) = \\begin{pmatrix} 1 & 0 \\\\ -2 & 2 \\end{pmatrix}$",
+        "$\\det(A(1)) = \\begin{vmatrix} 1 & 0 \\\\ -2 & 2 \\end{vmatrix} = 1 \\cdot 2 - (-2) \\cdot 0 = 2 - 0 = 2$"
+      ]
+    },
+    {
+      "id": "bac24j-th-II-2",
+      "number": "II.1.b",
+      "points": 5,
+      "competency": "Operații cu matrice",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$ și $A(x) = \\begin{pmatrix} x & x-1 \\\\ -2x & 2 \\end{pmatrix}$, unde $x$ este număr real.\n\nb) Arătați că $A(2) + A(0) = 2A(1)$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Calculați separat suma $A(2) + A(0)$ și produsul $2A(1)$, apoi comparați rezultatele.",
+      "solution": [
+        "$A(2) + A(0) = \\begin{pmatrix} 2 & 1 \\\\ -4 & 2 \\end{pmatrix} + \\begin{pmatrix} 0 & -1 \\\\ 0 & 2 \\end{pmatrix} = \\begin{pmatrix} 2 & 0 \\\\ -4 & 4 \\end{pmatrix}$",
+        "$2A(1) = 2 \\begin{pmatrix} 1 & 0 \\\\ -2 & 2 \\end{pmatrix} = \\begin{pmatrix} 2 & 0 \\\\ -4 & 4 \\end{pmatrix}$",
+        "Deci, $A(2) + A(0) = 2A(1)$."
+      ]
+    },
+    {
+      "id": "bac24j-th-II-3",
+      "number": "II.1.c",
+      "points": 5,
+      "competency": "Ecuații cu determinanți",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$ și $A(x) = \\begin{pmatrix} x & x-1 \\\\ -2x & 2 \\end{pmatrix}$, unde $x$ este număr real.\n\nc) Determinați numerele reale $x$ pentru care $\\det(A(x) + xI_2) = 2$.",
+      "expectedAnswer": "$x \\in \\{-1, \\frac{1}{2}\\}$",
+      "hint": "Calculați matricea $A(x) + xI_2$, apoi determinantul acesteia și rezolvați ecuația obținută.",
+      "solution": [
+        "$A(x) + xI_2 = \\begin{pmatrix} x & x-1 \\\\ -2x & 2 \\end{pmatrix} + \\begin{pmatrix} x & 0 \\\\ 0 & x \\end{pmatrix} = \\begin{pmatrix} 2x & x-1 \\\\ -2x & 2+x \\end{pmatrix}$",
+        "$\\det(A(x) + xI_2) = 2x(2+x) - (-2x)(x-1) = 4x^2 + 2x$, pentru orice număr real $x$.",
+        "Ecuația devine $4x^2 + 2x = 2 \\Leftrightarrow 4x^2 + 2x - 2 = 0$.",
+        "Rezolvând ecuația de gradul al doilea, obținem $x = -1$ sau $x = \\frac{1}{2}$."
+      ]
+    },
+    {
+      "id": "bac24j-th-II-4",
+      "number": "II.2.a",
+      "points": 5,
+      "competency": "Calculul valorii unei legi de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x \\circ y = 2(x+y) - xy - 4$.\n\na) Arătați că $1 \\circ 3 = 1$.",
+      "expectedAnswer": "$1$",
+      "hint": "Înlocuiți $x$ cu $1$ și $y$ cu $3$ în expresia legii de compoziție.",
+      "solution": [
+        "$1 \\circ 3 = 2(1+3) - 1 \\cdot 3 - 4$",
+        "$1 \\circ 3 = 2 \\cdot 4 - 3 - 4 = 8 - 3 - 4 = 1$"
+      ]
+    },
+    {
+      "id": "bac24j-th-II-5",
+      "number": "II.2.b",
+      "points": 5,
+      "competency": "Proprietățile legilor de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x \\circ y = 2(x+y) - xy - 4$.\n\nb) Arătați că legea de compoziție „$\\circ$” este comutativă.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Arătați că $y \\circ x = x \\circ y$ pentru orice numere reale $x$ și $y$.",
+      "solution": [
+        "$y \\circ x = 2(y+x) - yx - 4$",
+        "Deoarece adunarea și înmulțirea numerelor reale sunt comutative, avem $y+x = x+y$ și $yx = xy$.",
+        "Astfel, $y \\circ x = 2(x+y) - xy - 4 = x \\circ y$, pentru orice numere reale $x$ și $y$, deci legea de compoziție „$\\circ$” este comutativă."
+      ]
+    },
+    {
+      "id": "bac24j-th-II-6",
+      "number": "II.2.c",
+      "points": 5,
+      "competency": "Inecuații cu legi de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea de compoziție $x \\circ y = 2(x+y) - xy - 4$.\n\nc) Determinați numerele naturale $n$ pentru care $n \\circ n \\ge n - 2$.",
+      "expectedAnswer": "$n \\in \\{1, 2\\}$",
+      "hint": "Calculați $n \\circ n$ și rezolvați inecuația de gradul al doilea în mulțimea numerelor naturale.",
+      "solution": [
+        "$n \\circ n = 2(n+n) - n \\cdot n - 4 = 4n - n^2 - 4$, pentru orice număr natural $n$.",
+        "Inecuația devine $4n - n^2 - 4 \\ge n - 2 \\Leftrightarrow -n^2 + 3n - 2 \\ge 0$.",
+        "Rădăcinile ecuației $-n^2 + 3n - 2 = 0$ sunt $n_1 = 1$ și $n_2 = 2$.",
+        "Semnul funcției de gradul al doilea ne dă soluția inecuației: $n \\in [1, 2]$.",
+        "Cum $n$ este număr natural, obținem $n = 1$ și $n = 2$."
+      ]
+    }
+  ]
+}

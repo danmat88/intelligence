@@ -1,0 +1,68 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL al II-lea",
+  "instructions": "Rezolvați următoarele exerciții.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac22j-th-II-1a",
+      "number": "II.1.a",
+      "points": 5,
+      "competency": "Determinant",
+      "prompt": "Se consideră matricea $A=\\begin{pmatrix}2&1\\\\4&3\\end{pmatrix}$. Arătați că $\\det(A)=2$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Aplică formula determinantului de ordin doi.",
+      "solution": ["$\\det(A)=2\\cdot3-1\\cdot4=6-4=2$."]
+    },
+    {
+      "id": "bac22j-th-II-1b",
+      "number": "II.1.b",
+      "points": 5,
+      "competency": "Calcul matriceal",
+      "prompt": "Se consideră matricele $A=\\begin{pmatrix}2&1\\\\4&3\\end{pmatrix}$, $B=\\begin{pmatrix}2&-2\\\\1&3\\end{pmatrix}$ și $C=\\begin{pmatrix}2&-1\\\\2&3\\end{pmatrix}$. Arătați că $A+2B=3C$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Calculează separat cele două membre.",
+      "solution": ["$2B=\\begin{pmatrix}4&-4\\\\2&6\\end{pmatrix}$, deci $A+2B=\\begin{pmatrix}6&-3\\\\6&9\\end{pmatrix}$.", "$3C=\\begin{pmatrix}6&-3\\\\6&9\\end{pmatrix}$, prin urmare $A+2B=3C$."]
+    },
+    {
+      "id": "bac22j-th-II-1c",
+      "number": "II.1.c",
+      "points": 5,
+      "competency": "Ecuație cu determinant",
+      "prompt": "Se consideră matricele $A=\\begin{pmatrix}2&1\\\\4&3\\end{pmatrix}$, $B=\\begin{pmatrix}2&-2\\\\1&3\\end{pmatrix}$ și $C=\\begin{pmatrix}2&-1\\\\2&3\\end{pmatrix}$. Determinați numerele reale $x$ pentru care $\\det(BC+x(A-C))=0$.",
+      "expectedAnswer": "$x\\in\\{-4,4\\}$",
+      "hint": "Calculează mai întâi matricele $BC$ și $A-C$.",
+      "solution": ["$BC=\\begin{pmatrix}0&-8\\\\8&8\\end{pmatrix}$ și $A-C=\\begin{pmatrix}0&2\\\\2&0\\end{pmatrix}$.", "$BC+x(A-C)=\\begin{pmatrix}0&-8+2x\\\\8+2x&8\\end{pmatrix}$.", "$\\det(BC+x(A-C))=(8+2x)(8-2x)=0$, deci $x=-4$ sau $x=4$."]
+    },
+    {
+      "id": "bac22j-th-II-2a",
+      "number": "II.2.a",
+      "points": 5,
+      "competency": "Lege de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea $x*y=(x+2y)(y+2x)+2$. Arătați că $1*1=11$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Înlocuiește direct cele două valori.",
+      "solution": ["$1*1=(1+2)(1+2)+2=3\\cdot3+2=11$."]
+    },
+    {
+      "id": "bac22j-th-II-2b",
+      "number": "II.2.b",
+      "points": 5,
+      "competency": "Ecuație cu lege de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea $x*y=(x+2y)(y+2x)+2$. Determinați numerele reale $x$ pentru care $x*0=4$.",
+      "expectedAnswer": "$x\\in\\{-1,1\\}$",
+      "hint": "Simplifică expresia $x*0$.",
+      "solution": ["$x*0=x\\cdot2x+2=2x^2+2$.", "$2x^2+2=4 \\Leftrightarrow x^2=1$, deci $x=-1$ sau $x=1$."]
+    },
+    {
+      "id": "bac22j-th-II-2c",
+      "number": "II.2.c",
+      "points": 5,
+      "competency": "Inegalități",
+      "prompt": "Pe mulțimea numerelor reale se definește legea $x*y=(x+2y)(y+2x)+2$. Demonstrați că $x*\\frac1x>7$, pentru orice număr real nenul $x$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Dezvoltă expresia și grupează termenii strict pozitivi.",
+      "solution": ["$x*\\frac1x=\\left(x+\\frac2x\\right)\\left(\\frac1x+2x\\right)+2$", "$=2x^2+\\frac2{x^2}+7>7$, pentru orice $x\\neq0$."]
+    }
+  ]
+}

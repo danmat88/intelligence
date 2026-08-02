@@ -1,3 +1,6 @@
+import { getInstallId } from '../lib/installId'
+import { getAppCheckToken } from '../lib/appcheck'
+
 /**
  * Client for the `account` Cloud Function — the server-side owner of every
  * cross-identity or destructive account operation. Same wire pattern as the
@@ -11,9 +14,16 @@ async function post(path: string, token: string, body?: object): Promise<Respons
   // destructive/cross-account action", so a missing env var can never cause
   // silent data loss — it just refuses until the URL is set.
   if (!BASE) throw new Error('account API not configured (EXPO_PUBLIC_ACCOUNT_API_URL)')
+  const deviceId = await getInstallId().catch(() => null)
+  const appCheckToken = await getAppCheckToken().catch(() => null)
   return fetch(`${BASE}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      ...(deviceId ? { 'X-Rezolvo-Device': deviceId } : {}),
+      ...(appCheckToken ? { 'X-Firebase-AppCheck': appCheckToken } : {}),
+    },
     ...(body ? { body: JSON.stringify(body) } : {}),
   })
 }
@@ -29,9 +39,33 @@ export async function migrateGuestWork(guestToken: string, googleIdToken: string
 }
 
 /** Server-side account deletion: Storage + Firestore + the auth user, all of
- *  it. The token must be freshly minted after a reauth (the server rejects
- *  sign-ins older than 5 minutes). */
+ *  it. Named accounts require a fresh reauth; anonymous sessions are deleted
+ *  using their current Firebase session because no external identity exists. */
 export async function deleteAccountOnServer(token: string): Promise<void> {
   const res = await post('/delete', token)
   if (!res.ok) throw new Error(`account deletion failed: ${res.status}`)
+}
+
+export type AccountExport = {
+  format: 'rezolvo-account-export'
+  version: number
+  generatedAt: string
+  identity: { uid: string; email: string | null; signInProvider: string | null }
+  firestore: { account: unknown; documents: Array<{ path: string; data: unknown }> }
+  storage: Array<{
+    path: string
+    contentType: string | null
+    size: number
+    updatedAt: string | null
+    downloadUrl: string
+    downloadUrlExpiresAt: string
+  }>
+}
+
+/** Portable snapshot of profile, history, attempts, responses, saved work and
+ * a short-lived download link for every uploaded image. */
+export async function exportAccountData(token: string): Promise<AccountExport> {
+  const res = await post('/export', token)
+  if (!res.ok) throw new Error(`account export failed: ${res.status}`)
+  return res.json() as Promise<AccountExport>
 }

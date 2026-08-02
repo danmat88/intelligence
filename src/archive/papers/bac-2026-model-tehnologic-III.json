@@ -1,0 +1,94 @@
+{
+  "id": "III",
+  "title": "SUBIECTUL III",
+  "instructions": "Scrieți rezolvările complete.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac26m-th-III-1",
+      "number": "III.1.a",
+      "points": 5,
+      "competency": "Derivarea funcțiilor raționale",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = \\frac{1}{x^2 + 4x + 5}$.\n\nArătați că $f'(x) = \\frac{-2(x + 2)}{(x^2 + 4x + 5)^2}$, $x \\in \\mathbb{R}$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Folosiți regula de derivare a câtului a două funcții sau derivarea funcției compuse $u^{-1}$.",
+      "solution": [
+        "$f'(x) = \\frac{1' \\cdot (x^2 + 4x + 5) - 1 \\cdot (x^2 + 4x + 5)'}{(x^2 + 4x + 5)^2} =$",
+        "$= \\frac{0 - (2x + 4)}{(x^2 + 4x + 5)^2} = \\frac{-2(x + 2)}{(x^2 + 4x + 5)^2}$, $x \\in \\mathbb{R}$."
+      ],
+      "figureDescription": ""
+    },
+    {
+      "id": "bac26m-th-III-2",
+      "number": "III.1.b",
+      "points": 5,
+      "competency": "Calculul limitelor de funcții",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = \\frac{1}{x^2 + 4x + 5}$.\n\nArătați că $\\lim_{x \\to +\\infty} (x^2 - 1) \\cdot f(x) = 1$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Înmulțiți funcția cu $x^2 - 1$ și dați factor comun pe $x^2$ la numărător și la numitor pentru a calcula limita la infinit.",
+      "solution": [
+        "$\\lim_{x \\to +\\infty} (x^2 - 1) \\cdot f(x) = \\lim_{x \\to +\\infty} \\frac{x^2 - 1}{x^2 + 4x + 5} = \\lim_{x \\to +\\infty} \\frac{x^2\\left(1 - \\frac{1}{x^2}\\right)}{x^2\\left(1 + \\frac{4}{x} + \\frac{5}{x^2}\\right)} =$",
+        "$= \\lim_{x \\to +\\infty} \\frac{1 - \\frac{1}{x^2}}{1 + \\frac{4}{x} + \\frac{5}{x^2}} = 1$."
+      ],
+      "figureDescription": ""
+    },
+    {
+      "id": "bac26m-th-III-3",
+      "number": "III.1.c",
+      "points": 5,
+      "competency": "Studiul variației funcției folosind derivata",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = \\frac{1}{x^2 + 4x + 5}$.\n\nDemonstrați că $5f(x) + f(-x) \\le 2$, pentru orice $x \\in [0, +\\infty)$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Studiați semnul derivatei pentru a determina monotonia funcției și găsiți extremele acesteia pe intervalele corespunzătoare lui $x$ și $-x$.",
+      "solution": [
+        "$f'(x) = 0 \\Leftrightarrow x = -2$; pentru orice $x \\in (-\\infty, -2]$, $f'(x) \\ge 0$, deci $f$ este crescătoare pe $(-\\infty, -2]$ și, pentru orice $x \\in [-2, +\\infty)$, $f'(x) \\le 0$, deci $f$ este descrescătoare pe $[-2, +\\infty)$.",
+        "$x \\in [0, +\\infty) \\Rightarrow -x \\in (-\\infty, 0]$, deci $f(x) \\le f(0)$ și $f(-x) \\le f(-2)$.",
+        "Cum $f(0) = \\frac{1}{5}$ și $f(-2) = 1$, obținem $5f(x) + f(-x) \\le 5 \\cdot \\frac{1}{5} + 1 = 2$, pentru orice $x \\in [0, +\\infty)$."
+      ],
+      "figureDescription": ""
+    },
+    {
+      "id": "bac26m-th-III-4",
+      "number": "III.2.a",
+      "points": 5,
+      "competency": "Calculul integralelor definite",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 5x^2 + 2x + 1$.\n\nArătați că $\\int_0^1 (f(x) - 2x) dx = \\frac{8}{3}$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Înlocuiți expresia funcției $f(x)$ în integrală, simplificați și aplicați formula pentru integrala din $x^n$.",
+      "solution": [
+        "$\\int_0^1 (f(x) - 2x) dx = \\int_0^1 (5x^2 + 1) dx = \\left( \\frac{5x^3}{3} + x \\right) \\bigg|_0^1 =$",
+        "$= \\frac{5}{3} + 1 = \\frac{8}{3}$."
+      ],
+      "figureDescription": ""
+    },
+    {
+      "id": "bac26m-th-III-5",
+      "number": "III.2.b",
+      "points": 5,
+      "competency": "Integrarea prin metoda substituției",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 5x^2 + 2x + 1$.\n\nArătați că $\\int_0^2 \\frac{1}{f(x) - 5x^2} dx = \\frac{\\ln 5}{2}$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "După înlocuirea lui $f(x)$, observați că numărătorul poate fi scris ca derivata numitorului, înmulțită cu o constantă.",
+      "solution": [
+        "$\\int_0^2 \\frac{1}{f(x) - 5x^2} dx = \\int_0^2 \\frac{1}{2x + 1} dx = \\frac{1}{2} \\int_0^2 \\frac{(2x + 1)'}{2x + 1} dx = \\frac{1}{2} \\ln(2x + 1) \\bigg|_0^2 =$",
+        "$= \\frac{\\ln 5}{2} - \\frac{\\ln 1}{2} = \\frac{\\ln 5}{2}$."
+      ],
+      "figureDescription": ""
+    },
+    {
+      "id": "bac26m-th-III-6",
+      "number": "III.2.c",
+      "points": 5,
+      "competency": "Determinarea primitivelor unei funcții",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 5x^2 + 2x + 1$.\n\nDeterminați primitiva $G : (0, +\\infty) \\to \\mathbb{R}$ a funcției $g : (0, +\\infty) \\to \\mathbb{R}$, $g(x) = \\frac{f(x) - 2x}{\\sqrt{x}}$, pentru care $G(1) = 5$.",
+      "expectedAnswer": "$G(x) = 2x^2\\sqrt{x} + 2\\sqrt{x} + 1$",
+      "hint": "Scrieți funcția $g(x)$ ca o sumă de puteri ale lui $x$, apoi integrați fiecare termen pentru a găsi familia de primitive și folosiți condiția dată pentru a afla constanta.",
+      "solution": [
+        "$g(x) = \\frac{5x^2 + 1}{\\sqrt{x}} = 5x\\sqrt{x} + \\frac{1}{\\sqrt{x}}$, $x \\in (0, +\\infty)$.",
+        "$\\int g(x) dx = \\int \\left( 5x\\sqrt{x} + \\frac{1}{\\sqrt{x}} \\right) dx = 2x^2\\sqrt{x} + 2\\sqrt{x} + C$, deci $G(x) = 2x^2\\sqrt{x} + 2\\sqrt{x} + c$, unde $c$ este număr real.",
+        "$G(1) = 5 \\Rightarrow c = 1$, deci $G(x) = 2x^2\\sqrt{x} + 2\\sqrt{x} + 1$, $x \\in (0, +\\infty)$."
+      ],
+      "figureDescription": ""
+    }
+  ]
+}

@@ -7,7 +7,7 @@
     <item name="android:windowLightNavigationBar">false</item>
     <item name="enforceNavigationBarContrast">false</item>
   </style>
-  <!-- Bare brand-paper splash; the professor first enters in the JS lockup. -->
+  <!-- Bare brand-paper splash; the professor lockup enters in the JS scene. -->
   <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">
     <item name="windowSplashScreenBackground">@color/splashscreen_background</item>
     <item name="windowSplashScreenAnimatedIcon">@drawable/splashscreen_empty</item>

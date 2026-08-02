@@ -1,0 +1,88 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Scrieți rezolvările complete pentru următoarele exerciții.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac24j-sn-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Progresii aritmetice",
+      "prompt": "Determinați termenul $a_1$ al progresiei aritmetice $(a_n)_{n \\ge 1}$, în care $a_2 = 8$ și $a_3 = 12$.",
+      "expectedAnswer": "$a_1 = 4$",
+      "hint": "Folosește formula rației unei progresii aritmetice și apoi exprimă primul termen în funcție de al doilea termen și rație.",
+      "solution": [
+        "Rația progresiei este $r = a_3 - a_2 = 4$.",
+        "$a_1 = a_2 - r = 4$."
+      ]
+    },
+    {
+      "id": "bac24j-sn-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Funcții și ecuații",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 3x - 2$. Determinați numărul real $m$ pentru care $f(m) = m$.",
+      "expectedAnswer": "$m = 1$",
+      "hint": "Calculează $f(m)$ înlocuind pe $x$ cu $m$ în expresia funcției și egalează rezultatul cu $m$.",
+      "solution": [
+        "$f(m) = 3m - 2$, pentru orice număr real $m$.",
+        "$3m - 2 = m$, de unde obținem $m = 1$."
+      ]
+    },
+    {
+      "id": "bac24j-sn-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Ecuații logaritmice",
+      "prompt": "Rezolvați în mulțimea numerelor reale ecuația $\\log_6(9 - x^2) = \\log_6 5$.",
+      "expectedAnswer": "$x \\in \\{-2, 2\\}$",
+      "hint": "Din egalitatea logaritmilor cu aceeași bază rezultă egalitatea argumentelor. Nu uita să verifici dacă soluțiile obținute convin.",
+      "solution": [
+        "$9 - x^2 = 5$, de unde obținem $x^2 - 4 = 0$.",
+        "$x = -2$ sau $x = 2$, care convin."
+      ]
+    },
+    {
+      "id": "bac24j-sn-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Probabilități",
+      "prompt": "Se consideră mulțimea $A = \\{0, 1, 2, \\dots, 9\\}$. Determinați probabilitatea ca, alegând un număr $n$ din mulțimea $A$, numărul $\\sqrt{2n + 1}$ să aparțină mulțimii $A$.",
+      "expectedAnswer": "$p = \\frac{1}{5}$",
+      "hint": "Numărul $\\sqrt{2n + 1}$ aparține mulțimii $A$ dacă $2n + 1$ este un pătrat perfect și $\\sqrt{2n + 1} \\le 9$.",
+      "solution": [
+        "Mulțimea $A$ are $10$ elemente, deci sunt $10$ cazuri posibile.",
+        "Numerele $n$ din mulțimea $A$ pentru care $\\sqrt{2n + 1}$ aparține mulțimii $A$ sunt $0$ și $4$, deci sunt $2$ cazuri favorabile.",
+        "Obținem probabilitatea $p = \\frac{\\text{nr. cazuri favorabile}}{\\text{nr. cazuri posibile}} = \\frac{2}{10} = \\frac{1}{5}$."
+      ]
+    },
+    {
+      "id": "bac24j-sn-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Geometrie analitică",
+      "prompt": "În reperul cartezian $xOy$ se consideră punctele $A(1, 0)$, $B(4, 4)$ și $C(5, 2)$. Arătați că triunghiul $ABC$ este dreptunghic în $C$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Calculează pantele dreptelor $AC$ și $BC$ și verifică dacă produsul lor este $-1$.",
+      "solution": [
+        "$m_{AC} = \\frac{2 - 0}{5 - 1} = \\frac{2}{4} = \\frac{1}{2}$",
+        "$m_{BC} = \\frac{2 - 4}{5 - 4} = \\frac{-2}{1} = -2$",
+        "$m_{AC} \\cdot m_{BC} = \\frac{1}{2} \\cdot (-2) = -1$, deci triunghiul $ABC$ este dreptunghic în $C$."
+      ]
+    },
+    {
+      "id": "bac24j-sn-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Trigonometrie",
+      "prompt": "Se consideră expresia $E(x) = 2\\sin x \\cdot \\cos \\frac{x}{2} + \\left(\\sin \\frac{3x}{4}\\right)^2$. Arătați că $E\\left(\\frac{\\pi}{3}\\right) = 2$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Înlocuiește $x$ cu $\\frac{\\pi}{3}$ în expresia dată și folosește valorile funcțiilor trigonometrice pentru unghiurile obținute.",
+      "solution": [
+        "$\\sin \\frac{\\pi}{3} = \\frac{\\sqrt{3}}{2}$, $\\cos \\frac{\\pi}{6} = \\frac{\\sqrt{3}}{2}$, $\\sin \\frac{\\pi}{4} = \\frac{\\sqrt{2}}{2}$",
+        "$E\\left(\\frac{\\pi}{3}\\right) = 2 \\cdot \\frac{\\sqrt{3}}{2} \\cdot \\frac{\\sqrt{3}}{2} + \\left(\\frac{\\sqrt{2}}{2}\\right)^2 = 2 \\cdot \\frac{3}{4} + \\frac{2}{4} = \\frac{6}{4} + \\frac{2}{4} = 2$."
+      ]
+    }
+  ]
+}

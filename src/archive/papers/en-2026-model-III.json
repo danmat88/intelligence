@@ -1,0 +1,180 @@
+{
+  "id": "III",
+  "title": "SUBIECTUL al III-lea",
+  "instructions": "Scrie rezolvările complete.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "en26m-III-1a",
+      "number": "III.1.a",
+      "points": 2,
+      "competency": "Rezolvarea problemelor cu ecuații",
+      "prompt": "În prezent, vârsta lui Bogdan este cu $8$ ani mai mare decât triplul vârstei lui Tudor. Peste un an vârsta lui Bogdan va fi de $5$ ori mai mare decât vârsta lui Tudor.\n\na) Verifică dacă Tudor poate avea în prezent $4$ ani. Justifică răspunsul dat.",
+      "expectedAnswer": "Nu, Tudor nu poate avea 4 ani.",
+      "hint": "Calculează ce vârstă ar avea Bogdan dacă Tudor ar avea 4 ani și verifică dacă se respectă a doua condiție din enunț.",
+      "solution": [
+        "Bogdan ar avea în prezent $4 \\cdot 3 + 8 = 20$ de ani",
+        "Peste un an Tudor ar avea vârsta $4 + 1 = 5$ ani, iar Bogdan ar avea vârsta $20 + 1 = 21$ de ani și, cum $5 \\cdot 5 = 25$, iar $25 \\neq 21$, obținem că Tudor nu poate avea în prezent $4$ ani."
+      ]
+    },
+    {
+      "id": "en26m-III-1b",
+      "number": "III.1.b",
+      "points": 3,
+      "competency": "Rezolvarea problemelor cu ecuații",
+      "prompt": "În prezent, vârsta lui Bogdan este cu $8$ ani mai mare decât triplul vârstei lui Tudor. Peste un an vârsta lui Bogdan va fi de $5$ ori mai mare decât vârsta lui Tudor.\n\nb) Determină vârsta lui Bogdan în prezent.",
+      "expectedAnswer": "$14$ ani",
+      "hint": "Notează vârstele celor doi cu variabile și formează un sistem de ecuații.",
+      "solution": [
+        "$b = 3a + 8$, unde $a$ reprezintă vârsta lui Tudor în prezent și $b$ reprezintă vârsta lui Bogdan în prezent",
+        "$b + 1 = 5(a + 1)$",
+        "$b = 14$ ani"
+      ]
+    },
+    {
+      "id": "en26m-III-2a",
+      "number": "III.2.a",
+      "points": 2,
+      "competency": "Calcul algebric",
+      "prompt": "Se consideră expresia $E(x) = \\frac{3}{x^2 + 6x + 9} \\cdot \\frac{x}{x - 3} : \\left( \\frac{1}{x + 3} + \\frac{3}{x^2 - 9} \\right)$, unde $x$ este număr real, $x \\neq -3$, $x \\neq 0$ și $x \\neq 3$.\n\na) Arată că $\\frac{1}{x + 3} + \\frac{3}{x^2 - 9} = \\frac{x}{(x - 3)(x + 3)}$, pentru orice număr real $x$, $x \\neq -3$ și $x \\neq 3$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Adu fracțiile la același numitor folosind formula diferenței de pătrate pentru $x^2 - 9$.",
+      "solution": [
+        "$\\frac{1}{x + 3} + \\frac{3}{x^2 - 9} = \\frac{1}{x + 3} + \\frac{3}{(x - 3)(x + 3)} =$",
+        "$= \\frac{x - 3 + 3}{(x - 3)(x + 3)} = \\frac{x}{(x - 3)(x + 3)}$, pentru orice număr real $x$, $x \\neq -3$, $x \\neq 3$"
+      ]
+    },
+    {
+      "id": "en26m-III-2b",
+      "number": "III.2.b",
+      "points": 3,
+      "competency": "Calcul algebric",
+      "prompt": "Se consideră expresia $E(x) = \\frac{3}{x^2 + 6x + 9} \\cdot \\frac{x}{x - 3} : \\left( \\frac{1}{x + 3} + \\frac{3}{x^2 - 9} \\right)$, unde $x$ este număr real, $x \\neq -3$, $x \\neq 0$ și $x \\neq 3$.\n\nb) Arată că numărul $N = \\frac{1}{E(n)} + \\frac{1}{E(n + 1)} + \\frac{1}{E(n + 2)}$ este natural, pentru orice număr natural $n$, $n > 3$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Adu expresia $E(x)$ la o formă mai simplă înainte de a calcula $N$.",
+      "solution": [
+        "$E(x) = \\frac{3}{(x + 3)^2} \\cdot \\frac{x}{x - 3} \\cdot \\frac{(x - 3)(x + 3)}{x} = \\frac{3}{x + 3}$, pentru orice număr real $x$, $x \\neq -3$, $x \\neq 0$ și $x \\neq 3$",
+        "$N = \\frac{n + 3 + n + 4 + n + 5}{3} = \\frac{3n + 12}{3} =$",
+        "$= n + 4$, care este număr natural, pentru orice număr natural $n$, $n > 3$"
+      ]
+    },
+    {
+      "id": "en26m-III-3a",
+      "number": "III.3.a",
+      "points": 2,
+      "competency": "Funcții",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\rightarrow \\mathbb{R}$, $f(x) = 2x + 4$.\n\na) Arată că $f(2) + f(-2) = 8$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Calculează separat valorile $f(2)$ și $f(-2)$, apoi adună-le.",
+      "solution": [
+        "$f(2) = 8$",
+        "$f(-2) = 0$, de unde obținem $f(2) + f(-2) = 8$"
+      ]
+    },
+    {
+      "id": "en26m-III-3b",
+      "number": "III.3.b",
+      "points": 3,
+      "competency": "Funcții și geometrie",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\rightarrow \\mathbb{R}$, $f(x) = 2x + 4$.\n\nb) Reprezentarea geometrică a graficului funcției $f$ intersectează axele $Ox$ și $Oy$ ale sistemului de axe ortogonale $xOy$ în punctele $A$, respectiv $B$. Arată că unghiurile $BAM$ și $MBA$ sunt congruente, știind că $M(3,0)$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Află coordonatele punctelor $A$ și $B$, apoi calculează lungimile segmentelor $AM$ și $BM$ pentru a arăta că triunghiul $AMB$ este isoscel.",
+      "solution": [
+        "$A(-2,0)$ și $B(0,4)$",
+        "Triunghiul $BOM$ este dreptunghic în $O$, deci $BM = 5$",
+        "$AM = 5$, de unde obținem $AM = BM$, deci triunghiul $AMB$ este isoscel $\\Rightarrow \\sphericalangle BAM \\equiv \\sphericalangle MBA$"
+      ],
+      "figureDescription": "Sistem de axe ortogonale xOy cu o dreaptă care intersectează axele în punctele A și B. Punctul M este situat pe axa Ox."
+    },
+    {
+      "id": "en26m-III-4a",
+      "number": "III.4.a",
+      "points": 2,
+      "competency": "Geometria cercului",
+      "prompt": "În figura alăturată este reprezentat cercul de centru $O$. Punctele $A$, $B$, $C$ și $D$ aparțin cercului, astfel încât $AB$ este diametru. Dreptele $CD$ și $AB$ sunt paralele, semidreapta $AC$ este bisectoarea unghiului $BAD$ și $CD = 16\\text{ cm}$.\n\na) Arată că $AD = 16\\text{ cm}$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Folosește proprietățile unghiurilor alterne interne și ale bisectoarei pentru a arăta că triunghiul $ADC$ este isoscel.",
+      "solution": [
+        "$AC$ este bisectoarea unghiului $BAD \\Rightarrow \\sphericalangle DAC = \\sphericalangle CAB$",
+        "$CD \\parallel AB \\Rightarrow \\sphericalangle CAB = \\sphericalangle DCA$, de unde obținem $\\sphericalangle DAC = \\sphericalangle DCA \\Rightarrow$ triunghiul $ADC$ este isoscel, deci $AD = DC = 16\\text{ cm}$"
+      ],
+      "figureDescription": "Un cerc de centru O cu diametrul AB. Punctele C și D sunt pe cerc astfel încât CD este paralel cu AB. Segmentele AD, DC, CB, AC și BD sunt trasate."
+    },
+    {
+      "id": "en26m-III-4b",
+      "number": "III.4.b",
+      "points": 3,
+      "competency": "Arii în poligoane înscrise",
+      "prompt": "În figura alăturată este reprezentat cercul de centru $O$. Punctele $A$, $B$, $C$ și $D$ aparțin cercului, astfel încât $AB$ este diametru. Dreptele $CD$ și $AB$ sunt paralele, semidreapta $AC$ este bisectoarea unghiului $BAD$ și $CD = 16\\text{ cm}$.\n\nb) Calculează aria patrulaterului $ABCD$.",
+      "expectedAnswer": "$192\\sqrt{3}\\text{ cm}^2$",
+      "hint": "Demonstrează că patrulaterul este format din trei triunghiuri echilaterale congruente.",
+      "solution": [
+        "$CD = AD \\Rightarrow \\widehat{CD} = \\widehat{AD} \\Rightarrow \\sphericalangle AOD = \\sphericalangle DOC$",
+        "$CD \\parallel AB \\Rightarrow \\widehat{AD} = \\widehat{BC}$, de unde obținem $\\sphericalangle AOD = \\sphericalangle BOC$",
+        "$\\sphericalangle AOB = 180^\\circ \\Rightarrow \\sphericalangle AOD = \\sphericalangle DOC = \\sphericalangle BOC = 60^\\circ$, deci triunghiurile $AOD$, $DOC$ și $BOC$ sunt echilaterale și congruente",
+        "$\\mathcal{A}_{ABCD} = 3 \\cdot \\mathcal{A}_{\\Delta AOD} = 192\\sqrt{3}\\text{ cm}^2$"
+      ],
+      "figureDescription": "Un cerc de centru O cu diametrul AB. Punctele C și D sunt pe cerc astfel încât CD este paralel cu AB. Segmentele AD, DC, CB, AC și BD sunt trasate."
+    },
+    {
+      "id": "en26m-III-5a",
+      "number": "III.5.a",
+      "points": 2,
+      "competency": "Perimetrul paralelogramului",
+      "prompt": "În figura alăturată este reprezentat paralelogramul $ABCD$ cu $AB = 15\\text{ cm}$. Punctul $M$ aparține segmentului $AB$, astfel încât $AM = AD = \\frac{2}{3}AB$.\n\na) Arată că perimetrul paralelogramului $ABCD$ este egal cu $50\\text{ cm}$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Calculează lungimea laturii $AD$ și apoi aplică formula perimetrului pentru paralelogram.",
+      "solution": [
+        "$AD = \\frac{2}{3} \\cdot 15 = 10\\text{ cm}$",
+        "$P_{ABCD} = 2(AB + AD) = 2 \\cdot 25 = 50\\text{ cm}$"
+      ],
+      "figureDescription": "Un paralelogram ABCD. Punctul M este pe latura AB. Dreapta DM se intersectează cu prelungirea laturii CB în punctul N."
+    },
+    {
+      "id": "en26m-III-5b",
+      "number": "III.5.b",
+      "points": 3,
+      "competency": "Asemănarea triunghiurilor și arii",
+      "prompt": "În figura alăturată este reprezentat paralelogramul $ABCD$ cu $AB = 15\\text{ cm}$. Punctul $M$ aparține segmentului $AB$, astfel încât $AM = AD = \\frac{2}{3}AB$.\n\nb) Știind că distanța de la punctul $D$ la dreapta $AB$ este egală cu $8\\text{ cm}$ și că dreapta $DM$ intersectează dreapta $BC$ în punctul $N$, calculează aria triunghiului $NCD$.",
+      "expectedAnswer": "$90\\text{ cm}^2$",
+      "hint": "Calculează aria triunghiului $ADM$ și folosește asemănarea triunghiurilor $ADM$ și $CND$ pentru a găsi aria cerută.",
+      "solution": [
+        "$\\mathcal{A}_{\\Delta ADM} = \\frac{AM \\cdot d(D, AM)}{2} = \\frac{8 \\cdot 10}{2} = 40\\text{ cm}^2$",
+        "$\\sphericalangle ADM \\equiv \\sphericalangle DNC$, $\\sphericalangle DAM \\equiv \\sphericalangle DCN$, deci $\\Delta ADM \\sim \\Delta CND$",
+        "$\\frac{\\mathcal{A}_{\\Delta ADM}}{\\mathcal{A}_{\\Delta NCD}} = \\left( \\frac{AM}{CD} \\right)^2 = \\frac{4}{9}$, deci $\\mathcal{A}_{\\Delta NCD} = \\frac{9}{4} \\cdot 40 = 90\\text{ cm}^2$"
+      ],
+      "figureDescription": "Un paralelogram ABCD. Punctul M este pe latura AB. Dreapta DM se intersectează cu prelungirea laturii CB în punctul N."
+    },
+    {
+      "id": "en26m-III-6a",
+      "number": "III.6.a",
+      "points": 2,
+      "competency": "Arii în spațiu",
+      "prompt": "În figura alăturată este reprezentat cubul $ABCDA'B'C'D'$, cu $AB = 8\\text{ cm}$. Punctele $M$, $N$ și $P$ sunt mijloacele muchiilor $AD$, $DC$, respectiv $DD'$.\n\na) Arată că aria triunghiului $MNP$ este egală cu $8\\sqrt{3}\\text{ cm}^2$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Arată că triunghiul $MNP$ este echilateral calculând lungimile laturilor sale ca linii mijlocii în triunghiuri dreptunghice.",
+      "solution": [
+        "$MN$ este linie mijlocie în triunghiul $DAC$, deci $MN = \\frac{AC}{2} = \\frac{8\\sqrt{2}}{2} = 4\\sqrt{2}\\text{ cm}$",
+        "$NP = MP = 4\\sqrt{2}\\text{ cm}$, deci triunghiul $MNP$ este echilateral $\\Rightarrow \\mathcal{A}_{\\Delta MNP} = \\frac{(4\\sqrt{2})^2 \\cdot \\sqrt{3}}{4} = 8\\sqrt{3}\\text{ cm}^2$"
+      ],
+      "figureDescription": "Un cub ABCDA'B'C'D'. Punctele M, N și P sunt mijloacele muchiilor AD, DC și DD'. Triunghiul MNP este format."
+    },
+    {
+      "id": "en26m-III-6b",
+      "number": "III.6.b",
+      "points": 3,
+      "competency": "Distanțe în spațiu",
+      "prompt": "În figura alăturată este reprezentat cubul $ABCDA'B'C'D'$, cu $AB = 8\\text{ cm}$. Punctele $M$, $N$ și $P$ sunt mijloacele muchiilor $AD$, $DC$, respectiv $DD'$.\n\nb) Arată că distanța de la punctul $D'$ la planul $(MNP)$ este egală cu $\\frac{4\\sqrt{3}}{3}\\text{ cm}$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Folosește simetria piramidei $DMNP$ și faptul că $P$ este mijlocul lui $DD'$ pentru a lega distanța de la $D'$ la planul $(MNP)$ de distanța de la $D$ la același plan.",
+      "solution": [
+        "$DD' \\cap (MNP) = \\{P\\}$, $P$ mijlocul lui $DD'$, de unde obținem $d(D', (MNP)) = d(D, (MNP))$",
+        "$DM = DN = DP$, deci $DMNP$ este piramidă regulată cu baza triunghiul echilateral $MNP$",
+        "$\\Rightarrow d(D, (MNP)) = DT$, unde $T$ este centrul cercului circumscris triunghiului $MNP$",
+        "$PQ \\perp MN$, $Q \\in MN$, $DQ = \\frac{1}{4} \\cdot BD = 2\\sqrt{2}\\text{ cm}$, $DP = 4\\text{ cm}$ și, cum $PQ = 2\\sqrt{6}\\text{ cm} \\Rightarrow$",
+        "$DT = \\frac{DP \\cdot DQ}{PQ} = \\frac{4\\sqrt{3}}{3}\\text{ cm}$, deci $d(D', (MNP)) = DT = \\frac{4\\sqrt{3}}{3}\\text{ cm}$"
+      ],
+      "figureDescription": "Un cub ABCDA'B'C'D'. Punctele M, N și P sunt mijloacele muchiilor AD, DC și DD'. Triunghiul MNP este format."
+    }
+  ]
+}

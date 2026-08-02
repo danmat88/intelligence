@@ -1,0 +1,95 @@
+{
+  "id": "III",
+  "title": "SUBIECTUL III",
+  "instructions": "Rezolvați următoarele probleme.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac23j-th-III-1",
+      "number": "III.1.a",
+      "points": 5,
+      "competency": "Derivarea funcțiilor polinomiale",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\rightarrow \\mathbb{R}$, $f(x) = x^3 + 6x^2 - 15x + 9$.\n\na) Arătați că $f'(x) = 3(x^2 + 4x - 5)$, $x \\in \\mathbb{R}$.",
+      "expectedAnswer": "$f'(x) = 3(x^2 + 4x - 5)$",
+      "hint": "Aplicați regulile de derivare pentru funcții putere și factorizați rezultatul obținut.",
+      "solution": [
+        "$f'(x) = (x^3 + 6x^2 - 15x + 9)' = 3x^2 + 6 \\cdot 2x - 15$",
+        "$= 3x^2 + 12x - 15 = 3(x^2 + 4x - 5)$, pentru orice $x \\in \\mathbb{R}$."
+      ]
+    },
+    {
+      "id": "bac23j-th-III-2",
+      "number": "III.1.b",
+      "points": 5,
+      "competency": "Studiul monotoniei folosind prima derivată",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\rightarrow \\mathbb{R}$, $f(x) = x^3 + 6x^2 - 15x + 9$.\n\nb) Determinați intervalele de monotonie a funcției $f$.",
+      "expectedAnswer": "$f$ este crescătoare pe $(-\\infty, -5]$ și $[1, +\\infty)$, și descrescătoare pe $[-5, 1]$",
+      "hint": "Rezolvați ecuația $f'(x) = 0$ și studiați semnul derivatei pe intervalele obținute pentru a stabili monotonia.",
+      "solution": [
+        "$f'(x) = 0 \\Leftrightarrow 3(x^2 + 4x - 5) = 0$, de unde obținem $x = -5$ sau $x = 1$.",
+        "$f'(x) \\ge 0$, pentru orice $x \\in (-\\infty, -5]$, deci $f$ este crescătoare pe $(-\\infty, -5]$.",
+        "$f'(x) \\le 0$, pentru orice $x \\in [-5, 1]$, deci $f$ este descrescătoare pe $[-5, 1]$.",
+        "$f'(x) \\ge 0$, pentru orice $x \\in [1, +\\infty)$, deci $f$ este crescătoare pe $[1, +\\infty)$."
+      ]
+    },
+    {
+      "id": "bac23j-th-III-3",
+      "number": "III.1.c",
+      "points": 5,
+      "competency": "Calculul limitelor de funcții folosind regula lui l'Hôpital",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\rightarrow \\mathbb{R}$, $f(x) = x^3 + 6x^2 - 15x + 9$.\n\nc) Arătați că $\\lim_{x \\to +\\infty} \\frac{f'(x)}{e^x f''(x)} = 0$.",
+      "expectedAnswer": "$0$",
+      "hint": "Calculați derivata a doua $f''(x)$ și aplicați regula lui l'Hôpital de două ori pentru a evalua limita.",
+      "solution": [
+        "$f''(x) = (3x^2 + 12x - 15)' = 6x + 12 = 3(2x + 4)$, pentru orice $x \\in \\mathbb{R}$.",
+        "Limita devine: $\\lim_{x \\to +\\infty} \\frac{f'(x)}{e^x f''(x)} = \\lim_{x \\to +\\infty} \\frac{3(x^2 + 4x - 5)}{e^x \\cdot 3(2x + 4)} = \\lim_{x \\to +\\infty} \\frac{x^2 + 4x - 5}{e^x(2x + 4)}$.",
+        "Aplicând regula lui l'Hôpital (cazul $\\frac{\\infty}{\\infty}$), obținem: $\\lim_{x \\to +\\infty} \\frac{2x + 4}{e^x(2x + 4) + e^x \\cdot 2} = \\lim_{x \\to +\\infty} \\frac{2x + 4}{e^x(2x + 6)}$.",
+        "Aplicând încă o dată regula lui l'Hôpital, obținem: $\\lim_{x \\to +\\infty} \\frac{2}{e^x(2x + 6) + e^x \\cdot 2} = \\lim_{x \\to +\\infty} \\frac{2}{e^x(2x + 8)} = 0$."
+      ]
+    },
+    {
+      "id": "bac23j-th-III-4",
+      "number": "III.2.a",
+      "points": 5,
+      "competency": "Integrarea funcțiilor raționale",
+      "prompt": "Se consideră funcția $f : (-9, +\\infty) \\rightarrow \\mathbb{R}$, $f(x) = \\frac{8x}{x+9}$.\n\na) Arătați că $\\int_0^1 (x+9) \\cdot f(x) dx = 4$.",
+      "expectedAnswer": "$4$",
+      "hint": "Înlocuiți expresia funcției $f(x)$ în integrală și simplificați fracția înainte de a integra.",
+      "solution": [
+        "$\\int_0^1 (x+9) \\cdot f(x) dx = \\int_0^1 (x+9) \\cdot \\frac{8x}{x+9} dx = \\int_0^1 8x dx$",
+        "$= 4x^2 \\Big|_0^1$",
+        "$= 4 \\cdot 1^2 - 4 \\cdot 0^2 = 4$"
+      ]
+    },
+    {
+      "id": "bac23j-th-III-5",
+      "number": "III.2.b",
+      "points": 5,
+      "competency": "Integrarea prin metoda substituției",
+      "prompt": "Se consideră funcția $f : (-9, +\\infty) \\rightarrow \\mathbb{R}$, $f(x) = \\frac{8x}{x+9}$.\n\nb) Arătați că $\\int_1^6 \\frac{1}{8x} \\cdot f(x) dx = \\ln \\frac{3}{2}$.",
+      "expectedAnswer": "$\\ln \\frac{3}{2}$",
+      "hint": "Simplificați integrandul și folosiți formula $\\int \\frac{u'(x)}{u(x)} dx = \\ln |u(x)| + \\mathcal{C}$.",
+      "solution": [
+        "$\\int_1^6 \\frac{1}{8x} \\cdot f(x) dx = \\int_1^6 \\frac{1}{8x} \\cdot \\frac{8x}{x+9} dx = \\int_1^6 \\frac{1}{x+9} dx$",
+        "$= \\int_1^6 \\frac{(x+9)'}{x+9} dx = \\ln(x+9) \\Big|_1^6$",
+        "$= \\ln(6+9) - \\ln(1+9) = \\ln 15 - \\ln 10$",
+        "$= \\ln \\frac{15}{10} = \\ln \\frac{3}{2}$"
+      ]
+    },
+    {
+      "id": "bac23j-th-III-6",
+      "number": "III.2.c",
+      "points": 5,
+      "competency": "Calculul integralelor definite și ecuații cu integrale",
+      "prompt": "Se consideră funcția $f : (-9, +\\infty) \\rightarrow \\mathbb{R}$, $f(x) = \\frac{8x}{x+9}$.\n\nc) Determinați numărul real $a$ pentru care $\\int_0^3 f(x^2) dx = 6(4 + a\\pi)$.",
+      "expectedAnswer": "$a = -1$",
+      "hint": "Exprimați $f(x^2)$ și folosiți un artificiu de calcul (adunând și scăzând 9 la numărător) pentru a separa partea rațională de cea care conduce la funcția arctangentă.",
+      "solution": [
+        "$\\int_0^3 f(x^2) dx = \\int_0^3 \\frac{8x^2}{x^2+9} dx = 8 \\int_0^3 \\frac{x^2+9-9}{x^2+9} dx$",
+        "$= 8 \\int_0^3 \\left(1 - \\frac{9}{x^2+9}\\right) dx = \\left(8x - 8 \\cdot \\frac{9}{3} \\operatorname{arctg} \\frac{x}{3}\\right) \\Big|_0^3$",
+        "$= 24 - 24 \\operatorname{arctg} 1 = 24 - 24 \\cdot \\frac{\\pi}{4} = 24 - 6\\pi$",
+        "Din ecuația $24 - 6\\pi = 6(4 + a\\pi)$, obținem $24 - 6\\pi = 24 + 6a\\pi$, de unde $a = -1$."
+      ]
+    }
+  ]
+}

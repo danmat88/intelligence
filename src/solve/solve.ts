@@ -2,7 +2,17 @@ import { ai } from '../ai'
 import type { ChatTurn } from '../ai/types'
 import { DailyLimitError } from '../ai/limits'
 import type { CapturedImage } from './capture'
-import { SOLVE_JSON_SYSTEM, FOLLOWUP_SYSTEM, SOLVE_USER_PROMPT, VERIFY_SYSTEM } from './prompt'
+import {
+  SOLVE_JSON_SYSTEM,
+  FOLLOWUP_SYSTEM,
+  GUIDED_FOLLOWUP_SYSTEM,
+  GUIDED_START_SYSTEM,
+  READ_PROBLEM_IMAGE_SYSTEM,
+  REVIEW_WORK_SYSTEM,
+  SIMILAR_PROBLEM_SYSTEM,
+  SOLVE_USER_PROMPT,
+  VERIFY_SYSTEM,
+} from './prompt'
 import { definitiveVerdict, getSolveJson, isHardProblem, withJsonFlags, type CheckerReply, type Verdict } from './verdict'
 
 // Model routing, the way fast consumer math apps do it:
@@ -26,6 +36,42 @@ const DEEP = 'gemini-3.1-pro-preview'
 const VERIFY_MODEL = FAST
 
 const SOLVE = { json: true, temperature: 0.2, maxTokens: 4096 } as const
+
+export type ReadProblemImageResult = {
+  problem: string
+  topic: string
+  containsWork: boolean
+}
+
+function parseObject(raw: string): Record<string, unknown> | null {
+  const trimmed = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '')
+  try {
+    const value = JSON.parse(trimmed) as unknown
+    return value && typeof value === 'object' && !Array.isArray(value)
+      ? value as Record<string, unknown>
+      : null
+  } catch {
+    return null
+  }
+}
+
+export function parseReadProblemImage(raw: string): ReadProblemImageResult | { error: string } | null {
+  const value = parseObject(raw)
+  if (!value) return null
+  if (typeof value.error === 'string' && value.error.trim() && value.error.length <= 300) {
+    return { error: value.error.trim() }
+  }
+  if (
+    typeof value.problem !== 'string' || !value.problem.trim() || value.problem.length > 5000 ||
+    typeof value.topic !== 'string' || !value.topic.trim() || value.topic.length > 100 ||
+    typeof value.containsWork !== 'boolean'
+  ) return null
+  return {
+    problem: value.problem.trim(),
+    topic: value.topic.trim(),
+    containsWork: value.containsWork,
+  }
+}
 
 /** A structured solve must contain parseable JSON — otherwise escalate. */
 function looksLikeValidSolve(raw: string): boolean {
@@ -62,9 +108,23 @@ async function withFallback(
 // Every solve-path request carries purpose=solve + the problem's stable id, so
 // the proxy's daily cap charges ONE slot per problem no matter how many
 // requests the flow fans into (escalation, correction re-solve, retry).
-function solveCall(signal?: AbortSignal, image?: CapturedImage, problemId?: string) {
+function solveCall(
+  signal?: AbortSignal,
+  image?: CapturedImage,
+  problemId?: string,
+  confirmedProblem?: string,
+) {
   return async (model: string) => {
-    const { text } = await ai.generate(image ? SOLVE_USER_PROMPT : '', {
+    const prompt = image
+      ? confirmedProblem?.trim()
+        ? [
+            'Rezolvă enunțul confirmat de utilizator de mai jos.',
+            'Folosește imaginea pentru figură și context vizual, dar enunțul confirmat are prioritate dacă OCR-ul și fotografia diferă.',
+            `ENUNȚ CONFIRMAT:\n${confirmedProblem.trim()}`,
+          ].join('\n\n')
+        : SOLVE_USER_PROMPT
+      : ''
+    const { text } = await ai.generate(prompt, {
       ...(image ? { image: { base64: image.base64, mimeType: image.mimeType } } : {}),
       system: SOLVE_JSON_SYSTEM,
       model,
@@ -78,8 +138,13 @@ function solveCall(signal?: AbortSignal, image?: CapturedImage, problemId?: stri
 }
 
 /** First solve from a photo → structured JSON solution. */
-export async function solveImage(image: CapturedImage, signal?: AbortSignal, problemId?: string): Promise<string> {
-  return withFallback(solveCall(signal, image, problemId), looksLikeValidSolve, signal)
+export async function solveImage(
+  image: CapturedImage,
+  signal?: AbortSignal,
+  problemId?: string,
+  confirmedProblem?: string,
+): Promise<string> {
+  return withFallback(solveCall(signal, image, problemId, confirmedProblem), looksLikeValidSolve, signal)
 }
 
 /** First solve from a typed problem → structured JSON solution. */
@@ -99,6 +164,144 @@ export async function solveProblem(problem: string, signal?: AbortSignal, proble
   // code verification can't grade a proof anyway.
   if (isHardProblem(problem)) return withJsonFlags(await call(DEEP), { _model: 'deep' })
   return withFallback(call, looksLikeValidSolve, signal)
+}
+
+/** Read and confirm a photographed statement before selecting a help mode. */
+export async function readProblemImage(
+  image: CapturedImage,
+  signal?: AbortSignal,
+  problemId?: string,
+): Promise<ReadProblemImageResult> {
+  const { text } = await ai.generate('Transcrie problema din imagine fără să o rezolvi.', {
+    image: { base64: image.base64, mimeType: image.mimeType },
+    system: READ_PROBLEM_IMAGE_SYSTEM,
+    model: FAST,
+    json: true,
+    temperature: 0,
+    maxTokens: 1400,
+    purpose: 'read',
+    problemId,
+    signal,
+  })
+  const result = parseReadProblemImage(text)
+  if (!result) throw new Error('Nu am putut confirma enunțul din fotografie.')
+  if ('error' in result) throw new Error(result.error)
+  return result
+}
+
+/** Start a Socratic thread without generating or displaying the solution. */
+export async function startGuidedProblem(
+  problem: string,
+  signal?: AbortSignal,
+  problemId?: string,
+  image?: CapturedImage,
+): Promise<string> {
+  const prompt = image
+    ? `ENUNȚ CONFIRMAT:\n${problem.trim()}\n\nFolosește imaginea numai pentru figură și context vizual.`
+    : problem
+  const { text } = await ai.generate(prompt, {
+    ...(image ? { image: { base64: image.base64, mimeType: image.mimeType } } : null),
+    system: GUIDED_START_SYSTEM,
+    model: FAST,
+    temperature: 0.25,
+    maxTokens: 700,
+    purpose: 'solve',
+    problemId,
+    signal,
+  })
+  const reply = text.trim()
+  if (!reply) throw new Error('Nu am primit primul pas ghidat.')
+  return reply
+}
+
+/** Continue guided work while keeping the final answer locked. */
+export async function followUpGuided(
+  turns: ChatTurn[],
+  signal?: AbortSignal,
+  problemId?: string,
+): Promise<string> {
+  const { text } = await ai.chat(turns, {
+    system: GUIDED_FOLLOWUP_SYSTEM,
+    model: FAST,
+    temperature: 0.25,
+    maxTokens: 900,
+    purpose: 'followup',
+    problemId,
+    signal,
+  })
+  const reply = text.trim()
+  if (!reply) throw new Error('Nu am primit următorul pas ghidat.')
+  return reply
+}
+
+/** Generate a fresh exercise statement without leaking its solution. */
+export async function createSimilarProblem(
+  turns: ChatTurn[],
+  signal?: AbortSignal,
+  problemId?: string,
+): Promise<string> {
+  const { text } = await ai.chat(turns, {
+    system: SIMILAR_PROBLEM_SYSTEM,
+    model: FAST,
+    temperature: 0.45,
+    maxTokens: 500,
+    purpose: 'followup',
+    problemId,
+    signal,
+  })
+  const reply = text.trim()
+  if (!reply || reply.length > 1800) throw new Error('Nu am primit un exercițiu similar valid.')
+  return reply
+}
+
+/** Review typed learner work without replacing it with a complete solution. */
+export async function reviewWork(
+  problem: string,
+  work: string,
+  signal?: AbortSignal,
+  problemId?: string,
+): Promise<string> {
+  const prompt = `PROBLEMĂ:\n${problem.trim()}\n\nLUCRAREA ELEVULUI:\n${work.trim()}`
+  const { text } = await ai.generate(prompt, {
+    system: REVIEW_WORK_SYSTEM,
+    model: DEEP,
+    temperature: 0.1,
+    maxTokens: 1200,
+    purpose: 'solve',
+    problemId,
+    signal,
+  })
+  const reply = text.trim()
+  if (!reply) throw new Error('Nu am primit verificarea lucrării.')
+  return reply
+}
+
+/** Review handwriting visible in the same photo as the problem. */
+export async function reviewWorkImage(
+  problem: string,
+  image: CapturedImage,
+  workNote = '',
+  signal?: AbortSignal,
+  problemId?: string,
+): Promise<string> {
+  const prompt = [
+    `PROBLEMA CONFIRMATĂ:\n${problem.trim()}`,
+    'Verifică numai lucrarea/răspunsul vizibil în imagine. Nu confunda textul tipărit al enunțului cu pașii elevului.',
+    workNote.trim() ? `NOTĂ SCRISĂ DE ELEV:\n${workNote.trim()}` : '',
+  ].filter(Boolean).join('\n\n')
+  const { text } = await ai.generate(prompt, {
+    image: { base64: image.base64, mimeType: image.mimeType },
+    system: REVIEW_WORK_SYSTEM,
+    model: DEEP,
+    temperature: 0.1,
+    maxTokens: 1200,
+    purpose: 'solve',
+    problemId,
+    signal,
+  })
+  const reply = text.trim()
+  if (!reply) throw new Error('Nu am primit verificarea lucrării din fotografie.')
+  return reply
 }
 
 /** Re-solve a problem statement with the DEEP model (verification escalation).
@@ -126,7 +329,12 @@ export async function solveDeep(
  * (sympy) against the problem. Returns 'unverifiable' on any doubt/failure —
  * the badge only ever appears on a real, machine-checked pass.
  */
-export async function verifyAnswer(problemText: string, solutionRaw: string, signal?: AbortSignal): Promise<Verdict> {
+export async function verifyAnswer(
+  problemText: string,
+  solutionRaw: string,
+  signal?: AbortSignal,
+  problemId?: string,
+): Promise<Verdict> {
   const j = getSolveJson(solutionRaw)
   const problem = String(j?.problem ?? '').trim() || problemText.trim()
   const answer = String(j?.answer ?? '').trim()
@@ -139,7 +347,8 @@ export async function verifyAnswer(problemText: string, solutionRaw: string, sig
       model,
       tools: [{ code_execution: {} }],
       temperature: 0,
-      purpose: 'verify', // rides on an already-charged problem — never counted
+      purpose: 'verify', // same id as solve: idempotent in the server-side meter
+      problemId,
       thinkingLevel,
       // Generous budget: a verdict truncated mid-reply used to vanish as a
       // silent "unverifiable" (now caught by `truncated`).

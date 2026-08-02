@@ -31,9 +31,9 @@ export default function InfoDialog({
 
   return (
     <Overlay open={open} onClose={onClose} align="center">
-      <View style={[styles.card, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' }]}>
-        <View style={[styles.badge, { backgroundColor: tone === 'success' ? c.bubblyGreen : c.bubblyYellow, borderColor: tone === 'success' ? c.bubblyGreenDark : c.bubblyYellowDark, borderBottomColor: tone === 'success' ? c.bubblyGreenDark : c.bubblyYellowDark }]}>
-          <RezIcon name={tone === 'success' ? 'verified' : 'alert'} size={22} color="#fff" accent="#FFFFFF" />
+      <View style={[styles.card, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: c.cardEdge }]}>
+        <View style={[styles.badge, { backgroundColor: tone === 'success' ? c.bubblyGreen : c.bubblyYellow, borderColor: c.border, borderBottomColor: c.border }]}>
+          <RezIcon name={tone === 'success' ? 'verified' : 'alert'} size={22} color="#FFFFFF" accent="#FFFFFF" />
         </View>
         <Txt size={20} style={{ fontFamily: theme.font.display, letterSpacing: -0.4 }}>
           {title}
@@ -41,7 +41,7 @@ export default function InfoDialog({
         <Txt size={14} color={c.textMuted} style={styles.message}>
           {message}
         </Txt>
-        <Press onPress={onClose} pressDepth={3.5} style={[styles.btn, { backgroundColor: c.bubblyGreen, borderColor: c.bubblyGreenDark, borderBottomColor: c.bubblyGreenDark }]}>
+        <Press onPress={onClose} pressDepth={5} style={[styles.btn, { backgroundColor: c.bubblyGreen, borderColor: c.border, borderBottomColor: c.border }]}>
           <Txt weight="bold" size={15} color="#FFFFFF">
             {okLabel}
           </Txt>

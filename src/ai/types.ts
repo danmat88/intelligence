@@ -29,7 +29,7 @@ export type GenerateOptions = {
   /** What this request is for, billing-wise. The proxy counts ONLY 'solve'
    *  requests against the free daily cap; 'verify'/'followup' ride on an
    *  already-charged problem. Sent as a header in proxy mode. */
-  purpose?: 'solve' | 'verify' | 'followup'
+  purpose?: 'solve' | 'verify' | 'followup' | 'read'
   /** Stable id of the problem this request belongs to. All the requests of one
    *  problem (fast solve, deep escalation, correction re-solve) share it, so
    *  the fan-out charges ONE daily-cap slot, and a retry is free. */

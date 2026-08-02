@@ -1,0 +1,68 @@
+{
+  "id": "III",
+  "title": "SUBIECTUL al III-lea",
+  "instructions": "Rezolvați următoarele exerciții.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac22j-th-III-1a",
+      "number": "III.1.a",
+      "points": 5,
+      "competency": "Derivare",
+      "prompt": "Se consideră funcția $f:\\mathbb{R}\\to\\mathbb{R}$, $f(x)=2x^5+5x^4-10x^3+1$. Arătați că $f'(x)=10x^2(x^2+2x-3)$, $x\\in\\mathbb{R}$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Derivează termen cu termen și factorizează factorul comun.",
+      "solution": ["$f'(x)=10x^4+20x^3-30x^2$", "$f'(x)=10x^2(x^2+2x-3)$, pentru orice $x\\in\\mathbb{R}$."]
+    },
+    {
+      "id": "bac22j-th-III-1b",
+      "number": "III.1.b",
+      "points": 5,
+      "competency": "Tangenta la grafic",
+      "prompt": "Se consideră funcția $f:\\mathbb{R}\\to\\mathbb{R}$, $f(x)=2x^5+5x^4-10x^3+1$. Determinați ecuația tangentei la graficul funcției $f$ în punctul de abscisă $x=0$.",
+      "expectedAnswer": "$y=1$",
+      "hint": "Calculează $f(0)$ și $f'(0)$.",
+      "solution": ["$f(0)=1$ și $f'(0)=0$.", "$y-f(0)=f'(0)(x-0)$, deci tangenta are ecuația $y=1$."]
+    },
+    {
+      "id": "bac22j-th-III-1c",
+      "number": "III.1.c",
+      "points": 5,
+      "competency": "Monotonie",
+      "prompt": "Se consideră funcția $f:\\mathbb{R}\\to\\mathbb{R}$, $f(x)=2x^5+5x^4-10x^3+1$. Demonstrați că $2x^5+5x^4-10x^3+3\\geq0$, pentru orice $x\\in[-3,+\\infty)$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Studiază semnul derivatei și minimul funcției pe intervalul dat.",
+      "solution": ["$f'(x)=10x^2(x-1)(x+3)$; funcția este descrescătoare pe $[-3,1]$ și crescătoare pe $[1,+\\infty)$.", "Prin urmare, $f(x)\\geq f(1)=-2$ pentru orice $x\\in[-3,+\\infty)$.", "$2x^5+5x^4-10x^3+3=f(x)+2\\geq0$."]
+    },
+    {
+      "id": "bac22j-th-III-2a",
+      "number": "III.2.a",
+      "points": 5,
+      "competency": "Integrale",
+      "prompt": "Se consideră funcția $f:(-1,+\\infty)\\to\\mathbb{R}$, $f(x)=6x+\\frac2{x+1}$. Arătați că $\\int_0^2\\left(f(x)-\\frac2{x+1}\\right)dx=12$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Înlocuiește expresia funcției; termenii fracționari se reduc.",
+      "solution": ["$f(x)-\\frac2{x+1}=6x$.", "$\\int_0^2 6x\\,dx=3x^2\\big|_0^2=12$."]
+    },
+    {
+      "id": "bac22j-th-III-2b",
+      "number": "III.2.b",
+      "points": 5,
+      "competency": "Integrale",
+      "prompt": "Se consideră funcția $f:(-1,+\\infty)\\to\\mathbb{R}$, $f(x)=6x+\\frac2{x+1}$. Arătați că $\\int_0^1(f(x)-6x)dx=2\\ln2$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "După simplificare rămâne o integrală de tip logaritmic.",
+      "solution": ["$f(x)-6x=\\frac2{x+1}$.", "$\\int_0^1\\frac2{x+1}dx=2\\ln(x+1)\\big|_0^1=2\\ln2$."]
+    },
+    {
+      "id": "bac22j-th-III-2c",
+      "number": "III.2.c",
+      "points": 5,
+      "competency": "Integrare prin părți",
+      "prompt": "Se consideră funcția $f:(-1,+\\infty)\\to\\mathbb{R}$, $f(x)=6x+\\frac2{x+1}$. Determinați numărul real $a$ pentru care $\\int_1^e\\left(f(x)-\\frac2{x+1}\\right)\\ln^2x\\,dx=\\frac{a(e^2-1)}2$.",
+      "expectedAnswer": "$a=3$",
+      "hint": "Simplifică integrandul și integrează prin părți $6x\\ln^2x$.",
+      "solution": ["Integrala este $6\\int_1^e x\\ln^2x\\,dx$.", "Prin integrare prin părți, $6\\int_1^e x\\ln^2x\\,dx=\\frac{3(e^2-1)}2$.", "Comparând cu $\\frac{a(e^2-1)}2$, obținem $a=3$."]
+    }
+  ]
+}

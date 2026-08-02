@@ -1,0 +1,93 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL al II-lea",
+  "instructions": "Rezolvați toate exercițiile.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac26m-sn-II-1",
+      "number": "II.1.a",
+      "points": 5,
+      "competency": "Calculul determinantului unei matrice",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$ și $A(x) = \\begin{pmatrix} x-1 & 1 \\\\ 1-x & x-5 \\end{pmatrix}$, unde $x$ este număr real.\n\na) Arătați că $\\det(A(6)) = 10$.",
+      "expectedAnswer": "$10$",
+      "hint": "Înlocuiți $x$ cu $6$ în expresia matricei $A(x)$ și calculați determinantul.",
+      "solution": [
+        "$A(6) = \\begin{pmatrix} 5 & 1 \\\\ -5 & 1 \\end{pmatrix}$",
+        "$\\det(A(6)) = \\begin{vmatrix} 5 & 1 \\\\ -5 & 1 \\end{vmatrix} = 5 \\cdot 1 - (-5) \\cdot 1 = 5 + 5 = 10$"
+      ]
+    },
+    {
+      "id": "bac26m-sn-II-2",
+      "number": "II.1.b",
+      "points": 5,
+      "competency": "Înmulțirea matricelor și egalitatea matricelor",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$ și $A(x) = \\begin{pmatrix} x-1 & 1 \\\\ 1-x & x-5 \\end{pmatrix}$, unde $x$ este număr real.\n\nb) Determinați numărul real $a$ pentru care $A(3) \\cdot A(3) = aI_2$.",
+      "expectedAnswer": "$a = 2$",
+      "hint": "Calculați matricea $A(3)$, apoi efectuați produsul $A(3) \\cdot A(3)$ și egalați rezultatul cu $aI_2$.",
+      "solution": [
+        "$A(3) = \\begin{pmatrix} 2 & 1 \\\\ -2 & -2 \\end{pmatrix}$",
+        "$A(3) \\cdot A(3) = \\begin{pmatrix} 2 & 1 \\\\ -2 & -2 \\end{pmatrix} \\begin{pmatrix} 2 & 1 \\\\ -2 & -2 \\end{pmatrix} = \\begin{pmatrix} 2 & 0 \\\\ 0 & 2 \\end{pmatrix} = 2I_2$",
+        "$2I_2 = aI_2$, de unde obținem $a = 2$"
+      ]
+    },
+    {
+      "id": "bac26m-sn-II-3",
+      "number": "II.1.c",
+      "points": 5,
+      "competency": "Operații cu matrice și determinanți",
+      "prompt": "Se consideră matricele $I_2 = \\begin{pmatrix} 1 & 0 \\\\ 0 & 1 \\end{pmatrix}$ și $A(x) = \\begin{pmatrix} x-1 & 1 \\\\ 1-x & x-5 \\end{pmatrix}$, unde $x$ este număr real.\n\nc) Demonstrați că numărul $N = \\det(A(m) \\cdot A(2) - A(m-1))$ este natural, pentru orice număr întreg $m$.",
+      "expectedAnswer": "$N = (m-4)(m-5)$, care este număr natural pentru orice $m \\in \\mathbb{Z}$",
+      "hint": "Calculați $A(m) \\cdot A(2)$ și scădeți $A(m-1)$, apoi calculați determinantul matricei rezultate.",
+      "solution": [
+        "$A(m) \\cdot A(2) - A(m-1) = \\begin{pmatrix} m-1 & 1 \\\\ 1-m & m-5 \\end{pmatrix} \\begin{pmatrix} 1 & 1 \\\\ -1 & -3 \\end{pmatrix} - \\begin{pmatrix} m-2 & 1 \\\\ 2-m & m-6 \\end{pmatrix} = \\begin{pmatrix} 0 & m-5 \\\\ 4-m & 22-5m \\end{pmatrix}$",
+        "$\\det(A(m) \\cdot A(2) - A(m-1)) = 0 \\cdot (22-5m) - (m-5)(4-m) = (m-4)(m-5)$",
+        "De unde obținem $N = (m-4)(m-5)$, pentru orice număr întreg $m$.",
+        "Cum $m-4$ și $m-5$ sunt numere întregi și $(m-4)(m-5) \\ge 0$, obținem că numărul $N$ este natural, pentru orice număr întreg $m$."
+      ]
+    },
+    {
+      "id": "bac26m-sn-II-4",
+      "number": "II.2.a",
+      "points": 5,
+      "competency": "Calculul valorii unui polinom",
+      "prompt": "Se consideră polinomul $f = X^3 + aX^2 - 2X + 2$, unde $a$ este număr real.\n\na) Arătați că $f(0) = 2$, pentru orice număr real $a$.",
+      "expectedAnswer": "$2$",
+      "hint": "Înlocuiți nedeterminata $X$ cu $0$ în expresia polinomului $f$.",
+      "solution": [
+        "$f(0) = 0^3 + a \\cdot 0^2 - 2 \\cdot 0 + 2 =$",
+        "$= 0 + 0 - 0 + 2 = 2$, pentru orice număr real $a$"
+      ]
+    },
+    {
+      "id": "bac26m-sn-II-5",
+      "number": "II.2.b",
+      "points": 5,
+      "competency": "Relațiile lui Viète",
+      "prompt": "Se consideră polinomul $f = X^3 + aX^2 - 2X + 2$, unde $a$ este număr real.\n\nb) Determinați numărul real $a$ pentru care $x_1 x_2 x_3 (1 + x_1 + x_2 + x_3) = 4$, unde $x_1$, $x_2$ și $x_3$ sunt rădăcinile polinomului $f$.",
+      "expectedAnswer": "$a = 3$",
+      "hint": "Folosiți relațiile lui Viète pentru a exprima suma și produsul rădăcinilor în funcție de $a$.",
+      "solution": [
+        "Din relațiile lui Viète, avem $x_1 x_2 x_3 = -2$ și $x_1 + x_2 + x_3 = -a$.",
+        "Înlocuind în relația dată, obținem $x_1 x_2 x_3 (1 + x_1 + x_2 + x_3) = -2(1 - a)$, pentru orice număr real $a$.",
+        "$-2(1 - a) = 4$, de unde obținem $a = 3$"
+      ]
+    },
+    {
+      "id": "bac26m-sn-II-6",
+      "number": "II.2.c",
+      "points": 5,
+      "competency": "Divizibilitatea polinoamelor și teorema împărțirii cu rest",
+      "prompt": "Se consideră polinomul $f = X^3 + aX^2 - 2X + 2$, unde $a$ este număr real.\n\nc) Știind că polinomul $f$ este divizibil cu polinomul $X + 1$, determinați restul împărțirii lui $f$ la polinomul $X^2 - 2$.",
+      "expectedAnswer": "$-4$",
+      "hint": "Folosiți teorema lui Bézout pentru a afla $a$, apoi efectuați împărțirea polinoamelor.",
+      "solution": [
+        "Deoarece polinomul $f$ este divizibil cu $X + 1$, avem $f(-1) = 0$.",
+        "$f(-1) = (-1)^3 + a(-1)^2 - 2(-1) + 2 = a + 3 = 0$, de unde obținem $a = -3$.",
+        "Pentru $a = -3$, polinomul este $f = X^3 - 3X^2 - 2X + 2$.",
+        "Împărțind $f$ la $X^2 - 2$, obținem $f = X^3 - 3X^2 - 2X + 2 = (X^2 - 2)(X - 3) - 4$.",
+        "Deci restul împărțirii lui $f$ la $X^2 - 2$ este $-4$."
+      ]
+    }
+  ]
+}

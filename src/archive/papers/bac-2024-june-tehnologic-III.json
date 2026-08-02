@@ -1,0 +1,87 @@
+{
+  "id": "III",
+  "title": "SUBIECTUL III",
+  "instructions": "Rezolvați următoarele probleme, scriind rezolvările complete.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac24j-th-III-1",
+      "number": "III.1.a",
+      "points": 5,
+      "competency": "Derivarea funcțiilor raționale",
+      "prompt": "Se consideră funcția $f : (0,+\\infty) \\to \\mathbb{R}$, $f(x) = \\frac{2x-1}{x^2}$. Arătați că $f'(x) = \\frac{2(1-x)}{x^3}$, $x \\in (0,+\\infty)$.",
+      "expectedAnswer": "$f'(x) = \\frac{2(1-x)}{x^3}$",
+      "hint": "Aplică regula de derivare a câtului a două funcții: $\\left(\\frac{u}{v}\\right)' = \\frac{u'v - uv'}{v^2}$.",
+      "solution": [
+        "$f'(x) = \\frac{(2x-1)' \\cdot x^2 - (2x-1) \\cdot (x^2)'}{x^4} = \\frac{2x^2 - 2x(2x-1)}{x^4}$",
+        "$= \\frac{-2x^2 + 2x}{x^4} = \\frac{2(1-x)}{x^3}$, $x \\in (0,+\\infty)$"
+      ]
+    },
+    {
+      "id": "bac24j-th-III-2",
+      "number": "III.1.b",
+      "points": 5,
+      "competency": "Ecuația tangentei",
+      "prompt": "Se consideră funcția $f : (0,+\\infty) \\to \\mathbb{R}$, $f(x) = \\frac{2x-1}{x^2}$. Determinați ecuația tangentei la graficul funcției $f$ în punctul de abscisă $x=1$, situat pe graficul funcției $f$.",
+      "expectedAnswer": "$y = 1$",
+      "hint": "Ecuația tangentei la graficul funcției $f$ în punctul de abscisă $x_0$ este $y - f(x_0) = f'(x_0)(x - x_0)$.",
+      "solution": [
+        "$f(1) = 1$, $f'(1) = 0$",
+        "Ecuația tangentei este $y - f(1) = f'(1)(x - 1)$, adică $y = 1$"
+      ]
+    },
+    {
+      "id": "bac24j-th-III-3",
+      "number": "III.1.c",
+      "points": 5,
+      "competency": "Monotonia funcțiilor",
+      "prompt": "Se consideră funcția $f : (0,+\\infty) \\to \\mathbb{R}$, $f(x) = \\frac{2x-1}{x^2}$. Determinați intervalele de monotonie a funcției $f$.",
+      "expectedAnswer": "$f$ este crescătoare pe $(0,1]$ și descrescătoare pe $[1,+\\infty)$",
+      "hint": "Studiază semnul derivatei întâi pentru a stabili intervalele de monotonie.",
+      "solution": [
+        "$f'(x) = 0 \\Leftrightarrow x = 1$",
+        "$f'(x) \\ge 0$, pentru orice $x \\in (0,1] \\Rightarrow f$ este crescătoare pe $(0,1]$",
+        "$f'(x) \\le 0$, pentru orice $x \\in [1,+\\infty) \\Rightarrow f$ este descrescătoare pe $[1,+\\infty)$"
+      ]
+    },
+    {
+      "id": "bac24j-th-III-4",
+      "number": "III.2.a",
+      "points": 5,
+      "competency": "Integrala definită a unei funcții polinomiale",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = \\frac{2x+1}{x^2+x+1}$. Arătați că $\\int_0^1 (x^2+x+1)f(x) dx = 2$.",
+      "expectedAnswer": "$2$",
+      "hint": "Înlocuiește expresia funcției $f(x)$ și simplifică fracția înainte de a integra.",
+      "solution": [
+        "$\\int_0^1 (x^2+x+1)f(x) dx = \\int_0^1 (x^2+x+1) \\cdot \\frac{2x+1}{x^2+x+1} dx = \\int_0^1 (2x+1) dx = (x^2+x)|_0^1$",
+        "$= 1 + 1 - 0 - 0 = 2$"
+      ]
+    },
+    {
+      "id": "bac24j-th-III-5",
+      "number": "III.2.b",
+      "points": 5,
+      "competency": "Integrarea prin metoda substituției",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = \\frac{2x+1}{x^2+x+1}$. Arătați că $\\int_0^1 f(x) dx = \\ln 3$.",
+      "expectedAnswer": "$\\ln 3$",
+      "hint": "Observă că numărătorul este derivata numitorului, deci poți folosi formula $\\int \\frac{u'(x)}{u(x)} dx = \\ln|u(x)| + \\mathcal{C}$.",
+      "solution": [
+        "$\\int_0^1 f(x) dx = \\int_0^1 \\frac{2x+1}{x^2+x+1} dx = \\int_0^1 \\frac{(x^2+x+1)'}{x^2+x+1} dx = \\ln(x^2+x+1)|_0^1$",
+        "$= \\ln 3 - \\ln 1 = \\ln 3$"
+      ]
+    },
+    {
+      "id": "bac24j-th-III-6",
+      "number": "III.2.c",
+      "points": 5,
+      "competency": "Aria unei suprafețe plane și integrarea prin părți",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = \\frac{2x+1}{x^2+x+1}$. Arătați că suprafața plană delimitată de graficul funcției $g : \\mathbb{R} \\to \\mathbb{R}$, $g(x) = e^x(x^2+x+1)f(x)$, axa $Ox$ și dreptele de ecuații $x=0$ și $x=1$ are aria egală cu $e+1$.",
+      "expectedAnswer": "$e+1$",
+      "hint": "Exprimă funcția $g(x)$ într-o formă mai simplă și aplică metoda integrării prin părți.",
+      "solution": [
+        "$g(x) = e^x(2x+1)$, $x \\in \\mathbb{R}$, deci $\\mathcal{A} = \\int_0^1 |g(x)| dx = \\int_0^1 e^x(2x+1) dx = e^x(2x+1)|_0^1 - \\int_0^1 2e^x dx$",
+        "$= e^x(2x+1)|_0^1 - 2e^x|_0^1 = 3e - 1 - 2e + 2 = e + 1$"
+      ]
+    }
+  ]
+}

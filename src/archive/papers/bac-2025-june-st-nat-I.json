@@ -1,0 +1,103 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Rezolvați toate exercițiile.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac25j-sn-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Progresii aritmetice",
+      "prompt": "Determinați termenul $a_3$ al progresiei aritmetice $(a_n)_{n \\ge 1}$, în care $a_1 = 4$ și $a_2 = 15$.",
+      "expectedAnswer": "$26$",
+      "hint": "Folosește formula rației unei progresii aritmetice, $r = a_2 - a_1$, apoi adună rația la $a_2$ pentru a găsi $a_3$.",
+      "solution": [
+        "Calculăm rația progresiei aritmetice: $r = a_2 - a_1 = 15 - 4 = 11$.",
+        "Calculăm termenul $a_3$: $a_3 = a_2 + r = 15 + 11 = 26$."
+      ],
+      "figureDescription": ""
+    },
+    {
+      "id": "bac25j-sn-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Funcții de gradul întâi",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 3x - 2$. Determinați numărul real $a$ pentru care $f(a) + f(2) = 2a$.",
+      "expectedAnswer": "$-2$",
+      "hint": "Calculează valoarea lui $f(2)$ și înlocuiește expresia lui $f(a)$ în ecuația dată pentru a-l afla pe $a$.",
+      "solution": [
+        "Calculăm $f(2) = 3 \\cdot 2 - 2 = 4$.",
+        "Exprimăm $f(a) = 3a - 2$.",
+        "Înlocuim în ecuația dată: $3a - 2 + 4 = 2a$.",
+        "Rezolvăm ecuația: $3a + 2 = 2a \\implies a = -2$."
+      ],
+      "figureDescription": ""
+    },
+    {
+      "id": "bac25j-sn-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Ecuații logaritmice",
+      "prompt": "Rezolvați în mulțimea numerelor reale ecuația $\\log_2(x^2 - 3x + 2) = \\log_2(2 + x)$.",
+      "expectedAnswer": "$x \\in \\{0, 4\\}$",
+      "hint": "Din egalitatea logaritmilor cu aceeași bază rezultă egalitatea argumentelor. Nu uita să verifici dacă soluțiile obținute respectă condițiile de existență ale logaritmilor.",
+      "solution": [
+        "Din egalitatea logaritmilor obținem egalitatea argumentelor: $x^2 - 3x + 2 = 2 + x$.",
+        "Trecem toți termenii într-o parte: $x^2 - 4x = 0$.",
+        "Rezolvăm ecuația de gradul al doilea: $x(x - 4) = 0$, de unde obținem soluțiile $x = 0$ și $x = 4$.",
+        "Verificăm condițiile de existență: pentru $x = 0$, argumentele sunt $2 > 0$ și $2 > 0$ (convine). Pentru $x = 4$, argumentele sunt $16 - 12 + 2 = 6 > 0$ și $2 + 4 = 6 > 0$ (convine).",
+        "Așadar, soluțiile sunt $x = 0$ și $x = 4$."
+      ],
+      "figureDescription": ""
+    },
+    {
+      "id": "bac25j-sn-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Probleme de numărare",
+      "prompt": "Determinați câte numere naturale pare, de două cifre distincte, se pot forma cu elementele mulțimii $A = \\{1, 2, 3, 5, 7, 8\\}$.",
+      "expectedAnswer": "$10$",
+      "hint": "Un număr este par dacă ultima sa cifră este pară. Alege mai întâi cifra unităților din mulțimea dată, apoi numără variantele rămase pentru cifra zecilor, ținând cont că cifrele trebuie să fie distincte.",
+      "solution": [
+        "Un număr de două cifre $\\overline{ab}$ este par dacă cifra unităților $b$ este pară.",
+        "Din mulțimea $A = \\{1, 2, 3, 5, 7, 8\\}$, cifrele pare sunt $2$ și $8$. Deci, cifra unităților $b$ se poate alege în $2$ moduri.",
+        "Deoarece cifrele trebuie să fie distincte ($a \\neq b$), pentru fiecare alegere a lui $b$, cifra zecilor $a$ poate fi aleasă din restul de $5$ elemente ale mulțimii $A$.",
+        "Conform regulii produsului, se pot forma $2 \\cdot 5 = 10$ numere."
+      ],
+      "figureDescription": ""
+    },
+    {
+      "id": "bac25j-sn-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Geometrie analitică",
+      "prompt": "În reperul cartezian $xOy$ se consideră punctele $A(0, 5)$, $B(8, 4)$ și $C$, mijlocul segmentului $OB$. Arătați că $AO = AC$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Determină coordonatele punctului $C$ folosind formula mijlocului unui segment, apoi calculează lungimile segmentelor $AO$ și $AC$ cu formula distanței dintre două puncte.",
+      "solution": [
+        "Punctul $O$ este originea reperului cartezian, deci are coordonatele $O(0, 0)$.",
+        "Punctul $C$ este mijlocul segmentului $OB$, deci coordonatele sale sunt $x_C = \\frac{x_O + x_B}{2} = \\frac{0 + 8}{2} = 4$ și $y_C = \\frac{y_O + y_B}{2} = \\frac{0 + 4}{2} = 2$. Așadar, $C(4, 2)$.",
+        "Calculăm lungimea segmentului $AO$: $AO = \\sqrt{(0 - 0)^2 + (0 - 5)^2} = \\sqrt{25} = 5$.",
+        "Calculăm lungimea segmentului $AC$: $AC = \\sqrt{(4 - 0)^2 + (2 - 5)^2} = \\sqrt{16 + 9} = \\sqrt{25} = 5$.",
+        "Deoarece $AO = 5$ și $AC = 5$, rezultă că $AO = AC$."
+      ],
+      "figureDescription": ""
+    },
+    {
+      "id": "bac25j-sn-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Trigonometrie",
+      "prompt": "Se consideră triunghiul $ABC$, dreptunghic în $A$, cu $AB = 4$ și $\\cos B = \\frac{2}{3}$. Arătați că $BC = 6$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Exprimă cosinusul unghiului $B$ ca raportul dintre cateta alăturată și ipotenuză în triunghiul dreptunghic $ABC$.",
+      "solution": [
+        "În triunghiul $ABC$ dreptunghic în $A$, cosinusul unghiului $B$ este raportul dintre cateta alăturată unghiului $B$ și ipotenuză: $\\cos B = \\frac{AB}{BC}$.",
+        "Înlocuind valorile cunoscute, obținem: $\\frac{2}{3} = \\frac{4}{BC}$.",
+        "Din această proporție, calculăm $BC$: $BC = \\frac{3 \\cdot 4}{2} = \\frac{12}{2} = 6$."
+      ],
+      "figureDescription": ""
+    }
+  ]
+}

@@ -7,23 +7,30 @@ import Txt from '../components/ui/Txt'
 import { useTheme } from '../theme/ThemeProvider'
 import type { MainDestination } from './types'
 
-const destinations: Record<MainDestination, { label: string; icon: RezIconName }> = {
-  Azi: { label: 'Azi', icon: 'home' },
-  Subiecte: { label: 'Subiecte', icon: 'exam-en' },
-  Exerseaza: { label: 'Exersează', icon: 'practice' },
-  Caiet: { label: 'Caiet', icon: 'document' },
-}
-
 export default function MainNavigation({
   state,
   descriptors,
   navigation,
   onSolve,
-}: BottomTabBarProps & { onSolve: () => void }) {
+  examMode,
+}: BottomTabBarProps & { onSolve: () => void; examMode: boolean }) {
   const { theme } = useTheme()
   const insets = useSafeAreaInsets()
   const c = theme.colors
   const byName = new Map(state.routes.map((route, index) => [route.name, { route, index }]))
+  const destinations: Record<MainDestination, { label: string; icon: RezIconName }> = examMode
+    ? {
+        Acasa: { label: 'Acasă', icon: 'home' },
+        Exercitii: { label: 'Exerciții', icon: 'practice' },
+        Biblioteca: { label: 'Subiecte', icon: 'document' },
+        Activitate: { label: 'Rezultate', icon: 'verified' },
+      }
+    : {
+        Acasa: { label: 'Acasă', icon: 'home' },
+        Exercitii: { label: 'Exerciții', icon: 'practice' },
+        Biblioteca: { label: 'Istoric', icon: 'history' },
+        Activitate: { label: 'Salvate', icon: 'bookmark' },
+      }
 
   const renderDestination = (name: MainDestination) => {
     const found = byName.get(name)
@@ -65,7 +72,7 @@ export default function MainNavigation({
       >
         <RezIcon
           name={item.icon}
-          size={focused ? 22 : 20}
+          size={focused ? 21 : 20}
           color={focused ? c.text : c.textFaint}
           accent={focused ? c.bubblyRed : c.textFaint}
           strokeWidth={focused ? 2.5 : 2}
@@ -95,8 +102,8 @@ export default function MainNavigation({
       ]}
     >
       <View style={styles.inner} accessibilityRole="tablist">
-        {renderDestination('Azi')}
-        {renderDestination('Subiecte')}
+        {renderDestination('Acasa')}
+        {renderDestination('Exercitii')}
         <View style={styles.solveSlot}>
           <Press
             onPress={onSolve}
@@ -109,8 +116,8 @@ export default function MainNavigation({
           </Press>
           <Txt weight="bold" size={12} color={c.text} style={{ fontFamily: theme.font.display, letterSpacing: -0.2 }}>Rezolvă</Txt>
         </View>
-        {renderDestination('Exerseaza')}
-        {renderDestination('Caiet')}
+        {renderDestination('Biblioteca')}
+        {renderDestination('Activitate')}
       </View>
     </View>
   )

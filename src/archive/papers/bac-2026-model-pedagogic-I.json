@@ -1,0 +1,92 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Toate subiectele sunt obligatorii. Se acordă zece puncte din oficiu. Timpul de lucru efectiv este de trei ore.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac26m-pd-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Calcule cu numere reale",
+      "prompt": "Arătați că $\\sqrt{64} - 4\\sqrt{2} + 2\\sqrt{2} \\cdot (2 - \\sqrt{2}) = 4$.",
+      "expectedAnswer": "$4$",
+      "hint": "Efectuați înmulțirea și extrageți radicalul din $64$.",
+      "solution": [
+        "$\\sqrt{64} - 4\\sqrt{2} + 2\\sqrt{2} \\cdot (2 - \\sqrt{2}) = 8 - 4\\sqrt{2} + 4\\sqrt{2} - 2\\sqrt{2} \\cdot \\sqrt{2} =$",
+        "$= 8 - 4 = 4$"
+      ]
+    },
+    {
+      "id": "bac26m-pd-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Funcții de gradul întâi",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 7x - 4$. Determinați numărul real $a$ pentru care $f(a) = 5a$.",
+      "expectedAnswer": "$a = 2$",
+      "hint": "Înlocuiți $x$ cu $a$ în expresia funcției și rezolvați ecuația obținută.",
+      "solution": [
+        "$f(a) = 7a - 4$, pentru orice număr real $a$.",
+        "Ecuația devine $7a - 4 = 5a$.",
+        "De unde obținem $2a = 4$, deci $a = 2$."
+      ]
+    },
+    {
+      "id": "bac26m-pd-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Ecuații exponențiale",
+      "prompt": "Rezolvați în mulțimea numerelor reale ecuația $9 \\cdot 3^x = 3^5$.",
+      "expectedAnswer": "$x = 3$",
+      "hint": "Scrieți pe $9$ ca o putere a lui $3$ și folosiți proprietățile puterilor pentru a obține o egalitate între exponenți.",
+      "solution": [
+        "Ecuația se poate scrie $3^2 \\cdot 3^x = 3^5$, adică $3^{2+x} = 3^5$.",
+        "De unde obținem $2 + x = 5$.",
+        "$x = 3$"
+      ]
+    },
+    {
+      "id": "bac26m-pd-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Procente și probleme practice",
+      "prompt": "După o ieftinire cu $15\\%$, prețul unui obiect s-a micșorat cu $75$ de lei. Determinați prețul obiectului înainte de ieftinire.",
+      "expectedAnswer": "$500$ de lei",
+      "hint": "Scrieți ecuația care reprezintă $15\\%$ din prețul inițial ca fiind egal cu $75$.",
+      "solution": [
+        "$\\frac{15}{100} \\cdot x = 75$, unde $x$ este prețul înainte de ieftinire.",
+        "$x = 75 \\cdot \\frac{100}{15}$",
+        "$x = 500$ de lei"
+      ]
+    },
+    {
+      "id": "bac26m-pd-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Geometrie analitică",
+      "prompt": "În reperul cartezian $xOy$ se consideră punctele $A(0,4)$, $B(2,0)$ și $C(6,6)$. Arătați că $MA = MB$, unde punctul $M$ este mijlocul segmentului $OC$.",
+      "expectedAnswer": "$MA = MB = \\sqrt{10}$",
+      "hint": "Determinați coordonatele mijlocului $M$ al segmentului $OC$, apoi calculați lungimile segmentelor $MA$ și $MB$.",
+      "solution": [
+        "Punctul $M$ este mijlocul segmentului $OC$, deci coordonatele sale sunt $x_M = \\frac{x_O + x_C}{2} = \\frac{0 + 6}{2} = 3$ și $y_M = \\frac{y_O + y_C}{2} = \\frac{0 + 6}{2} = 3$, adică $M(3,3)$.",
+        "$MA = \\sqrt{(0-3)^2 + (4-3)^2} = \\sqrt{9+1} = \\sqrt{10}$",
+        "$MB = \\sqrt{(2-3)^2 + (0-3)^2} = \\sqrt{1+9} = \\sqrt{10}$",
+        "Prin urmare, $MA = MB$."
+      ]
+    },
+    {
+      "id": "bac26m-pd-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Trigonometrie",
+      "prompt": "Arătați că $4(\\sin 60^\\circ)^2 - (\\sin 45^\\circ)^2 - 2(\\sin 30^\\circ)^2 = 2$.",
+      "expectedAnswer": "$2$",
+      "hint": "Înlocuiți valorile funcțiilor trigonometrice pentru unghiurile de $60^\\circ$, $45^\\circ$ și $30^\\circ$.",
+      "solution": [
+        "$\\sin 60^\\circ = \\frac{\\sqrt{3}}{2}$, $\\sin 45^\\circ = \\frac{\\sqrt{2}}{2}$, $\\sin 30^\\circ = \\frac{1}{2}$",
+        "$4(\\sin 60^\\circ)^2 - (\\sin 45^\\circ)^2 - 2(\\sin 30^\\circ)^2 = 4 \\cdot \\left(\\frac{\\sqrt{3}}{2}\\right)^2 - \\left(\\frac{\\sqrt{2}}{2}\\right)^2 - 2 \\cdot \\left(\\frac{1}{2}\\right)^2 =$",
+        "$= 4 \\cdot \\frac{3}{4} - \\frac{2}{4} - 2 \\cdot \\frac{1}{4} = 3 - \\frac{1}{2} - \\frac{1}{2} = 2$"
+      ]
+    }
+  ]
+}

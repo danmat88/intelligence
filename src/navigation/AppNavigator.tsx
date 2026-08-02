@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
@@ -15,6 +15,9 @@ import SettingsScreen from '../screens/SettingsScreen'
 import SolverScreen from '../screens/SolverScreen'
 import OnboardingScreen from '../screens/OnboardingScreen'
 import PracticeSessionScreen from '../screens/PracticeSessionScreen'
+import GeneralPracticeScreen from '../screens/GeneralPracticeScreen'
+import SavedScreen from '../screens/SavedScreen'
+import WorkspaceReveal from '../components/ui/WorkspaceReveal'
 import { useTheme } from '../theme/ThemeProvider'
 import { useProduct } from '../product/ProductProvider'
 import type { PracticeConfig } from '../practice/generator'
@@ -26,6 +29,7 @@ import type {
   SolveEntryAction,
   SolveRouteParams,
 } from './types'
+import type { BacTrack } from '../product/profile'
 
 const RootStack = createNativeStackNavigator<RootStackParamList>()
 const Tabs = createBottomTabNavigator<MainTabParamList>()
@@ -43,55 +47,76 @@ function MainTabs({
   onStartPractice: (
     exam: 'en' | 'bac',
     options: { setId?: string; config?: PracticeConfig; mode?: 'practice' | 'simulation'; focusExerciseId?: string },
-    profile?: string,
+    bacTrack?: BacTrack,
   ) => void
   onOpenPaper: (
     item: import('../archive/content').NativeOfficialPaper,
     mode: import('../archive/store').OfficialPaperMode,
   ) => void
 }) {
+  const { goal } = useProduct()
+  const examMode = goal === 'en' || goal === 'bac'
+
+  const notebook = (
+    initialMode: 'problems' | 'tests' | 'mistakes' | 'progress',
+  ) => (
+    <NotebookScreen
+      onOpenSettings={onOpenSettings}
+      onOpenProblem={(problem) => onSolve({ problem })}
+      onSolve={() => onSolve()}
+      onOpenPractice={(exam, setId, focusExerciseId, bacTrack) => onStartPractice(exam, { setId, focusExerciseId }, bacTrack)}
+      onOpenOfficialAttempt={(attempt) => {
+        const paper = getNativeOfficialPaper(attempt.packageId, attempt.profile)
+        if (paper) onOpenPaper(paper, attempt.completedAt ? 'study' : attempt.mode)
+      }}
+      initialMode={initialMode}
+    />
+  )
+
   return (
     <Tabs.Navigator
-      initialRouteName="Azi"
+      initialRouteName="Acasa"
       screenOptions={{ headerShown: false }}
-      tabBar={(props) => <MainNavigation {...props} onSolve={() => onSolve()} />}
+      tabBar={(props) => <MainNavigation {...props} examMode={examMode} onSolve={() => onSolve()} />}
     >
-      <Tabs.Screen name="Azi">
+      <Tabs.Screen name="Acasa">
         {({ navigation }) => (
           <HomeScreen
             onOpenSettings={onOpenSettings}
-            onOpenPreparation={() => navigation.navigate('Exerseaza')}
-            onOpenSubjects={() => navigation.navigate('Subiecte')}
-            onOpenMistakes={() => navigation.navigate('Caiet', { section: 'mistakes' })}
+            onOpenPreparation={() => navigation.navigate('Exercitii')}
+            onOpenMistakes={() => navigation.navigate('Activitate', { section: 'mistakes' })}
+            onOpenProblem={(problem) => onSolve({ problem })}
             onSolve={(entry) => onSolve(entry ? { entry } : undefined)}
           />
         )}
       </Tabs.Screen>
-      <Tabs.Screen name="Subiecte">
-        {() => <SubjectsScreen onOpenSettings={onOpenSettings} onOpenPaper={onOpenPaper} />}
-      </Tabs.Screen>
-      <Tabs.Screen name="Exerseaza">
-        {() => (
+      <Tabs.Screen name="Exercitii">
+        {() => examMode ? (
           <PreparationScreen
             onOpenSettings={onOpenSettings}
             onStartPractice={onStartPractice}
           />
-        )}
-      </Tabs.Screen>
-      <Tabs.Screen name="Caiet">
-        {({ route }) => (
-          <NotebookScreen
+        ) : (
+          <GeneralPracticeScreen
             onOpenSettings={onOpenSettings}
-            onOpenProblem={(problem) => onSolve({ problem })}
-            onSolve={() => onSolve()}
-            onOpenPractice={(exam, setId, focusExerciseId) => onStartPractice(exam, { setId, focusExerciseId })}
-            onOpenOfficialAttempt={(attempt) => {
-              const paper = getNativeOfficialPaper(attempt.packageId, attempt.profile)
-              if (paper) onOpenPaper(paper, attempt.completedAt ? 'study' : attempt.mode)
-            }}
-            initialMode={route.params?.section}
           />
         )}
+      </Tabs.Screen>
+      <Tabs.Screen name="Biblioteca">
+        {({ route }) => examMode
+          ? <SubjectsScreen onOpenSettings={onOpenSettings} onOpenPaper={onOpenPaper} onSolve={() => onSolve()} />
+          : notebook(route.params?.section ?? 'problems')}
+      </Tabs.Screen>
+      <Tabs.Screen name="Activitate">
+        {({ route }) => examMode
+          ? notebook(route.params?.section ?? 'progress')
+          : (
+            <SavedScreen
+              onOpenSettings={onOpenSettings}
+              onOpenProblem={(problem) => onSolve({ problem })}
+              onSolve={() => onSolve()}
+            />
+          )}
       </Tabs.Screen>
     </Tabs.Navigator>
   )
@@ -127,7 +152,16 @@ function SolveRoute({
 
 export default function AppNavigator() {
   const { theme } = useTheme()
-  const { goal, hydrated } = useProduct()
+  const { onboardingCompleted, hydrated, goal } = useProduct()
+  const previousOnboarding = useRef(onboardingCompleted)
+  const [showWorkspaceReveal, setShowWorkspaceReveal] = useState(false)
+
+  useLayoutEffect(() => {
+    if (hydrated && !previousOnboarding.current && onboardingCompleted) {
+      setShowWorkspaceReveal(true)
+    }
+    previousOnboarding.current = onboardingCompleted
+  }, [hydrated, onboardingCompleted])
   const navigationTheme = useMemo(
     () => ({
       ...DefaultTheme,
@@ -150,21 +184,22 @@ export default function AppNavigator() {
         <RootStack.Navigator
           initialRouteName="Principal"
           screenOptions={{
-            animation: 'slide_from_right',
+            animation: 'fade',
             contentStyle: styles.transparent,
+            gestureEnabled: true,
             headerShown: false,
           }}
         >
           <RootStack.Screen name="Principal">
             {({ navigation }) => (
-              hydrated && !goal ? (
+              hydrated && !onboardingCompleted ? (
                 <OnboardingScreen onSolve={() => navigation.navigate('Rezolva')} />
               ) : (
                 <MainTabs
                   onOpenSettings={() => navigation.navigate('Setari')}
                   onSolve={(params) => navigation.navigate('Rezolva', params)}
-                  onStartPractice={(exam, options, profile) =>
-                    navigation.navigate('Activitate', { exam, ...options, profile })
+                  onStartPractice={(exam, options, bacTrack) =>
+                    navigation.navigate('Activitate', { exam, ...options, bacTrack })
                   }
                   onOpenPaper={(item, mode) => navigation.navigate('SubiectOficial', { item, mode })}
                 />
@@ -181,7 +216,7 @@ export default function AppNavigator() {
                 exam={route.params.exam}
                 setId={route.params.setId}
                 config={route.params.config}
-                profile={route.params.profile}
+                bacTrack={route.params.bacTrack}
                 mode={route.params.mode}
                 focusExerciseId={route.params.focusExerciseId}
                 onBack={() => navigation.goBack()}
@@ -200,6 +235,9 @@ export default function AppNavigator() {
           </RootStack.Screen>
         </RootStack.Navigator>
       </NavigationContainer>
+      {showWorkspaceReveal && goal ? (
+        <WorkspaceReveal goal={goal} onFinished={() => setShowWorkspaceReveal(false)} />
+      ) : null}
     </View>
   )
 }

@@ -1,0 +1,68 @@
+{
+  "id": "II",
+  "title": "SUBIECTUL al II-lea",
+  "instructions": "Rezolvați următoarele exerciții.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac22j-sn-II-1a",
+      "number": "II.1.a",
+      "points": 5,
+      "competency": "Determinant",
+      "prompt": "Se consideră matricea $A=\\begin{pmatrix}1&-1\\\\-1&1\\end{pmatrix}$. Arătați că $\\det(A)=0$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Aplică formula determinantului de ordin doi.",
+      "solution": ["$\\det(A)=1\\cdot1-(-1)(-1)=1-1=0$."]
+    },
+    {
+      "id": "bac22j-sn-II-1b",
+      "number": "II.1.b",
+      "points": 5,
+      "competency": "Calcul matriceal",
+      "prompt": "Se consideră $A=\\begin{pmatrix}1&-1\\\\-1&1\\end{pmatrix}$ și $B(x)=\\begin{pmatrix}x&3-x\\\\2-x&x\\end{pmatrix}$, unde $x$ este număr real. Arătați că $B(x)-B(0)=xA$, pentru orice număr real $x$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Calculează $B(0)$ și scade element cu element.",
+      "solution": ["$B(0)=\\begin{pmatrix}0&3\\\\2&0\\end{pmatrix}$.", "$B(x)-B(0)=\\begin{pmatrix}x&-x\\\\-x&x\\end{pmatrix}=xA$."]
+    },
+    {
+      "id": "bac22j-sn-II-1c",
+      "number": "II.1.c",
+      "points": 5,
+      "competency": "Inversabilitate",
+      "prompt": "Se consideră $B(x)=\\begin{pmatrix}x&3-x\\\\2-x&x\\end{pmatrix}$ și $C(a)=B(a)B(1)-B(a+1)$. Arătați că matricea $C(a)$ este inversabilă pentru orice număr întreg $a$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Calculează determinantul lui $C(a)$ și verifică dacă se poate anula pentru un $a$ întreg.",
+      "solution": ["$C(a)=\\begin{pmatrix}2-a&2a+1\\\\a+1&3-2a\\end{pmatrix}$.", "$\\det(C(a))=5-10a$.", "$\\det(C(a))=0$ ar implica $a=\\frac12$, care nu este întreg; deci $C(a)$ este inversabilă pentru orice $a\\in\\mathbb{Z}$."]
+    },
+    {
+      "id": "bac22j-sn-II-2a",
+      "number": "II.2.a",
+      "points": 5,
+      "competency": "Lege de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea $x*y=(2x-1)(2y-1)+1$. Arătați că $1*2=4$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Înlocuiește direct cele două valori.",
+      "solution": ["$1*2=(2\\cdot1-1)(2\\cdot2-1)+1=1\\cdot3+1=4$."]
+    },
+    {
+      "id": "bac22j-sn-II-2b",
+      "number": "II.2.b",
+      "points": 5,
+      "competency": "Ecuație cu lege de compoziție",
+      "prompt": "Pe mulțimea numerelor reale se definește legea $x*y=(2x-1)(2y-1)+1$. Determinați numerele reale $x$ pentru care $x*x=2$.",
+      "expectedAnswer": "$x\\in\\{0,1\\}$",
+      "hint": "Dezvoltă pătratul și rezolvă ecuația de gradul al doilea.",
+      "solution": ["$x*x=(2x-1)^2+1=4x^2-4x+2$.", "$4x^2-4x+2=2 \\Leftrightarrow 4x(x-1)=0$, deci $x=0$ sau $x=1$."]
+    },
+    {
+      "id": "bac22j-sn-II-2c",
+      "number": "II.2.c",
+      "points": 5,
+      "competency": "Ecuații diofantice",
+      "prompt": "Pe mulțimea numerelor reale se definește legea $x*y=(2x-1)(2y-1)+1$. Determinați numărul întreg nenul $m$ pentru care $m*\\left(1+\\frac1m\\right)=1$.",
+      "expectedAnswer": "$m=-2$",
+      "hint": "După înlocuire, produsul din formula legii trebuie să fie zero.",
+      "solution": ["$m*\\left(1+\\frac1m\\right)=(2m-1)\\left(1+\\frac2m\\right)+1$.", "Egalitatea cu $1$ implică $(2m-1)(m+2)=0$.", "Cum $m$ este întreg nenul, rezultă $m=-2$."]
+    }
+  ]
+}

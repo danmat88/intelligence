@@ -1,0 +1,68 @@
+{
+  "id": "I",
+  "title": "SUBIECTUL I",
+  "instructions": "Rezolvați următoarele exerciții.",
+  "points": 30,
+  "exercises": [
+    {
+      "id": "bac22j-pd-I-1",
+      "number": "I.1",
+      "points": 5,
+      "competency": "Calcul cu radicali",
+      "prompt": "Arătați că $\\sqrt{18} + \\sqrt{8} = 5\\sqrt{2}$.",
+      "expectedAnswer": "Demonstrație",
+      "hint": "Scoate pătratele perfecte de sub radical.",
+      "solution": ["$\\sqrt{18} = 3\\sqrt{2}$ și $\\sqrt{8} = 2\\sqrt{2}$.", "$\\sqrt{18} + \\sqrt{8} = 3\\sqrt{2} + 2\\sqrt{2} = 5\\sqrt{2}$."]
+    },
+    {
+      "id": "bac22j-pd-I-2",
+      "number": "I.2",
+      "points": 5,
+      "competency": "Funcție afină",
+      "prompt": "Se consideră funcția $f : \\mathbb{R} \\to \\mathbb{R}$, $f(x) = 3x - 2$. Determinați numărul real $a$ pentru care $f(a) - f(2) = 12$.",
+      "expectedAnswer": "$a = 6$",
+      "hint": "Calculează $f(a)$ și $f(2)$, apoi rezolvă ecuația.",
+      "solution": ["$f(a) = 3a - 2$ și $f(2) = 4$.", "$3a - 2 - 4 = 12 \\Rightarrow 3a = 18 \\Rightarrow a = 6$."]
+    },
+    {
+      "id": "bac22j-pd-I-3",
+      "number": "I.3",
+      "points": 5,
+      "competency": "Procente",
+      "prompt": "După o reducere cu $20\\%$, prețul unui obiect scade cu $28$ de lei. Determinați prețul inițial al obiectului.",
+      "expectedAnswer": "$140$ de lei",
+      "hint": "Cei 28 de lei reprezintă 20% din prețul inițial.",
+      "solution": ["Dacă $x$ este prețul inițial, atunci $\\frac{20}{100}x = 28$.", "$x = 140$ de lei."]
+    },
+    {
+      "id": "bac22j-pd-I-4",
+      "number": "I.4",
+      "points": 5,
+      "competency": "Ecuații exponențiale",
+      "prompt": "Rezolvați în mulțimea numerelor reale ecuația $4^{2x-1} = 64$.",
+      "expectedAnswer": "$x = 2$",
+      "hint": "Scrie 64 ca putere cu baza 4.",
+      "solution": ["$64 = 4^3$, deci $4^{2x-1} = 4^3$.", "$2x - 1 = 3$, de unde $x = 2$."]
+    },
+    {
+      "id": "bac22j-pd-I-5",
+      "number": "I.5",
+      "points": 5,
+      "competency": "Geometrie analitică",
+      "prompt": "În reperul cartezian $xOy$ se consideră punctul $A(2,3)$ și dreapta $d$ de ecuație $y = 2x + 1$. Determinați ecuația dreptei care trece prin punctul $A$ și este perpendiculară pe dreapta $d$.",
+      "expectedAnswer": "$y = -\\frac{1}{2}x + 4$",
+      "hint": "Panta unei drepte perpendiculare este opusul inversei pantei date.",
+      "solution": ["Panta dreptei $d$ este $2$, deci panta dreptei perpendiculare este $-\\frac{1}{2}$.", "$y - 3 = -\\frac{1}{2}(x - 2)$, adică $y = -\\frac{1}{2}x + 4$."]
+    },
+    {
+      "id": "bac22j-pd-I-6",
+      "number": "I.6",
+      "points": 5,
+      "competency": "Trigonometrie",
+      "prompt": "Se consideră triunghiul $ABC$, dreptunghic în $A$, cu măsura unghiului $B$ de $30^\\circ$ și $BC = 10$. Calculați aria triunghiului $ABC$.",
+      "expectedAnswer": "$\\frac{25\\sqrt{3}}{2}$",
+      "hint": "Într-un triunghi de 30–60–90 de grade, cateta opusă unghiului de 30 de grade este jumătate din ipotenuză.",
+      "solution": ["$AC = \\frac{BC}{2} = 5$ și $AB = 5\\sqrt{3}$.", "$\\mathcal{A}_{\\triangle ABC} = \\frac{AB \\cdot AC}{2} = \\frac{25\\sqrt{3}}{2}$."]
+    }
+  ]
+}
