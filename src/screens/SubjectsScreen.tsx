@@ -7,25 +7,25 @@ import {
   type OfficialSourcePackage,
 } from '../archive/content'
 import type { OfficialPaperMode } from '../archive/store'
-import AppHeader from '../components/ui/AppHeader'
 import Press from '../components/ui/Press'
 import RezIcon from '../components/ui/RezIcon'
 import ScreenBackground from '../components/ui/ScreenBackground'
 import ScreenContent from '../components/ui/ScreenContent'
 import ScreenHeading from '../components/ui/ScreenHeading'
 import EmptyState from '../components/ui/EmptyState'
+import Entrance from '../components/ui/Entrance'
 import Txt from '../components/ui/Txt'
 import { useProduct } from '../product/ProductProvider'
 import { useTheme } from '../theme/ThemeProvider'
 import { BAC_TRACK_LABELS } from '../product/profile'
 
 type Props = {
-  onOpenSettings: () => void
+  onChangeGoal: () => void
   onOpenPaper: (item: NativeOfficialPaper, mode: OfficialPaperMode) => void
   onSolve: () => void
 }
 
-export default function SubjectsScreen({ onOpenSettings, onOpenPaper, onSolve }: Props) {
+export default function SubjectsScreen({ onChangeGoal, onOpenPaper, onSolve }: Props) {
   const { theme } = useTheme()
   const { examGoal, bacTrack } = useProduct()
   const c = theme.colors
@@ -49,30 +49,33 @@ export default function SubjectsScreen({ onOpenSettings, onOpenPaper, onSolve }:
 
   return (
     <ScreenBackground>
-      <AppHeader onOpenSettings={onOpenSettings} />
       <ScreenContent>
-        <ScreenHeading
-          eyebrow="ARHIVĂ"
-          title="Subiecte oficiale"
-          description="Fiecare variantă este legată de sursa Ministerului și de baremul ei."
-          style={styles.intro}
-        />
+        <Entrance delay={0}>
+          <ScreenHeading
+            eyebrow="ARHIVĂ"
+            title="Subiecte oficiale"
+            description="Fiecare variantă este legată de sursa Ministerului și de baremul ei."
+            style={styles.intro}
+          />
+        </Entrance>
 
         {exam === 'bac' && (
-          <Press
-            onPress={onOpenSettings}
-            pressDepth={2.5}
-            style={[styles.profile, { backgroundColor: c.sunnySoft, borderColor: c.border, borderBottomColor: c.border }]}
-          >
-            <View style={[styles.profileIcon, { backgroundColor: c.sunny, borderColor: c.border, borderBottomColor: c.border }]}>
-              <RezIcon name="exam-bac" size={24} color={c.text} accent={c.accent} />
-            </View>
-            <View style={styles.profileCopy}>
-              <Txt size={11} weight="bold" color={c.textMuted}>Programa curentă</Txt>
-              <Txt weight="bold" size={14.5} color={c.text}>{BAC_TRACK_LABELS[bacTrack ?? 'mate_info']}</Txt>
-            </View>
-            <Txt weight="bold" size={12} color={c.bubblyRedDark}>Schimbă</Txt>
-          </Press>
+          <Entrance delay={45}>
+            <Press
+              onPress={onChangeGoal}
+              pressDepth={2.5}
+              style={[styles.profile, { backgroundColor: c.sunnySoft, borderColor: c.border, borderBottomColor: c.border }]}
+            >
+              <View style={[styles.profileIcon, { backgroundColor: c.sunny, borderColor: c.border, borderBottomColor: c.border }]}>
+                <RezIcon name="exam-bac" size={24} color={c.text} accent={c.accent} />
+              </View>
+              <View style={styles.profileCopy}>
+                <Txt size={11} weight="bold" color={c.textMuted}>Programa curentă</Txt>
+                <Txt weight="bold" size={14.5} color={c.text}>{BAC_TRACK_LABELS[bacTrack ?? 'mate_info']}</Txt>
+              </View>
+              <Txt weight="bold" size={12} color={c.bubblyRedDark}>Schimbă</Txt>
+            </Press>
+          </Entrance>
         )}
 
         <ScrollView
@@ -80,29 +83,33 @@ export default function SubjectsScreen({ onOpenSettings, onOpenPaper, onSolve }:
           contentContainerStyle={styles.list}
         >
           {papers.length === 0 ? (
-            <View style={styles.sourceOnly}>
-              <EmptyState
-                icon="verified"
-                title="Documentele oficiale sunt disponibile"
-                message="Deschide arhiva exactă a Ministerului. Pentru ajutor la o cerință, revino și trimite fotografia prin Rezolvă."
-              />
-              {sources.map((source) => <SourceCard key={source.id} source={source} onSolve={onSolve} />)}
-            </View>
-          ) : (
-            years.map((year) => (
-              <View key={year} style={styles.yearGroup}>
-                <View style={styles.yearRow}>
-                  <View style={[styles.yearBadge, { backgroundColor: c.sunny, borderColor: c.border, borderBottomColor: c.border }]}>
-                    <Txt weight="extrabold" size={16} color={c.text} style={{ fontFamily: theme.font.display }}>
-                      {year}
-                    </Txt>
-                  </View>
-                  <View style={[styles.yearLine, { backgroundColor: c.border }]} />
-                </View>
-                {papers.filter((paper) => paper.year === year).map((paper) => (
-                  <PaperCard key={paper.id} paper={paper} onOpen={onOpenPaper} />
-                ))}
+            <Entrance delay={90}>
+              <View style={styles.sourceOnly}>
+                <EmptyState
+                  icon="verified"
+                  title="Documentele oficiale sunt disponibile"
+                  message="Deschide arhiva exactă a Ministerului. Pentru ajutor la o cerință, revino și trimite fotografia prin Rezolvă."
+                />
+                {sources.map((source) => <SourceCard key={source.id} source={source} onSolve={onSolve} />)}
               </View>
+            </Entrance>
+          ) : (
+            years.map((year, index) => (
+              <Entrance key={year} delay={90 + index * 45}>
+                <View style={styles.yearGroup}>
+                  <View style={styles.yearRow}>
+                    <View style={[styles.yearBadge, { backgroundColor: c.sunny, borderColor: c.border, borderBottomColor: c.border }]}>
+                      <Txt weight="extrabold" size={16} color={c.text} style={{ fontFamily: theme.font.display }}>
+                        {year}
+                      </Txt>
+                    </View>
+                    <View style={[styles.yearLine, { backgroundColor: c.border }]} />
+                  </View>
+                  {papers.filter((paper) => paper.year === year).map((paper) => (
+                    <PaperCard key={paper.id} paper={paper} onOpen={onOpenPaper} />
+                  ))}
+                </View>
+              </Entrance>
             ))
           )}
         </ScrollView>

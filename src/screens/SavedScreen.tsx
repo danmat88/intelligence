@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native'
 import { useAuth } from '../auth/AuthProvider'
-import AppHeader from '../components/ui/AppHeader'
 import EmptyState from '../components/ui/EmptyState'
 import Press from '../components/ui/Press'
 import RezIcon from '../components/ui/RezIcon'
@@ -13,11 +12,9 @@ import { setProblemSaved, subscribeProblems, type Problem } from '../solve/store
 import { useTheme } from '../theme/ThemeProvider'
 
 export default function SavedScreen({
-  onOpenSettings,
   onOpenProblem,
   onSolve,
 }: {
-  onOpenSettings: () => void
   onOpenProblem: (problem: Problem) => void
   onSolve: () => void
 }) {
@@ -39,7 +36,6 @@ export default function SavedScreen({
 
   return (
     <ScreenBackground>
-      <AppHeader onOpenSettings={onOpenSettings} />
       <ScreenContent>
         <ScreenHeading
           eyebrow="SALVATE"

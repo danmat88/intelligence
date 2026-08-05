@@ -67,6 +67,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
   const profileRef = useRef(profile)
   const profileExistsRef = useRef(false)
   const [hydrated, setHydrated] = useState(false)
+  const [hydratedUserId, setHydratedUserId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -74,7 +75,9 @@ export function ProductProvider({ children }: { children: ReactNode }) {
   }, [profile])
 
   useEffect(() => {
+    let active = true
     setHydrated(false)
+    setHydratedUserId(null)
     setProfile(EMPTY_LEARNING_PROFILE)
     profileRef.current = EMPTY_LEARNING_PROFILE
     profileExistsRef.current = false
@@ -84,27 +87,36 @@ export function ProductProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    return onSnapshot(
+    const unsubscribe = onSnapshot(
       learningProfileRef(user.id),
       (snapshot) => {
+        if (!active) return
         profileExistsRef.current = snapshot.exists()
         const next = snapshot.exists()
           ? parseLearningProfile(snapshot.data())
           : EMPTY_LEARNING_PROFILE
         profileRef.current = next
         setProfile(next)
+        setHydratedUserId(user.id)
         setHydrated(true)
       },
       (error) => {
+        if (!active) return
         reportNonFatal(error, 'learning-profile-subscribe')
         // An unavailable remote profile must never reveal another account's
         // state. The safe fallback is an unfinished, empty profile.
         profileRef.current = EMPTY_LEARNING_PROFILE
         profileExistsRef.current = false
         setProfile(EMPTY_LEARNING_PROFILE)
+        setHydratedUserId(user.id)
         setHydrated(true)
       },
     )
+
+    return () => {
+      active = false
+      unsubscribe()
+    }
   }, [user?.id])
 
   const persist = useCallback(async (next: LearningProfile) => {
@@ -167,11 +179,15 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     ? null
     : profile.examGoal ?? 'general'
   const bacProfile = BAC_TRACK_LABELS[profile.bacTrack ?? DEFAULT_BAC_TRACK]
+  // A state update from the previous account can be visible for one React
+  // render while the new Firestore subscription is being established. Never
+  // let the root treat that stale profile as hydrated for the new session.
+  const hydratedForActiveSession = !user || (hydrated && hydratedUserId === user.id)
 
   const value = useMemo<ProductValue>(
     () => ({
       ...profile,
-      hydrated,
+      hydrated: hydratedForActiveSession,
       saving,
       goal,
       bacProfile,
@@ -184,7 +200,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
       bacProfile,
       completeOnboarding,
       goal,
-      hydrated,
+      hydratedForActiveSession,
       profile,
       saving,
       setBacProfile,

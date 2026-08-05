@@ -23,6 +23,8 @@ export type SolveRouteParams = {
 }
 
 export type RootStackParamList = {
+  Welcome: undefined
+  Onboarding: undefined
   Principal: NavigatorScreenParams<MainTabParamList> | undefined
   Rezolva: SolveRouteParams | undefined
   Setari: undefined

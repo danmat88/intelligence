@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, Keyboard, ScrollView, StyleSheet, TextInput, View } from 'react-native'
 import { useAuth } from '../auth/AuthProvider'
-import AppHeader from '../components/ui/AppHeader'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import Press from '../components/ui/Press'
 import RezIcon from '../components/ui/RezIcon'
@@ -9,6 +8,7 @@ import ScreenBackground from '../components/ui/ScreenBackground'
 import ScreenContent from '../components/ui/ScreenContent'
 import ScreenHeading from '../components/ui/ScreenHeading'
 import SegmentedControl from '../components/ui/SegmentedControl'
+import Entrance from '../components/ui/Entrance'
 import Txt from '../components/ui/Txt'
 import {
   generateGeneralPracticeExercise,
@@ -22,9 +22,9 @@ import { useTheme } from '../theme/ThemeProvider'
 type Feedback = 'correct' | 'incorrect' | null
 
 export default function GeneralPracticeScreen({
-  onOpenSettings,
+  onChangeGoal,
 }: {
-  onOpenSettings: () => void
+  onChangeGoal?: () => void
 }) {
   const { theme } = useTheme()
   const { user } = useAuth()
@@ -150,7 +150,6 @@ export default function GeneralPracticeScreen({
 
   return (
     <ScreenBackground>
-      <AppHeader onOpenSettings={onOpenSettings} />
       <ScreenContent>
         {!exercise && !loading ? (
           <ScrollView
@@ -158,78 +157,86 @@ export default function GeneralPracticeScreen({
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            <ScreenHeading
-              eyebrow="EXERSEAZĂ"
-              title="Alege ce vrei să exersezi"
-              description="Primești câte un exercițiu. Răspunsul și rezolvarea rămân ascunse până când le ceri explicit."
-            />
-
-            <View style={[styles.inputCard, { backgroundColor: c.surface, borderColor: c.border }]}>
-              <RezIcon name="practice" size={22} color={c.text} accent={c.accent} />
-              <TextInput
-                value={topic}
-                onChangeText={(value) => {
-                  setTopic(value.slice(0, 120))
-                  setError(null)
-                }}
-                placeholder="De exemplu: ecuații, procente, derivate…"
-                placeholderTextColor={c.textFaint}
-                returnKeyType="done"
-                onSubmitEditing={() => void start()}
-                style={[styles.input, { color: c.text, fontFamily: theme.font.regular }]}
-                accessibilityLabel="Subiectul pe care vrei să îl exersezi"
+            <Entrance delay={0}>
+              <ScreenHeading
+                eyebrow="EXERSEAZĂ"
+                title="Alege ce vrei să exersezi"
+                description="Primești câte un exercițiu. Răspunsul și rezolvarea rămân ascunse până când le ceri explicit."
               />
-            </View>
+            </Entrance>
 
-            <View style={styles.modeSection}>
-              <Txt weight="bold" size={11} color={c.textMuted}>CUM VREI SĂ LUCREZI?</Txt>
-              <SegmentedControl
-                value={mode}
-                accessibilityLabel="Modul de exersare"
-                segments={[
-                  { value: 'guided', label: 'Cu indicii' },
-                  { value: 'independent', label: 'Fără ajutor' },
-                ]}
-                onChange={setMode}
-              />
-              <View style={[styles.modeExplanation, { backgroundColor: c.surfaceAlt }]}>
-                <RezIcon
-                  name={mode === 'guided' ? 'teacher' : 'simulate'}
-                  size={18}
-                  color={c.text}
-                  accent={c.accent}
+            <Entrance delay={45}>
+              <View style={[styles.inputCard, { backgroundColor: c.surface, borderColor: c.border }]}>
+                <RezIcon name="practice" size={22} color={c.text} accent={c.accent} />
+                <TextInput
+                  value={topic}
+                  onChangeText={(value) => {
+                    setTopic(value.slice(0, 120))
+                    setError(null)
+                  }}
+                  placeholder="De exemplu: ecuații, procente, derivate…"
+                  placeholderTextColor={c.textFaint}
+                  returnKeyType="done"
+                  onSubmitEditing={() => void start()}
+                  style={[styles.input, { color: c.text, fontFamily: theme.font.regular }]}
+                  accessibilityLabel="Subiectul pe care vrei să îl exersezi"
                 />
-                <Txt size={12.5} color={c.textMuted} style={styles.flex}>
-                  {mode === 'guided'
-                    ? 'Poți cere indicii progresive. Niciun indiciu nu conține răspunsul final.'
-                    : 'Lucrezi singur. Nu apar indicii, răspuns sau rezolvare înainte de verificare.'}
+              </View>
+            </Entrance>
+
+            <Entrance delay={90}>
+              <View style={styles.modeSection}>
+                <Txt weight="bold" size={11} color={c.textMuted}>CUM VREI SĂ LUCREZI?</Txt>
+                <SegmentedControl
+                  value={mode}
+                  accessibilityLabel="Modul de exersare"
+                  segments={[
+                    { value: 'guided', label: 'Cu indicii' },
+                    { value: 'independent', label: 'Fără ajutor' },
+                  ]}
+                  onChange={setMode}
+                />
+                <View style={[styles.modeExplanation, { backgroundColor: c.surfaceAlt }]}>
+                  <RezIcon
+                    name={mode === 'guided' ? 'teacher' : 'simulate'}
+                    size={18}
+                    color={c.text}
+                    accent={c.accent}
+                  />
+                  <Txt size={12.5} color={c.textMuted} style={styles.flex}>
+                    {mode === 'guided'
+                      ? 'Poți cere indicii progresive. Niciun indiciu nu conține răspunsul final.'
+                      : 'Lucrezi singur. Nu apar indicii, răspuns sau rezolvare înainte de verificare.'}
+                  </Txt>
+                </View>
+              </View>
+            </Entrance>
+
+            <Entrance delay={135}>
+              {!!error && (
+                <View style={[styles.error, { backgroundColor: c.dangerSoft }]}>
+                  <RezIcon name="alert" size={18} color={c.danger} accent={c.danger} />
+                  <Txt size={12.5} color={c.danger} style={styles.flex}>{error}</Txt>
+                </View>
+              )}
+
+              <Press
+                disabled={!topic.trim()}
+                onPress={() => void start()}
+                pressDepth={4}
+                style={[
+                  styles.primary,
+                  topic.trim()
+                    ? { backgroundColor: c.accent, borderColor: c.accent }
+                    : { backgroundColor: c.surfaceAlt, borderColor: c.border },
+                ]}
+              >
+                <Txt weight="bold" size={15} color={topic.trim() ? '#FFFFFF' : c.textFaint}>
+                  Creează exercițiul
                 </Txt>
-              </View>
-            </View>
-
-            {!!error && (
-              <View style={[styles.error, { backgroundColor: c.dangerSoft }]}>
-                <RezIcon name="alert" size={18} color={c.danger} accent={c.danger} />
-                <Txt size={12.5} color={c.danger} style={styles.flex}>{error}</Txt>
-              </View>
-            )}
-
-            <Press
-              disabled={!topic.trim()}
-              onPress={() => void start()}
-              pressDepth={4}
-              style={[
-                styles.primary,
-                topic.trim()
-                  ? { backgroundColor: c.accent, borderColor: c.accent }
-                  : { backgroundColor: c.surfaceAlt, borderColor: c.border },
-              ]}
-            >
-              <Txt weight="bold" size={15} color={topic.trim() ? '#FFFFFF' : c.textFaint}>
-                Creează exercițiul
-              </Txt>
-              <RezIcon name="arrow" size={19} color={topic.trim() ? '#FFFFFF' : c.textFaint} />
-            </Press>
+                <RezIcon name="arrow" size={19} color={topic.trim() ? '#FFFFFF' : c.textFaint} />
+              </Press>
+            </Entrance>
           </ScrollView>
         ) : loading ? (
           <View style={styles.loadingPage}>

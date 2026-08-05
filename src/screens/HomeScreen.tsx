@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import { useIsFocused } from '@react-navigation/native'
 import { useAuth } from '../auth/AuthProvider'
-import AppHeader from '../components/ui/AppHeader'
 import Press from '../components/ui/Press'
 import RezIcon from '../components/ui/RezIcon'
 import ScreenBackground from '../components/ui/ScreenBackground'
@@ -12,11 +11,11 @@ import { useProduct, type LearningGoal } from '../product/ProductProvider'
 import { readPracticeAttempts, type PracticeAttempt } from '../practice/store'
 import { subscribeProblems, type Problem } from '../solve/store'
 import { useTheme } from '../theme/ThemeProvider'
+import Entrance from '../components/ui/Entrance'
 
 type SolveEntry = 'camera' | 'library' | 'type'
 
 type Props = {
-  onOpenSettings: () => void
   onOpenPreparation: () => void
   onOpenMistakes: () => void
   onOpenProblem: (problem: Problem) => void
@@ -24,7 +23,6 @@ type Props = {
 }
 
 export default function HomeScreen({
-  onOpenSettings,
   onOpenPreparation,
   onOpenMistakes,
   onOpenProblem,
@@ -59,28 +57,35 @@ export default function HomeScreen({
 
   return (
     <ScreenBackground>
-      <AppHeader onOpenSettings={onOpenSettings} />
       <ScreenContent>
         <ScrollView
           showsVerticalScrollIndicator={false}
           overScrollMode="never"
           contentContainerStyle={styles.page}
         >
-          <HomeHeading goal={goal} bacProfile={bacProfile} />
+          <Entrance delay={0}>
+            <HomeHeading goal={goal} bacProfile={bacProfile} />
+          </Entrance>
 
           {(goal === 'en' || goal === 'bac') && (
-            <ExamNextAction
-              attempt={latestAttempt}
-              onOpenPreparation={onOpenPreparation}
-              onOpenMistakes={onOpenMistakes}
-            />
+            <Entrance delay={45}>
+              <ExamNextAction
+                attempt={latestAttempt}
+                onOpenPreparation={onOpenPreparation}
+                onOpenMistakes={onOpenMistakes}
+              />
+            </Entrance>
           )}
 
           {latestProblem && (
-            <ContinueProblem problem={latestProblem} onPress={() => onOpenProblem(latestProblem)} />
+            <Entrance delay={(goal === 'en' || goal === 'bac') ? 90 : 45}>
+              <ContinueProblem problem={latestProblem} onPress={() => onOpenProblem(latestProblem)} />
+            </Entrance>
           )}
 
-          <SolveCard onSolve={onSolve} />
+          <Entrance delay={(goal === 'en' || goal === 'bac') ? (latestProblem ? 135 : 90) : (latestProblem ? 90 : 45)}>
+            <SolveCard onSolve={onSolve} />
+          </Entrance>
         </ScrollView>
       </ScreenContent>
     </ScreenBackground>

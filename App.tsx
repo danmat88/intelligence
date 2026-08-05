@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { KeyboardProvider } from 'react-native-keyboard-controller'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
@@ -13,18 +13,22 @@ import { AuthProvider, useAuth } from './src/auth/AuthProvider'
 import ErrorBoundary from './src/components/ErrorBoundary'
 import { ToastProvider } from './src/components/ui/Toast'
 import AppNavigator from './src/navigation/AppNavigator'
+import PreAppFlow from './src/screens/PreAppFlow'
 import WelcomeScreen from './src/screens/WelcomeScreen'
-import LaunchTransition from './src/components/ui/LaunchTransition'
+import OnboardingScreen from './src/screens/OnboardingScreen'
 import { OverlayHostProvider } from './src/components/ui/OverlayHost'
 import { ProductProvider } from './src/product/ProductProvider'
 import { useProduct } from './src/product/ProductProvider'
+import { resolveRootDestination } from './src/lifecycle'
 
 /**
- * Boot choreography - one continuous scene, no cuts, no layout shift:
+ * Boot choreography is used only once, on a cold app launch:
  * 1. Native splash holds the paper colour only until brand fonts are ready.
  * 2. The JS lockup assembles immediately and absorbs auth/profile loading.
- * 3. The real destination mounts underneath; when ready, that same lockup
- *    travels to its canonical header position and the scene reveals the app.
+ * 3. The real destination mounts underneath; when ready, the scene reveals it.
+ *
+ * Authentication is a normal in-app transition. It must never re-enter this
+ * boot flow, otherwise a sign-in/sign-out looks like the app restarted.
  */
 SplashScreen.preventAutoHideAsync().catch(() => {})
 SplashScreen.setOptions({ fade: true, duration: 120 })
@@ -90,10 +94,21 @@ export default function App() {
 
 function Root({ fontsLoaded }: { fontsLoaded: boolean }) {
   const { user, initializing } = useAuth()
-  const { hydrated: profileHydrated } = useProduct()
+  const { hydrated: profileHydrated, onboardingCompleted, completeOnboarding } = useProduct()
   const ready = fontsLoaded && !initializing && (!user || profileHydrated)
   const [nativeSplashHidden, setNativeSplashHidden] = useState(false)
   const [launchFinished, setLaunchFinished] = useState(false)
+  const [startInSolver, setStartInSolver] = useState(false)
+  const startSolving = async () => {
+    await completeOnboarding(null)
+    setStartInSolver(true)
+  }
+
+  useEffect(() => {
+    if (launchFinished && onboardingCompleted && startInSolver) {
+      setStartInSolver(false)
+    }
+  }, [launchFinished, onboardingCompleted, startInSolver])
 
   useEffect(() => {
     if (!fontsLoaded || nativeSplashHidden) return
@@ -112,30 +127,42 @@ function Root({ fontsLoaded }: { fontsLoaded: boolean }) {
     }
   }, [fontsLoaded, nativeSplashHidden])
 
-  // The destination mounts under the opaque launch scene immediately. By the
-  // time the lockup reaches its final header position, onboarding or the main
-  // workspace is already laid out—no blank frame and no post-animation wait.
-  const productWasMounted = useRef(false)
-  if (ready && user) productWasMounted.current = true
-  const showProduct = !!user || (!ready && productWasMounted.current)
-  const content = showProduct
-    ? <AppNavigator />
-    : ready && nativeSplashHidden
-      ? <WelcomeScreen />
-      : null
+  const destination = resolveRootDestination({
+    fontsLoaded,
+    authInitializing: initializing,
+    nativeSplashHidden,
+    launchFinished,
+    hasUser: !!user,
+    profileHydrated,
+    onboardingCompleted,
+  })
 
-  return (
-    <View style={styles.boot}>
-      <View style={styles.boot}>{content}</View>
-      {fontsLoaded && nativeSplashHidden && !launchFinished ? (
-        <LaunchTransition
+  if (destination === 'hold') return null
+
+  if (destination === 'launch') {
+    return (
+      <View style={styles.boot}>
+        <PreAppFlow
           readyToReveal={ready}
-          moveToHeader
           onFinished={() => setLaunchFinished(true)}
+          onSolve={startSolving}
         />
-      ) : null}
-    </View>
-  )
+      </View>
+    )
+  }
+
+  // From this point on, route by session state without replaying launch UI.
+  // Keeping the welcome screen visible while a newly signed-in account's
+  // profile hydrates avoids a blank frame or a second splash.
+  if (destination === 'welcome') {
+    return <WelcomeScreen />
+  }
+
+  if (destination === 'onboarding') {
+    return <OnboardingScreen onSolve={startSolving} />
+  }
+
+  return <AppNavigator startInSolver={startInSolver} />
 }
 
 const styles = StyleSheet.create({

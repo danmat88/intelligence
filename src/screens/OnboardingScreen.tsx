@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import BrandLockup from '../components/ui/BrandLockup'
+
 import Entrance from '../components/ui/Entrance'
 import Press from '../components/ui/Press'
 import RezIcon, { type RezIconName } from '../components/ui/RezIcon'
@@ -36,7 +36,19 @@ const profileDescriptions: Record<BacTrack, string> = {
   pedagogic: 'Programa profilului pedagogic',
 }
 
-export default function OnboardingScreen({ onSolve }: { onSolve: () => void }) {
+export default function OnboardingScreen({
+  onSolve,
+  onCompleted,
+  onCompletionStarted,
+  onCompletionFailed,
+}: {
+  onSolve: () => void | Promise<void>
+  /** Fires only after this screen explicitly persists onboarding. */
+  onCompleted?: () => void
+  /** Lets the launch flow distinguish a local completion from a returning user. */
+  onCompletionStarted?: () => void
+  onCompletionFailed?: () => void
+}) {
   const { theme } = useTheme()
   const insets = useSafeAreaInsets()
   const { completeOnboarding, saving } = useProduct()
@@ -54,9 +66,12 @@ export default function OnboardingScreen({ onSolve }: { onSolve: () => void }) {
       return
     }
     setError(null)
+    onCompletionStarted?.()
     try {
       await completeOnboarding(goal)
+      onCompleted?.()
     } catch {
+      onCompletionFailed?.()
       setError('Nu am putut salva alegerea. Verifică internetul și încearcă din nou.')
     }
   }
@@ -64,10 +79,22 @@ export default function OnboardingScreen({ onSolve }: { onSolve: () => void }) {
   const continueBacTrack = async () => {
     if (!selectedTrack) return
     setError(null)
+    onCompletionStarted?.()
     try {
       await completeOnboarding('bac', selectedTrack)
+      onCompleted?.()
     } catch {
+      onCompletionFailed?.()
       setError('Nu am putut salva profilul. Verifică internetul și încearcă din nou.')
+    }
+  }
+
+  const solveNow = async () => {
+    setError(null)
+    try {
+      await onSolve()
+    } catch {
+      setError('Nu am putut pregÄƒti aplicaÈ›ia. VerificÄƒ internetul È™i Ã®ncearcÄƒ din nou.')
     }
   }
 
@@ -81,9 +108,7 @@ export default function OnboardingScreen({ onSolve }: { onSolve: () => void }) {
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.welcomePage}
             >
-              <Entrance style={styles.brand}>
-                <BrandLockup />
-              </Entrance>
+              <View style={[styles.brand, { height: 64 }]} />
 
               <Entrance delay={90}>
                 <View style={[styles.hero, { backgroundColor: c.surface, borderColor: c.text, borderBottomColor: c.text }]}>
@@ -103,7 +128,8 @@ export default function OnboardingScreen({ onSolve }: { onSolve: () => void }) {
                 <Txt weight="bold" size={15.5} color="#FFFFFF">Personalizează aplicația</Txt>
                 <RezIcon name="arrow" size={20} color="#FFFFFF" />
               </Press>
-              <Press onPress={onSolve} pressDepth={2} style={styles.secondary}>
+              {error && <Txt size={13} color={c.danger} style={styles.error}>{error}</Txt>}
+              <Press onPress={() => void solveNow()} disabled={saving} pressDepth={2} style={styles.secondary}>
                 <RezIcon name="solve" size={19} color={c.bubblyRed} accent={c.bubblyYellow} />
                 <Txt weight="bold" size={14} color={c.bubblyRed}>Am o problemă de rezolvat acum</Txt>
               </Press>

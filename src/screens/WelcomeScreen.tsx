@@ -2,7 +2,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTheme } from '../theme/ThemeProvider'
 import { useAuth } from '../auth/AuthProvider'
-import BrandLockup from '../components/ui/BrandLockup'
+
 import Entrance from '../components/ui/Entrance'
 import Press from '../components/ui/Press'
 import RezIcon from '../components/ui/RezIcon'
@@ -23,7 +23,7 @@ export default function WelcomeScreen() {
   return (
     <ScreenBackground>
       <View style={[styles.wrap, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 28 }]}>
-        <BrandLockup />
+        <View style={{ height: 64 }} />
 
         <View style={styles.body}>
           <Entrance delay={80}>

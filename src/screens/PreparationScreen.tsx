@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
-import AppHeader from '../components/ui/AppHeader'
 import Press from '../components/ui/Press'
 import PrimaryAction from '../components/ui/PrimaryAction'
 import RezIcon from '../components/ui/RezIcon'
@@ -8,6 +7,7 @@ import ScreenBackground from '../components/ui/ScreenBackground'
 import ScreenContent from '../components/ui/ScreenContent'
 import ScreenHeading from '../components/ui/ScreenHeading'
 import SegmentedControl from '../components/ui/SegmentedControl'
+import Entrance from '../components/ui/Entrance'
 import Txt from '../components/ui/Txt'
 import {
   chaptersFor,
@@ -19,7 +19,7 @@ import { BAC_TRACK_LABELS, type BacTrack } from '../product/profile'
 import { useTheme } from '../theme/ThemeProvider'
 
 type Props = {
-  onOpenSettings: () => void
+  onChangeGoal: () => void
   onStartPractice: (
     exam: 'en' | 'bac',
     options: { config: PracticeConfig; mode: 'practice' },
@@ -29,7 +29,7 @@ type Props = {
 
 const counts: Array<5 | 10 | 15> = [5, 10, 15]
 
-export default function PreparationScreen({ onOpenSettings, onStartPractice }: Props) {
+export default function PreparationScreen({ onChangeGoal, onStartPractice }: Props) {
   const { theme } = useTheme()
   const { examGoal, bacTrack } = useProduct()
   const c = theme.colors
@@ -62,80 +62,89 @@ export default function PreparationScreen({ onOpenSettings, onStartPractice }: P
 
   return (
     <ScreenBackground>
-      <AppHeader onOpenSettings={onOpenSettings} />
       <ScreenContent>
         <ScrollView
           showsVerticalScrollIndicator={false}
           overScrollMode="never"
           contentContainerStyle={styles.page}
         >
-          <ScreenHeading
-            eyebrow="EXERCIȚII"
-            title="Alege ce exersezi"
-            description="Lucrezi exerciții scurte. Simulările complete se pornesc numai dintr-un subiect oficial."
-          />
+          <Entrance delay={0}>
+            <ScreenHeading
+              eyebrow="EXERCIȚII"
+              title="Alege ce exersezi"
+              description="Lucrezi exerciții scurte. Simulările complete se pornesc numai dintr-un subiect oficial."
+            />
+          </Entrance>
 
-          <Press
-            onPress={onOpenSettings}
-            pressDepth={2}
-            style={[styles.goalRow, { backgroundColor: c.sunnySoft, borderColor: c.bubblyYellowDark, borderBottomColor: c.bubblyYellowDark }]}
-          >
-            <RezIcon name={exam === 'en' ? 'exam-en' : 'exam-bac'} size={18} color={c.text} accent={c.bubblyRed} />
-            <Txt numberOfLines={1} weight="bold" size={13} color={c.text} style={styles.flex}>{examTitle}</Txt>
-            <Txt weight="bold" size={11.5} color={c.bubblyRedDark}>Schimbă</Txt>
-          </Press>
+          <Entrance delay={45}>
+            <Press
+              onPress={onChangeGoal}
+              pressDepth={2}
+              style={[styles.goalRow, { backgroundColor: c.sunnySoft, borderColor: c.bubblyYellowDark, borderBottomColor: c.bubblyYellowDark }]}
+            >
+              <RezIcon name={exam === 'en' ? 'exam-en' : 'exam-bac'} size={18} color={c.text} accent={c.bubblyRed} />
+              <Txt numberOfLines={1} weight="bold" size={13} color={c.text} style={styles.flex}>{examTitle}</Txt>
+              <Txt weight="bold" size={11.5} color={c.bubblyRedDark}>Schimbă</Txt>
+            </Press>
+          </Entrance>
 
-          <SectionLabel title="TIPUL EXERCIȚIILOR" />
-          <View style={styles.chapters}>
-            {chapters.map((item) => {
-              const selected = chapter === item.id
-              return (
-                <Press
-                  key={item.id}
-                  onPress={() => setChapter(item.id)}
-                  pressDepth={3}
-                  containerStyle={styles.chapterSlot}
-                  accessibilityRole="radio"
-                  accessibilityState={{ checked: selected }}
-                  style={[
-                    styles.chapter,
-                    selected
-                      ? { backgroundColor: c.bubblyYellow, borderColor: c.bubblyYellowDark, borderBottomColor: c.bubblyYellowDark }
-                      : { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' },
-                  ]}
-                >
-                  <View style={styles.chapterCopy}>
-                    <Txt weight="bold" size={13.5} color={c.text}>{item.label}</Txt>
-                    <Txt numberOfLines={2} size={11} color={c.textMuted}>{item.detail}</Txt>
-                  </View>
-                  {selected && (
-                    <View style={[styles.checkBadge, { backgroundColor: c.bubblyGreen, borderColor: c.bubblyGreenDark }]}>
-                      <RezIcon name="check" size={14} color="#FFFFFF" />
+          <Entrance delay={90}>
+            <SectionLabel title="TIPUL EXERCIȚIILOR" />
+            <View style={styles.chapters}>
+              {chapters.map((item) => {
+                const selected = chapter === item.id
+                return (
+                  <Press
+                    key={item.id}
+                    onPress={() => setChapter(item.id)}
+                    pressDepth={3}
+                    containerStyle={styles.chapterSlot}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: selected }}
+                    style={[
+                      styles.chapter,
+                      selected
+                        ? { backgroundColor: c.bubblyYellow, borderColor: c.bubblyYellowDark, borderBottomColor: c.bubblyYellowDark }
+                        : { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' },
+                    ]}
+                  >
+                    <View style={styles.chapterCopy}>
+                      <Txt weight="bold" size={13.5} color={c.text}>{item.label}</Txt>
+                      <Txt numberOfLines={2} size={11} color={c.textMuted}>{item.detail}</Txt>
                     </View>
-                  )}
-                </Press>
-              )
-            })}
-          </View>
+                    {selected && (
+                      <View style={[styles.checkBadge, { backgroundColor: c.bubblyGreen, borderColor: c.bubblyGreenDark }]}>
+                        <RezIcon name="check" size={14} color="#FFFFFF" />
+                      </View>
+                    )}
+                  </Press>
+                )
+              })}
+            </View>
+          </Entrance>
 
-          <SectionLabel title="NUMĂRUL DE EXERCIȚII" />
-          <SegmentedControl
-            value={String(count) as '5' | '10' | '15'}
-            accessibilityLabel="Numărul de exerciții"
-            segments={counts.map((value) => ({
-              value: String(value) as '5' | '10' | '15',
-              label: `${value} exerciții`,
-            }))}
-            onChange={(value) => setCount(Number(value) as 5 | 10 | 15)}
-          />
+          <Entrance delay={135}>
+            <SectionLabel title="NUMĂRUL DE EXERCIȚII" />
+            <SegmentedControl
+              value={String(count) as '5' | '10' | '15'}
+              accessibilityLabel="Numărul de exerciții"
+              segments={counts.map((value) => ({
+                value: String(value) as '5' | '10' | '15',
+                label: `${value} exerciții`,
+              }))}
+              onChange={(value) => setCount(Number(value) as 5 | 10 | 15)}
+            />
+          </Entrance>
 
-          <PrimaryAction
-            title="Începe exercițiile"
-            detail={`${count} exerciții · cu indicii disponibile`}
-            icon="drill"
-            tone="chalk"
-            onPress={start}
-          />
+          <Entrance delay={180}>
+            <PrimaryAction
+              title="Începe exercițiile"
+              detail={`${count} exerciții · cu indicii disponibile`}
+              icon="drill"
+              tone="chalk"
+              onPress={start}
+            />
+          </Entrance>
         </ScrollView>
       </ScreenContent>
     </ScreenBackground>

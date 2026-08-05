@@ -16,6 +16,7 @@ export default function Entrance({
   style?: StyleProp<ViewStyle>
 }) {
   const reduceMotion = useReducedMotion()
+
   const entering = reduceMotion
     ? undefined
     : FadeInDown

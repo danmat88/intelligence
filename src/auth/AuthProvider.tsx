@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
   getAuth,
   getIdToken,
@@ -79,37 +79,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null)
   const [carried, setCarried] = useState<number | null>(null)
 
-  // Professional consumer pattern: the app NEVER gates on sign-in. Whenever
-  // there is no session (first launch, sign-out, account deletion), we silently
-  // create an anonymous one and drop the user straight into the product; their
-  // work saves under the anonymous uid and carries over when they later link
-  // Google. One attempt per "null" event — if it fails (offline first launch),
-  // initializing ends and the Welcome fallback renders with manual options.
-  const autoAnonInFlight = useRef(false)
-
   useEffect(() => {
     if (WEB_CLIENT_ID) GoogleSignin.configure({ webClientId: WEB_CLIENT_ID })
-    // Firebase persists the session natively; this fires immediately with the
-    // restored user (or null) and again on every sign-in/out.
+    // Firebase restores one persisted session at launch and then reports normal
+    // account changes. It deliberately never creates a guest account: logging
+    // out must leave the user signed out, rather than start a fresh profile.
     return onAuthStateChanged(getAuth(), (u) => {
-      if (u) {
-        autoAnonInFlight.current = false
-        setUser(toAuthUser(u))
-        setInitializing(false)
-        return
-      }
-      setUser(null)
-      if (!autoAnonInFlight.current) {
-        autoAnonInFlight.current = true
-        setInitializing(true) // hold the boot frame instead of flashing a gate
-        signInAnonymously(getAuth()).catch(() => {
-          // Offline / disabled — fall through to the manual Welcome fallback.
-          autoAnonInFlight.current = false
-          setInitializing(false)
-        })
-      } else {
-        setInitializing(false)
-      }
+      setUser(u ? toAuthUser(u) : null)
+      setInitializing(false)
     })
   }, [])
 
@@ -207,6 +184,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSigningIn(true)
       setError(null)
       try {
+        if (getAuth().currentUser) return
         // A real Firebase session with a real uid — the AI proxy and Firestore
         // rules work unchanged, and the per-user rate limit applies.
         await signInAnonymously(getAuth())
@@ -260,8 +238,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch {
         // Google-side session cleanup is best-effort
       }
-      // Local session only — the user record is already deleted. Signing out
-      // fires onAuthStateChanged(null) -> a fresh guest session attaches.
+      // Local session only — the user record is already deleted. The auth
+      // observer takes the app back to the signed-out welcome screen.
       await firebaseSignOut(getAuth()).catch(() => {})
     }
 

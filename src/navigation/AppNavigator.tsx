@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { createContext, memo, useCallback, useContext, useMemo, useRef, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
@@ -13,13 +13,13 @@ import SubjectsScreen from '../screens/SubjectsScreen'
 import OfficialPaperScreen from '../screens/OfficialPaperScreen'
 import SettingsScreen from '../screens/SettingsScreen'
 import SolverScreen from '../screens/SolverScreen'
-import OnboardingScreen from '../screens/OnboardingScreen'
-import PracticeSessionScreen from '../screens/PracticeSessionScreen'
+import GoalSheet from '../screens/GoalSheet'
+import AppHeader from '../components/ui/AppHeader'
+import { useProduct } from '../product/ProductProvider'
+import { useTheme } from '../theme/ThemeProvider'
 import GeneralPracticeScreen from '../screens/GeneralPracticeScreen'
 import SavedScreen from '../screens/SavedScreen'
-import WorkspaceReveal from '../components/ui/WorkspaceReveal'
-import { useTheme } from '../theme/ThemeProvider'
-import { useProduct } from '../product/ProductProvider'
+import PracticeSessionScreen from '../screens/PracticeSessionScreen'
 import type { PracticeConfig } from '../practice/generator'
 import { getNativeOfficialPaper } from '../archive/content'
 import MainNavigation from './MainNavigation'
@@ -35,14 +35,17 @@ const RootStack = createNativeStackNavigator<RootStackParamList>()
 const Tabs = createBottomTabNavigator<MainTabParamList>()
 
 type OpenSolve = (params?: SolveRouteParams) => void
+const GoalSheetContext = createContext<() => void>(() => {})
 
-function MainTabs({
+const MainTabs = memo(function MainTabs({
   onOpenSettings,
+  onChangeGoal,
   onSolve,
   onStartPractice,
   onOpenPaper,
 }: {
   onOpenSettings: () => void
+  onChangeGoal: () => void
   onSolve: OpenSolve
   onStartPractice: (
     exam: 'en' | 'bac',
@@ -55,13 +58,13 @@ function MainTabs({
   ) => void
 }) {
   const { goal } = useProduct()
+  const { theme } = useTheme()
   const examMode = goal === 'en' || goal === 'bac'
 
   const notebook = (
     initialMode: 'problems' | 'tests' | 'mistakes' | 'progress',
   ) => (
     <NotebookScreen
-      onOpenSettings={onOpenSettings}
       onOpenProblem={(problem) => onSolve({ problem })}
       onSolve={() => onSolve()}
       onOpenPractice={(exam, setId, focusExerciseId, bacTrack) => onStartPractice(exam, { setId, focusExerciseId }, bacTrack)}
@@ -74,15 +77,16 @@ function MainTabs({
   )
 
   return (
-    <Tabs.Navigator
-      initialRouteName="Acasa"
-      screenOptions={{ headerShown: false }}
-      tabBar={(props) => <MainNavigation {...props} examMode={examMode} onSolve={() => onSolve()} />}
-    >
+    <View style={[styles.tabsRoot, { backgroundColor: theme.colors.bg }]}>
+      <AppHeader onOpenSettings={onOpenSettings} />
+      <Tabs.Navigator
+        initialRouteName="Acasa"
+        screenOptions={{ headerShown: false }}
+        tabBar={(props) => <MainNavigation {...props} examMode={examMode} onSolve={() => onSolve()} />}
+      >
       <Tabs.Screen name="Acasa">
         {({ navigation }) => (
           <HomeScreen
-            onOpenSettings={onOpenSettings}
             onOpenPreparation={() => navigation.navigate('Exercitii')}
             onOpenMistakes={() => navigation.navigate('Activitate', { section: 'mistakes' })}
             onOpenProblem={(problem) => onSolve({ problem })}
@@ -93,18 +97,18 @@ function MainTabs({
       <Tabs.Screen name="Exercitii">
         {() => examMode ? (
           <PreparationScreen
-            onOpenSettings={onOpenSettings}
+            onChangeGoal={onChangeGoal}
             onStartPractice={onStartPractice}
           />
         ) : (
           <GeneralPracticeScreen
-            onOpenSettings={onOpenSettings}
+            onChangeGoal={onChangeGoal}
           />
         )}
       </Tabs.Screen>
       <Tabs.Screen name="Biblioteca">
         {({ route }) => examMode
-          ? <SubjectsScreen onOpenSettings={onOpenSettings} onOpenPaper={onOpenPaper} onSolve={() => onSolve()} />
+          ? <SubjectsScreen onChangeGoal={onChangeGoal} onOpenPaper={onOpenPaper} onSolve={() => onSolve()} />
           : notebook(route.params?.section ?? 'problems')}
       </Tabs.Screen>
       <Tabs.Screen name="Activitate">
@@ -112,14 +116,49 @@ function MainTabs({
           ? notebook(route.params?.section ?? 'progress')
           : (
             <SavedScreen
-              onOpenSettings={onOpenSettings}
               onOpenProblem={(problem) => onSolve({ problem })}
               onSolve={() => onSolve()}
             />
           )}
       </Tabs.Screen>
-    </Tabs.Navigator>
+      </Tabs.Navigator>
+    </View>
   )
+})
+
+function PrincipalRoute({ navigation }: NativeStackScreenProps<RootStackParamList, 'Principal'>) {
+  const openGoalSheet = useContext(GoalSheetContext)
+  const onOpenSettings = useCallback(() => navigation.navigate('Setari'), [navigation])
+  const onSolve = useCallback((params?: SolveRouteParams) => navigation.navigate('Rezolva', params), [navigation])
+  const onStartPractice = useCallback(
+    (
+      exam: 'en' | 'bac',
+      options: { setId?: string; config?: PracticeConfig; mode?: 'practice' | 'simulation'; focusExerciseId?: string },
+      bacTrack?: BacTrack,
+    ) => navigation.navigate('Activitate', { exam, ...options, bacTrack }),
+    [navigation],
+  )
+  const onOpenPaper = useCallback(
+    (item: import('../archive/content').NativeOfficialPaper, mode: import('../archive/store').OfficialPaperMode) =>
+      navigation.navigate('SubiectOficial', { item, mode }),
+    [navigation],
+  )
+
+  return (
+    <MainTabs
+      onOpenSettings={onOpenSettings}
+      onChangeGoal={openGoalSheet}
+      onSolve={onSolve}
+      onStartPractice={onStartPractice}
+      onOpenPaper={onOpenPaper}
+    />
+  )
+}
+
+function SettingsRoute({ navigation }: NativeStackScreenProps<RootStackParamList, 'Setari'>) {
+  const openGoalSheet = useContext(GoalSheetContext)
+  const onBack = useCallback(() => navigation.goBack(), [navigation])
+  return <SettingsScreen onBack={onBack} onChangeGoal={openGoalSheet} />
 }
 
 function SolveRoute({
@@ -150,18 +189,11 @@ function SolveRoute({
   )
 }
 
-export default function AppNavigator() {
+export default function AppNavigator({ startInSolver = false }: { startInSolver?: boolean }) {
+  const [goalSheetOpen, setGoalSheetOpen] = useState(false)
+  const openGoalSheet = useCallback(() => setGoalSheetOpen(true), [])
+  const closeGoalSheet = useCallback(() => setGoalSheetOpen(false), [])
   const { theme } = useTheme()
-  const { onboardingCompleted, hydrated, goal } = useProduct()
-  const previousOnboarding = useRef(onboardingCompleted)
-  const [showWorkspaceReveal, setShowWorkspaceReveal] = useState(false)
-
-  useLayoutEffect(() => {
-    if (hydrated && !previousOnboarding.current && onboardingCompleted) {
-      setShowWorkspaceReveal(true)
-    }
-    previousOnboarding.current = onboardingCompleted
-  }, [hydrated, onboardingCompleted])
   const navigationTheme = useMemo(
     () => ({
       ...DefaultTheme,
@@ -180,36 +212,20 @@ export default function AppNavigator() {
 
   return (
     <View style={styles.root}>
-      <NavigationContainer theme={navigationTheme}>
-        <RootStack.Navigator
-          initialRouteName="Principal"
-          screenOptions={{
-            animation: 'fade',
-            contentStyle: styles.transparent,
-            gestureEnabled: true,
-            headerShown: false,
-          }}
-        >
-          <RootStack.Screen name="Principal">
-            {({ navigation }) => (
-              hydrated && !onboardingCompleted ? (
-                <OnboardingScreen onSolve={() => navigation.navigate('Rezolva')} />
-              ) : (
-                <MainTabs
-                  onOpenSettings={() => navigation.navigate('Setari')}
-                  onSolve={(params) => navigation.navigate('Rezolva', params)}
-                  onStartPractice={(exam, options, bacTrack) =>
-                    navigation.navigate('Activitate', { exam, ...options, bacTrack })
-                  }
-                  onOpenPaper={(item, mode) => navigation.navigate('SubiectOficial', { item, mode })}
-                />
-              )
-            )}
-          </RootStack.Screen>
+      <GoalSheetContext.Provider value={openGoalSheet}>
+        <NavigationContainer theme={navigationTheme}>
+          <RootStack.Navigator
+            initialRouteName={startInSolver ? 'Rezolva' : 'Principal'}
+            screenOptions={{
+              animation: 'fade',
+              contentStyle: styles.transparent,
+              gestureEnabled: true,
+              headerShown: false,
+            }}
+          >
+          <RootStack.Screen name="Principal" component={PrincipalRoute} />
           <RootStack.Screen name="Rezolva" component={SolveRoute} />
-          <RootStack.Screen name="Setari">
-            {({ navigation }) => <SettingsScreen onBack={() => navigation.goBack()} />}
-          </RootStack.Screen>
+          <RootStack.Screen name="Setari" component={SettingsRoute} />
           <RootStack.Screen name="Activitate">
             {({ navigation, route }) => (
               <PracticeSessionScreen
@@ -233,16 +249,16 @@ export default function AppNavigator() {
               />
             )}
           </RootStack.Screen>
-        </RootStack.Navigator>
-      </NavigationContainer>
-      {showWorkspaceReveal && goal ? (
-        <WorkspaceReveal goal={goal} onFinished={() => setShowWorkspaceReveal(false)} />
-      ) : null}
+          </RootStack.Navigator>
+        </NavigationContainer>
+        <GoalSheet open={goalSheetOpen} onClose={closeGoalSheet} />
+      </GoalSheetContext.Provider>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
+  tabsRoot: { flex: 1 },
   transparent: { backgroundColor: 'transparent' },
 })

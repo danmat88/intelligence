@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ActivityIndicator, FlatList, StyleSheet, TextInput, View } from 'react-native'
 import { useIsFocused } from '@react-navigation/native'
 import { useAuth } from '../auth/AuthProvider'
-import AppHeader from '../components/ui/AppHeader'
 import Press from '../components/ui/Press'
 import RezIcon from '../components/ui/RezIcon'
 import ScreenBackground from '../components/ui/ScreenBackground'
@@ -25,7 +24,6 @@ import type { BacTrack } from '../product/profile'
 import { useProduct } from '../product/ProductProvider'
 
 type Props = {
-  onOpenSettings: () => void
   onOpenProblem: (problem: Problem) => void
   onSolve: () => void
   onOpenPractice: (exam: PracticeExam, setId: string, focusExerciseId?: string, bacTrack?: BacTrack) => void
@@ -53,7 +51,6 @@ function dateLabel(createdAt: number): string {
 }
 
 export default function NotebookScreen({
-  onOpenSettings,
   onOpenProblem,
   onSolve,
   onOpenPractice,
@@ -169,7 +166,6 @@ export default function NotebookScreen({
 
   return (
     <ScreenBackground>
-      <AppHeader onOpenSettings={onOpenSettings} />
       <ScreenContent style={styles.page}>
         <ScreenHeading
           eyebrow={examMode ? 'REZULTATE' : 'ISTORIC'}

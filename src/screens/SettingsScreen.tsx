@@ -19,14 +19,8 @@ import { BAC_TRACKS, BAC_TRACK_LABELS, type BacTrack, type ExamGoal } from '../p
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { readTelemetryConsent, setTelemetryConsent } from '../lib/telemetry'
 
-const goalOptions: Array<{ id: 'en' | 'bac' | 'none'; value: ExamGoal; label: string; copy: string; icon: RezIconName; accent: 'red' | 'blue' | 'yellow' }> = [
-  { id: 'en', value: 'en', label: 'Evaluarea Națională', copy: 'Programa și subiectele oficiale pentru clasa a VIII-a', icon: 'exam-en', accent: 'red' },
-  { id: 'bac', value: 'bac', label: 'Bacalaureat', copy: 'Conținut adaptat profilului și programei tale', icon: 'exam-bac', accent: 'blue' },
-  { id: 'none', value: null, label: 'Matematică, fără examen', copy: 'Rezolvare și exerciții fără programă impusă', icon: 'workspace', accent: 'yellow' },
-]
-const bacProfiles = BAC_TRACKS
 
-export default function SettingsScreen({ onBack }: { onBack: () => void }) {
+export default function SettingsScreen({ onBack, onChangeGoal }: { onBack: () => void, onChangeGoal: () => void }) {
   const { theme } = useTheme()
   const insets = useSafeAreaInsets()
   const c = theme.colors
@@ -51,7 +45,6 @@ export default function SettingsScreen({ onBack }: { onBack: () => void }) {
     setDeleting(true)
     try {
       await deleteAccount()
-      onBack()
       toast.show(isGuest ? 'Sesiune și date șterse' : t('settings.deleted'), 'check')
     } catch {
       toast.show(t('settings.deleteError'), 'alert-triangle')
@@ -166,89 +159,13 @@ export default function SettingsScreen({ onBack }: { onBack: () => void }) {
           <Entrance delay={45}>
             <SectionLabel title="PREGĂTIREA MEA" />
             <View style={[styles.groupCard, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: c.cardEdge }]}>
-            <View style={styles.goalList}>
-              {goalOptions.map((option) => {
-                const selected = examGoal === option.value
-                const accentBg = option.accent === 'red' ? c.bubblyRed
-                  : option.accent === 'blue' ? c.bubblyBlue
-                  : c.bubblyYellow
-                const accentDark = option.accent === 'red' ? c.bubblyRedDark
-                  : option.accent === 'blue' ? c.bubblyBlueDark
-                  : c.bubblyYellowDark
-                const accentSoft = option.accent === 'red' ? c.accentSoft
-                  : option.accent === 'blue' ? '#E4F6FF'
-                  : c.sunnySoft
-                return (
-                  <Press
-                    key={option.id}
-                    onPress={() => void setExamGoal(
-                      option.value,
-                      option.value === 'bac' ? bacTrack ?? 'mate_info' : null,
-                    ).catch(() => toast.show('Nu am putut salva obiectivul.', 'alert-triangle'))}
-                    disabled={saving}
-                    pressDepth={1.5}
-                    style={[
-                      styles.goalOption,
-                      selected
-                        ? { backgroundColor: accentSoft, borderColor: accentDark }
-                        : { backgroundColor: c.bgElevated, borderColor: 'transparent' },
-                    ]}
-                  >
-                    <View style={[styles.goalOptionIcon, { backgroundColor: accentBg, borderColor: accentDark }]}>
-                      <RezIcon name={option.icon} size={21} color={option.accent === 'yellow' ? c.text : '#FFFFFF'} accent={option.accent === 'yellow' ? c.bubblyRed : '#FFFFFF'} />
-                    </View>
-                    <View style={styles.flex}>
-                      <Txt weight="bold" size={14.5} color={c.text} style={styles.noBreak}>{option.label}</Txt>
-                      <Txt size={11.8} color={c.textMuted} style={styles.goalOptionCopy}>{option.copy}</Txt>
-                    </View>
-                    <View style={[styles.goalCheck, { borderColor: selected ? accentDark : c.textFaint, backgroundColor: selected ? accentBg : 'transparent' }]}>
-                      {selected && <RezIcon name="check" size={13} color="#FFFFFF" />}
-                    </View>
-                  </Press>
-                )
-              })}
-            </View>
-
-            {examGoal === 'bac' && (
-              <View style={styles.profileSection}>
-                <View style={styles.profileLabel}>
-                  <RezIcon name="exam-bac" size={15} color={c.textMuted} accent={c.bubblyRed} />
-                  <Txt weight="bold" size={11.5} color={c.textMuted} style={{ fontFamily: theme.font.mono, letterSpacing: 0.8 }}>
-                    PROFIL BAC
-                  </Txt>
-                </View>
-                {bacProfiles.map((profile, index) => {
-                  const active = profile === bacTrack
-                  return (
-                    <Press
-                      key={profile}
-                      onPress={() => void setExamGoal('bac', profile).catch(() => toast.show('Nu am putut salva profilul.', 'alert-triangle'))}
-                      disabled={saving}
-                      pressDepth={1.5}
-                      style={[
-                        styles.profileRow,
-                        index < bacProfiles.length - 1 && { borderBottomColor: 'rgba(25,49,73,0.1)', borderBottomWidth: StyleSheet.hairlineWidth },
-                      ]}
-                    >
-                      <View style={[
-                        styles.profileDot,
-                        { backgroundColor: active ? c.bubblyGreen : c.surfaceAlt, borderColor: active ? c.bubblyGreenDark : c.cardEdge },
-                      ]}>
-                        {active && <RezIcon name="check" size={13} color="#FFFFFF" />}
-                      </View>
-                      <Txt
-                        weight={active ? 'bold' : 'medium'}
-                        size={14}
-                        color={active ? c.text : c.textMuted}
-                        style={styles.flex}
-                      >
-                        {BAC_TRACK_LABELS[profile]}
-                      </Txt>
-                    </Press>
-                  )
-                })}
-              </View>
-            )}
+              <SettingsRow
+                icon={examGoal === 'en' ? 'exam-en' : examGoal === 'bac' ? 'exam-bac' : 'workspace'}
+                label="Obiectivul curent"
+                copy={examGoal === 'en' ? 'Evaluarea Națională' : examGoal === 'bac' ? `Bacalaureat · ${BAC_TRACK_LABELS[bacTrack ?? 'mate_info']}` : 'Matematică, fără examen'}
+                onPress={onChangeGoal}
+                last
+              />
             </View>
           </Entrance>
 
@@ -296,10 +213,7 @@ export default function SettingsScreen({ onBack }: { onBack: () => void }) {
                   icon="logout"
                   label="Deconectează-te"
                   copy="Datele sincronizate rămân în cont"
-                  onPress={() => signOut().then(() => {
-                    onBack()
-                    toast.show(t('auth.signedOut'))
-                  })}
+                  onPress={() => signOut().then(() => toast.show(t('auth.signedOut')))}
                   last={false}
                 />
             )}
