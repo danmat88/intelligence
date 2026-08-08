@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, Keyboard, ScrollView, StyleSheet, TextInput, View } from 'react-native'
 import { useAuth } from '../auth/AuthProvider'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import Press from '../components/ui/Press'
 import RezIcon from '../components/ui/RezIcon'
-import ScreenBackground from '../components/ui/ScreenBackground'
 import ScreenContent from '../components/ui/ScreenContent'
 import ScreenHeading from '../components/ui/ScreenHeading'
 import SegmentedControl from '../components/ui/SegmentedControl'
@@ -18,14 +17,12 @@ import {
 } from '../practice/general'
 import { savePracticeAttempt, type PracticeAssistance } from '../practice/store'
 import { useTheme } from '../theme/ThemeProvider'
+import { GoalSheetContext } from '../navigation/GoalSheetContext'
 
 type Feedback = 'correct' | 'incorrect' | null
 
-export default function GeneralPracticeScreen({
-  onChangeGoal,
-}: {
-  onChangeGoal?: () => void
-}) {
+export default function GeneralPracticeScreen() {
+  const onChangeGoal = useContext(GoalSheetContext)
   const { theme } = useTheme()
   const { user } = useAuth()
   const c = theme.colors
@@ -149,7 +146,7 @@ export default function GeneralPracticeScreen({
   }
 
   return (
-    <ScreenBackground>
+    <View style={styles.flex}>
       <ScreenContent>
         {!exercise && !loading ? (
           <ScrollView
@@ -432,7 +429,7 @@ export default function GeneralPracticeScreen({
           setSolutionVisible(true)
         }}
       />
-    </ScreenBackground>
+    </View>
   )
 }
 

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import {
   getAuth,
   getIdToken,
@@ -34,10 +34,17 @@ export type AuthUser = {
   isAnonymous: boolean
 }
 
+export type AuthOperation =
+  | 'idle'
+  | 'signing-in'
+  | 'signing-out'
+  | 'deleting-account'
+
 type AuthContextValue = {
   user: AuthUser | null
   /** true while Firebase restores the persisted session on launch. */
   initializing: boolean
+  operation: AuthOperation
   signingIn: boolean
   /** Human-readable reason the last sign-in attempt failed, if any. */
   error: string | null
@@ -61,6 +68,17 @@ const WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
+export class AccountActionCancelledError extends Error {
+  constructor() {
+    super('Account action cancelled')
+    this.name = 'AccountActionCancelledError'
+  }
+}
+
+export function isAccountActionCancelled(error: unknown): boolean {
+  return error instanceof AccountActionCancelledError
+}
+
 function toAuthUser(u: {
   uid: string
   displayName: string | null
@@ -75,9 +93,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { t } = useI18n()
   const [user, setUser] = useState<AuthUser | null>(null)
   const [initializing, setInitializing] = useState(true)
-  const [signingIn, setSigningIn] = useState(false)
+  const [operation, setOperation] = useState<AuthOperation>('idle')
+  const operationRef = useRef<AuthOperation>('idle')
   const [error, setError] = useState<string | null>(null)
   const [carried, setCarried] = useState<number | null>(null)
+
+  const beginOperation = useCallback((next: Exclude<AuthOperation, 'idle'>): boolean => {
+    if (operationRef.current !== 'idle') return false
+    operationRef.current = next
+    setOperation(next)
+    return true
+  }, [])
+
+  const endOperation = useCallback((current: Exclude<AuthOperation, 'idle'>) => {
+    if (operationRef.current !== current) return
+    operationRef.current = 'idle'
+    setOperation('idle')
+  }, [])
 
   useEffect(() => {
     if (WEB_CLIENT_ID) GoogleSignin.configure({ webClientId: WEB_CLIENT_ID })
@@ -96,7 +128,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setError('Conectarea cu Google nu este configurată încă. Lipsește cheia publică necesară.')
         return
       }
-      setSigningIn(true)
+      if (!beginOperation('signing-in')) return
       setError(null)
       try {
         await GoogleSignin.hasPlayServices()
@@ -176,71 +208,94 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         reportNonFatal(e, 'google-sign-in')
         setError('Conectarea nu a reușit. Încearcă din nou.')
       } finally {
-        setSigningIn(false)
+        endOperation('signing-in')
       }
     }
 
     const signInGuest = async () => {
-      setSigningIn(true)
+      if (!beginOperation('signing-in')) return
       setError(null)
       try {
         if (getAuth().currentUser) return
         // A real Firebase session with a real uid — the AI proxy and Firestore
         // rules work unchanged, and the per-user rate limit applies.
-        await signInAnonymously(getAuth())
-        // onAuthStateChanged updates `user`
+        const credential = await signInAnonymously(getAuth())
+        // Publish before the operation ends; the native auth observer can be
+        // scheduled one frame after the credential promise resolves.
+        setUser(toAuthUser(credential.user))
       } catch (e) {
         reportNonFatal(e, 'guest-sign-in')
         setError('Nu am putut porni sesiunea fără cont. Încearcă din nou.')
       } finally {
-        setSigningIn(false)
+        endOperation('signing-in')
       }
     }
 
     const signOut = async () => {
+      if (!beginOperation('signing-out')) return
       try {
-        await GoogleSignin.signOut()
-      } catch {
-        // Google session may already be gone; Firebase sign-out still proceeds
+        // Firebase owns the app session, so end it first. Google cleanup is
+        // secondary and must never leave the user trapped in Settings.
+        await firebaseSignOut(getAuth())
+        setUser(null)
+        setError(null)
+        setCarried(null)
+        try {
+          await GoogleSignin.signOut()
+        } catch {
+          // Google session may already be gone; the app is still signed out.
+        }
+      } finally {
+        endOperation('signing-out')
       }
-      await firebaseSignOut(getAuth())
     }
 
     const deleteAccount = async () => {
       const fbUser = getAuth().currentUser
       if (!fbUser) return
 
-      // Named accounts must prove recent presence. Anonymous sessions have no
-      // external identity to re-authenticate; possession of their current
-      // Firebase session is the only available proof and the server accepts it.
-      if (!fbUser.isAnonymous) {
-        try {
-          await GoogleSignin.signInSilently()
-        } catch {
-          await GoogleSignin.hasPlayServices()
-          await GoogleSignin.signIn()
-        }
-        const { idToken, accessToken } = await GoogleSignin.getTokens()
-        await reauthenticateWithCredential(fbUser, GoogleAuthProvider.credential(idToken, accessToken))
-      }
-      const freshToken = await getIdToken(fbUser, true)
-
-      // The server (Admin SDK) wipes EVERYTHING in one place — Storage,
-      // Firestore, the auth user — including photos that were migrated in
-      // from a guest session. That's the Play data-deletion promise kept.
-      await deleteAccountOnServer(freshToken)
-
-      // The account is gone server-side; drop every local trace and session.
-      await clearLocalImages()
-      await resetInstallId()
+      if (!beginOperation('deleting-account')) return
       try {
-        await GoogleSignin.signOut()
-      } catch {
-        // Google-side session cleanup is best-effort
+        // Named accounts must prove recent presence. Anonymous sessions have no
+        // external identity to re-authenticate; possession of their current
+        // Firebase session is the only available proof and the server accepts it.
+        if (!fbUser.isAnonymous) {
+          try {
+            await GoogleSignin.signInSilently()
+          } catch {
+            await GoogleSignin.hasPlayServices()
+            const response = await GoogleSignin.signIn()
+            if (!isSuccessResponse(response)) throw new AccountActionCancelledError()
+          }
+          const { idToken, accessToken } = await GoogleSignin.getTokens()
+          if (!idToken) throw new Error('Google reauthentication did not return an id token')
+          await reauthenticateWithCredential(fbUser, GoogleAuthProvider.credential(idToken, accessToken))
+        }
+        const freshToken = await getIdToken(fbUser, true)
+
+        // The server (Admin SDK) wipes EVERYTHING in one place — Storage,
+        // Firestore, the auth user — including photos that were migrated in
+        // from a guest session. That's the Play data-deletion promise kept.
+        await deleteAccountOnServer(freshToken)
+
+        // The account is gone server-side; drop every local trace and session.
+        await clearLocalImages().catch((error) => reportNonFatal(error, 'delete-account-local-images'))
+        await resetInstallId().catch((error) => reportNonFatal(error, 'delete-account-install-id'))
+        try {
+          await GoogleSignin.signOut()
+        } catch {
+          // Google-side session cleanup is best-effort
+        }
+        // Local session only — the user record is already deleted. The auth
+        // observer takes the app back to the signed-out welcome screen.
+        await firebaseSignOut(getAuth()).catch(() => {})
+        // The server user is gone even if a native observer is slow to emit.
+        setUser(null)
+        setError(null)
+        setCarried(null)
+      } finally {
+        endOperation('deleting-account')
       }
-      // Local session only — the user record is already deleted. The auth
-      // observer takes the app back to the signed-out welcome screen.
-      await firebaseSignOut(getAuth()).catch(() => {})
     }
 
     const exportAccount = async () => {
@@ -252,7 +307,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return {
       user,
       initializing,
-      signingIn,
+      operation,
+      signingIn: operation === 'signing-in',
       error,
       signIn,
       signInGuest,
@@ -262,7 +318,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       carried,
       clearCarried: () => setCarried(null),
     }
-  }, [user, initializing, signingIn, error, carried, t])
+  }, [beginOperation, carried, endOperation, error, initializing, operation, t, user])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

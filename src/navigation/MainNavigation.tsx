@@ -2,11 +2,14 @@ import { StyleSheet, View } from 'react-native'
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Animated, { useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated'
+import { useNavigation } from '@react-navigation/native'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import Press from '../components/ui/Press'
 import RezIcon, { type RezIconName } from '../components/ui/RezIcon'
 import Txt from '../components/ui/Txt'
 import { useTheme } from '../theme/ThemeProvider'
-import type { MainDestination } from './types'
+import { useProduct } from '../product/ProductProvider'
+import type { MainDestination, RootStackParamList } from './types'
 
 const TabItem = ({ item, focused, onPress, onLongPress }: any) => {
   const { theme } = useTheme()
@@ -75,14 +78,14 @@ const TabItem = ({ item, focused, onPress, onLongPress }: any) => {
 
 export default function MainNavigation({
   state,
-  descriptors,
-  navigation,
-  onSolve,
-  examMode,
-}: BottomTabBarProps & { onSolve: () => void; examMode: boolean }) {
+  navigation: tabNavigation,
+}: BottomTabBarProps) {
   const { theme } = useTheme()
   const insets = useSafeAreaInsets()
   const c = theme.colors
+  const { goal } = useProduct()
+  const examMode = goal === 'en' || goal === 'bac'
+  const rootNavigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const byName = new Map(state.routes.map((route, index) => [route.name, { route, index }]))
 
   const destinations: Record<MainDestination, { label: string; icon: RezIconName; color: string }> = examMode
@@ -112,10 +115,10 @@ export default function MainNavigation({
         item={item}
         focused={focused}
         onPress={() => {
-          const navEvent = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true })
-          if (!focused && !navEvent.defaultPrevented) navigation.navigate(route.name, route.params)
+          const navEvent = tabNavigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true })
+          if (!focused && !navEvent.defaultPrevented) tabNavigation.navigate(route.name, route.params)
         }}
-        onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
+        onLongPress={() => tabNavigation.emit({ type: 'tabLongPress', target: route.key })}
       />
     )
   }
@@ -138,7 +141,7 @@ export default function MainNavigation({
         {/* Central Solve Button */}
         <View style={styles.solveContainer}>
           <Press
-            onPress={onSolve}
+            onPress={() => rootNavigation.navigate('Rezolva')}
             pressDepth={8}
             style={[styles.solveButton, { backgroundColor: c.accent, borderColor: c.border }]}
           >
@@ -189,7 +192,7 @@ const styles = StyleSheet.create({
   },
   activeBlob: {
     position: 'absolute',
-    top: -14, // Exact match with the translateY of the icon
+    top: -14,
     width: 48,
     height: 48,
     borderRadius: 24,

@@ -1,26 +1,24 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { KeyboardProvider } from 'react-native-keyboard-controller'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { SystemBars } from 'react-native-edge-to-edge'
 import * as SplashScreen from 'expo-splash-screen'
 import { useFonts } from 'expo-font'
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, runOnJS } from 'react-native-reanimated'
 import { initAppCheck } from './src/lib/appcheck'
 import { initTelemetryConsent } from './src/lib/telemetry'
 import { ThemeProvider } from './src/theme/ThemeProvider'
 import { I18nProvider } from './src/i18n'
-import { AuthProvider, useAuth } from './src/auth/AuthProvider'
+import { AuthProvider } from './src/auth/AuthProvider'
 import ErrorBoundary from './src/components/ErrorBoundary'
+import GlobalBackground from './src/components/ui/GlobalBackground'
 import { ToastProvider } from './src/components/ui/Toast'
 import AppNavigator from './src/navigation/AppNavigator'
 import PreAppFlow from './src/screens/PreAppFlow'
-import WelcomeScreen from './src/screens/WelcomeScreen'
-import OnboardingScreen from './src/screens/OnboardingScreen'
 import { OverlayHostProvider } from './src/components/ui/OverlayHost'
 import { ProductProvider } from './src/product/ProductProvider'
-import { useProduct } from './src/product/ProductProvider'
-import { resolveRootDestination } from './src/lifecycle'
-
+import { AppLifecycleProvider, useAppLifecycle } from './src/navigation/AppLifecycleProvider'
 /**
  * Boot choreography is used only once, on a cold app launch:
  * 1. Native splash holds the paper colour only until brand fonts are ready.
@@ -72,15 +70,18 @@ export default function App() {
       <ErrorBoundary>
         <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
           <ThemeProvider>
+            <GlobalBackground />
             <I18nProvider>
               <ToastProvider>
                 <AuthProvider>
                   {/* A font failure must DEGRADE (system faces), never hold the
                       splash forever — ready would otherwise stay false. */}
                   <ProductProvider>
-                    <OverlayHostProvider>
-                      <Root fontsLoaded={fontsLoaded || !!fontError} />
-                    </OverlayHostProvider>
+                    <AppLifecycleProvider>
+                      <OverlayHostProvider>
+                        <Root fontsLoaded={fontsLoaded || !!fontError} />
+                      </OverlayHostProvider>
+                    </AppLifecycleProvider>
                   </ProductProvider>
                 </AuthProvider>
               </ToastProvider>
@@ -93,22 +94,9 @@ export default function App() {
 }
 
 function Root({ fontsLoaded }: { fontsLoaded: boolean }) {
-  const { user, initializing } = useAuth()
-  const { hydrated: profileHydrated, onboardingCompleted, completeOnboarding } = useProduct()
-  const ready = fontsLoaded && !initializing && (!user || profileHydrated)
+  const { launchReady } = useAppLifecycle()
   const [nativeSplashHidden, setNativeSplashHidden] = useState(false)
   const [launchFinished, setLaunchFinished] = useState(false)
-  const [startInSolver, setStartInSolver] = useState(false)
-  const startSolving = async () => {
-    await completeOnboarding(null)
-    setStartInSolver(true)
-  }
-
-  useEffect(() => {
-    if (launchFinished && onboardingCompleted && startInSolver) {
-      setStartInSolver(false)
-    }
-  }, [launchFinished, onboardingCompleted, startInSolver])
 
   useEffect(() => {
     if (!fontsLoaded || nativeSplashHidden) return
@@ -127,44 +115,40 @@ function Root({ fontsLoaded }: { fontsLoaded: boolean }) {
     }
   }, [fontsLoaded, nativeSplashHidden])
 
-  const destination = resolveRootDestination({
-    fontsLoaded,
-    authInitializing: initializing,
-    nativeSplashHidden,
-    launchFinished,
-    hasUser: !!user,
-    profileHydrated,
-    onboardingCompleted,
-  })
+  const appOpacity = useSharedValue(0)
+  const appStyle = useAnimatedStyle(() => ({
+    opacity: appOpacity.value
+  }))
 
-  if (destination === 'hold') return null
+  const handleRevealApp = useCallback(() => {
+    appOpacity.value = withTiming(1, { duration: 400, easing: Easing.out(Easing.cubic) }, () => {
+      runOnJS(setLaunchFinished)(true)
+    })
+  }, [appOpacity])
 
-  if (destination === 'launch') {
-    return (
-      <View style={styles.boot}>
-        <PreAppFlow
-          readyToReveal={ready}
-          onFinished={() => setLaunchFinished(true)}
-          onSolve={startSolving}
-        />
-      </View>
-    )
-  }
+  if (!fontsLoaded || !nativeSplashHidden) return null
 
-  // From this point on, route by session state without replaying launch UI.
-  // Keeping the welcome screen visible while a newly signed-in account's
-  // profile hydrates avoids a blank frame or a second splash.
-  if (destination === 'welcome') {
-    return <WelcomeScreen />
-  }
+  return (
+    <View style={styles.flex}>
+      {/* 1. The Main Application (handles its own auth routing) */}
+      <Animated.View pointerEvents={launchFinished ? 'auto' : 'none'} style={[styles.flex, appStyle]}>
+        <AppNavigator />
+      </Animated.View>
 
-  if (destination === 'onboarding') {
-    return <OnboardingScreen onSolve={startSolving} />
-  }
-
-  return <AppNavigator startInSolver={startInSolver} />
+      {/* 2. Cold Boot Splash Overlay */}
+      {!launchFinished && (
+        <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+          <PreAppFlow
+            readyToReveal={launchReady}
+            onRevealApp={handleRevealApp}
+          />
+        </View>
+      )}
+    </View>
+  )
 }
 
 const styles = StyleSheet.create({
   boot: { flex: 1, backgroundColor: BOOT_BG },
+  flex: { flex: 1 },
 })

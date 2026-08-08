@@ -8,6 +8,7 @@ import Press from '../components/ui/Press'
 import RezIcon from '../components/ui/RezIcon'
 import ScreenBackground from '../components/ui/ScreenBackground'
 import Txt from '../components/ui/Txt'
+import BrandLockup from '../components/ui/BrandLockup'
 
 /**
  * First onboarding step for signed-out users. The brand occupies the exact
@@ -18,12 +19,13 @@ export default function WelcomeScreen() {
   const { theme } = useTheme()
   const c = theme.colors
   const insets = useSafeAreaInsets()
-  const { signIn, signInGuest, signingIn, error } = useAuth()
+  const { user, operation, signIn, signInGuest, error } = useAuth()
+  const isBusy = operation !== 'idle' || !!user
 
   return (
     <ScreenBackground>
       <View style={[styles.wrap, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 28 }]}>
-        <View style={{ height: 64 }} />
+        <BrandLockup />
 
         <View style={styles.body}>
           <Entrance delay={80}>
@@ -36,11 +38,11 @@ export default function WelcomeScreen() {
           <Entrance delay={150} style={styles.actions}>
           <Press
             onPress={signIn}
-            disabled={signingIn}
+            disabled={isBusy}
             pressDepth={5}
             style={[styles.googleBtn, { backgroundColor: c.chalkDark, borderColor: '#0A2926', borderBottomColor: '#071F1D' }]}
           >
-            {signingIn ? (
+            {isBusy ? (
               <ActivityIndicator color="#fff" />
             ) : (
               <>
@@ -66,7 +68,7 @@ export default function WelcomeScreen() {
 
           <Press
             onPress={signInGuest}
-            disabled={signingIn}
+            disabled={isBusy}
             pressDepth={3.5}
             style={[styles.guestBtn, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' }]}
           >

@@ -1,26 +1,40 @@
 import {
-  EMPTY_LEARNING_PROFILE,
+  InvalidLearningProfileError,
+  isDefinitiveProfileSnapshot,
+  isDefinitiveOnboardingState,
   makeCompletedProfile,
   parseLearningProfile,
 } from '../profile'
 
 describe('learning profile contract', () => {
-  test('missing or malformed data is treated as unfinished onboarding', () => {
-    expect(parseLearningProfile(null)).toEqual(EMPTY_LEARNING_PROFILE)
-    expect(parseLearningProfile({ onboardingCompleted: 'yes', examGoal: 'other' }))
-      .toEqual(EMPTY_LEARNING_PROFILE)
-    expect(parseLearningProfile({
+  test('a cached miss waits for the server instead of starting onboarding', () => {
+    expect(isDefinitiveProfileSnapshot(false, true)).toBe(false)
+    expect(isDefinitiveProfileSnapshot(true, true)).toBe(true)
+    expect(isDefinitiveProfileSnapshot(false, false)).toBe(true)
+  })
+
+  test('cached onboarding completion is usable but cached incompletion waits', () => {
+    expect(isDefinitiveOnboardingState(true, true)).toBe(true)
+    expect(isDefinitiveOnboardingState(false, true)).toBe(false)
+    expect(isDefinitiveOnboardingState(false, false)).toBe(true)
+  })
+
+  test('malformed stored data is rejected instead of starting onboarding', () => {
+    expect(() => parseLearningProfile(null)).toThrow(InvalidLearningProfileError)
+    expect(() => parseLearningProfile({ onboardingCompleted: 'yes', examGoal: 'other' }))
+      .toThrow(InvalidLearningProfileError)
+    expect(() => parseLearningProfile({
       schemaVersion: 99,
       onboardingCompleted: true,
       examGoal: 'en',
       bacTrack: null,
-    })).toEqual(EMPTY_LEARNING_PROFILE)
-    expect(parseLearningProfile({
+    })).toThrow(InvalidLearningProfileError)
+    expect(() => parseLearningProfile({
       schemaVersion: 1,
       onboardingCompleted: true,
       examGoal: 'bac',
       bacTrack: null,
-    })).toEqual(EMPTY_LEARNING_PROFILE)
+    })).toThrow(InvalidLearningProfileError)
   })
 
   test('a user without an exam has no fake general curriculum', () => {

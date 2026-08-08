@@ -24,6 +24,8 @@ export type SolveRouteParams = {
 
 export type RootStackParamList = {
   Welcome: undefined
+  AccountTransition: undefined
+  ProfileGate: undefined
   Onboarding: undefined
   Principal: NavigatorScreenParams<MainTabParamList> | undefined
   Rezolva: SolveRouteParams | undefined

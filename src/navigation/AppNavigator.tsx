@@ -1,4 +1,4 @@
-import { createContext, memo, useCallback, useContext, useMemo, useRef, useState } from 'react'
+import { createContext, memo, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
@@ -20,139 +20,94 @@ import { useTheme } from '../theme/ThemeProvider'
 import GeneralPracticeScreen from '../screens/GeneralPracticeScreen'
 import SavedScreen from '../screens/SavedScreen'
 import PracticeSessionScreen from '../screens/PracticeSessionScreen'
-import type { PracticeConfig } from '../practice/generator'
-import { getNativeOfficialPaper } from '../archive/content'
 import MainNavigation from './MainNavigation'
+import { GoalSheetContext } from './GoalSheetContext'
+import ScreenBackground from '../components/ui/ScreenBackground'
+import WelcomeScreen from '../screens/WelcomeScreen'
+import OnboardingScreen from '../screens/OnboardingScreen'
+import ProfileGateScreen from '../screens/ProfileGateScreen'
+import AccountTransitionScreen from '../screens/AccountTransitionScreen'
+import { useAppLifecycle } from './AppLifecycleProvider'
+import { shouldOpenSolver, type AppEntry } from './lifecycle'
 import type {
   MainTabParamList,
   RootStackParamList,
   SolveEntryAction,
   SolveRouteParams,
 } from './types'
-import type { BacTrack } from '../product/profile'
 
 const RootStack = createNativeStackNavigator<RootStackParamList>()
 const Tabs = createBottomTabNavigator<MainTabParamList>()
+const AppEntryContext = createContext<{
+  entry: AppEntry
+  setEntry: (entry: AppEntry) => void
+}>({ entry: 'home', setEntry: () => {} })
 
-type OpenSolve = (params?: SolveRouteParams) => void
-const GoalSheetContext = createContext<() => void>(() => {})
+function AcasaTab() {
+  return <HomeScreen />
+}
 
-const MainTabs = memo(function MainTabs({
-  onOpenSettings,
-  onChangeGoal,
-  onSolve,
-  onStartPractice,
-  onOpenPaper,
-}: {
-  onOpenSettings: () => void
-  onChangeGoal: () => void
-  onSolve: OpenSolve
-  onStartPractice: (
-    exam: 'en' | 'bac',
-    options: { setId?: string; config?: PracticeConfig; mode?: 'practice' | 'simulation'; focusExerciseId?: string },
-    bacTrack?: BacTrack,
-  ) => void
-  onOpenPaper: (
-    item: import('../archive/content').NativeOfficialPaper,
-    mode: import('../archive/store').OfficialPaperMode,
-  ) => void
-}) {
+function ExercitiiTab() {
   const { goal } = useProduct()
-  const { theme } = useTheme()
   const examMode = goal === 'en' || goal === 'bac'
+  return examMode ? <PreparationScreen /> : <GeneralPracticeScreen />
+}
 
-  const notebook = (
-    initialMode: 'problems' | 'tests' | 'mistakes' | 'progress',
-  ) => (
-    <NotebookScreen
-      onOpenProblem={(problem) => onSolve({ problem })}
-      onSolve={() => onSolve()}
-      onOpenPractice={(exam, setId, focusExerciseId, bacTrack) => onStartPractice(exam, { setId, focusExerciseId }, bacTrack)}
-      onOpenOfficialAttempt={(attempt) => {
-        const paper = getNativeOfficialPaper(attempt.packageId, attempt.profile)
-        if (paper) onOpenPaper(paper, attempt.completedAt ? 'study' : attempt.mode)
-      }}
-      initialMode={initialMode}
-    />
+function BibliotecaTab({ route }: any) {
+  const { goal } = useProduct()
+  const examMode = goal === 'en' || goal === 'bac'
+  return examMode ? (
+    <SubjectsScreen />
+  ) : (
+    <NotebookScreen initialMode={route.params?.section ?? 'problems'} />
   )
+}
+
+function ActivitateTab({ route }: any) {
+  const { goal } = useProduct()
+  const examMode = goal === 'en' || goal === 'bac'
+  return examMode ? (
+    <NotebookScreen initialMode={route.params?.section ?? 'progress'} />
+  ) : (
+    <SavedScreen />
+  )
+}
+
+const MainTabs = memo(function MainTabs() {
+  const { theme } = useTheme()
 
   return (
-    <View style={[styles.tabsRoot, { backgroundColor: theme.colors.bg }]}>
-      <AppHeader onOpenSettings={onOpenSettings} />
+    <ScreenBackground style={styles.tabsRoot}>
+      <AppHeader />
       <Tabs.Navigator
         initialRouteName="Acasa"
-        screenOptions={{ headerShown: false }}
-        tabBar={(props) => <MainNavigation {...props} examMode={examMode} onSolve={() => onSolve()} />}
+        screenOptions={{
+          headerShown: false,
+          sceneStyle: { backgroundColor: 'transparent' }
+        }}
+        tabBar={(props) => <MainNavigation {...props} />}
       >
-      <Tabs.Screen name="Acasa">
-        {({ navigation }) => (
-          <HomeScreen
-            onOpenPreparation={() => navigation.navigate('Exercitii')}
-            onOpenMistakes={() => navigation.navigate('Activitate', { section: 'mistakes' })}
-            onOpenProblem={(problem) => onSolve({ problem })}
-            onSolve={(entry) => onSolve(entry ? { entry } : undefined)}
-          />
-        )}
-      </Tabs.Screen>
-      <Tabs.Screen name="Exercitii">
-        {() => examMode ? (
-          <PreparationScreen
-            onChangeGoal={onChangeGoal}
-            onStartPractice={onStartPractice}
-          />
-        ) : (
-          <GeneralPracticeScreen
-            onChangeGoal={onChangeGoal}
-          />
-        )}
-      </Tabs.Screen>
-      <Tabs.Screen name="Biblioteca">
-        {({ route }) => examMode
-          ? <SubjectsScreen onChangeGoal={onChangeGoal} onOpenPaper={onOpenPaper} onSolve={() => onSolve()} />
-          : notebook(route.params?.section ?? 'problems')}
-      </Tabs.Screen>
-      <Tabs.Screen name="Activitate">
-        {({ route }) => examMode
-          ? notebook(route.params?.section ?? 'progress')
-          : (
-            <SavedScreen
-              onOpenProblem={(problem) => onSolve({ problem })}
-              onSolve={() => onSolve()}
-            />
-          )}
-      </Tabs.Screen>
+        <Tabs.Screen name="Acasa" component={AcasaTab} />
+        <Tabs.Screen name="Exercitii" component={ExercitiiTab} />
+        <Tabs.Screen name="Biblioteca" component={BibliotecaTab} />
+        <Tabs.Screen name="Activitate" component={ActivitateTab} />
       </Tabs.Navigator>
-    </View>
+    </ScreenBackground>
   )
 })
 
 function PrincipalRoute({ navigation }: NativeStackScreenProps<RootStackParamList, 'Principal'>) {
-  const openGoalSheet = useContext(GoalSheetContext)
-  const onOpenSettings = useCallback(() => navigation.navigate('Setari'), [navigation])
-  const onSolve = useCallback((params?: SolveRouteParams) => navigation.navigate('Rezolva', params), [navigation])
-  const onStartPractice = useCallback(
-    (
-      exam: 'en' | 'bac',
-      options: { setId?: string; config?: PracticeConfig; mode?: 'practice' | 'simulation'; focusExerciseId?: string },
-      bacTrack?: BacTrack,
-    ) => navigation.navigate('Activitate', { exam, ...options, bacTrack }),
-    [navigation],
-  )
-  const onOpenPaper = useCallback(
-    (item: import('../archive/content').NativeOfficialPaper, mode: import('../archive/store').OfficialPaperMode) =>
-      navigation.navigate('SubiectOficial', { item, mode }),
-    [navigation],
-  )
+  const { entry, setEntry } = useContext(AppEntryContext)
 
-  return (
-    <MainTabs
-      onOpenSettings={onOpenSettings}
-      onChangeGoal={openGoalSheet}
-      onSolve={onSolve}
-      onStartPractice={onStartPractice}
-      onOpenPaper={onOpenPaper}
-    />
-  )
+  useLayoutEffect(() => {
+    if (!shouldOpenSolver(entry)) return
+    // Keep Home underneath the solver so both the visible arrow and Android
+    // Back always have a valid, useful destination after onboarding.
+    navigation.navigate('Rezolva')
+    setEntry('home')
+  }, [entry, navigation, setEntry])
+
+  return <MainTabs />
 }
 
 function SettingsRoute({ navigation }: NativeStackScreenProps<RootStackParamList, 'Setari'>) {
@@ -189,7 +144,50 @@ function SolveRoute({
   )
 }
 
-export default function AppNavigator({ startInSolver = false }: { startInSolver?: boolean }) {
+function ActivitateRoute({ navigation, route }: NativeStackScreenProps<RootStackParamList, 'Activitate'>) {
+  return (
+    <PracticeSessionScreen
+      exam={route.params.exam}
+      setId={route.params.setId}
+      config={route.params.config}
+      bacTrack={route.params.bacTrack}
+      mode={route.params.mode}
+      focusExerciseId={route.params.focusExerciseId}
+      onBack={() => navigation.goBack()}
+      onFinish={() => navigation.goBack()}
+    />
+  )
+}
+
+function SubiectOficialRoute({ navigation, route }: NativeStackScreenProps<RootStackParamList, 'SubiectOficial'>) {
+  return (
+    <OfficialPaperScreen
+      item={route.params.item}
+      initialMode={route.params.mode}
+      onBack={() => navigation.goBack()}
+    />
+  )
+}
+
+function OnboardingRoute() {
+  const { completeOnboarding } = useProduct()
+  const { setEntry: setAppEntry } = useContext(AppEntryContext)
+  const startSolving = useCallback(async () => {
+    setAppEntry('solver')
+    try {
+      await completeOnboarding(null)
+    } catch (error) {
+      setAppEntry('home')
+      throw error
+    }
+  }, [completeOnboarding, setAppEntry])
+
+  return <OnboardingScreen onSolve={startSolving} />
+}
+
+export default function AppNavigator() {
+  const { phase, sessionId, navigationKey } = useAppLifecycle()
+  const [appEntry, setAppEntry] = useState<AppEntry>('home')
   const [goalSheetOpen, setGoalSheetOpen] = useState(false)
   const openGoalSheet = useCallback(() => setGoalSheetOpen(true), [])
   const closeGoalSheet = useCallback(() => setGoalSheetOpen(false), [])
@@ -200,7 +198,7 @@ export default function AppNavigator({ startInSolver = false }: { startInSolver?
       colors: {
         ...DefaultTheme.colors,
         primary: theme.colors.accent,
-        background: theme.colors.bg,
+        background: 'transparent',
         card: theme.colors.bgElevated,
         text: theme.colors.text,
         border: theme.colors.border,
@@ -209,13 +207,30 @@ export default function AppNavigator({ startInSolver = false }: { startInSolver?
     }),
     [theme],
   )
+  const appEntryValue = useMemo(
+    () => ({ entry: appEntry, setEntry: setAppEntry }),
+    [appEntry],
+  )
+
+  useEffect(() => {
+    // Entry intent belongs to one Firebase identity. It must not survive logout
+    // or an account switch and unexpectedly reopen the solver next time.
+    setAppEntry('home')
+  }, [sessionId])
+
+  useEffect(() => {
+    if (phase !== 'app') setGoalSheetOpen(false)
+  }, [phase])
+
+  if (phase === 'auth-loading') return null
 
   return (
     <View style={styles.root}>
       <GoalSheetContext.Provider value={openGoalSheet}>
-        <NavigationContainer theme={navigationTheme}>
+        <AppEntryContext.Provider value={appEntryValue}>
+        <NavigationContainer key={navigationKey} theme={navigationTheme}>
           <RootStack.Navigator
-            initialRouteName={startInSolver ? 'Rezolva' : 'Principal'}
+            initialRouteName={phase === 'app' ? 'Principal' : undefined}
             screenOptions={{
               animation: 'fade',
               contentStyle: styles.transparent,
@@ -223,34 +238,37 @@ export default function AppNavigator({ startInSolver = false }: { startInSolver?
               headerShown: false,
             }}
           >
-          <RootStack.Screen name="Principal" component={PrincipalRoute} />
-          <RootStack.Screen name="Rezolva" component={SolveRoute} />
-          <RootStack.Screen name="Setari" component={SettingsRoute} />
-          <RootStack.Screen name="Activitate">
-            {({ navigation, route }) => (
-              <PracticeSessionScreen
-                exam={route.params.exam}
-                setId={route.params.setId}
-                config={route.params.config}
-                bacTrack={route.params.bacTrack}
-                mode={route.params.mode}
-                focusExerciseId={route.params.focusExerciseId}
-                onBack={() => navigation.goBack()}
-                onFinish={() => navigation.goBack()}
+            {phase === 'signed-out' ? (
+              <RootStack.Screen
+                name="Welcome"
+                component={WelcomeScreen}
+                options={{ animationTypeForReplace: 'pop' }}
               />
+            ) : phase === 'account-transition' ? (
+              <RootStack.Screen name="AccountTransition" component={AccountTransitionScreen} />
+            ) : phase === 'profile-loading' || phase === 'profile-error' ? (
+              <RootStack.Screen name="ProfileGate" component={ProfileGateScreen} />
+            ) : phase === 'onboarding' ? (
+              <RootStack.Screen name="Onboarding" component={OnboardingRoute} />
+            ) : (
+              <>
+                <RootStack.Screen name="Principal" component={PrincipalRoute} />
+                <RootStack.Screen name="Rezolva" component={SolveRoute} />
+                <RootStack.Screen
+                  name="Setari"
+                  component={SettingsRoute}
+                  options={{
+                    animation: 'slide_from_right',
+                    contentStyle: { backgroundColor: navigationTheme.colors.background }
+                  }}
+                />
+                <RootStack.Screen name="Activitate" component={ActivitateRoute} />
+                <RootStack.Screen name="SubiectOficial" component={SubiectOficialRoute} />
+              </>
             )}
-          </RootStack.Screen>
-          <RootStack.Screen name="SubiectOficial">
-            {({ navigation, route }) => (
-              <OfficialPaperScreen
-                item={route.params.item}
-                initialMode={route.params.mode}
-                onBack={() => navigation.goBack()}
-              />
-            )}
-          </RootStack.Screen>
           </RootStack.Navigator>
         </NavigationContainer>
+        </AppEntryContext.Provider>
         <GoalSheet open={goalSheetOpen} onClose={closeGoalSheet} />
       </GoalSheetContext.Provider>
     </View>

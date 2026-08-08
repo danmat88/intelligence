@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import Press from '../components/ui/Press'
 import PrimaryAction from '../components/ui/PrimaryAction'
 import RezIcon from '../components/ui/RezIcon'
-import ScreenBackground from '../components/ui/ScreenBackground'
 import ScreenContent from '../components/ui/ScreenContent'
 import ScreenHeading from '../components/ui/ScreenHeading'
 import SegmentedControl from '../components/ui/SegmentedControl'
@@ -17,19 +18,12 @@ import {
 import { useProduct } from '../product/ProductProvider'
 import { BAC_TRACK_LABELS, type BacTrack } from '../product/profile'
 import { useTheme } from '../theme/ThemeProvider'
-
-type Props = {
-  onChangeGoal: () => void
-  onStartPractice: (
-    exam: 'en' | 'bac',
-    options: { config: PracticeConfig; mode: 'practice' },
-    bacTrack?: BacTrack,
-  ) => void
-}
+import type { RootStackParamList } from '../navigation/types'
+import { GoalSheetContext } from '../navigation/GoalSheetContext'
 
 const counts: Array<5 | 10 | 15> = [5, 10, 15]
 
-export default function PreparationScreen({ onChangeGoal, onStartPractice }: Props) {
+export default function PreparationScreen() {
   const { theme } = useTheme()
   const { examGoal, bacTrack } = useProduct()
   const c = theme.colors
@@ -40,28 +34,28 @@ export default function PreparationScreen({ onChangeGoal, onStartPractice }: Pro
   const examTitle = exam === 'en'
     ? 'Evaluarea Națională'
     : `BAC · ${BAC_TRACK_LABELS[bacTrack ?? 'mate_info']}`
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
+  const onChangeGoal = useContext(GoalSheetContext)
 
   useEffect(() => {
     if (!chapters.some((item) => item.id === chapter)) setChapter('mixt')
   }, [chapter, chapters])
 
   const start = () => {
-    onStartPractice(
+    navigation.navigate('Activitate', {
       exam,
-      {
-        mode: 'practice',
-        config: {
-          chapter,
-          count,
-          seed: Date.now() % 2_000_000_000,
-        },
+      mode: 'practice',
+      config: {
+        chapter,
+        count,
+        seed: Date.now() % 2_000_000_000,
       },
-      exam === 'bac' ? bacTrack ?? 'mate_info' : undefined,
-    )
+      bacTrack: exam === 'bac' ? bacTrack ?? 'mate_info' : undefined,
+    })
   }
 
   return (
-    <ScreenBackground>
+    <View style={styles.flex}>
       <ScreenContent>
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -147,7 +141,7 @@ export default function PreparationScreen({ onChangeGoal, onStartPractice }: Pro
           </Entrance>
         </ScrollView>
       </ScreenContent>
-    </ScreenBackground>
+    </View>
   )
 }
 

@@ -2,10 +2,9 @@ import { useEffect, useState } from 'react'
 import { ActivityIndicator, Image, Linking, ScrollView, StyleSheet, Switch, View } from 'react-native'
 import * as FileSystem from 'expo-file-system/legacy'
 import * as Sharing from 'expo-sharing'
-import { useAuth } from '../auth/AuthProvider'
+import { isAccountActionCancelled, useAuth } from '../auth/AuthProvider'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import ContextHeader from '../components/ui/ContextHeader'
-import Entrance from '../components/ui/Entrance'
 import Press from '../components/ui/Press'
 import RezIcon, { type RezIconName } from '../components/ui/RezIcon'
 import ScreenBackground from '../components/ui/ScreenBackground'
@@ -24,11 +23,12 @@ export default function SettingsScreen({ onBack, onChangeGoal }: { onBack: () =>
   const { theme } = useTheme()
   const insets = useSafeAreaInsets()
   const c = theme.colors
-  const { user, signIn, signingIn, signOut, deleteAccount, exportAccount } = useAuth()
+  const { user, signIn, signingIn, error: authError, signOut, deleteAccount, exportAccount } = useAuth()
   const { t } = useI18n()
   const toast = useToast()
   const { examGoal, bacTrack, setExamGoal, saving } = useProduct()
   const [deleting, setDeleting] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [exporting, setExporting] = useState(false)
   const [diagnostics, setDiagnostics] = useState(false)
@@ -46,10 +46,24 @@ export default function SettingsScreen({ onBack, onChangeGoal }: { onBack: () =>
     try {
       await deleteAccount()
       toast.show(isGuest ? 'Sesiune și date șterse' : t('settings.deleted'), 'check')
-    } catch {
-      toast.show(t('settings.deleteError'), 'alert-triangle')
+    } catch (error) {
+      if (!isAccountActionCancelled(error)) {
+        toast.show(t('settings.deleteError'), 'alert-triangle')
+      }
     } finally {
       setDeleting(false)
+    }
+  }
+
+  const doSignOut = async () => {
+    if (signingOut) return
+    setSigningOut(true)
+    try {
+      await signOut()
+      toast.show(t('auth.signedOut'))
+    } catch {
+      toast.show('Nu am putut închide sesiunea. Încearcă din nou.', 'alert-triangle')
+      setSigningOut(false)
     }
   }
 
@@ -98,7 +112,7 @@ export default function SettingsScreen({ onBack, onChangeGoal }: { onBack: () =>
           showsVerticalScrollIndicator={false}
           contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}
         >
-          <Entrance>
+          <View>
           {isGuest ? (
             <View style={[styles.guestCard, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' }]}>
               <View style={styles.guestTop}>
@@ -118,7 +132,7 @@ export default function SettingsScreen({ onBack, onChangeGoal }: { onBack: () =>
               <Press
                 onPress={signIn}
                 pressDepth={4}
-                disabled={signingIn}
+                disabled={signingIn || deleting || exporting}
                 style={[styles.googleBtn, { backgroundColor: c.chalkDark, borderColor: '#0A2926', borderBottomColor: '#071F1D' }]}
               >
                 {signingIn ? (
@@ -132,6 +146,11 @@ export default function SettingsScreen({ onBack, onChangeGoal }: { onBack: () =>
                   </>
                 )}
               </Press>
+              {authError && (
+                <Txt size={12.5} color={c.danger} style={styles.authError}>
+                  {authError}
+                </Txt>
+              )}
             </View>
           ) : (
             <View style={[styles.identityCard, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: '#D0D0D0' }]}>
@@ -154,9 +173,9 @@ export default function SettingsScreen({ onBack, onChangeGoal }: { onBack: () =>
               </View>
             </View>
           )}
-          </Entrance>
+          </View>
 
-          <Entrance delay={45}>
+          <View>
             <SectionLabel title="PREGĂTIREA MEA" />
             <View style={[styles.groupCard, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: c.cardEdge }]}>
               <SettingsRow
@@ -167,9 +186,9 @@ export default function SettingsScreen({ onBack, onChangeGoal }: { onBack: () =>
                 last
               />
             </View>
-          </Entrance>
+          </View>
 
-          <Entrance delay={90}>
+          <View>
             <SectionLabel title="CONFIDENȚIALITATE" />
             <View style={[styles.groupCard, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: c.cardEdge }]}>
               <SettingsToggleRow
@@ -195,25 +214,26 @@ export default function SettingsScreen({ onBack, onChangeGoal }: { onBack: () =>
                 last
               />
             </View>
-          </Entrance>
+          </View>
 
-          <Entrance delay={135}>
+          <View>
             <SectionLabel title="CONT ȘI DATE" />
             <View style={[styles.groupCard, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: c.cardEdge }]}>
             <SettingsRow
               icon="download"
               label={exporting ? 'Pregătesc exportul…' : 'Exportă datele mele'}
               copy="Primești o copie a informațiilor contului"
-              disabled={exporting || deleting}
+              disabled={exporting || deleting || signingOut}
               onPress={() => void doExport()}
               last={false}
             />
             {!isGuest && (
                 <SettingsRow
                   icon="logout"
-                  label="Deconectează-te"
-                  copy="Datele sincronizate rămân în cont"
-                  onPress={() => signOut().then(() => toast.show(t('auth.signedOut')))}
+                  label={signingOut ? 'Se deconectează…' : 'Deconectează-te'}
+                  copy={signingOut ? 'Închidem sesiunea în siguranță' : 'Datele sincronizate rămân în cont'}
+                  disabled={signingOut || deleting || exporting}
+                  onPress={() => void doSignOut()}
                   last={false}
                 />
             )}
@@ -222,14 +242,14 @@ export default function SettingsScreen({ onBack, onChangeGoal }: { onBack: () =>
               label={deleting ? 'Șterg datele…' : isGuest ? 'Șterge sesiunea și datele' : 'Șterge definitiv contul'}
               copy="Acțiune permanentă, cu confirmare"
               danger
-              disabled={deleting || exporting}
+              disabled={deleting || exporting || signingOut}
               onPress={() => setConfirming(true)}
               last
             />
             </View>
-          </Entrance>
+          </View>
 
-          <Entrance delay={180} style={styles.versionWrap}>
+          <View style={styles.versionWrap}>
             <View style={[styles.versionPill, { backgroundColor: c.surfaceAlt, borderColor: c.cardEdge }]}>
               <RezIcon name="workspace" size={14} color={c.textFaint} />
               <Txt size={11.5} weight="semibold" color={c.textFaint} style={{ fontFamily: theme.font.mono }}>
@@ -239,7 +259,7 @@ export default function SettingsScreen({ onBack, onChangeGoal }: { onBack: () =>
             <Txt size={11} color={c.textFaint}>
               Profu’ de Mate
             </Txt>
-          </Entrance>
+          </View>
         </ScrollView>
       </ScreenContent>
 
@@ -389,6 +409,10 @@ const styles = StyleSheet.create({
   guestSub: {
     lineHeight: 17,
     marginTop: 5,
+  },
+  authError: {
+    lineHeight: 17,
+    textAlign: 'center',
   },
   googleBtn: {
     alignItems: 'center',

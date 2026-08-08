@@ -1,23 +1,20 @@
 import { useEffect, useState } from 'react'
 import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { useAuth } from '../auth/AuthProvider'
 import EmptyState from '../components/ui/EmptyState'
 import Press from '../components/ui/Press'
 import RezIcon from '../components/ui/RezIcon'
-import ScreenBackground from '../components/ui/ScreenBackground'
 import ScreenContent from '../components/ui/ScreenContent'
 import ScreenHeading from '../components/ui/ScreenHeading'
 import Txt from '../components/ui/Txt'
 import { setProblemSaved, subscribeProblems, type Problem } from '../solve/store'
 import { useTheme } from '../theme/ThemeProvider'
+import type { RootStackParamList } from '../navigation/types'
 
-export default function SavedScreen({
-  onOpenProblem,
-  onSolve,
-}: {
-  onOpenProblem: (problem: Problem) => void
-  onSolve: () => void
-}) {
+export default function SavedScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const { user } = useAuth()
   const { theme } = useTheme()
   const c = theme.colors
@@ -35,7 +32,7 @@ export default function SavedScreen({
   }, [user?.id])
 
   return (
-    <ScreenBackground>
+    <View style={styles.flex}>
       <ScreenContent>
         <ScreenHeading
           eyebrow="SALVATE"
@@ -49,7 +46,7 @@ export default function SavedScreen({
             icon="bookmark"
             title="Nu ai salvat încă nicio problemă"
             message="Salvează o problemă din Istoric sau începe una nouă."
-            action={{ title: 'Rezolvă o problemă', icon: 'solve', onPress: onSolve }}
+            action={{ title: 'Rezolvă o problemă', icon: 'solve', onPress: () => navigation.navigate('Rezolva') }}
           />
         ) : (
           <FlatList
@@ -58,7 +55,7 @@ export default function SavedScreen({
             contentContainerStyle={styles.list}
             renderItem={({ item }) => (
               <Press
-                onPress={() => onOpenProblem(item)}
+                onPress={() => navigation.navigate('Rezolva', { problem: item })}
                 pressDepth={3}
                 style={[styles.card, { backgroundColor: c.surface, borderColor: c.border, borderBottomColor: c.border }]}
               >
@@ -87,11 +84,12 @@ export default function SavedScreen({
           />
         )}
       </ScreenContent>
-    </ScreenBackground>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
   center: { alignItems: 'center', flex: 1, justifyContent: 'center' },
   list: { gap: 10, paddingBottom: 24, paddingTop: 14 },
   card: { alignItems: 'center', borderRadius: 24, borderWidth: 3, borderBottomWidth: 7, flexDirection: 'row', gap: 12, minHeight: 82, padding: 14 },

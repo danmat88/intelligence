@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ActivityIndicator, FlatList, StyleSheet, TextInput, View } from 'react-native'
-import { useIsFocused } from '@react-navigation/native'
+import { useIsFocused, useNavigation } from '@react-navigation/native'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { useAuth } from '../auth/AuthProvider'
 import Press from '../components/ui/Press'
 import RezIcon from '../components/ui/RezIcon'
-import ScreenBackground from '../components/ui/ScreenBackground'
 import ScreenContent from '../components/ui/ScreenContent'
 import ScreenHeading from '../components/ui/ScreenHeading'
 import SegmentedControl from '../components/ui/SegmentedControl'
@@ -20,16 +20,10 @@ import { findPracticeExercise, type PracticeExam } from '../practice/catalog'
 import { configuredSetFromId } from '../practice/generator'
 import { calculateCompetencyEvidence } from '../practice/progress'
 import { readOfficialAttempts, type OfficialPaperAttempt } from '../archive/store'
+import { NATIVE_OFFICIAL_PAPERS } from '../archive/content'
 import type { BacTrack } from '../product/profile'
 import { useProduct } from '../product/ProductProvider'
-
-type Props = {
-  onOpenProblem: (problem: Problem) => void
-  onSolve: () => void
-  onOpenPractice: (exam: PracticeExam, setId: string, focusExerciseId?: string, bacTrack?: BacTrack) => void
-  onOpenOfficialAttempt: (attempt: OfficialPaperAttempt) => void
-  initialMode?: 'problems' | 'tests' | 'mistakes' | 'progress'
-}
+import type { RootStackParamList } from '../navigation/types'
 
 function cleanTitle(title: string): string {
   return title.replace(/^\s*📷\s*/, '').trim()
@@ -51,17 +45,14 @@ function dateLabel(createdAt: number): string {
 }
 
 export default function NotebookScreen({
-  onOpenProblem,
-  onSolve,
-  onOpenPractice,
-  onOpenOfficialAttempt,
   initialMode = 'problems',
-}: Props) {
+}: { initialMode?: 'problems' | 'tests' | 'mistakes' | 'progress' }) {
   const { theme } = useTheme()
   const { user } = useAuth()
   const { examGoal, bacTrack } = useProduct()
   const toast = useToast()
   const focused = useIsFocused()
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const c = theme.colors
   const [problems, setProblems] = useState<Problem[]>([])
   const [loaded, setLoaded] = useState(false)
@@ -165,7 +156,7 @@ export default function NotebookScreen({
   )
 
   return (
-    <ScreenBackground>
+    <View style={styles.flex}>
       <ScreenContent style={styles.page}>
         <ScreenHeading
           eyebrow={examMode ? 'REZULTATE' : 'ISTORIC'}
@@ -175,7 +166,7 @@ export default function NotebookScreen({
             : 'Toate problemele rezolvate și conversațiile tale.'}
           trailing={
             <Press
-              onPress={onSolve}
+              onPress={() => navigation.navigate('Rezolva')}
               pressDepth={3}
               accessibilityLabel="Rezolvă o problemă nouă"
               style={[styles.add, { backgroundColor: c.accent, borderColor: c.border, borderBottomColor: c.border }]}
@@ -267,7 +258,14 @@ export default function NotebookScreen({
               renderItem={({ item }) => (
                 <Press
                   onPress={() => {
-                    if (item.attempt.exam) onOpenPractice(item.attempt.exam, item.attempt.setId, item.exercise.id, item.attempt.profile)
+                    if (item.attempt.exam) {
+                      navigation.navigate('Activitate', {
+                        exam: item.attempt.exam,
+                        setId: item.attempt.setId,
+                        focusExerciseId: item.exercise.id,
+                        bacTrack: item.attempt.profile,
+                      })
+                    }
                   }}
                   pressDepth={2}
                   style={[styles.itemCard, { backgroundColor: c.surface, borderColor: c.border, borderBottomColor: c.border }]}
@@ -310,7 +308,12 @@ export default function NotebookScreen({
                   const attempt = item.attempt
                   return (
                     <Press
-                      onPress={() => onOpenOfficialAttempt(attempt)}
+                      onPress={() => {
+                        const paper = NATIVE_OFFICIAL_PAPERS.find((p) => p.id === attempt.packageId)
+                        if (paper) {
+                          navigation.navigate('SubiectOficial', { item: paper, mode: attempt.completedAt ? 'study' : attempt.mode })
+                        }
+                      }}
                       pressDepth={2}
                       accessibilityLabel={`${attempt.completedAt ? 'Revizuiește' : 'Continuă'} ${attempt.session}`}
                       style={[styles.itemCard, { backgroundColor: c.surface, borderColor: c.border, borderBottomColor: c.border }]}
@@ -365,7 +368,7 @@ export default function NotebookScreen({
             icon="document"
             title="Nu ai activitate salvată"
             message="După prima rezolvare, problema și explicația apar aici automat."
-            action={{ title: 'Rezolvă prima problemă', icon: 'solve', onPress: onSolve }}
+            action={{ title: 'Rezolvă prima problemă', icon: 'solve', onPress: () => navigation.navigate('Rezolva') }}
           />
         ) : (
           <>
@@ -407,7 +410,7 @@ export default function NotebookScreen({
               }
               renderItem={({ item }) => (
                 <Press
-                  onPress={() => onOpenProblem(item)}
+                  onPress={() => navigation.navigate('Rezolva', { problem: item })}
                   pressDepth={4}
                   style={[styles.itemCard, { backgroundColor: c.surface, borderColor: c.border, borderBottomColor: c.border }]}
                 >
@@ -465,7 +468,7 @@ export default function NotebookScreen({
           </>
         )}
       </ScreenContent>
-    </ScreenBackground>
+    </View>
   )
 }
 

@@ -21,6 +21,8 @@ import { reportNonFatal } from '../lib/report'
 import {
   BAC_TRACK_LABELS,
   EMPTY_LEARNING_PROFILE,
+  isDefinitiveOnboardingState,
+  isDefinitiveProfileSnapshot,
   makeCompletedProfile,
   parseLearningProfile,
   type BacTrack,
@@ -36,6 +38,12 @@ export type BacProfile = (typeof BAC_TRACK_LABELS)[BacTrack]
 
 type ProductValue = LearningProfile & {
   hydrated: boolean
+  /** Loading is distinct from an empty profile: a cache miss must never send a
+   * returning user through onboarding while Firestore is still checking the
+   * server. */
+  profileStatus: ProfileStatus
+  profileError: Error | null
+  retryProfile: () => void
   saving: boolean
   /** Compatibility projection. Do not persist this value. */
   goal: LearningGoal
@@ -47,7 +55,10 @@ type ProductValue = LearningProfile & {
   setBacProfile: (profile: BacProfile) => Promise<void>
 }
 
+export type ProfileStatus = 'idle' | 'loading' | 'ready' | 'error'
+
 const DEFAULT_BAC_TRACK: BacTrack = 'mate_info'
+const PROFILE_LOAD_TIMEOUT_MS = 15_000
 const ProductContext = createContext<ProductValue | null>(null)
 
 function learningProfileRef(uid: string) {
@@ -66,8 +77,13 @@ export function ProductProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<LearningProfile>(EMPTY_LEARNING_PROFILE)
   const profileRef = useRef(profile)
   const profileExistsRef = useRef(false)
-  const [hydrated, setHydrated] = useState(false)
-  const [hydratedUserId, setHydratedUserId] = useState<string | null>(null)
+  const savingRef = useRef(false)
+  const [profileSession, setProfileSession] = useState<{
+    userId: string | null
+    status: ProfileStatus
+    error: Error | null
+  }>({ userId: null, status: 'idle', error: null })
+  const [reloadToken, setReloadToken] = useState(0)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -76,56 +92,105 @@ export function ProductProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true
-    setHydrated(false)
-    setHydratedUserId(null)
     setProfile(EMPTY_LEARNING_PROFILE)
     profileRef.current = EMPTY_LEARNING_PROFILE
     profileExistsRef.current = false
 
     if (!user) {
-      setHydrated(true)
+      setProfileSession({ userId: null, status: 'idle', error: null })
       return
     }
 
+    const userId = user.id
+    let hasUsableProfile = false
+    setProfileSession({ userId, status: 'loading', error: null })
+
+    const failUnresolvedProfile = (reason: unknown) => {
+      if (!active || hasUsableProfile) return
+      const error = reason instanceof Error ? reason : new Error('Learning profile unavailable')
+      profileRef.current = EMPTY_LEARNING_PROFILE
+      profileExistsRef.current = false
+      setProfile(EMPTY_LEARNING_PROFILE)
+      setProfileSession({ userId, status: 'error', error })
+    }
+
+    const loadTimeout = setTimeout(() => {
+      failUnresolvedProfile(new Error('Learning profile lookup timed out'))
+    }, PROFILE_LOAD_TIMEOUT_MS)
+
     const unsubscribe = onSnapshot(
-      learningProfileRef(user.id),
+      learningProfileRef(userId),
+      { includeMetadataChanges: true },
       (snapshot) => {
         if (!active) return
+
+        // A missing *cached* document is not proof that this is a new user.
+        // Firestore commonly emits this snapshot before the server response;
+        // treating it as final causes returning users to flash onboarding.
+        if (!isDefinitiveProfileSnapshot(snapshot.exists(), snapshot.metadata.fromCache)) return
+
+        // Do not route on an optimistic local onboarding write. The explicit
+        // persist path publishes the profile only after setDoc succeeds.
+        if (snapshot.metadata.hasPendingWrites && savingRef.current) return
+
+        let next: LearningProfile
+        try {
+          next = snapshot.exists()
+            ? parseLearningProfile(snapshot.data())
+            : EMPTY_LEARNING_PROFILE
+        } catch (error) {
+          // A malformed cached value may also be stale. Give the authoritative
+          // server snapshot a chance to replace it before surfacing recovery.
+          if (snapshot.metadata.fromCache) return
+          clearTimeout(loadTimeout)
+          // A corrupt or unsupported existing document is not a new account.
+          // Surface recovery instead of sending the user through onboarding.
+          reportNonFatal(error, 'learning-profile-parse')
+          failUnresolvedProfile(error)
+          return
+        }
+        // A cached incomplete document can lag behind completion on another
+        // device. It must not flash onboarding before the server answers.
+        if (!isDefinitiveOnboardingState(
+          next.onboardingCompleted,
+          snapshot.metadata.fromCache,
+        )) return
+
+        clearTimeout(loadTimeout)
         profileExistsRef.current = snapshot.exists()
-        const next = snapshot.exists()
-          ? parseLearningProfile(snapshot.data())
-          : EMPTY_LEARNING_PROFILE
+        hasUsableProfile = true
         profileRef.current = next
         setProfile(next)
-        setHydratedUserId(user.id)
-        setHydrated(true)
+        setProfileSession({ userId, status: 'ready', error: null })
       },
       (error) => {
         if (!active) return
+        clearTimeout(loadTimeout)
         reportNonFatal(error, 'learning-profile-subscribe')
-        // An unavailable remote profile must never reveal another account's
-        // state. The safe fallback is an unfinished, empty profile.
-        profileRef.current = EMPTY_LEARNING_PROFILE
-        profileExistsRef.current = false
-        setProfile(EMPTY_LEARNING_PROFILE)
-        setHydratedUserId(user.id)
-        setHydrated(true)
+        // Keep a valid cached/server profile usable if the live listener later
+        // drops. If no trustworthy snapshot ever arrived, surface a retry UI;
+        // never reinterpret a connectivity failure as unfinished onboarding.
+        failUnresolvedProfile(error)
       },
     )
 
     return () => {
       active = false
+      clearTimeout(loadTimeout)
       unsubscribe()
     }
-  }, [user?.id])
+  }, [reloadToken, user?.id])
+
+  const retryProfile = useCallback(() => {
+    setReloadToken((current) => current + 1)
+  }, [])
 
   const persist = useCallback(async (next: LearningProfile) => {
     if (!user) throw new Error('Nu există o sesiune Firebase activă.')
 
     const previous = profileRef.current
     const previouslyExisted = profileExistsRef.current
-    profileRef.current = next
-    setProfile(next)
+    savingRef.current = true
     setSaving(true)
     try {
       await setDoc(
@@ -138,6 +203,9 @@ export function ProductProvider({ children }: { children: ReactNode }) {
         { merge: true },
       )
       profileExistsRef.current = true
+      profileRef.current = next
+      setProfile(next)
+      setProfileSession({ userId: user.id, status: 'ready', error: null })
     } catch (error) {
       profileRef.current = previous
       profileExistsRef.current = previouslyExisted
@@ -145,6 +213,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
       reportNonFatal(error, 'learning-profile-write')
       throw error
     } finally {
+      savingRef.current = false
       setSaving(false)
     }
   }, [user?.id])
@@ -182,12 +251,21 @@ export function ProductProvider({ children }: { children: ReactNode }) {
   // A state update from the previous account can be visible for one React
   // render while the new Firestore subscription is being established. Never
   // let the root treat that stale profile as hydrated for the new session.
-  const hydratedForActiveSession = !user || (hydrated && hydratedUserId === user.id)
+  const profileStatus: ProfileStatus = !user
+    ? 'idle'
+    : profileSession.userId === user.id
+      ? profileSession.status
+      : 'loading'
+  const profileError = profileSession.userId === user?.id ? profileSession.error : null
+  const hydratedForActiveSession = !user || profileStatus === 'ready'
 
   const value = useMemo<ProductValue>(
     () => ({
       ...profile,
       hydrated: hydratedForActiveSession,
+      profileStatus,
+      profileError,
+      retryProfile,
       saving,
       goal,
       bacProfile,
@@ -202,6 +280,9 @@ export function ProductProvider({ children }: { children: ReactNode }) {
       goal,
       hydratedForActiveSession,
       profile,
+      profileError,
+      profileStatus,
+      retryProfile,
       saving,
       setBacProfile,
       setExamGoal,

@@ -1,7 +1,10 @@
 import { ActivityIndicator, Image, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useNavigation } from '@react-navigation/native'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { useAuth } from '../../auth/AuthProvider'
 import { useTheme } from '../../theme/ThemeProvider'
+import type { RootStackParamList } from '../../navigation/types'
 import BrandLockup from './BrandLockup'
 import Press from './Press'
 import RezIcon from './RezIcon'
@@ -12,10 +15,11 @@ import { APP_CONTENT_MAX_WIDTH, APP_GUTTER } from './ScreenContent'
  * Brand lockup (mascot + wordmark) on the left, account button on the right.
  * The mascot and chunky controls preserve the app's classroom identity.
  */
-export default function AppHeader({ onOpenSettings }: { onOpenSettings: () => void }) {
+export default function AppHeader() {
   const { theme } = useTheme()
   const { user, signingIn } = useAuth()
   const insets = useSafeAreaInsets()
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
   const c = theme.colors
 
   return (
@@ -24,7 +28,7 @@ export default function AppHeader({ onOpenSettings }: { onOpenSettings: () => vo
         <BrandLockup />
 
         <Press
-          onPress={onOpenSettings}
+          onPress={() => navigation.navigate('Setari')}
           pressDepth={2.5}
           accessibilityRole="button"
           accessibilityLabel="Deschide contul și setările"

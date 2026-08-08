@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native'
+import { useEffect, useState } from 'react'
+import { ActivityIndicator, BackHandler, ScrollView, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import Entrance from '../components/ui/Entrance'
@@ -11,6 +11,9 @@ import Txt from '../components/ui/Txt'
 import { useProduct } from '../product/ProductProvider'
 import { BAC_TRACKS, BAC_TRACK_LABELS, type BacTrack, type ExamGoal } from '../product/profile'
 import { useTheme } from '../theme/ThemeProvider'
+import BrandLockup from '../components/ui/BrandLockup'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
+import { useAuth } from '../auth/AuthProvider'
 
 type Step = 'welcome' | 'goal' | 'profile'
 
@@ -38,25 +41,45 @@ const profileDescriptions: Record<BacTrack, string> = {
 
 export default function OnboardingScreen({
   onSolve,
-  onCompleted,
-  onCompletionStarted,
-  onCompletionFailed,
 }: {
   onSolve: () => void | Promise<void>
-  /** Fires only after this screen explicitly persists onboarding. */
-  onCompleted?: () => void
-  /** Lets the launch flow distinguish a local completion from a returning user. */
-  onCompletionStarted?: () => void
-  onCompletionFailed?: () => void
 }) {
   const { theme } = useTheme()
   const insets = useSafeAreaInsets()
   const { completeOnboarding, saving } = useProduct()
+  const { user, signOut, deleteAccount } = useAuth()
   const c = theme.colors
   const [step, setStep] = useState<Step>('welcome')
   const [error, setError] = useState<string | null>(null)
   const [selectedGoal, setSelectedGoal] = useState<'en' | 'bac' | 'none' | null>(null)
   const [selectedTrack, setSelectedTrack] = useState<BacTrack | null>(null)
+  const [exiting, setExiting] = useState(false)
+  const [confirmingGuestExit, setConfirmingGuestExit] = useState(false)
+  const busy = saving || exiting
+
+  useEffect(() => {
+    if (step === 'welcome' && !busy) return
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (busy) return true
+      setError(null)
+      setStep((current) => current === 'profile' ? 'goal' : 'welcome')
+      return true
+    })
+    return () => subscription.remove()
+  }, [busy, step])
+
+  const exitOnboarding = async () => {
+    if (!user || exiting) return
+    setExiting(true)
+    setError(null)
+    try {
+      if (user.isAnonymous) await deleteAccount()
+      else await signOut()
+    } catch {
+      setError('Nu am putut închide sesiunea. Verifică internetul și încearcă din nou.')
+      setExiting(false)
+    }
+  }
 
   const continueGoal = async () => {
     if (!selectedGoal) return
@@ -66,12 +89,9 @@ export default function OnboardingScreen({
       return
     }
     setError(null)
-    onCompletionStarted?.()
     try {
       await completeOnboarding(goal)
-      onCompleted?.()
     } catch {
-      onCompletionFailed?.()
       setError('Nu am putut salva alegerea. Verifică internetul și încearcă din nou.')
     }
   }
@@ -79,13 +99,10 @@ export default function OnboardingScreen({
   const continueBacTrack = async () => {
     if (!selectedTrack) return
     setError(null)
-    onCompletionStarted?.()
     try {
       await completeOnboarding('bac', selectedTrack)
-      onCompleted?.()
     } catch {
-      onCompletionFailed?.()
-      setError('Nu am putut salva profilul. Verifică internetul și încearcă din nou.')
+      setError('Nu am putut salva alegerea. Verifică internetul și încearcă din nou.')
     }
   }
 
@@ -94,7 +111,7 @@ export default function OnboardingScreen({
     try {
       await onSolve()
     } catch {
-      setError('Nu am putut pregÄƒti aplicaÈ›ia. VerificÄƒ internetul È™i Ã®ncearcÄƒ din nou.')
+      setError('Nu am putut pregăti aplicația. Verifică internetul și încearcă din nou.')
     }
   }
 
@@ -108,7 +125,27 @@ export default function OnboardingScreen({
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.welcomePage}
             >
-              <View style={[styles.brand, { height: 64 }]} />
+              <View style={styles.brand}>
+                <BrandLockup />
+                <Press
+                  onPress={() => user?.isAnonymous ? setConfirmingGuestExit(true) : void exitOnboarding()}
+                  disabled={busy}
+                  pressDepth={2}
+                  accessibilityLabel={user?.isAnonymous ? 'Înapoi la conectare' : 'Folosește alt cont'}
+                  style={[styles.accountExit, { backgroundColor: c.surface, borderColor: c.cardEdge, borderBottomColor: c.cardEdge }]}
+                >
+                  {exiting ? (
+                    <ActivityIndicator size="small" color={c.textMuted} />
+                  ) : (
+                    <>
+                      <RezIcon name="logout" size={16} color={c.textMuted} />
+                      <Txt weight="bold" size={12} color={c.textMuted}>
+                        {user?.isAnonymous ? 'Înapoi' : 'Alt cont'}
+                      </Txt>
+                    </>
+                  )}
+                </Press>
+              </View>
 
               <Entrance delay={90}>
                 <View style={[styles.hero, { backgroundColor: c.surface, borderColor: c.text, borderBottomColor: c.text }]}>
@@ -124,12 +161,12 @@ export default function OnboardingScreen({
             </ScrollView>
 
             <Entrance delay={175} style={styles.footer}>
-              <Press onPress={() => setStep('goal')} pressDepth={4} style={[styles.primary, { backgroundColor: c.bubblyGreen, borderColor: c.bubblyGreenDark, borderBottomColor: c.bubblyGreenDark }]}>
+              <Press disabled={busy} onPress={() => setStep('goal')} pressDepth={4} style={[styles.primary, { backgroundColor: c.bubblyGreen, borderColor: c.bubblyGreenDark, borderBottomColor: c.bubblyGreenDark }]}>
                 <Txt weight="bold" size={15.5} color="#FFFFFF">Personalizează aplicația</Txt>
                 <RezIcon name="arrow" size={20} color="#FFFFFF" />
               </Press>
               {error && <Txt size={13} color={c.danger} style={styles.error}>{error}</Txt>}
-              <Press onPress={() => void solveNow()} disabled={saving} pressDepth={2} style={styles.secondary}>
+              <Press onPress={() => void solveNow()} disabled={busy} pressDepth={2} style={styles.secondary}>
                 <RezIcon name="solve" size={19} color={c.bubblyRed} accent={c.bubblyYellow} />
                 <Txt weight="bold" size={14} color={c.bubblyRed}>Am o problemă de rezolvat acum</Txt>
               </Press>
@@ -160,7 +197,7 @@ export default function OnboardingScreen({
                         setSelectedGoal(goal.id)
                         setError(null)
                       }}
-                      disabled={saving}
+                       disabled={busy}
                       pressDepth={2}
                       accessibilityRole="radio"
                       accessibilityState={{ checked: selected }}
@@ -192,7 +229,7 @@ export default function OnboardingScreen({
             {error && <Txt size={13} color={c.danger} style={styles.error}>{error}</Txt>}
             <Press
               onPress={() => void continueGoal()}
-              disabled={!selectedGoal || saving}
+              disabled={!selectedGoal || busy}
               pressDepth={4}
               style={[
                 styles.primary,
@@ -233,7 +270,7 @@ export default function OnboardingScreen({
                         setSelectedTrack(profile)
                         setError(null)
                       }}
-                      disabled={saving}
+                      disabled={busy}
                       pressDepth={2}
                       accessibilityRole="radio"
                       accessibilityState={{ checked: selected }}
@@ -262,7 +299,7 @@ export default function OnboardingScreen({
             {error && <Txt size={13} color={c.danger} style={styles.error}>{error}</Txt>}
             <Press
               onPress={() => void continueBacTrack()}
-              disabled={!selectedTrack || saving}
+              disabled={!selectedTrack || busy}
               pressDepth={4}
               style={[
                 styles.primary,
@@ -281,6 +318,15 @@ export default function OnboardingScreen({
           </>
         )}
       </ScreenContent>
+      <ConfirmDialog
+        open={confirmingGuestExit}
+        title="Renunți la sesiune?"
+        message="Sesiunea de vizitator va fi ștearsă și vei reveni la ecranul de conectare."
+        confirmLabel="Șterge sesiunea"
+        cancelLabel="Rămân aici"
+        onConfirm={() => void exitOnboarding()}
+        onClose={() => setConfirmingGuestExit(false)}
+      />
     </ScreenBackground>
   )
 }
@@ -382,7 +428,8 @@ const styles = StyleSheet.create({
   stepFill: { flex: 1 },
   welcomeScroll: { flex: 1 },
   welcomePage: { gap: 16, paddingBottom: 14 },
-  brand: { alignItems: 'center', flexDirection: 'row' },
+  brand: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  accountExit: { alignItems: 'center', borderBottomWidth: 5, borderRadius: 16, borderWidth: 2, flexDirection: 'row', gap: 6, justifyContent: 'center', minHeight: 42, paddingHorizontal: 11 },
   hero: { borderRadius: 28, borderWidth: 3, borderBottomWidth: 8, overflow: 'hidden', padding: 18 },
   title: { fontSize: 31, letterSpacing: -1.1, lineHeight: 35 },
   subtitle: { lineHeight: 20, marginTop: 8, maxWidth: 560 },

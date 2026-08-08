@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
-import { useIsFocused } from '@react-navigation/native'
+import { useIsFocused, useNavigation } from '@react-navigation/native'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { useAuth } from '../auth/AuthProvider'
 import Press from '../components/ui/Press'
 import RezIcon from '../components/ui/RezIcon'
-import ScreenBackground from '../components/ui/ScreenBackground'
 import ScreenContent from '../components/ui/ScreenContent'
 import Txt from '../components/ui/Txt'
 import { useProduct, type LearningGoal } from '../product/ProductProvider'
@@ -12,27 +12,17 @@ import { readPracticeAttempts, type PracticeAttempt } from '../practice/store'
 import { subscribeProblems, type Problem } from '../solve/store'
 import { useTheme } from '../theme/ThemeProvider'
 import Entrance from '../components/ui/Entrance'
+import type { RootStackParamList } from '../navigation/types'
 
 type SolveEntry = 'camera' | 'library' | 'type'
 
-type Props = {
-  onOpenPreparation: () => void
-  onOpenMistakes: () => void
-  onOpenProblem: (problem: Problem) => void
-  onSolve: (entry?: SolveEntry) => void
-}
-
-export default function HomeScreen({
-  onOpenPreparation,
-  onOpenMistakes,
-  onOpenProblem,
-  onSolve,
-}: Props) {
+export default function HomeScreen() {
   const focused = useIsFocused()
   const { user } = useAuth()
   const { goal, bacProfile, bacTrack } = useProduct()
   const [latestAttempt, setLatestAttempt] = useState<PracticeAttempt | null>(null)
   const [latestProblem, setLatestProblem] = useState<Problem | null>(null)
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
   useEffect(() => {
     if (!user) return
@@ -56,7 +46,7 @@ export default function HomeScreen({
   if (!goal) return null
 
   return (
-    <ScreenBackground>
+    <View style={styles.flex}>
       <ScreenContent>
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -71,24 +61,24 @@ export default function HomeScreen({
             <Entrance delay={45}>
               <ExamNextAction
                 attempt={latestAttempt}
-                onOpenPreparation={onOpenPreparation}
-                onOpenMistakes={onOpenMistakes}
+                onOpenPreparation={() => navigation.navigate('Principal', { screen: 'Exercitii' })}
+                onOpenMistakes={() => navigation.navigate('Activitate', { exam: goal, mode: 'practice' })}
               />
             </Entrance>
           )}
 
           {latestProblem && (
             <Entrance delay={(goal === 'en' || goal === 'bac') ? 90 : 45}>
-              <ContinueProblem problem={latestProblem} onPress={() => onOpenProblem(latestProblem)} />
+              <ContinueProblem problem={latestProblem} onPress={() => navigation.navigate('Rezolva', { problem: latestProblem })} />
             </Entrance>
           )}
 
           <Entrance delay={(goal === 'en' || goal === 'bac') ? (latestProblem ? 135 : 90) : (latestProblem ? 90 : 45)}>
-            <SolveCard onSolve={onSolve} />
+            <SolveCard onSolve={(entry) => navigation.navigate('Rezolva', entry ? { entry } : undefined)} />
           </Entrance>
         </ScrollView>
       </ScreenContent>
-    </ScreenBackground>
+    </View>
   )
 }
 
